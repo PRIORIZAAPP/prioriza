@@ -1,0 +1,2179 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PRIORIZA</title>
+
+    <style>
+      * { box-sizing: border-box; }
+
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #0f172a;
+        margin: 0;
+        padding: 0;
+        color: #0f172a;
+      }
+
+      /* ---------- LOGIN ---------- */
+      #login-wrapper {
+        max-width: 480px;
+        margin: 0 auto;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #eaf1ff 0%, #9bbcf9 25%, #2563eb 60%, #0f172a 100%);
+        padding: 16px;
+      }
+
+      .login-card {
+        width: 100%;
+        max-width: 360px;
+        background: #f9fafb;
+        border-radius: 18px;
+        padding: 20px 18px 18px 18px;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+      }
+
+      .login-logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .login-logo img { height: 36px; }
+
+      .login-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 4px;
+      }
+
+      .login-subtitle {
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 12px;
+      }
+
+      .login-form-group { margin-bottom: 10px; }
+
+      .login-form-group label {
+        display: block;
+        font-size: 11px;
+        color: #4b5563;
+        margin-bottom: 3px;
+      }
+
+      .login-form-group input {
+        width: 100%;
+        padding: 7px 9px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        font-size: 13px;
+        background: #f9fafb;
+        color: #111827;
+      }
+
+      .login-form-group input:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+      }
+
+      .login-button {
+        width: 100%;
+        margin-top: 4px;
+        border-radius: 999px;
+        border: none;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        background: #2563eb;
+        color: #f9fafb;
+        cursor: pointer;
+      }
+
+      .login-button:hover { filter: brightness(1.03); }
+
+      .login-hint {
+        margin-top: 8px;
+        font-size: 11px;
+        color: #6b7280;
+      }
+
+      .login-error {
+        margin-top: 4px;
+        font-size: 11px;
+        color: #b91c1c;
+        display: none;
+      }
+
+      /* ---------- APP SHELL ---------- */
+      .app-shell {
+        max-width: 480px;
+        margin: 0 auto;
+        min-height: 100vh;
+        display: none; /* some até logar */
+        flex-direction: column;
+        background: #e5e7eb;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: linear-gradient(135deg, #f3f6ff 0%, #c7d7ff 22%, #2563eb 60%, #0f172a 100%);
+        padding: 14px 18px 10px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      .topbar-main { display: flex; flex-direction: column; gap: 4px; }
+
+      .topbar-brand-row { display: flex; align-items: center; }
+
+      .prioriza-logo { height: 56px; width: auto; display: block; }
+
+      .topbar-date-line {
+        margin-top: 4px;
+        font-size: 13px;
+        color: #111827;
+        font-weight: 500;
+        opacity: 0.9;
+      }
+
+      .topbar-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+      }
+
+      .mic-button {
+        border-radius: 999px;
+        border: 1px solid rgba(248, 250, 252, 0.18);
+        background: rgba(15, 23, 42, 0.82);
+        color: #f9fafb;
+        padding: 6px 12px;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .mic-button.icon-only {
+        width: 42px;
+        height: 42px;
+        padding: 0;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mic-svg { width: 20px; height: 20px; color: #ffffff; }
+      .mic-button.listening .mic-svg { color: #22c55e; }
+
+      .audio-tip {
+        font-size: 10px;
+        color: #c7d2fe;
+        max-width: 220px;
+        line-height: 1.3;
+        text-align: right;
+      }
+
+      .resumo-bar {
+        background: #e5edff;
+        color: #1e3a8a;
+        padding: 6px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+      }
+
+      .resumo-bar span { display: inline-flex; align-items: center; gap: 4px; }
+      .resumo-bar span::before { content: "📊"; font-size: 14px; }
+
+      .content { flex: 1; padding: 12px 10px 60px 10px; }
+
+      .card {
+        background: #f9fafb;
+        padding: 14px;
+        border-radius: 14px;
+        margin-bottom: 14px;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+        border: 1px solid #e5e7eb;
+      }
+
+      .card-header { display: flex; align-items: center; margin-bottom: 8px; gap: 8px; }
+      .card-header span.icon { font-size: 20px; }
+      .card-header h2 { margin: 0; font-size: 16px; font-weight: 600; color: #111827; }
+
+      .secao-subtitulo { font-size: 11px; color: #6b7280; margin-bottom: 8px; }
+
+      .screen { display: none; animation: fadeIn 0.15s ease-out; }
+      .screen.active { display: block; }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .agenda-item {
+        padding: 8px 0;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .agenda-horario { width: 64px; font-weight: 600; font-size: 13px; color: #111827; }
+      .agenda-conteudo { flex: 1; font-size: 13px; }
+      .agenda-titulo { font-weight: 600; color: #111827; }
+
+      .agenda-tag {
+        display: inline-block;
+        margin-top: 2px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        background: #e5e7eb;
+        color: #4b5563;
+      }
+
+      .agenda-tag.pessoal { background: #e0f2fe; color: #075985; }
+      .agenda-tag.extra { background: #fef3c7; color: #92400e; }
+      .agenda-tag.concluida { background: #dcfce7; color: #166534; }
+      .agenda-tag.prio1 { background: #fee2e2; color: #b91c1c; }
+      .agenda-tag.prio2 { background: #fef3c7; color: #92400e; }
+      .agenda-tag.prio3 { background: #dcfce7; color: #166534; }
+
+      .bottom-nav-wrapper { position: sticky; bottom: 0; background: #0f172a; z-index: 20; }
+
+      .bottom-nav {
+        max-width: 480px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-around;
+        padding: 6px 4px 8px 4px;
+        border-top: 1px solid rgba(148, 163, 184, 0.4);
+      }
+
+      .nav-item {
+        flex: 1;
+        text-align: center;
+        color: #9ca3af;
+        font-size: 11px;
+        padding: 4px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        cursor: pointer;
+      }
+
+      .nav-item span.icon { font-size: 18px; }
+
+      .nav-item.active { color: #f9fafb; font-weight: 600; }
+
+      .btn-add-tarefa {
+        border-radius: 999px;
+        border: none;
+        padding: 6px 12px;
+        font-size: 12px;
+        background: #2563eb;
+        color: #f9fafb;
+        cursor: pointer;
+      }
+
+      .btn-small {
+        border-radius: 999px;
+        border: none;
+        padding: 4px 8px;
+        font-size: 11px;
+        background: #ef4444;
+        color: #f9fafb;
+        cursor: pointer;
+      }
+
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+
+      label { display: block; font-size: 11px; color: #4b5563; margin-bottom: 2px; }
+
+      input[type="text"], input[type="time"], input[type="number"], input[type="date"], textarea, select {
+        width: 100%;
+        padding: 6px 8px;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        font-size: 12px;
+        background: #f9fafb;
+        color: #111827;
+      }
+
+      textarea { resize: vertical; min-height: 50px; }
+
+      input:focus, textarea:focus, select:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+      }
+
+      .checkbox-pill {
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        border: 1px solid #d1d5db;
+        background: #f9fafb;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .tag-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+
+      .btn-primary {
+        background: #22c55e;
+        color: #022c22;
+        font-weight: 600;
+        border-radius: 999px;
+        border: none;
+        padding: 6px 12px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .btn-secondary {
+        background: #e5e7eb;
+        color: #111827;
+        border-radius: 999px;
+        border: none;
+        padding: 6px 12px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .btn-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+
+      .checklist-item {
+        position: relative;
+        padding: 10px 10px 10px 12px;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        background: #f3f4f6;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: transform 0.15s ease-out, opacity 0.15s ease-out, background 0.15s ease-out;
+        touch-action: pan-y;
+        overflow: hidden;
+      }
+
+      .checklist-item.pessoal { background: #e0f2fe; }
+
+      .check-status {
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        border: 2px solid #9ca3af;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        flex-shrink: 0;
+        background: #f9fafb;
+        cursor: pointer;
+        transition: all 0.15s ease-out;
+      }
+
+      .check-status.pendente { border-color: #9ca3af; background: #f9fafb; color: #9ca3af; }
+      .check-status.em_andamento { border-color: #f97316; background: #fff7ed; color: #f97316; }
+      .check-status.feito { border-color: #22c55e; background: #22c55e; color: #ffffff; }
+
+      .check-info { flex: 1; font-size: 13px; }
+      .check-titulo { font-weight: 600; color: #111827; }
+      .check-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+      .checklist-delete-btn {
+        border-radius: 999px;
+        border: none;
+        padding: 4px 8px;
+        font-size: 11px;
+        background: #ef4444;
+        color: #f9fafb;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      .nota-item {
+        position: relative;
+        padding: 10px 10px 10px 12px;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        background: #f3f4f6;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        touch-action: pan-y;
+        overflow: hidden;
+        transition: transform 0.15s ease-out, opacity 0.15s ease-out, background 0.15s ease-out;
+      }
+
+      .nota-dot { width: 10px; height: 10px; border-radius: 999px; background: #2563eb; flex-shrink: 0; }
+      .nota-info { flex: 1; font-size: 13px; }
+      .nota-texto { color: #111827; }
+      .nota-data { font-size: 11px; color: #6b7280; margin-top: 2px; }
+      .nota-status-feito { text-decoration: line-through; color: #6b7280; }
+
+      .calendar-wrapper { margin-bottom: 10px; }
+      .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+      .calendar-header-title { font-size: 14px; font-weight: 600; color: #111827; }
+
+      .calendar-nav-btn {
+        border-radius: 999px;
+        border: none;
+        padding: 4px 8px;
+        font-size: 11px;
+        background: #e5e7eb;
+        color: #111827;
+        cursor: pointer;
+      }
+
+      .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; font-size: 11px; }
+      .calendar-weekday { text-align: center; color: #6b7280; font-weight: 500; margin-bottom: 2px; }
+
+      .calendar-day {
+        min-height: 46px;
+        background: #f3f4f6;
+        border-radius: 10px;
+        padding: 3px 4px;
+        cursor: pointer;
+        border: 1px solid transparent;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .calendar-day.out-month { opacity: 0.35; }
+      .calendar-day-number { font-size: 12px; font-weight: 600; color: #111827; }
+      .calendar-day-dots { display: flex; gap: 2px; margin-top: 2px; }
+
+      .calendar-dot { width: 6px; height: 6px; border-radius: 999px; }
+      .calendar-dot.prio1 { background: #dc2626; }
+      .calendar-dot.prio2 { background: #facc15; }
+      .calendar-dot.prio3 { background: #22c55e; }
+      .calendar-dot.misto { background: linear-gradient(90deg, #dc2626, #facc15, #22c55e); }
+
+      .calendar-day.selected { border-color: #2563eb; background: #dbeafe; }
+
+      .calendar-holiday { font-size: 9px; color: #b91c1c; margin-top: 2px; }
+
+      .agenda-dia-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+
+      .full-flash-overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 52px;
+        font-weight: 700;
+        color: #f9fafb;
+        z-index: 9999;
+        animation: flashFade 2s ease-out forwards;
+      }
+
+      .full-flash-overlay.success { background: rgba(34, 197, 94, 0.9); }
+      .full-flash-overlay.warning { background: rgba(234, 179, 8, 0.9); }
+      .full-flash-overlay.danger { background: rgba(239, 68, 68, 0.92); }
+
+      @keyframes flashFade {
+        0% { opacity: 1; transform: scale(1); }
+        70% { opacity: 1; transform: scale(1.05); }
+        100% { opacity: 0; transform: scale(0.96); }
+      }
+
+      .filtros-row { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+      .filtro-select { flex: 1; min-width: 120px; }
+    </style>
+  </head>
+
+  <body>
+    <!-- LOGIN -->
+    <div id="login-wrapper">
+      <div class="login-card">
+        <div class="login-logo">
+          <img src="/static/prioriza-logo.png" alt="Prioriza" />
+          <div>
+            <div class="login-title">Bem-vindo ao PRIORIZA</div>
+            <div class="login-subtitle">
+              Acesse com seu e-mail e senha para ver sua agenda e checklist.
+            </div>
+          </div>
+        </div>
+
+        <form id="login-form">
+          <div class="login-form-group">
+            <label for="login-email">E-mail</label>
+            <input
+              type="email"
+              id="login-email"
+              placeholder="ex: voce@prioriza.app"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <div class="login-form-group">
+            <label for="login-password">Senha</label>
+            <input
+              type="password"
+              id="login-password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+
+          <button type="submit" class="login-button">Entrar</button>
+          <div id="login-error" class="login-error">E-mail ou senha inválidos.</div>
+        </form>
+
+        <div class="login-hint">
+          <strong>Dica:</strong> usuário padrão:
+          <code>admin@prioriza.app</code> / <code>123456</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div class="app-shell">
+      <div class="topbar">
+        <div class="topbar-main">
+          <div class="topbar-brand-row">
+            <!-- FIX: sem /static -->
+            <img src="/static/prioriza-logo.png" alt="Prioriza" class="prioriza-logo" />
+          </div>
+          <div class="topbar-date-line">
+            <span id="data-hora-topbar">--/-- · --:--h</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button id="btn-mic-universal" class="mic-button icon-only">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mic-svg">
+              <path d="M12 1a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+              <path d="M19 10v1a7 7 0 0 1-14 0v-1" />
+              <line x1="12" y1="19" x2="12" y2="23" />
+              <line x1="8" y1="23" x2="16" y2="23" />
+            </svg>
+          </button>
+
+          <div class="audio-tip">
+            Dica de voz: diga “salvar nota…”, “agendar compromisso…” ou “adicionar tarefa…”.
+          </div>
+        </div>
+      </div>
+
+      <div class="resumo-bar">
+        <span id="resumo-text">0 feitos · 0 em andamento</span>
+      </div>
+
+      <div class="content">
+        <!-- ABA HOJE -->
+        <div class="screen active" id="screen-hoje">
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">📅</span>
+              <h2>Agenda do dia</h2>
+            </div>
+            <div class="secao-subtitulo">Compromissos com horário — trabalho e pessoal.</div>
+
+            <div style="text-align: right; margin-bottom: 8px">
+              <button id="botao-add-tarefa" class="btn-add-tarefa">+ Nova tarefa</button>
+            </div>
+
+            <div id="agenda-dia"><small>Carregando agenda...</small></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">📋</span>
+              <h2>Checklist de hoje</h2>
+            </div>
+            <div class="secao-subtitulo">Rotinas que precisam caminhar hoje. Sem horário definido.</div>
+
+            <div style="text-align: right; margin-bottom: 8px">
+              <button id="botao-nova-rotina-hoje" class="btn-add-tarefa">+ Nova rotina</button>
+            </div>
+
+            <div id="checklist-dia"><small>Carregando checklist...</small></div>
+          </div>
+        </div>
+
+        <!-- ABA AGENDA GERAL -->
+        <div class="screen" id="screen-agenda">
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">🗓️</span>
+              <h2>Agenda geral</h2>
+            </div>
+            <div class="secao-subtitulo">Calendário mensal com prioridades por dia.</div>
+
+            <div id="calendar-container" class="calendar-wrapper">
+              <div class="calendar-header">
+                <button id="btn-cal-prev" class="calendar-nav-btn">◀</button>
+                <div class="calendar-header-title" id="calendar-title">Mês Ano</div>
+                <button id="btn-cal-next" class="calendar-nav-btn">▶</button>
+              </div>
+              <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+
+            <div id="agenda-dia-container" style="display: none; margin-top: 8px">
+              <div class="agenda-dia-header">
+                <span id="agenda-dia-label"><strong>Agenda do dia</strong></span>
+                <button id="btn-voltar-calendario" class="btn-secondary">Ver calendário</button>
+              </div>
+              <div id="agenda-geral-lista"><small>Nenhum compromisso.</small></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">➕</span>
+              <h2>Novo compromisso</h2>
+            </div>
+            <div class="secao-subtitulo">Defina data, horário, local/contexto, prioridade e recorrência semanal.</div>
+
+            <form id="form-agenda">
+              <div>
+                <label for="agenda-titulo">Título</label>
+                <input id="agenda-titulo" type="text" placeholder="Ex: Reunião equipe, Fórum gestão..." required />
+              </div>
+
+              <div class="form-grid">
+                <div>
+                  <label for="agenda-data">Data</label>
+                  <input id="agenda-data" type="date" />
+                </div>
+                <div>
+                  <label for="agenda-hora">Hora início</label>
+                  <input id="agenda-hora" type="time" value="08:00" />
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <div>
+                  <label for="agenda-duracao">Duração (min)</label>
+                  <input id="agenda-duracao" type="number" value="60" min="10" step="5" />
+                </div>
+                <div>
+                  <label for="agenda-prioridade">Prioridade</label>
+                  <select id="agenda-prioridade">
+                    <option value="1">1 – Alta (vermelho)</option>
+                    <option value="2" selected>2 – Média (amarelo)</option>
+                    <option value="3">3 – Baixa (verde)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label for="agenda-local">Local / contexto (opcional)</label>
+                <input id="agenda-local" type="text" placeholder="Ex: HGG, Escritório SP, Cliente X, Home office" />
+                <div id="agenda-locais-sugeridos" class="tag-row"></div>
+              </div>
+
+              <div class="form-grid">
+                <div>
+                  <label><input type="checkbox" id="agenda-repetir" /> Repetir semanalmente</label>
+                </div>
+                <div>
+                  <label for="agenda-repetir-ate">Até (data)</label>
+                  <input id="agenda-repetir-ate" type="date" />
+                </div>
+              </div>
+
+              <div class="btn-row">
+                <button type="submit" class="btn-primary">Salvar compromisso</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- ABA CHECKLIST GERAL -->
+        <div class="screen" id="screen-checklist">
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">✅</span>
+              <h2>Checklist geral</h2>
+            </div>
+            <div class="secao-subtitulo">
+              Todas as rotinas, com filtros por frequência e local/contexto. Arraste para excluir (tela vermelha com X).
+            </div>
+
+            <div class="filtros-row">
+              <div class="filtro-select">
+                <label for="filtro-frequencia">Frequência</label>
+                <select id="filtro-frequencia">
+                  <option value="">Todas</option>
+                  <option value="Diária">Diária</option>
+                  <option value="Semanal">Semanal</option>
+                  <option value="Mensal">Mensal</option>
+                  <option value="Bimestral">Bimestral</option>
+                  <option value="Trimestral">Trimestral</option>
+                  <option value="Semestral">Semestral</option>
+                  <option value="Anual">Anual</option>
+                </select>
+              </div>
+              <div class="filtro-select">
+                <label for="filtro-origem">Local / contexto</label>
+                <input id="filtro-origem" type="text" placeholder="Ex: HGG, Escritório SP, Cliente X" />
+              </div>
+            </div>
+
+            <div id="checklist-geral-lista"><small>Carregando checklist...</small></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">➕</span>
+              <h2>Nova rotina</h2>
+            </div>
+            <div class="secao-subtitulo">Adicione itens ao checklist geral (frequência e local/contexto).</div>
+
+            <form id="form-checklist">
+              <div>
+                <label for="chk-titulo">Título</label>
+                <input id="chk-titulo" type="text" placeholder="Ex: Revisar protocolo RX, Fechar relatório mensal" required />
+              </div>
+
+              <div class="form-grid">
+                <div>
+                  <label for="chk-local">Local / contexto</label>
+                  <input id="chk-local" type="text" placeholder="Ex: HGG, Escritório SP, Cliente X" />
+                  <div id="chk-locais-sugeridos" class="tag-row"></div>
+                </div>
+                <div>
+                  <label for="chk-frequencia">Frequência</label>
+                  <select id="chk-frequencia">
+                    <option value="Diária">Diária</option>
+                    <option value="Semanal">Semanal</option>
+                    <option value="Mensal">Mensal</option>
+                    <option value="Bimestral">Bimestral</option>
+                    <option value="Trimestral">Trimestral</option>
+                    <option value="Semestral">Semestral</option>
+                    <option value="Anual">Anual</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="btn-row">
+                <button type="submit" class="btn-primary">Salvar rotina</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- ABA PESSOAL -->
+        <div class="screen" id="screen-pessoal">
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">👤</span>
+              <h2>Pessoal</h2>
+            </div>
+            <div class="secao-subtitulo">Tudo que for vida pessoal: agenda e rotinas.</div>
+
+            <div>
+              <h3 style="margin: 4px 0 4px 0; font-size: 13px; color: #111827">Agenda pessoal</h3>
+              <div id="pessoal-agenda"><small>Carregando agenda pessoal...</small></div>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 8px 0" />
+
+            <div>
+              <h3 style="margin: 4px 0 4px 0; font-size: 13px; color: #111827">Checklist pessoal</h3>
+              <div id="pessoal-checklist"><small>Carregando rotinas pessoais...</small></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ABA NOTAS -->
+        <div class="screen" id="screen-notas">
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">📝</span>
+              <h2>Anotações importantes</h2>
+            </div>
+            <div class="secao-subtitulo">
+              Use para lembretes soltos: “buscar filho na escola tal dia”, “conversar com gerente do CDI” etc.
+              Deslize para direita = feito, esquerda = excluir.
+            </div>
+
+            <form id="form-nota">
+              <div>
+                <label for="nota-texto">Anotação</label>
+                <textarea id="nota-texto" placeholder="Ex: Buscar filho na escola dia 15/03 às 17h"></textarea>
+              </div>
+              <div class="form-grid">
+                <div>
+                  <label for="nota-data">Data (opcional)</label>
+                  <input id="nota-data" type="date" />
+                </div>
+                <div>
+                  <label for="nota-tipo">Categoria</label>
+                  <select id="nota-tipo">
+                    <option value="GERAL">Geral</option>
+                    <option value="PESSOAL">Pessoal</option>
+                    <option value="TRABALHO">Trabalho</option>
+                  </select>
+                </div>
+              </div>
+              <div class="btn-row">
+                <button type="submit" class="btn-primary">Salvar anotação</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="icon">📂</span>
+              <h2>Notas salvas</h2>
+            </div>
+            <div id="lista-notas"><small>Carregando notas...</small></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-nav-wrapper">
+        <div class="bottom-nav">
+          <div class="nav-item active" data-target="screen-hoje"><span class="icon">📅</span><span>Hoje</span></div>
+          <div class="nav-item" data-target="screen-agenda"><span class="icon">🗓️</span><span>Agenda</span></div>
+          <div class="nav-item" data-target="screen-checklist"><span class="icon">✅</span><span>Checklist</span></div>
+          <div class="nav-item" data-target="screen-pessoal"><span class="icon">👤</span><span>Pessoal</span></div>
+          <div class="nav-item" data-target="screen-notas"><span class="icon">📝</span><span>Notas</span></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- API BASE (Replit geralmente roda em /app) ---
+      // Se estiver em /app, prefixa automaticamente.
+      // Se estiver na raiz, fica "".
+      const API = "";  // string vazia
+
+      function getToken() {
+        return localStorage.getItem("prioriza_token") || "";
+      }
+
+      function authHeaders(extra = {}) {
+        const token = getToken();
+        return { Authorization: "Bearer " + token, ...extra };
+      }
+
+      function updateAuthVisibility() {
+        const token = getToken();
+        const appShell = document.querySelector(".app-shell");
+        const login = document.getElementById("login-wrapper");
+        if (!appShell || !login) return;
+
+        if (token) {
+          appShell.style.display = "flex";
+          login.style.display = "none";
+        } else {
+          appShell.style.display = "none";
+          login.style.display = "flex";
+        }
+      }
+
+      // --- LOGIN: tenta 2 formatos (JSON /auth/login e FORM /token) ---
+      async function doLogin(email, senha) {
+        // 1) Tenta /auth/login com JSON
+        try {
+          const res = await fetch(API + "/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password: senha }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const token = data.access_token || data.token || data.jwt || "";
+            if (token) return token;
+          }
+        } catch (e) {
+          // segue para fallback
+        }
+
+        // 2) Fallback: padrão OAuth2 do FastAPI (/token) com form
+        const form = new URLSearchParams();
+        // alguns backends usam "username" no OAuth2PasswordRequestForm
+        form.set("username", email);
+        form.set("password", senha);
+
+        const res2 = await fetch(API + "/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: form.toString(),
+        });
+
+        if (!res2.ok) {
+          // tenta extrair msg
+          let detail = "";
+          try {
+            const j = await res2.json();
+            detail = j.detail ? String(j.detail) : "";
+          } catch {}
+          throw new Error(detail || "E-mail ou senha inválidos.");
+        }
+
+        const data2 = await res2.json();
+        const token2 = data2.access_token || data2.token || "";
+        if (!token2) throw new Error("Login OK, mas não recebi token do servidor.");
+        return token2;
+      }
+
+      const feriadosFixos = {
+        "01-01": "Confraternização",
+        "04-21": "Tiradentes",
+        "05-01": "Dia do Trabalho",
+        "09-07": "Independência",
+        "10-12": "Nossa Senhora Aparecida",
+        "11-02": "Finados",
+        "11-15": "Proclamação",
+        "12-25": "Natal",
+      };
+
+      function dateToISO(d) {
+        const ano = d.getFullYear();
+        const mes = String(d.getMonth() + 1).padStart(2, "0");
+        const dia = String(d.getDate()).padStart(2, "0");
+        return `${ano}-${mes}-${dia}`;
+      }
+
+      function dataHojeISO() { return dateToISO(new Date()); }
+
+      function dataHojeBR() {
+        const hoje = new Date();
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+        const dia = String(hoje.getDate()).padStart(2, "0");
+        return `${dia}/${mes}/${ano}`;
+      }
+
+      function dataHojeLabel() {
+        const hoje = new Date();
+        const dia = String(hoje.getDate()).padStart(2, "0");
+        const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+        return `${dia}/${mes}`;
+      }
+
+      function horaAtualCurta() {
+        const agora = new Date();
+        const h = String(agora.getHours()).padStart(2, "0");
+        const m = String(agora.getMinutes()).padStart(2, "0");
+        return `${h}:${m}h`;
+      }
+
+      function formatarDataCurtaBR(iso) {
+        if (!iso) return "";
+        const [ano, mes, dia] = iso.split("-");
+        return `${dia}/${mes}`;
+      }
+
+      function normalizarDataParaISO(d) {
+        if (!d) return "";
+        d = d.trim();
+        if (d.includes("-")) {
+          const partes = d.split("-");
+          if (partes[0].length === 4) return d;
+          const [dia, mes, ano] = partes;
+          return `${ano}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}`;
+        }
+        if (d.includes("/")) {
+          const [dia, mes, ano] = d.split("/");
+          if (!dia || !mes || !ano) return "";
+          return `${ano}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}`;
+        }
+        return d;
+      }
+
+      function dataEhHoje(d) {
+        if (!d) return false;
+        d = d.trim();
+        const hojeISO = dataHojeISO();
+        const hojeBR = dataHojeBR();
+        if (d === hojeISO || d === hojeBR) return true;
+        if (d.includes("/")) {
+          const [dia, mes, ano] = d.split("/");
+          if (dia && mes && ano) return `${ano}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}` === hojeISO;
+        }
+        if (d.includes("-")) return normalizarDataParaISO(d) === hojeISO;
+        return false;
+      }
+
+      function ehStatusFeito(status) {
+        if (!status) return false;
+        const s = status.toLowerCase();
+        return s === "concluida" || s === "concluído" || s === "reagendada_confirmada" || s === "reagendada_manual" || s === "feito";
+      }
+
+      function ehStatusAndamento(status) {
+        if (!status) return false;
+        const s = status.toLowerCase();
+        return s === "em_andamento" || s === "andamento";
+      }
+
+      function proximoStatus(statusAtual) {
+        if (statusAtual === "pendente") return "em_andamento";
+        if (statusAtual === "em_andamento") return "feito";
+        return "pendente";
+      }
+
+      function getLocaisSalvos() {
+        try {
+          const raw = localStorage.getItem("prioriza_locais");
+          if (!raw) return [];
+          const arr = JSON.parse(raw);
+          return Array.isArray(arr) ? arr : [];
+        } catch (e) {
+          console.error(e);
+          return [];
+        }
+      }
+
+      function salvarLocais(locais) {
+        try { localStorage.setItem("prioriza_locais", JSON.stringify(locais)); }
+        catch (e) { console.error(e); }
+      }
+
+      function adicionarLocalSalvo(novo) {
+        const nome = (novo || "").trim();
+        if (!nome) return;
+        const locais = getLocaisSalvos();
+        if (!locais.includes(nome)) {
+          locais.push(nome);
+          salvarLocais(locais);
+        }
+      }
+
+      function renderLocaisSugeridos(containerId, inputId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const locais = getLocaisSalvos();
+        container.innerHTML = "";
+        if (locais.length === 0) return;
+        locais.forEach((local) => {
+          const span = document.createElement("span");
+          span.className = "checkbox-pill";
+          span.textContent = local;
+          span.style.cursor = "pointer";
+          span.addEventListener("click", () => {
+            const input = document.getElementById(inputId);
+            if (input) input.value = local;
+          });
+          container.appendChild(span);
+        });
+      }
+
+      function mostrarFlashFull(tipo) {
+        const div = document.createElement("div");
+        div.className = "full-flash-overlay " + tipo;
+        let simbolo = "✔";
+        if (tipo === "warning") simbolo = "⏳";
+        if (tipo === "danger") simbolo = "✕";
+        div.textContent = simbolo;
+        document.body.appendChild(div);
+        setTimeout(() => div.parentNode && div.parentNode.removeChild(div), 2000);
+      }
+
+      function criarTag(tarefa) {
+        const origem = (tarefa.origem || "").toUpperCase();
+        const status = (tarefa.status || "").toLowerCase();
+        const prio = String(tarefa.prioridade || "");
+
+        if (origem === "PESSOAL") return '<span class="agenda-tag pessoal">Pessoal</span>';
+        if (status === "extra" || status === "imprevisto") return '<span class="agenda-tag extra">Extra</span>';
+        if (ehStatusFeito(status)) return '<span class="agenda-tag concluida">Concluída</span>';
+
+        if (prio === "1") return '<span class="agenda-tag prio1">Prio 1</span>';
+        if (prio === "2") return '<span class="agenda-tag prio2">Prio 2</span>';
+        if (prio === "3") return '<span class="agenda-tag prio3">Prio 3</span>';
+
+        if (tarefa.origem) return `<span class="agenda-tag">${tarefa.origem}</span>`;
+        return '<span class="agenda-tag">Trabalho</span>';
+      }
+
+      async function excluirTarefa(id) {
+        const params = new URLSearchParams({ tarefa_id: String(id) });
+        try {
+          await fetch(API + "/tarefas_excluir?" + params.toString(), {
+            method: "POST",
+            headers: authHeaders(),
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      let tarefasAgendaCache = [];
+
+      async function carregarAgendaHoje() {
+        const agendaDiv = document.getElementById("agenda-dia");
+        const resumoText = document.getElementById("resumo-text");
+        const labelTopo = document.getElementById("data-hora-topbar");
+
+        labelTopo.textContent = dataHojeLabel() + " · " + horaAtualCurta();
+
+        try {
+          const res = await fetch(API + "/tarefas", { headers: authHeaders() });
+          if (res.status === 401) {
+            localStorage.removeItem("prioriza_token");
+            updateAuthVisibility();
+            return;
+          }
+          const tarefas = await res.json();
+          tarefasAgendaCache = Array.isArray(tarefas) ? tarefas : [];
+
+          const tarefasHoje = tarefasAgendaCache
+            .filter((t) => dataEhHoje(t.data || ""))
+            .sort((a, b) => (a.hora_inicio || "").localeCompare(b.hora_inicio || ""));
+
+          if (tarefasHoje.length === 0) {
+            agendaDiv.innerHTML = "<small>Nenhum compromisso agendado para hoje.</small>";
+            resumoText.textContent = "0 feitos · 0 em andamento";
+          } else {
+            agendaDiv.innerHTML = "";
+            let feitos = 0, andamento = 0;
+
+            tarefasHoje.forEach((t) => {
+              const status = t.status || "";
+              if (ehStatusFeito(status)) feitos++;
+              if (ehStatusAndamento(status)) andamento++;
+
+              const item = document.createElement("div");
+              item.className = "agenda-item";
+
+              const hora = t.hora_inicio || "--:--";
+              const tagHTML = criarTag(t);
+
+              item.innerHTML = `
+                <div class="agenda-horario">${hora}</div>
+                <div class="agenda-conteudo">
+                  <div class="agenda-titulo">${t.titulo}</div>
+                  ${tagHTML}
+                </div>
+              `;
+              agendaDiv.appendChild(item);
+            });
+
+            resumoText.textContent = `${feitos} feitos · ${andamento} em andamento`;
+          }
+        } catch (e) {
+          console.error(e);
+          agendaDiv.innerHTML = "<small>Erro ao carregar agenda do dia.</small>";
+        }
+      }
+
+      async function novaTarefaHoje() {
+        const titulo = prompt("Título da tarefa:");
+        if (!titulo) return;
+
+        const hora = prompt("Hora de início (HH:MM):", "08:00");
+        if (!hora) return;
+
+        const origem = (prompt("Local/contexto (Ex: HGG, Escritório, PESSOAL):") || "").trim();
+
+        const prioridadeStr = prompt("Prioridade (1 = Alta, 2 = Média, 3 = Baixa):", "2");
+        const prioridade = prioridadeStr === "1" || prioridadeStr === "3" ? prioridadeStr : "2";
+
+        const params = new URLSearchParams({
+          titulo,
+          origem,
+          data: dataHojeISO(),
+          hora_inicio: hora,
+          duracao_min: "60",
+          prioridade,
+        });
+
+        try {
+          const res = await fetch(API + "/tarefas?" + params.toString(), {
+            method: "POST",
+            headers: authHeaders(),
+          });
+
+          if (!res.ok) {
+            alert("Erro ao salvar a tarefa. Veja se os dados estão ok.");
+            return;
+          }
+
+          if (origem && !getLocaisSalvos().includes(origem)) {
+            const okSalvar = confirm(`Salvar "${origem}" como local frequente?`);
+            if (okSalvar) {
+              adicionarLocalSalvo(origem);
+              renderLocaisSugeridos("agenda-locais-sugeridos", "agenda-local");
+              renderLocaisSugeridos("chk-locais-sugeridos", "chk-local");
+            }
+          }
+
+          await carregarAgendaHoje();
+          await atualizarAgendaMesEDia();
+        } catch (e) {
+          console.error(e);
+          alert("Erro de conexão ao salvar tarefa.");
+        }
+      }
+
+      async function atualizarStatusChecklist(id, novoStatus) {
+        const params = new URLSearchParams({ item_id: String(id), status: novoStatus });
+        try {
+          const res = await fetch(API + "/checklist_status?" + params.toString(), {
+            method: "POST",
+            headers: authHeaders(),
+          });
+          if (!res.ok) console.error("Erro ao atualizar checklist");
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      function adicionarGestosChecklistHoje(div, item) {
+        let startX = null, atualX = null;
+
+        function onTouchStart(ev) { const t = ev.touches[0]; startX = t.clientX; atualX = startX; }
+        function onTouchMove(ev) {
+          if (startX === null) return;
+          const t = ev.touches[0];
+          atualX = t.clientX;
+          div.style.transform = `translateX(${atualX - startX}px)`;
+        }
+        function onTouchEnd() {
+          if (startX === null) return;
+          const deltaX = atualX - startX;
+          div.style.transform = "";
+          startX = null; atualX = null;
+
+          if (deltaX > 70) {
+            mostrarFlashFull("success");
+            setTimeout(async () => { await atualizarStatusChecklist(item.id, "feito"); await carregarChecklistHoje(); await carregarChecklistGeral(); }, 2000);
+          } else if (deltaX < -70) {
+            mostrarFlashFull("warning");
+            setTimeout(async () => { await atualizarStatusChecklist(item.id, "em_andamento"); await carregarChecklistHoje(); await carregarChecklistGeral(); }, 2000);
+          }
+        }
+
+        div.addEventListener("touchstart", onTouchStart, { passive: true });
+        div.addEventListener("touchmove", onTouchMove, { passive: true });
+        div.addEventListener("touchend", onTouchEnd);
+      }
+
+      async function carregarChecklistHoje() {
+        const container = document.getElementById("checklist-dia");
+        container.innerHTML = "<small>Carregando checklist...</small>";
+
+        const hoje = new Date();
+        const isWeekend = hoje.getDay() === 0 || hoje.getDay() === 6;
+
+        try {
+          const res = await fetch(API + "/checklist", { headers: authHeaders() });
+          const itens = await res.json();
+
+          const ativos = (Array.isArray(itens) ? itens : []).filter((i) => i.ativo !== false);
+
+          if (ativos.length === 0) {
+            container.innerHTML = "<small>Nenhum item de checklist cadastrado.</small>";
+            return;
+          }
+
+          container.innerHTML = "";
+
+          ativos.forEach((item) => {
+            const status = item.status || "pendente";
+            const freqInterna = (item.frequencia_interna || "").toUpperCase();
+            const origem = (item.origem || "").toUpperCase();
+
+            if (isWeekend && freqInterna === "DIARIA") return;
+
+            const div = document.createElement("div");
+            div.className = "checklist-item" + (origem === "PESSOAL" ? " pessoal" : "");
+            div.dataset.id = item.id;
+
+            div.innerHTML = `
+              <div class="check-status ${status}"></div>
+              <div class="check-info">
+                <div class="check-titulo">${item.titulo}</div>
+                <div class="check-sub">${item.frequencia} · ${item.origem}</div>
+              </div>
+            `;
+
+            const bolinha = div.querySelector(".check-status");
+            bolinha.dataset.status = status;
+
+            bolinha.addEventListener("click", async () => {
+              const atual = bolinha.dataset.status || "pendente";
+              const novo = proximoStatus(atual);
+              await atualizarStatusChecklist(item.id, novo);
+              await carregarChecklistHoje();
+              await carregarChecklistGeral();
+            });
+
+            adicionarGestosChecklistHoje(div, item);
+            container.appendChild(div);
+          });
+        } catch (e) {
+          console.error(e);
+          container.innerHTML = "<small>Erro ao carregar checklist.</small>";
+        }
+      }
+
+      async function excluirChecklistItem(id) {
+        const params = new URLSearchParams({ item_id: String(id) });
+        try {
+          await fetch(API + "/checklist_excluir?" + params.toString(), {
+            method: "POST",
+            headers: authHeaders(),
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      function adicionarGestosChecklistGeral(div, item) {
+        let startX = null, atualX = null;
+
+        function onTouchStart(ev) { const t = ev.touches[0]; startX = t.clientX; atualX = startX; }
+        function onTouchMove(ev) {
+          if (startX === null) return;
+          const t = ev.touches[0];
+          atualX = t.clientX;
+          div.style.transform = `translateX(${atualX - startX}px)`;
+        }
+        function onTouchEnd() {
+          if (startX === null) return;
+          const deltaX = atualX - startX;
+          div.style.transform = "";
+          startX = null; atualX = null;
+
+          if (deltaX < -70) {
+            mostrarFlashFull("danger");
+            setTimeout(async () => { await excluirChecklistItem(item.id); await carregarChecklistGeral(); await carregarChecklistHoje(); }, 2000);
+          } else if (deltaX > 70) {
+            const atual = item.status || "pendente";
+            const novo = proximoStatus(atual);
+            mostrarFlashFull(novo === "feito" ? "success" : "warning");
+            setTimeout(async () => { await atualizarStatusChecklist(item.id, novo); await carregarChecklistGeral(); await carregarChecklistHoje(); }, 2000);
+          }
+        }
+
+        div.addEventListener("touchstart", onTouchStart, { passive: true });
+        div.addEventListener("touchmove", onTouchMove, { passive: true });
+        div.addEventListener("touchend", onTouchEnd);
+      }
+
+      async function carregarChecklistGeral() {
+        const container = document.getElementById("checklist-geral-lista");
+        container.innerHTML = "<small>Carregando checklist...</small>";
+
+        const filtroFreq = document.getElementById("filtro-frequencia").value;
+        const filtroOrigem = document.getElementById("filtro-origem").value;
+
+        try {
+          const res = await fetch(API + "/checklist", { headers: authHeaders() });
+          let itens = await res.json();
+          itens = (Array.isArray(itens) ? itens : []).filter((i) => i.ativo !== false);
+
+          if (filtroFreq) itens = itens.filter((i) => (i.frequencia || "").toLowerCase() === filtroFreq.toLowerCase());
+          if (filtroOrigem) {
+            const fu = filtroOrigem.toUpperCase();
+            itens = itens.filter((i) => (i.origem || "").toUpperCase().includes(fu));
+          }
+
+          if (itens.length === 0) {
+            container.innerHTML = "<small>Nenhum item encontrado com esses filtros.</small>";
+            return;
+          }
+
+          container.innerHTML = "";
+
+          itens.forEach((item) => {
+            const status = item.status || "pendente";
+            const origem = (item.origem || "").toUpperCase();
+            const div = document.createElement("div");
+            div.className = "checklist-item" + (origem === "PESSOAL" ? " pessoal" : "");
+            div.dataset.id = item.id;
+
+            div.innerHTML = `
+              <div class="check-status ${status}"></div>
+              <div class="check-info">
+                <div class="check-titulo">${item.titulo}</div>
+                <div class="check-sub">${item.frequencia} · ${item.origem}</div>
+              </div>
+              <button class="checklist-delete-btn">Excluir</button>
+            `;
+
+            const bolinha = div.querySelector(".check-status");
+            bolinha.dataset.status = status;
+
+            bolinha.addEventListener("click", async () => {
+              const atual = bolinha.dataset.status || "pendente";
+              const novo = proximoStatus(atual);
+              await atualizarStatusChecklist(item.id, novo);
+              await carregarChecklistGeral();
+              await carregarChecklistHoje();
+            });
+
+            const btnDel = div.querySelector(".checklist-delete-btn");
+            btnDel.addEventListener("click", async () => {
+              const ok = confirm("Remover esta rotina do checklist?");
+              if (!ok) return;
+              mostrarFlashFull("danger");
+              setTimeout(async () => {
+                await excluirChecklistItem(item.id);
+                await carregarChecklistGeral();
+                await carregarChecklistHoje();
+              }, 2000);
+            });
+
+            adicionarGestosChecklistGeral(div, item);
+            container.appendChild(div);
+          });
+        } catch (e) {
+          console.error(e);
+          container.innerHTML = "<small>Erro ao carregar checklist.</small>";
+        }
+      }
+
+      async function salvarNovaRotinaChecklist(e) {
+        e.preventDefault();
+        const titulo = document.getElementById("chk-titulo").value.trim();
+        const origem = document.getElementById("chk-local").value.trim();
+        const freq = document.getElementById("chk-frequencia").value;
+        if (!titulo) return;
+
+        const params = new URLSearchParams({ titulo, origem, frequencia: freq });
+
+        try {
+          const res = await fetch(API + "/checklist_criar?" + params.toString(), {
+            method: "POST",
+            headers: authHeaders(),
+          });
+
+          if (!res.ok) {
+            alert("Erro ao salvar rotina.");
+            return;
+          }
+
+          if (origem && !getLocaisSalvos().includes(origem)) {
+            const okSalvar = confirm(`Salvar "${origem}" como local frequente?`);
+            if (okSalvar) {
+              adicionarLocalSalvo(origem);
+              renderLocaisSugeridos("agenda-locais-sugeridos", "agenda-local");
+              renderLocaisSugeridos("chk-locais-sugeridos", "chk-local");
+            }
+          }
+
+          document.getElementById("chk-titulo").value = "";
+          document.getElementById("chk-local").value = "";
+          document.getElementById("chk-frequencia").value = "Diária";
+
+          await carregarChecklistHoje();
+          await carregarChecklistGeral();
+          await carregarPessoalLista();
+        } catch (e) {
+          console.error(e);
+          alert("Erro de conexão ao salvar rotina.");
+        }
+      }
+
+      async function novaRotinaHoje() {
+        const titulo = prompt("Título da rotina:");
+        if (!titulo) return;
+
+        const origem = (prompt("Local / contexto (Ex: HGG, Escritório, PESSOAL):") || "").trim();
+        const freq = (prompt("Frequência (Diária, Semanal, Mensal, etc):", "Semanal") || "Semanal").trim();
+
+        const params = new URLSearchParams({ titulo, origem, frequencia: freq });
+
+        try {
+          const res = await fetch(API + "/checklist_criar?" + params.toString(), {
+            method: "POST",
+            headers: authHeaders(),
+          });
+
+          if (!res.ok) {
+            alert("Erro ao salvar rotina.");
+            return;
+          }
+
+          if (origem && !getLocaisSalvos().includes(origem)) {
+            const okSalvar = confirm(`Salvar "${origem}" como local frequente?`);
+            if (okSalvar) {
+              adicionarLocalSalvo(origem);
+              renderLocaisSugeridos("agenda-locais-sugeridos", "agenda-local");
+              renderLocaisSugeridos("chk-locais-sugeridos", "chk-local");
+            }
+          }
+
+          await carregarChecklistHoje();
+          await carregarChecklistGeral();
+          await carregarPessoalLista();
+        } catch (e) {
+          console.error(e);
+          alert("Erro de conexão ao salvar rotina.");
+        }
+      }
+
+      async function carregarPessoalLista() {
+        const divAgenda = document.getElementById("pessoal-agenda");
+        const divChecklist = document.getElementById("pessoal-checklist");
+
+        try {
+          const resT = await fetch(API + "/tarefas", { headers: authHeaders() });
+          let tarefas = await resT.json();
+          tarefas = (Array.isArray(tarefas) ? tarefas : []).filter((t) => (t.origem || "").toUpperCase() === "PESSOAL");
+
+          if (tarefas.length === 0) {
+            divAgenda.innerHTML = "<small>Nenhum compromisso pessoal cadastrado.</small>";
+          } else {
+            tarefas.sort((a, b) => {
+              const da = normalizarDataParaISO(a.data || "");
+              const db = normalizarDataParaISO(b.data || "");
+              if (da === db) return (a.hora_inicio || "").localeCompare(b.hora_inicio || "");
+              return da.localeCompare(db);
+            });
+            divAgenda.innerHTML = "";
+            tarefas.forEach((t) => {
+              const item = document.createElement("div");
+              item.className = "agenda-item";
+              const data = normalizarDataParaISO(t.data || "");
+              const dataBR = data ? formatarDataCurtaBR(data) : "--/--";
+              const hora = t.hora_inicio || "--:--";
+              item.innerHTML = `
+                <div class="agenda-horario">${dataBR}<br>${hora}</div>
+                <div class="agenda-conteudo">
+                  <div class="agenda-titulo">${t.titulo}</div>
+                  <span class="agenda-tag pessoal">Pessoal</span>
+                </div>
+              `;
+              divAgenda.appendChild(item);
+            });
+          }
+
+          const resC = await fetch(API + "/checklist", { headers: authHeaders() });
+          let itens = await resC.json();
+          itens = (Array.isArray(itens) ? itens : []).filter((i) => i.ativo !== false && (i.origem || "").toUpperCase() === "PESSOAL");
+
+          if (itens.length === 0) {
+            divChecklist.innerHTML = "<small>Nenhuma rotina pessoal.</small>";
+          } else {
+            divChecklist.innerHTML = "";
+            itens.forEach((item) => {
+              const div = document.createElement("div");
+              div.className = "checklist-item pessoal";
+              const status = item.status || "pendente";
+              div.innerHTML = `
+                <div class="check-status ${status}"></div>
+                <div class="check-info">
+                  <div class="check-titulo">${item.titulo}</div>
+                  <div class="check-sub">${item.frequencia} · ${item.origem}</div>
+                </div>
+              `;
+              const bolinha = div.querySelector(".check-status");
+              bolinha.dataset.status = status;
+
+              bolinha.addEventListener("click", async () => {
+                const atual = bolinha.dataset.status || "pendente";
+                const novo = proximoStatus(atual);
+                await atualizarStatusChecklist(item.id, novo);
+                await carregarChecklistHoje();
+                await carregarChecklistGeral();
+                await carregarPessoalLista();
+              });
+
+              divChecklist.appendChild(div);
+            });
+          }
+        } catch (e) {
+          console.error(e);
+          divAgenda.innerHTML = "<small>Erro ao carregar agenda pessoal.</small>";
+          divChecklist.innerHTML = "<small>Erro ao carregar checklist pessoal.</small>";
+        }
+      }
+
+      let calendarioMesAtual = new Date();
+      let calendarioDiaSelecionadoISO = dataHojeISO();
+
+      function montarCalendarioMes() {
+        const grid = document.getElementById("calendar-grid");
+        const title = document.getElementById("calendar-title");
+        if (!grid || !title) return;
+
+        const ano = calendarioMesAtual.getFullYear();
+        const mes = calendarioMesAtual.getMonth();
+        const primeiroDia = new Date(ano, mes, 1);
+        const inicioSemana = new Date(ano, mes, 1 - primeiroDia.getDay());
+
+        const nomesMes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+        title.textContent = `${nomesMes[mes]} de ${ano}`;
+
+        grid.innerHTML = "";
+
+        ["D","S","T","Q","Q","S","S"].forEach((ds) => {
+          const div = document.createElement("div");
+          div.className = "calendar-weekday";
+          div.textContent = ds;
+          grid.appendChild(div);
+        });
+
+        function prioridadeDoDia(isoData) {
+          const tarefasDia = tarefasAgendaCache.filter((t) => normalizarDataParaISO(t.data || "") === isoData && t.ativo !== false);
+          if (tarefasDia.length === 0) return null;
+          let tem1=false, tem2=false, tem3=false;
+          tarefasDia.forEach((t) => {
+            const p = String(t.prioridade || "");
+            if (p === "1") tem1=true;
+            if (p === "2") tem2=true;
+            if (p === "3") tem3=true;
+          });
+          if (tem1 && tem2 && tem3) return "misto";
+          if (tem1) return "1";
+          if (tem2) return "2";
+          if (tem3) return "3";
+          return null;
+        }
+
+        for (let i=0;i<42;i++) {
+          const dia = new Date(inicioSemana);
+          dia.setDate(inicioSemana.getDate() + i);
+
+          const cel = document.createElement("div");
+          cel.className = "calendar-day";
+          if (dia.getMonth() !== mes) cel.classList.add("out-month");
+
+          const iso = dateToISO(dia);
+
+          const numDiv = document.createElement("div");
+          numDiv.className = "calendar-day-number";
+          numDiv.textContent = dia.getDate();
+
+          const dotsDiv = document.createElement("div");
+          dotsDiv.className = "calendar-day-dots";
+
+          const prio = prioridadeDoDia(iso);
+          if (prio) {
+            const dot = document.createElement("div");
+            dot.className = "calendar-dot";
+            if (prio === "1") dot.classList.add("prio1");
+            else if (prio === "2") dot.classList.add("prio2");
+            else if (prio === "3") dot.classList.add("prio3");
+            else dot.classList.add("misto");
+            dotsDiv.appendChild(dot);
+          }
+
+          const mmdd = iso.slice(5);
+          let feriadoLabel = null;
+          if (feriadosFixos[mmdd]) {
+            feriadoLabel = document.createElement("div");
+            feriadoLabel.className = "calendar-holiday";
+            feriadoLabel.textContent = feriadosFixos[mmdd];
+          }
+
+          if (iso === calendarioDiaSelecionadoISO) cel.classList.add("selected");
+
+          cel.appendChild(numDiv);
+          cel.appendChild(dotsDiv);
+          if (feriadoLabel) cel.appendChild(feriadoLabel);
+
+          cel.addEventListener("click", () => {
+            calendarioDiaSelecionadoISO = iso;
+            document.getElementById("calendar-container").style.display = "none";
+            document.getElementById("agenda-dia-container").style.display = "block";
+            montarCalendarioMes();
+            preencherAgendaDiaSelecionado();
+          });
+
+          grid.appendChild(cel);
+        }
+      }
+
+      function preencherAgendaDiaSelecionado() {
+        const lista = document.getElementById("agenda-geral-lista");
+        const label = document.getElementById("agenda-dia-label");
+        const inputData = document.getElementById("agenda-data");
+        if (!lista || !label) return;
+
+        label.textContent = "Agenda de " + formatarDataCurtaBR(calendarioDiaSelecionadoISO);
+        if (inputData) inputData.value = calendarioDiaSelecionadoISO;
+
+        const tarefasDoDia = tarefasAgendaCache
+          .filter((t) => t.ativo !== false && normalizarDataParaISO(t.data || "") === calendarioDiaSelecionadoISO)
+          .sort((a, b) => (a.hora_inicio || "").localeCompare(b.hora_inicio || ""));
+
+        if (tarefasDoDia.length === 0) {
+          lista.innerHTML = "<small>Nenhum compromisso para este dia.</small>";
+          return;
+        }
+
+        lista.innerHTML = "";
+
+        tarefasDoDia.forEach((t) => {
+          const item = document.createElement("div");
+          item.className = "agenda-item";
+
+          const hora = t.hora_inicio || "--:--";
+          const tagHTML = criarTag(t);
+          const prio = t.prioridade || "–";
+
+          item.innerHTML = `
+            <div class="agenda-horario">${hora}</div>
+            <div class="agenda-conteudo">
+              <div class="agenda-titulo">${t.titulo}</div>
+              ${tagHTML}
+              <div style="font-size:11px; color:#6b7280; margin-top:2px;">Prioridade ${prio}</div>
+            </div>
+            <button class="checklist-delete-btn" title="Excluir compromisso">✕</button>
+          `;
+
+          const btnDel = item.querySelector(".checklist-delete-btn");
+          btnDel.addEventListener("click", async () => {
+            const ok = confirm("Excluir este compromisso da agenda?");
+            if (!ok) return;
+            mostrarFlashFull("danger");
+            setTimeout(async () => {
+              await excluirTarefa(t.id);
+              await carregarAgendaHoje();
+              await atualizarAgendaMesEDia();
+            }, 2000);
+          });
+
+          lista.appendChild(item);
+        });
+      }
+
+      async function atualizarAgendaMesEDia() {
+        try {
+          const res = await fetch(API + "/tarefas", { headers: authHeaders() });
+          const tarefas = await res.json();
+          tarefasAgendaCache = Array.isArray(tarefas) ? tarefas : [];
+          montarCalendarioMes();
+          preencherAgendaDiaSelecionado();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      async function salvarNota(texto, data, tipo) {
+        const body = new URLSearchParams({ texto, data: data || "", tipo: tipo || "GERAL" });
+        const res = await fetch(API + "/notes", {
+          method: "POST",
+          headers: authHeaders({ "Content-Type": "application/x-www-form-urlencoded" }),
+          body,
+        });
+        return res.json();
+      }
+
+      async function carregarNotas() {
+        const container = document.getElementById("lista-notas");
+        container.innerHTML = "<small>Carregando notas...</small>";
+
+        try {
+          const res = await fetch(API + "/notes", { headers: authHeaders() });
+          let itens = await res.json();
+          itens = (Array.isArray(itens) ? itens : []).filter((n) => n.ativo !== false);
+
+          if (itens.length === 0) {
+            container.innerHTML = "<small>Nenhuma anotação salva.</small>";
+            return;
+          }
+
+          itens.sort((a, b) => (a.created_at || "").localeCompare(b.created_at || ""));
+
+          container.innerHTML = "";
+
+          itens.forEach((nota) => {
+            const div = document.createElement("div");
+            div.className = "nota-item";
+            div.dataset.id = nota.id;
+
+            const data = nota.data ? formatarDataCurtaBR(nota.data) : "";
+            const textoClass = nota.status === "feito" ? "nota-texto nota-status-feito" : "nota-texto";
+
+            div.innerHTML = `
+              <div class="nota-dot"></div>
+              <div class="nota-info">
+                <div class="${textoClass}">${nota.texto}</div>
+                <div class="nota-data">${data} · ${nota.tipo || "GERAL"}</div>
+              </div>
+            `;
+
+            adicionarGestosNota(div, nota);
+            container.appendChild(div);
+          });
+        } catch (e) {
+          console.error(e);
+          container.innerHTML = "<small>Erro ao carregar notas.</small>";
+        }
+      }
+
+      async function notaSetStatus(id, status) {
+        const params = new URLSearchParams({ note_id: String(id), status });
+        try {
+          await fetch(API + "/notes_status?" + params.toString(), {
+            method: "POST",
+            headers: authHeaders(),
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      async function notaExcluir(id) {
+        const params = new URLSearchParams({ note_id: String(id) });
+        try {
+          await fetch(API + "/notes_delete?" + params.toString(), {
+            method: "POST",
+            headers: authHeaders(),
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      function adicionarGestosNota(div, nota) {
+        let startX = null, atualX = null;
+
+        function onTouchStart(ev) { const t = ev.touches[0]; startX = t.clientX; atualX = startX; }
+        function onTouchMove(ev) {
+          if (startX === null) return;
+          const t = ev.touches[0];
+          atualX = t.clientX;
+          div.style.transform = `translateX(${atualX - startX}px)`;
+        }
+        function onTouchEnd() {
+          if (startX === null) return;
+          const deltaX = atualX - startX;
+          div.style.transform = "";
+          startX = null; atualX = null;
+
+          if (deltaX > 70) {
+            mostrarFlashFull("success");
+            setTimeout(async () => { await notaSetStatus(nota.id, "feito"); await carregarNotas(); }, 2000);
+          } else if (deltaX < -70) {
+            mostrarFlashFull("danger");
+            setTimeout(async () => { await notaExcluir(nota.id); await carregarNotas(); }, 2000);
+          }
+        }
+
+        div.addEventListener("touchstart", onTouchStart, { passive: true });
+        div.addEventListener("touchmove", onTouchMove, { passive: true });
+        div.addEventListener("touchend", onTouchEnd);
+      }
+
+      function addDaysToISO(iso, days) {
+        if (!iso) return dataHojeISO();
+        const [y, m, d] = iso.split("-").map(Number);
+        const dt = new Date(y, m - 1, d);
+        dt.setDate(dt.getDate() + days);
+        return dateToISO(dt);
+      }
+
+      async function processUniversalCommand(textRaw) {
+        const text = (textRaw || "").trim();
+        if (!text) return;
+        const lower = text.toLowerCase();
+
+        let tipoAcao = null;
+
+        if (lower.startsWith("salvar nota") || lower.startsWith("salve nota") || lower.includes(" nota ")) tipoAcao = "nota";
+        if (lower.startsWith("agendar compromisso") || lower.startsWith("agendar") || lower.includes("compromisso") || lower.includes("reunião")) tipoAcao = "compromisso";
+        if (lower.startsWith("adicionar tarefa") || lower.startsWith("nova tarefa") || lower.includes("tarefa") || lower.includes("checklist")) tipoAcao = "tarefa";
+
+        if (tipoAcao === "nota") {
+          let conteudo = text.replace(/^(salvar|salve)\s+nota\s*/i, "").trim();
+          if (!conteudo) conteudo = text;
+          const ok = confirm(`Salvar como ANOTAÇÃO?\n\n"${conteudo}"`);
+          if (!ok) return;
+          await salvarNota(conteudo, "", "GERAL");
+          await carregarNotas();
+          alert("Anotação salva.");
+          return;
+        }
+
+        if (tipoAcao === "compromisso") {
+          let data = dataHojeISO();
+          if (lower.includes("depois de amanhã")) data = addDaysToISO(dataHojeISO(), 2);
+          else if (lower.includes("amanhã")) data = addDaysToISO(dataHojeISO(), 1);
+
+          let hora = "08:00";
+          let m = lower.match(/(\d{1,2})[:h](\d{2})/);
+          if (m) {
+            const h = String(Math.min(parseInt(m[1], 10), 23)).padStart(2, "0");
+            const min = String(Math.min(parseInt(m[2], 10), 59)).padStart(2, "0");
+            hora = `${h}:${min}`;
+          } else {
+            m = lower.match(/(\d{1,2})\s*(?:h|horas)/);
+            if (m) {
+              const h = String(Math.min(parseInt(m[1], 10), 23)).padStart(2, "0");
+              hora = `${h}:00`;
+            }
+          }
+
+          let origem = "";
+          if (lower.includes("pessoal")) origem = "PESSOAL";
+
+          let conteudo = text
+            .replace(/^agendar\s+compromisso\s*/i, "")
+            .replace(/^agendar\s*/i, "")
+            .replace(/amanhã/gi, "")
+            .replace(/depois de amanhã/gi, "")
+            .replace(/hoje/gi, "")
+            .replace(/às\s+\d{1,2}(:\d{2})?/gi, "")
+            .replace(/\d{1,2}\s*(h|horas)/gi, "")
+            .trim();
+
+          if (!conteudo) conteudo = text;
+
+          const msgResumo =
+            `Local/contexto: ${origem || "(vazio)"}\n` +
+            `Data: ${formatarDataCurtaBR(data)}\n` +
+            `Hora: ${hora}\n\n` +
+            `"${conteudo}"`;
+
+          const ok = confirm(`Criar COMPROMISSO assim?\n\n${msgResumo}`);
+          if (!ok) return;
+
+          const params = new URLSearchParams({
+            titulo: conteudo,
+            origem,
+            data,
+            hora_inicio: hora,
+            duracao_min: "60",
+            prioridade: "2",
+          });
+
+          const res = await fetch(API + "/tarefas?" + params.toString(), {
+            method: "POST",
+            headers: authHeaders(),
+          });
+
+          if (!res.ok) {
+            alert("Erro ao salvar compromisso.");
+            return;
+          }
+
+          await carregarAgendaHoje();
+          await atualizarAgendaMesEDia();
+          if (origem === "PESSOAL") await carregarPessoalLista();
+          alert("Compromisso salvo.");
+          return;
+        }
+
+        if (tipoAcao === "tarefa") {
+          let conteudo = text.replace(/^(adicionar|nova)\s+tarefa\s*/i, "").trim();
+          if (!conteudo) conteudo = text;
+
+          let freq = "Semanal";
+          if (lower.includes("diária")) freq = "Diária";
+          if (lower.includes("semanal")) freq = "Semanal";
+          if (lower.includes("mensal")) freq = "Mensal";
+          if (lower.includes("bimestral")) freq = "Bimestral";
+          if (lower.includes("trimestral")) freq = "Trimestral";
+          if (lower.includes("semestral")) freq = "Semestral";
+          if (lower.includes("anual")) freq = "Anual";
+
+          let origem = "";
+          if (lower.includes("pessoal")) origem = "PESSOAL";
+
+          const msgResumo =
+            `Local/contexto: ${origem || "(vazio)"}\n` +
+            `Frequência: ${freq}\n\n` +
+            `"${conteudo}"`;
+
+          const ok = confirm(`Adicionar ao CHECKLIST?\n\n${msgResumo}`);
+          if (!ok) return;
+
+          const params = new URLSearchParams({ titulo: conteudo, origem, frequencia: freq });
+
+          const res = await fetch(API + "/checklist_criar?" + params.toString(), {
+            method: "POST",
+            headers: authHeaders(),
+          });
+
+          if (!res.ok) {
+            alert("Erro ao salvar tarefa no checklist.");
+            return;
+          }
+
+          await carregarChecklistHoje();
+          await carregarChecklistGeral();
+          if (origem === "PESSOAL") await carregarPessoalLista();
+          alert("Tarefa adicionada ao checklist.");
+          return;
+        }
+
+        alert(
+          "Não entendi se era nota, compromisso ou tarefa.\n\n" +
+          "Tente começar com:\n" +
+          "• 'salvar nota ...'\n" +
+          "• 'agendar compromisso ...'\n" +
+          "• 'adicionar tarefa ...'"
+        );
+      }
+
+      function initUniversalMic() {
+        const btn = document.getElementById("btn-mic-universal");
+        if (!btn) return;
+
+        let recognition = null;
+        let escutando = false;
+
+        if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+          btn.addEventListener("click", () => alert("Reconhecimento de voz não suportado neste navegador."));
+          return;
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = "pt-BR";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => { escutando = true; btn.classList.add("listening"); };
+        recognition.onend = () => { escutando = false; btn.classList.remove("listening"); };
+
+        recognition.onerror = (event) => {
+          console.error("Erro no reconhecimento:", event.error);
+          alert("Erro no áudio. Tente falar novamente.");
+        };
+
+        recognition.onresult = async (event) => {
+          const transcript = event.results[0][0].transcript;
+          await processUniversalCommand(transcript);
+        };
+
+        btn.addEventListener("click", () => {
+          if (!recognition) return;
+          if (escutando) recognition.stop();
+          else recognition.start();
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const loginForm = document.getElementById("login-form");
+        const loginError = document.getElementById("login-error");
+
+        if (loginForm) {
+          loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("login-email").value.trim().toLowerCase();
+            const senha = document.getElementById("login-password").value;
+
+            loginError.style.display = "none";
+            loginError.textContent = "E-mail ou senha inválidos.";
+
+            try {
+              const token = await doLogin(email, senha);
+              localStorage.setItem("prioriza_token", token);
+              updateAuthVisibility();
+
+              carregarAgendaHoje();
+              atualizarAgendaMesEDia();
+              carregarChecklistHoje();
+              carregarChecklistGeral();
+              carregarPessoalLista();
+              carregarNotas();
+            } catch (err) {
+              console.error(err);
+              loginError.textContent = (err && err.message) ? err.message : "E-mail ou senha inválidos.";
+              loginError.style.display = "block";
+            }
+          });
+        }
+
+        updateAuthVisibility();
+
+        const navItems = document.querySelectorAll(".nav-item");
+        const screens = document.querySelectorAll(".screen");
+
+        navItems.forEach((item) => {
+          item.addEventListener("click", () => {
+            const targetId = item.getAttribute("data-target");
+            screens.forEach((s) => s.id === targetId ? s.classList.add("active") : s.classList.remove("active"));
+            navItems.forEach((n) => n.classList.remove("active"));
+            item.classList.add("active");
+          });
+        });
+
+        const botao = document.getElementById("botao-add-tarefa");
+        if (botao) botao.addEventListener("click", novaTarefaHoje);
+
+        const botaoNovaRotinaHoje = document.getElementById("botao-nova-rotina-hoje");
+        if (botaoNovaRotinaHoje) botaoNovaRotinaHoje.addEventListener("click", novaRotinaHoje);
+
+        const btnPrev = document.getElementById("btn-cal-prev");
+        const btnNext = document.getElementById("btn-cal-next");
+        if (btnPrev && btnNext) {
+          btnPrev.addEventListener("click", () => { calendarioMesAtual.setMonth(calendarioMesAtual.getMonth() - 1); montarCalendarioMes(); });
+          btnNext.addEventListener("click", () => { calendarioMesAtual.setMonth(calendarioMesAtual.getMonth() + 1); montarCalendarioMes(); });
+        }
+
+        const btnVoltarCal = document.getElementById("btn-voltar-calendario");
+        if (btnVoltarCal) {
+          btnVoltarCal.addEventListener("click", () => {
+            document.getElementById("calendar-container").style.display = "block";
+            document.getElementById("agenda-dia-container").style.display = "none";
+          });
+        }
+
+        const formChk = document.getElementById("form-checklist");
+        if (formChk) formChk.addEventListener("submit", salvarNovaRotinaChecklist);
+
+        const filtroFreq = document.getElementById("filtro-frequencia");
+        const filtroOrigem = document.getElementById("filtro-origem");
+        if (filtroFreq) filtroFreq.addEventListener("change", carregarChecklistGeral);
+        if (filtroOrigem) filtroOrigem.addEventListener("input", carregarChecklistGeral);
+
+        const formNota = document.getElementById("form-nota");
+        if (formNota) {
+          formNota.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const texto = document.getElementById("nota-texto").value.trim();
+            const data = document.getElementById("nota-data").value;
+            const tipo = document.getElementById("nota-tipo").value;
+            if (!texto) return;
+
+            await salvarNota(texto, data, tipo);
+            document.getElementById("nota-texto").value = "";
+            document.getElementById("nota-data").value = "";
+            document.getElementById("nota-tipo").value = "GERAL";
+            await carregarNotas();
+          });
+        }
+
+        renderLocaisSugeridos("agenda-locais-sugeridos", "agenda-local");
+        renderLocaisSugeridos("chk-locais-sugeridos", "chk-local");
+
+        const token = getToken();
+        if (token) {
+          carregarAgendaHoje();
+          atualizarAgendaMesEDia();
+          carregarChecklistHoje();
+          carregarChecklistGeral();
+          carregarPessoalLista();
+          carregarNotas();
+        }
+
+        initUniversalMic();
+      });
+    </script>
+  </body>
+</html>
