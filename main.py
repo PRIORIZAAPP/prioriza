@@ -152,23 +152,48 @@ def get_db():
 init_db()
 
 # ── MIGRAÇÃO AUTOMÁTICA ──────────────────────────────────────
-# Adiciona colunas novas sem apagar dados existentes
 def migrar_banco():
     from sqlalchemy import inspect, text
     inspetor = inspect(engine)
-    
-    colunas_checklist = [c["name"] for c in inspetor.get_columns("checklist")]
-    
+    tabelas = inspetor.get_table_names()
+
     with engine.connect() as conn:
-        if "ultimo_exec" not in colunas_checklist:
-            conn.execute(text("ALTER TABLE checklist ADD COLUMN ultimo_exec DATETIME"))
-            print("✅ Coluna ultimo_exec adicionada")
-        if "criado_em" not in colunas_checklist:
-            conn.execute(text("ALTER TABLE checklist ADD COLUMN criado_em DATETIME"))
-            print("✅ Coluna criado_em adicionada")
+
+        #── TABELA: tarefas ──
+        if "tarefas" in tabelas:
+            cols = [c["name"] for c in inspetor.get_columns("tarefas")]
+            if "origem"      not in cols: conn.execute(text("ALTER TABLE tarefas ADD COLUMN origem TEXT DEFAULT ''"))
+            if "hora_inicio" not in cols: conn.execute(text("ALTER TABLE tarefas ADD COLUMN hora_inicio TEXT DEFAULT ''"))
+            if "duracao_min" not in cols: conn.execute(text("ALTER TABLE tarefas ADD COLUMN duracao_min INTEGER DEFAULT 60"))
+            if "prioridade"  not in cols: conn.execute(text("ALTER TABLE tarefas ADD COLUMN prioridade INTEGER DEFAULT 2"))
+            if "status"      not in cols: conn.execute(text("ALTER TABLE tarefas ADD COLUMN status TEXT DEFAULT 'pendente'"))
+            if "ativo"       not in cols: conn.execute(text("ALTER TABLE tarefas ADD COLUMN ativo INTEGER DEFAULT 1"))
+            if "criado_em"   not in cols: conn.execute(text("ALTER TABLE tarefas ADD COLUMN criado_em DATETIME"))
+
+        # ── TABELA: checklist ──
+        if "checklist" in tabelas:
+            cols = [c["name"] for c in inspetor.get_columns("checklist")]
+            if "origem"             not in cols: conn.execute(text("ALTER TABLE checklist ADD COLUMN origem TEXT DEFAULT ''"))
+            if "frequencia_interna" not in cols: conn.execute(text("ALTER TABLE checklist ADD COLUMN frequencia_interna TEXT DEFAULT 'SEMANAL'"))
+            if "status"             not in cols: conn.execute(text("ALTER TABLE checklist ADD COLUMN status TEXT DEFAULT 'pendente'"))
+            if "ativo"              not in cols: conn.execute(text("ALTER TABLE checklist ADD COLUMN ativo INTEGER DEFAULT 1"))
+            if "ultimo_exec"        not in cols: conn.execute(text("ALTER TABLE checklist ADD COLUMN ultimo_exec DATETIME"))
+            if "criado_em"          not in cols: conn.execute(text("ALTER TABLE checklist ADD COLUMN criado_em DATETIME"))
+
+        # ── TABELA: notes ──
+        if "notes" in tabelas:
+            cols = [c["name"] for c in inspetor.get_columns("notes")]
+            if "data"       not in cols: conn.execute(text("ALTER TABLE notes ADD COLUMN data TEXT DEFAULT ''"))
+            if "tipo"       not in cols: conn.execute(text("ALTER TABLE notes ADD COLUMN tipo TEXT DEFAULT 'GERAL'"))
+            if "status"     not in cols: conn.execute(text("ALTER TABLE notes ADD COLUMN status TEXT DEFAULT 'pendente'"))
+            if "ativo"      not in cols: conn.execute(text("ALTER TABLE notes ADD COLUMN ativo INTEGER DEFAULT 1"))
+            if "created_at" not in cols: conn.execute(text("ALTER TABLE notes ADD COLUMN created_at DATETIME"))
+
         conn.commit()
+        print("✅ Migração concluída!")
 
 migrar_banco()
+
 
 
 # ============================================================
