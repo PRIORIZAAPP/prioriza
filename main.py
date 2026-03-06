@@ -151,6 +151,26 @@ def get_db():
 
 init_db()
 
+# ── MIGRAÇÃO AUTOMÁTICA ──────────────────────────────────────
+# Adiciona colunas novas sem apagar dados existentes
+def migrar_banco():
+    from sqlalchemy import inspect, text
+    inspetor = inspect(engine)
+    
+    colunas_checklist = [c["name"] for c in inspetor.get_columns("checklist")]
+    
+    with engine.connect() as conn:
+        if "ultimo_exec" not in colunas_checklist:
+            conn.execute(text("ALTER TABLE checklist ADD COLUMN ultimo_exec DATETIME"))
+            print("✅ Coluna ultimo_exec adicionada")
+        if "criado_em" not in colunas_checklist:
+            conn.execute(text("ALTER TABLE checklist ADD COLUMN criado_em DATETIME"))
+            print("✅ Coluna criado_em adicionada")
+        conn.commit()
+
+migrar_banco()
+
+
 
 # ============================================================
 # HELPERS DE DATA
