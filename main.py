@@ -1,3 +1,4 @@
+import os
 from fastapi import (
     FastAPI,
     Depends,
@@ -17,6 +18,7 @@ from sqlalchemy import (
     String,
     Boolean,
     DateTime,
+    text,
 )
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 
@@ -27,11 +29,21 @@ from datetime import datetime, date, timezone
 # CONFIG GERAL
 # ============================================================
 
-DATABASE_URL = "sqlite:///./prioriza.db"
-
-engine = create_engine(
-    DATABASE_URL, connect_args={"check_same_thread": False}
+# PostgreSQL no Render (persiste dados entre reinícios)
+# Fallback para SQLite em desenvolvimento local
+DATABASE_URL = os.environ.get(
+    "DATABASE_URL",
+    "sqlite:///./prioriza.db"
 )
+
+# Render fornece URLs que começam com "postgres://" — SQLAlchemy exige "postgresql://"
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+# Argumentos de conexão específicos para SQLite (não se aplica ao PostgreSQL)
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -151,50 +163,6 @@ def get_db():
 
 init_db()
 
-# ── MIGRAÇÃO AUTOMÁTICA ──────────────────────────────────────
-def migrar_banco():
-    from sqlalchemy import inspect, text
-    inspetor = inspect(engine)
-    tabelas = inspetor.get_table_names()
-
-    with engine.connect() as conn:
-
-        #── TABELA: tarefas ──
-        if "tarefas" in tabelas:
-            cols = [c["name"] for c in inspetor.get_columns("tarefas")]
-            if "origem"      not in cols: conn.execute(text("ALTER TABLE tarefas ADD COLUMN origem TEXT DEFAULT ''"))
-            if "hora_inicio" not in cols: conn.execute(text("ALTER TABLE tarefas ADD COLUMN hora_inicio TEXT DEFAULT ''"))
-            if "duracao_min" not in cols: conn.execute(text("ALTER TABLE tarefas ADD COLUMN duracao_min INTEGER DEFAULT 60"))
-            if "prioridade"  not in cols: conn.execute(text("ALTER TABLE tarefas ADD COLUMN prioridade INTEGER DEFAULT 2"))
-            if "status"      not in cols: conn.execute(text("ALTER TABLE tarefas ADD COLUMN status TEXT DEFAULT 'pendente'"))
-            if "ativo"       not in cols: conn.execute(text("ALTER TABLE tarefas ADD COLUMN ativo INTEGER DEFAULT 1"))
-            if "criado_em"   not in cols: conn.execute(text("ALTER TABLE tarefas ADD COLUMN criado_em DATETIME"))
-
-        # ── TABELA: checklist ──
-        if "checklist" in tabelas:
-            cols = [c["name"] for c in inspetor.get_columns("checklist")]
-            if "origem"             not in cols: conn.execute(text("ALTER TABLE checklist ADD COLUMN origem TEXT DEFAULT ''"))
-            if "frequencia_interna" not in cols: conn.execute(text("ALTER TABLE checklist ADD COLUMN frequencia_interna TEXT DEFAULT 'SEMANAL'"))
-            if "status"             not in cols: conn.execute(text("ALTER TABLE checklist ADD COLUMN status TEXT DEFAULT 'pendente'"))
-            if "ativo"              not in cols: conn.execute(text("ALTER TABLE checklist ADD COLUMN ativo INTEGER DEFAULT 1"))
-            if "ultimo_exec"        not in cols: conn.execute(text("ALTER TABLE checklist ADD COLUMN ultimo_exec DATETIME"))
-            if "criado_em"          not in cols: conn.execute(text("ALTER TABLE checklist ADD COLUMN criado_em DATETIME"))
-
-        # ── TABELA: notes ──
-        if "notes" in tabelas:
-            cols = [c["name"] for c in inspetor.get_columns("notes")]
-            if "data"       not in cols: conn.execute(text("ALTER TABLE notes ADD COLUMN data TEXT DEFAULT ''"))
-            if "tipo"       not in cols: conn.execute(text("ALTER TABLE notes ADD COLUMN tipo TEXT DEFAULT 'GERAL'"))
-            if "status"     not in cols: conn.execute(text("ALTER TABLE notes ADD COLUMN status TEXT DEFAULT 'pendente'"))
-            if "ativo"      not in cols: conn.execute(text("ALTER TABLE notes ADD COLUMN ativo INTEGER DEFAULT 1"))
-            if "created_at" not in cols: conn.execute(text("ALTER TABLE notes ADD COLUMN created_at DATETIME"))
-
-        conn.commit()
-        print("✅ Migração concluída!")
-
-migrar_banco()
-
-
 
 # ============================================================
 # HELPERS DE DATA
@@ -217,6 +185,8 @@ def normalizar_frequencia_interna(freq: str) -> str:
     if not freq:
         return "SEMANAL"
     f = freq.strip().lower()
+    if "único" in f or "unico" in f or "pontual" in f or "esporádico" in f or "esporadico" in f:
+        return "UNICO"
     if "dia" in f:
         return "DIARIA"
     if "semana" in f:
@@ -244,6 +214,7 @@ def _intervalo_dias(freq_interna: str) -> int:
         "TRIMESTRAL":  90,
         "SEMESTRAL":   180,
         "ANUAL":       365,
+        "UNICO":       999999,  # Único: aparece uma vez, nunca reaparece após feito
     }
     return mapa.get((freq_interna or "SEMANAL").upper(), 7)
 
@@ -251,6 +222,10 @@ def _intervalo_dias(freq_interna: str) -> int:
 def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
     if not item.ativo:
         return False
+
+    # Frequência ÚNICO: aparece apenas se nunca foi executado
+    if (item.frequencia_interna or "").upper() == "UNICO":
+        return item.ultimo_exec is None and item.status != "feito"
 
     hoje = date.today()
 
@@ -267,6 +242,9 @@ def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
 
 def calcular_proxima_execucao(item: ChecklistItem) -> str | None:
     """Retorna a data da próxima execução no formato YYYY-MM-DD."""
+    if (item.frequencia_interna or "").upper() == "UNICO":
+        return None if item.ultimo_exec else date.today().isoformat()
+
     if item.ultimo_exec is None:
         return date.today().isoformat()
 
@@ -277,6 +255,8 @@ def calcular_proxima_execucao(item: ChecklistItem) -> str | None:
 
 def calcular_dias_para_proxima(item: ChecklistItem) -> int:
     """Retorna quantos dias faltam para a próxima execução (negativo = atrasado)."""
+    if (item.frequencia_interna or "").upper() == "UNICO":
+        return 0
     proxima_str = calcular_proxima_execucao(item)
     if not proxima_str:
         return 0
@@ -289,9 +269,7 @@ def calcular_dias_para_proxima(item: ChecklistItem) -> int:
 # STATIC / FRONT
 # ============================================================
 
-# Coloque seus arquivos estáticos (logo, etc.) na pasta "static/"
-# Se ainda não existir, crie a pasta e mova o prioriza-logo.png para lá.
-import os
+# Cria pasta static se não existir
 if not os.path.exists("static"):
     os.makedirs("static")
 
@@ -390,11 +368,6 @@ async def criar_tarefa(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    """
-    Aceita:
-    - POST /tarefas?titulo=...&origem=... (query params)
-    - POST /tarefas com body x-www-form-urlencoded
-    """
     q = request.query_params
 
     titulo      = q.get("titulo")
@@ -405,13 +378,16 @@ async def criar_tarefa(
     prioridade  = q.get("prioridade")
 
     if not titulo:
-        form        = await request.form()
-        titulo      = form.get("titulo")
-        origem      = form.get("origem")
-        data_str    = form.get("data")
-        hora_inicio = form.get("hora_inicio")
-        duracao_min = form.get("duracao_min")
-        prioridade  = form.get("prioridade")
+        try:
+            form        = await request.form()
+            titulo      = form.get("titulo")
+            origem      = form.get("origem")
+            data_str    = form.get("data")
+            hora_inicio = form.get("hora_inicio")
+            duracao_min = form.get("duracao_min")
+            prioridade  = form.get("prioridade")
+        except Exception:
+            pass
 
     if not titulo or not data_str:
         raise HTTPException(
@@ -419,7 +395,6 @@ async def criar_tarefa(
             detail="É obrigatório informar pelo menos título e data.",
         )
 
-    # Validação de formato de data
     data_str = data_str.strip()
     if not validar_data_iso(data_str):
         raise HTTPException(
@@ -553,9 +528,9 @@ def criar_checklist_item(
     frequencia: str = Query("Semanal"),
     db: Session = Depends(get_db),
 ):
-    titulo      = titulo.strip()
-    origem      = (origem or "").strip()
-    freq        = (frequencia or "Semanal").strip()
+    titulo       = titulo.strip()
+    origem       = (origem or "").strip()
+    freq         = (frequencia or "Semanal").strip()
     freq_interna = normalizar_frequencia_interna(freq)
 
     item = ChecklistItem(
@@ -592,8 +567,8 @@ def editar_checklist_item(
         item.origem = origem.strip()
     if frequencia is not None:
         freq = frequencia.strip()
-        item.frequencia          = freq
-        item.frequencia_interna  = normalizar_frequencia_interna(freq)
+        item.frequencia         = freq
+        item.frequencia_interna = normalizar_frequencia_interna(freq)
 
     db.commit()
     db.refresh(item)
@@ -679,7 +654,6 @@ def criar_nota(
     tipo     = (tipo or "GERAL").strip().upper()
     data_str = (data or "").strip()
 
-    # Valida data se informada
     if data_str and not validar_data_iso(data_str):
         raise HTTPException(status_code=400, detail="Formato de data inválido. Use YYYY-MM-DD.")
 
