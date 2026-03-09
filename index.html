@@ -335,7 +335,7 @@
       <div class="topbar">
         <div class="topbar-main">
           <div class="topbar-brand-row">
-            <img src="/static/prioriza-logo.png" alt="Prioriza" class="prioriza-logo" />
+            <img src="/static/prioriza-logo.png" onerror="this.style.display='none'" alt="Prioriza" class="prioriza-logo" />
           </div>
           <div class="topbar-date-line">
             <span id="data-hora-topbar">--/-- · --:--h</span>
@@ -534,6 +534,7 @@
                 <label for="filtro-frequencia">Frequência</label>
                 <select id="filtro-frequencia">
                   <option value="">Todas</option>
+                  <option value="Único">Único (esporádico)</option>
                   <option value="Diária">Diária</option>
                   <option value="Semanal">Semanal</option>
                   <option value="Mensal">Mensal</option>
@@ -574,8 +575,9 @@
                 <div>
                   <label for="chk-frequencia">Frequência</label>
                   <select id="chk-frequencia">
+                    <option value="Único">Único (esporádico)</option>
                     <option value="Diária">Diária</option>
-                    <option value="Semanal">Semanal</option>
+                    <option value="Semanal" selected>Semanal</option>
                     <option value="Mensal">Mensal</option>
                     <option value="Bimestral">Bimestral</option>
                     <option value="Trimestral">Trimestral</option>
@@ -1125,7 +1127,7 @@
           return true;
         });
 
-        if (visiveis.length===0) { container.innerHTML="<small>Nenhum item pendente para hoje. </small>"; return; }
+        if (visiveis.length===0) { container.innerHTML="<small>Nenhum item pendente para hoje. 🎉</small>"; return; }
         container.innerHTML="";
 
         visiveis.forEach(item => {
