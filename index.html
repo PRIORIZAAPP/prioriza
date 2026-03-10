@@ -49,7 +49,7 @@
     .topbar-main{display:flex;flex-direction:column;gap:4px;}
     .topbar-brand-row{display:flex;align-items:center;}
     .prioriza-logo{height:56px;width:auto;display:block;}
-    .topbar-date-line{margin-top:4px;font-size:13px;color:#1e3a8a;font-weight:600;opacity:.95;letter-spacing:0.01em;}
+    .topbar-date-line{margin-top:4px;font-size:14px;color:#ffffff;font-weight:400;letter-spacing:0.03em;}
     .topbar-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
     .mic-button{
       border-radius:999px; border:1px solid rgba(248,250,252,0.18);
@@ -629,10 +629,8 @@ function atualizarRelogio(){
   const el=document.getElementById("topbarDate");
   if(!el) return;
   const d=new Date();
-  const dias=["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
-  const meses=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
   const hora=`${padZ(d.getHours())}:${padZ(d.getMinutes())}`;
-  el.innerHTML=`<strong>${dias[d.getDay()]}, ${padZ(d.getDate())} ${meses[d.getMonth()]}</strong> &nbsp;<span style="font-size:14px;color:#2563eb;font-weight:700;">${hora}</span>`;
+  el.textContent=`${padZ(d.getDate())}/${padZ(d.getMonth()+1)}   ${hora}`;
 }
 setInterval(atualizarRelogio,1000);
 atualizarRelogio();
@@ -931,10 +929,14 @@ function _renderCal(ref, gridId, labelId, hoje, tarefas, onDayClick){
     const iso=`${ref.getFullYear()}-${padZ(ref.getMonth()+1)}-${padZ(d)}`;
     const isHoje=iso===hoje;
     const temT=tarefas.some(t=>t.data===iso);
-    html+=`<div class="cal-day ${isHoje?"today":""} ${temT?"has-task":""}"
-      onclick="(${onDayClick.toString()})('${iso}')">${d}</div>`;
+    html+=`<div class="cal-day ${isHoje?"today":""} ${temT?"has-task":""} cal-day-sel"
+      data-iso="${iso}">${d}</div>`;
   }
   grid.innerHTML=html;
+  // bind clicks after render
+  grid.querySelectorAll(".cal-day-sel").forEach(el=>{
+    el.addEventListener("click",()=>onDayClick(el.dataset.iso));
+  });
 }
 
 function toggleOffhours(){
