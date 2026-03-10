@@ -179,10 +179,6 @@ def corrigir_frequencia_interna():
         db.close()
 
 
-init_db()
-corrigir_frequencia_interna()
-
-
 # ============================================================
 # HELPERS DE DATA
 # ============================================================
@@ -193,6 +189,9 @@ def validar_data_iso(data_str: str) -> bool:
         return True
     except ValueError:
         return False
+
+
+init_db()
 
 
 def _remove_accents(text: str) -> str:
@@ -331,6 +330,10 @@ def calcular_aviso_domingo(item: ChecklistItem) -> Optional[str]:
             # o prazo era ontem (domingo)
             return "Transferido do domingo"
     return None
+
+
+# Executa correção de frequencia_interna APÓS todas as funções helper estarem definidas
+corrigir_frequencia_interna()
 
 
 # ============================================================
