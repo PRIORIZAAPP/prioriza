@@ -1,4 +1,6 @@
 import os
+from datetime import datetime, date, timezone
+
 from fastapi import (
     FastAPI,
     Depends,
@@ -7,7 +9,7 @@ from fastapi import (
     Form,
     Request,
 )
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -18,29 +20,20 @@ from sqlalchemy import (
     String,
     Boolean,
     DateTime,
-    text,
 )
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
-
-from datetime import datetime, date, timezone
 
 
 # ============================================================
 # CONFIG GERAL
 # ============================================================
 
-# PostgreSQL no Render (persiste dados entre reinícios)
-# Fallback para SQLite em desenvolvimento local
-DATABASE_URL = os.environ.get(
-    "DATABASE_URL",
-    "sqlite:///./prioriza.db"
-)
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./prioriza.db")
 
-# Render fornece URLs que começam com "postgres://" — SQLAlchemy exige "postgresql://"
+# Render costuma fornecer postgres://, mas o SQLAlchemy espera postgresql://
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# Argumentos de conexão específicos para SQLite (não se aplica ao PostgreSQL)
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
@@ -49,7 +42,6 @@ Base = declarative_base()
 
 app = FastAPI(title="PRIORIZA API")
 
-# CORS liberado (ajuste allow_origins para produção)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -60,89 +52,89 @@ app.add_middleware(
 
 
 # ============================================================
-# MODELOS SQLALCHEMY
+# MODELOS
 # ============================================================
 
 class Tarefa(Base):
     __tablename__ = "tarefas"
 
-    id           = Column(Integer, primary_key=True, index=True)
-    titulo       = Column(String, nullable=False)
-    origem       = Column(String, default="")
-    data         = Column(String, nullable=False)     # "YYYY-MM-DD"
-    hora_inicio  = Column(String, default="")         # "HH:MM"
-    duracao_min  = Column(Integer, default=30)
-    prioridade   = Column(Integer, default=2)
-    status       = Column(String, default="pendente")
-    ativo        = Column(Boolean, default=True)
-    criado_em    = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    id = Column(Integer, primary_key=True, index=True)
+    titulo = Column(String, nullable=False)
+    origem = Column(String, default="")
+    data = Column(String, nullable=False)       # YYYY-MM-DD
+    hora_inicio = Column(String, default="")    # HH:MM
+    duracao_min = Column(Integer, default=30)
+    prioridade = Column(Integer, default=2)
+    status = Column(String, default="pendente")
+    ativo = Column(Boolean, default=True)
+    criado_em = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     def to_dict(self):
         return {
-            "id":          self.id,
-            "titulo":      self.titulo,
-            "origem":      self.origem,
-            "data":        self.data,
+            "id": self.id,
+            "titulo": self.titulo,
+            "origem": self.origem,
+            "data": self.data,
             "hora_inicio": self.hora_inicio,
             "duracao_min": self.duracao_min,
-            "prioridade":  self.prioridade,
-            "status":      self.status,
-            "ativo":       self.ativo,
-            "criado_em":   self.criado_em.isoformat() if self.criado_em else None,
+            "prioridade": self.prioridade,
+            "status": self.status,
+            "ativo": self.ativo,
+            "criado_em": self.criado_em.isoformat() if self.criado_em else None,
         }
 
 
 class ChecklistItem(Base):
     __tablename__ = "checklist"
 
-    id                  = Column(Integer, primary_key=True, index=True)
-    titulo              = Column(String, nullable=False)
-    origem              = Column(String, default="")
-    frequencia          = Column(String, default="Semanal")
-    frequencia_interna  = Column(String, default="SEMANAL")
-    status              = Column(String, default="pendente")
-    ativo               = Column(Boolean, default=True)
-    ultimo_exec         = Column(DateTime, nullable=True)
-    criado_em           = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    id = Column(Integer, primary_key=True, index=True)
+    titulo = Column(String, nullable=False)
+    origem = Column(String, default="")
+    frequencia = Column(String, default="Semanal")
+    frequencia_interna = Column(String, default="SEMANAL")
+    status = Column(String, default="pendente")
+    ativo = Column(Boolean, default=True)
+    ultimo_exec = Column(DateTime, nullable=True)
+    criado_em = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     def to_dict(self, incluir_pode_hoje: bool = False):
         d = {
-            "id":                 self.id,
-            "titulo":             self.titulo,
-            "origem":             self.origem,
-            "frequencia":         self.frequencia,
+            "id": self.id,
+            "titulo": self.titulo,
+            "origem": self.origem,
+            "frequencia": self.frequencia,
             "frequencia_interna": self.frequencia_interna,
-            "status":             self.status,
-            "ativo":              self.ativo,
-            "ultimo_exec":        self.ultimo_exec.isoformat() if self.ultimo_exec else None,
-            "criado_em":          self.criado_em.isoformat() if self.criado_em else None,
+            "status": self.status,
+            "ativo": self.ativo,
+            "ultimo_exec": self.ultimo_exec.isoformat() if self.ultimo_exec else None,
+            "criado_em": self.criado_em.isoformat() if self.criado_em else None,
         }
         if incluir_pode_hoje:
-            d["pode_mostrar_hoje"]   = calcular_pode_mostrar_hoje(self)
-            d["proxima_execucao"]    = calcular_proxima_execucao(self)
-            d["dias_para_proxima"]   = calcular_dias_para_proxima(self)
+            d["pode_mostrar_hoje"] = calcular_pode_mostrar_hoje(self)
+            d["proxima_execucao"] = calcular_proxima_execucao(self)
+            d["dias_para_proxima"] = calcular_dias_para_proxima(self)
         return d
 
 
 class Note(Base):
     __tablename__ = "notes"
 
-    id         = Column(Integer, primary_key=True, index=True)
-    texto      = Column(String, nullable=False)
-    data       = Column(String, default="")   # "YYYY-MM-DD" opcional
-    tipo       = Column(String, default="GERAL")
-    status     = Column(String, default="pendente")
-    ativo      = Column(Boolean, default=True)
+    id = Column(Integer, primary_key=True, index=True)
+    texto = Column(String, nullable=False)
+    data = Column(String, default="")
+    tipo = Column(String, default="GERAL")
+    status = Column(String, default="pendente")
+    ativo = Column(Boolean, default=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     def to_dict(self):
         return {
-            "id":         self.id,
-            "texto":      self.texto,
-            "data":       self.data,
-            "tipo":       self.tipo,
-            "status":     self.status,
-            "ativo":      self.ativo,
+            "id": self.id,
+            "texto": self.texto,
+            "data": self.data,
+            "tipo": self.tipo,
+            "status": self.status,
+            "ativo": self.ativo,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 
@@ -154,6 +146,7 @@ class Note(Base):
 def init_db():
     Base.metadata.create_all(bind=engine)
 
+
 def get_db():
     db = SessionLocal()
     try:
@@ -161,15 +154,15 @@ def get_db():
     finally:
         db.close()
 
+
 init_db()
 
 
 # ============================================================
-# HELPERS DE DATA
+# HELPERS
 # ============================================================
 
 def validar_data_iso(data_str: str) -> bool:
-    """Valida se a string está no formato YYYY-MM-DD."""
     try:
         datetime.strptime(data_str.strip(), "%Y-%m-%d")
         return True
@@ -177,14 +170,12 @@ def validar_data_iso(data_str: str) -> bool:
         return False
 
 
-# ============================================================
-# LÓGICA DE FREQUÊNCIA DO CHECKLIST
-# ============================================================
-
 def normalizar_frequencia_interna(freq: str) -> str:
     if not freq:
         return "SEMANAL"
+
     f = freq.strip().lower()
+
     if "único" in f or "unico" in f or "pontual" in f or "esporádico" in f or "esporadico" in f:
         return "UNICO"
     if "dia" in f:
@@ -201,20 +192,20 @@ def normalizar_frequencia_interna(freq: str) -> str:
         return "ANUAL"
     if "mes" in f:
         return "MENSAL"
+
     return "SEMANAL"
 
 
 def _intervalo_dias(freq_interna: str) -> int:
-    """Retorna o intervalo em dias para cada frequência."""
     mapa = {
-        "DIARIA":      1,
-        "SEMANAL":     7,
-        "MENSAL":      30,
-        "BIMESTRAL":   60,
-        "TRIMESTRAL":  90,
-        "SEMESTRAL":   180,
-        "ANUAL":       365,
-        "UNICO":       999999,  # Único: aparece uma vez, nunca reaparece após feito
+        "DIARIA": 1,
+        "SEMANAL": 7,
+        "MENSAL": 30,
+        "BIMESTRAL": 60,
+        "TRIMESTRAL": 90,
+        "SEMESTRAL": 180,
+        "ANUAL": 365,
+        "UNICO": 999999,
     }
     return mapa.get((freq_interna or "SEMANAL").upper(), 7)
 
@@ -223,7 +214,6 @@ def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
     if not item.ativo:
         return False
 
-    # Frequência ÚNICO: aparece apenas se nunca foi executado
     if (item.frequencia_interna or "").upper() == "UNICO":
         return item.ultimo_exec is None and item.status != "feito"
 
@@ -241,26 +231,26 @@ def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
 
 
 def calcular_proxima_execucao(item: ChecklistItem) -> str | None:
-    """Retorna a data da próxima execução no formato YYYY-MM-DD."""
+    from datetime import timedelta
+
     if (item.frequencia_interna or "").upper() == "UNICO":
         return None if item.ultimo_exec else date.today().isoformat()
 
     if item.ultimo_exec is None:
         return date.today().isoformat()
 
-    from datetime import timedelta
     proxima = item.ultimo_exec.date() + timedelta(days=_intervalo_dias(item.frequencia_interna))
     return proxima.isoformat()
 
 
 def calcular_dias_para_proxima(item: ChecklistItem) -> int:
-    """Retorna quantos dias faltam para a próxima execução (negativo = atrasado)."""
     if (item.frequencia_interna or "").upper() == "UNICO":
         return 0
+
     proxima_str = calcular_proxima_execucao(item)
     if not proxima_str:
         return 0
-    from datetime import timedelta
+
     proxima = date.fromisoformat(proxima_str)
     return (proxima - date.today()).days
 
@@ -269,11 +259,15 @@ def calcular_dias_para_proxima(item: ChecklistItem) -> int:
 # STATIC / FRONT
 # ============================================================
 
-# Cria pasta static se não existir
 if not os.path.exists("static"):
     os.makedirs("static")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+@app.get("/")
+def root():
+    return RedirectResponse(url="/app")
 
 
 @app.get("/app")
@@ -281,62 +275,54 @@ def serve_app():
     return FileResponse("index.html")
 
 
-@app.get("/")
-def root():
-    return {"message": "PRIORIZA API ONLINE"}
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 
 # ============================================================
-# ROTA RESUMO / DASHBOARD
+# RESUMO
 # ============================================================
 
 @app.get("/resumo")
 def resumo(
-    data_ref: str = Query(None, description="Data de referência YYYY-MM-DD (opcional; padrão = hoje no servidor)"),
-    db: Session = Depends(get_db)
+    data_ref: str = Query(None, description="Data de referência YYYY-MM-DD"),
+    db: Session = Depends(get_db),
 ):
-    """
-    Retorna contadores para o mini-dashboard do frontend.
-    O parâmetro opcional data_ref permite que o frontend informe
-    a data local do usuário, evitando divergências de timezone.
-    """
-    if data_ref and validar_data_iso(data_ref):
-        hoje = data_ref.strip()
-    else:
-        hoje = date.today().isoformat()
+    hoje = data_ref.strip() if data_ref and validar_data_iso(data_ref) else date.today().isoformat()
 
     tarefas_hoje = db.query(Tarefa).filter(
         Tarefa.ativo == True,
-        Tarefa.data == hoje
+        Tarefa.data == hoje,
     ).all()
 
-    total_hoje      = len(tarefas_hoje)
-    feitas_hoje     = sum(1 for t in tarefas_hoje if t.status in ("feito", "concluida", "concluído"))
-    andamento_hoje  = sum(1 for t in tarefas_hoje if t.status == "em_andamento")
-    pendentes_hoje  = sum(1 for t in tarefas_hoje if t.status == "pendente")
+    total_hoje = len(tarefas_hoje)
+    feitas_hoje = sum(1 for t in tarefas_hoje if t.status in ("feito", "concluida", "concluído"))
+    andamento_hoje = sum(1 for t in tarefas_hoje if t.status == "em_andamento")
+    pendentes_hoje = sum(1 for t in tarefas_hoje if t.status == "pendente")
 
     checklist_itens = db.query(ChecklistItem).filter(ChecklistItem.ativo == True).all()
     chk_disponiveis = sum(1 for i in checklist_itens if calcular_pode_mostrar_hoje(i))
-    chk_feitos      = sum(1 for i in checklist_itens if calcular_pode_mostrar_hoje(i) and i.status == "feito")
+    chk_feitos = sum(1 for i in checklist_itens if calcular_pode_mostrar_hoje(i) and i.status == "feito")
 
     notas_pendentes = db.query(Note).filter(
         Note.ativo == True,
-        Note.status == "pendente"
+        Note.status == "pendente",
     ).count()
 
     return {
-        "tarefas_hoje":     total_hoje,
-        "feitas_hoje":      feitas_hoje,
-        "andamento_hoje":   andamento_hoje,
-        "pendentes_hoje":   pendentes_hoje,
-        "chk_disponiveis":  chk_disponiveis,
-        "chk_feitos":       chk_feitos,
-        "notas_pendentes":  notas_pendentes,
+        "tarefas_hoje": total_hoje,
+        "feitas_hoje": feitas_hoje,
+        "andamento_hoje": andamento_hoje,
+        "pendentes_hoje": pendentes_hoje,
+        "chk_disponiveis": chk_disponiveis,
+        "chk_feitos": chk_feitos,
+        "notas_pendentes": notas_pendentes,
     }
 
 
 # ============================================================
-# ROTAS TAREFAS / AGENDA
+# TAREFAS
 # ============================================================
 
 @app.get("/tarefas")
@@ -352,7 +338,6 @@ def listar_tarefas(db: Session = Depends(get_db)):
 
 @app.get("/agenda/hoje")
 def tarefas_hoje(db: Session = Depends(get_db)):
-    """Retorna apenas as tarefas do dia atual."""
     hoje = date.today().isoformat()
     tarefas = (
         db.query(Tarefa)
@@ -370,39 +355,33 @@ async def criar_tarefa(
 ):
     q = request.query_params
 
-    titulo      = q.get("titulo")
-    origem      = q.get("origem")
-    data_str    = q.get("data")
+    titulo = q.get("titulo")
+    origem = q.get("origem")
+    data_str = q.get("data")
     hora_inicio = q.get("hora_inicio")
     duracao_min = q.get("duracao_min")
-    prioridade  = q.get("prioridade")
+    prioridade = q.get("prioridade")
 
     if not titulo:
         try:
-            form        = await request.form()
-            titulo      = form.get("titulo")
-            origem      = form.get("origem")
-            data_str    = form.get("data")
+            form = await request.form()
+            titulo = form.get("titulo")
+            origem = form.get("origem")
+            data_str = form.get("data")
             hora_inicio = form.get("hora_inicio")
             duracao_min = form.get("duracao_min")
-            prioridade  = form.get("prioridade")
+            prioridade = form.get("prioridade")
         except Exception:
             pass
 
     if not titulo or not data_str:
-        raise HTTPException(
-            status_code=400,
-            detail="É obrigatório informar pelo menos título e data.",
-        )
+        raise HTTPException(status_code=400, detail="É obrigatório informar pelo menos título e data.")
 
     data_str = data_str.strip()
     if not validar_data_iso(data_str):
-        raise HTTPException(
-            status_code=400,
-            detail="Formato de data inválido. Use YYYY-MM-DD.",
-        )
+        raise HTTPException(status_code=400, detail="Formato de data inválido. Use YYYY-MM-DD.")
 
-    origem      = (origem or "").strip()
+    origem = (origem or "").strip()
     hora_inicio = (hora_inicio or "").strip()
 
     try:
@@ -418,14 +397,14 @@ async def criar_tarefa(
         prioridade_val = 2
 
     tarefa = Tarefa(
-        titulo      = titulo.strip(),
-        origem      = origem,
-        data        = data_str,
-        hora_inicio = hora_inicio,
-        duracao_min = duracao_val,
-        prioridade  = prioridade_val,
-        status      = "pendente",
-        ativo       = True,
+        titulo=titulo.strip(),
+        origem=origem,
+        data=data_str,
+        hora_inicio=hora_inicio,
+        duracao_min=duracao_val,
+        prioridade=prioridade_val,
+        status="pendente",
+        ativo=True,
     )
     db.add(tarefa)
     db.commit()
@@ -439,14 +418,12 @@ async def editar_tarefa(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    """Edita uma tarefa existente."""
     tarefa = db.query(Tarefa).filter(Tarefa.id == tarefa_id, Tarefa.ativo == True).first()
     if not tarefa:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada.")
 
     q = request.query_params
 
-    # Tenta parsear o body como form-data; ignora silenciosamente se não houver body
     try:
         form = await request.form()
     except Exception:
@@ -455,13 +432,13 @@ async def editar_tarefa(
     def pegar(campo):
         return q.get(campo) or (form.get(campo) if hasattr(form, "get") else None)
 
-    titulo      = pegar("titulo")
-    origem      = pegar("origem")
-    data_str    = pegar("data")
+    titulo = pegar("titulo")
+    origem = pegar("origem")
+    data_str = pegar("data")
     hora_inicio = pegar("hora_inicio")
     duracao_min = pegar("duracao_min")
-    prioridade  = pegar("prioridade")
-    status      = pegar("status")
+    prioridade = pegar("prioridade")
+    status = pegar("status")
 
     if titulo:
         tarefa.titulo = titulo.strip()
@@ -507,7 +484,7 @@ def excluir_tarefa(
 
 
 # ============================================================
-# ROTAS CHECKLIST
+# CHECKLIST
 # ============================================================
 
 @app.get("/checklist")
@@ -523,24 +500,24 @@ def listar_checklist(db: Session = Depends(get_db)):
 
 @app.post("/checklist_criar")
 def criar_checklist_item(
-    titulo:     str = Query(...),
-    origem:     str = Query(""),
+    titulo: str = Query(...),
+    origem: str = Query(""),
     frequencia: str = Query("Semanal"),
     db: Session = Depends(get_db),
 ):
-    titulo       = titulo.strip()
-    origem       = (origem or "").strip()
-    freq         = (frequencia or "Semanal").strip()
+    titulo = titulo.strip()
+    origem = (origem or "").strip()
+    freq = (frequencia or "Semanal").strip()
     freq_interna = normalizar_frequencia_interna(freq)
 
     item = ChecklistItem(
-        titulo             = titulo,
-        origem             = origem,
-        frequencia         = freq,
-        frequencia_interna = freq_interna,
-        status             = "pendente",
-        ativo              = True,
-        ultimo_exec        = None,
+        titulo=titulo,
+        origem=origem,
+        frequencia=freq,
+        frequencia_interna=freq_interna,
+        status="pendente",
+        ativo=True,
+        ultimo_exec=None,
     )
     db.add(item)
     db.commit()
@@ -550,13 +527,12 @@ def criar_checklist_item(
 
 @app.put("/checklist/{item_id}")
 def editar_checklist_item(
-    item_id:    int,
-    titulo:     str = Query(None),
-    origem:     str = Query(None),
+    item_id: int,
+    titulo: str = Query(None),
+    origem: str = Query(None),
     frequencia: str = Query(None),
     db: Session = Depends(get_db),
 ):
-    """Edita um item de checklist existente."""
     item = db.query(ChecklistItem).filter(ChecklistItem.id == item_id, ChecklistItem.ativo == True).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item não encontrado.")
@@ -567,7 +543,7 @@ def editar_checklist_item(
         item.origem = origem.strip()
     if frequencia is not None:
         freq = frequencia.strip()
-        item.frequencia         = freq
+        item.frequencia = freq
         item.frequencia_interna = normalizar_frequencia_interna(freq)
 
     db.commit()
@@ -578,7 +554,7 @@ def editar_checklist_item(
 @app.post("/checklist_status")
 def alterar_status_checklist(
     item_id: int = Query(...),
-    status:  str = Query(...),
+    status: str = Query(...),
     db: Session = Depends(get_db),
 ):
     item = db.query(ChecklistItem).filter(ChecklistItem.id == item_id).first()
@@ -604,7 +580,6 @@ def resetar_status_checklist(
     item_id: int = Query(...),
     db: Session = Depends(get_db),
 ):
-    """Reseta o status de um item para 'pendente' quando a próxima execução chegou."""
     item = db.query(ChecklistItem).filter(ChecklistItem.id == item_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item não encontrado.")
@@ -629,7 +604,7 @@ def excluir_checklist_item(
 
 
 # ============================================================
-# ROTAS NOTAS
+# NOTAS
 # ============================================================
 
 @app.get("/notes")
@@ -646,23 +621,23 @@ def listar_notas(db: Session = Depends(get_db)):
 @app.post("/notes")
 def criar_nota(
     texto: str = Form(...),
-    data:  str = Form(""),
-    tipo:  str = Form("GERAL"),
+    data: str = Form(""),
+    tipo: str = Form("GERAL"),
     db: Session = Depends(get_db),
 ):
-    texto    = texto.strip()
-    tipo     = (tipo or "GERAL").strip().upper()
+    texto = texto.strip()
+    tipo = (tipo or "GERAL").strip().upper()
     data_str = (data or "").strip()
 
     if data_str and not validar_data_iso(data_str):
         raise HTTPException(status_code=400, detail="Formato de data inválido. Use YYYY-MM-DD.")
 
     nota = Note(
-        texto  = texto,
-        data   = data_str,
-        tipo   = tipo,
-        status = "pendente",
-        ativo  = True,
+        texto=texto,
+        data=data_str,
+        tipo=tipo,
+        status="pendente",
+        ativo=True,
     )
     db.add(nota)
     db.commit()
@@ -673,12 +648,11 @@ def criar_nota(
 @app.put("/notes/{note_id}")
 def editar_nota(
     note_id: int,
-    texto:   str = Query(None),
-    data:    str = Query(None),
-    tipo:    str = Query(None),
+    texto: str = Query(None),
+    data: str = Query(None),
+    tipo: str = Query(None),
     db: Session = Depends(get_db),
 ):
-    """Edita uma nota existente."""
     nota = db.query(Note).filter(Note.id == note_id, Note.ativo == True).first()
     if not nota:
         raise HTTPException(status_code=404, detail="Nota não encontrada.")
@@ -701,15 +675,17 @@ def editar_nota(
 @app.post("/notes_status")
 def alterar_status_nota(
     note_id: int = Query(...),
-    status:  str = Query(...),
+    status: str = Query(...),
     db: Session = Depends(get_db),
 ):
     nota = db.query(Note).filter(Note.id == note_id).first()
     if not nota:
         raise HTTPException(status_code=404, detail="Nota não encontrada.")
+
     novo = (status or "").strip().lower()
     if novo not in ("pendente", "feito"):
         novo = "pendente"
+
     nota.status = novo
     db.commit()
     db.refresh(nota)
@@ -724,6 +700,18 @@ def excluir_nota(
     nota = db.query(Note).filter(Note.id == note_id).first()
     if not nota:
         raise HTTPException(status_code=404, detail="Nota não encontrada.")
+
     nota.ativo = False
     db.commit()
     return {"ok": True}
+
+
+# ============================================================
+# RODAR LOCALMENTE
+# ============================================================
+
+if __name__ == "__main__":
+    import uvicorn
+
+    port = int(os.environ.get("PORT", 5000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
