@@ -263,6 +263,11 @@ if not os.path.exists("static"):
     os.makedirs("static")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+from fastapi.responses import FileResponse
+
+@app.get("/favicon.ico")
+def favicon():
+    return FileResponse("favicon.ico")
 
 @app.get("/health")
 def health():
