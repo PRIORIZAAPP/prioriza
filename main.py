@@ -264,7 +264,10 @@ if not os.path.exists("static"):
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+    
 @app.get("/")
 def root():
     return RedirectResponse(url="/app")
