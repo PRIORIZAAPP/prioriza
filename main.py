@@ -283,11 +283,6 @@ def serve_app():
     return FileResponse("index.html")
 
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
-
-
 # ============================================================
 # RESUMO
 # ============================================================
