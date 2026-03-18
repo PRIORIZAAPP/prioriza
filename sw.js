@@ -1,14 +1,25 @@
 // ============================================================
-// PRIORIZA — Service Worker (PWA + Web Push)  F10
+// PRIORIZA — Service Worker (PWA + Web Push)
 // ============================================================
 
-const CACHE_NAME = "prioriza-v1";
+const CACHE_NAME = "prioriza-v2";
 const OFFLINE_URL = "/app";
 
-// ── Instalação: pré-cache da página principal ──
+const FILES_TO_CACHE = [
+  "/app",
+  "/favicon.ico",
+  "/icon-16x16.png",
+  "/icon-32x32.png",
+  "/icon-180x180.png",
+  "/icon-192x192.png",
+  "/icon-512x512.png",
+  "/site.webmanifest"
+];
+
+// ── Instalação: pré-cache ──
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.add(OFFLINE_URL))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
   );
   self.skipWaiting();
 });
@@ -17,40 +28,54 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      )
     )
   );
   self.clients.claim();
 });
 
-// ── Fetch: serve do cache se offline ──
+// ── Fetch: usa rede e cai para cache se offline ──
 self.addEventListener("fetch", event => {
   if (event.request.mode === "navigate") {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(OFFLINE_URL))
     );
+    return;
   }
+
+  event.respondWith(
+    caches.match(event.request).then(response => response || fetch(event.request))
+  );
 });
 
 // ── Push: recebe e exibe notificação ──
 self.addEventListener("push", event => {
-  let data = { title: "PRIORIZA", body: "Você tem tarefas pendentes!", url: "/app" };
+  let data = {
+    title: "PRIORIZA",
+    body: "Você tem tarefas pendentes!",
+    url: "/app"
+  };
+
   try {
     if (event.data) {
       data = JSON.parse(event.data.text());
     }
-  } catch (e) {}
+  } catch (e) {
+    console.log("Push com payload inválido.");
+  }
 
   const options = {
     body: data.body || "",
-    icon: "/static/prioriza-logo.png",
-    badge: "/static/prioriza-logo.png",
+    icon: "/icon-192x192.png",
+    badge: "/icon-192x192.png",
     vibrate: [100, 50, 100],
     data: { url: data.url || "/app" },
     actions: [
-      { action: "open",    title: "Abrir app" },
-      { action: "dismiss", title: "Dispensar" },
-    ],
+      { action: "open", title: "Abrir app" },
+      { action: "dismiss", title: "Dispensar" }
+    ]
   };
 
   event.waitUntil(
@@ -67,13 +92,15 @@ self.addEventListener("notificationclick", event => {
   const targetUrl = (event.notification.data && event.notification.data.url) || "/app";
 
   event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
-      for (const client of list) {
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then(clientList => {
+      for (const client of clientList) {
         if (client.url.includes(targetUrl) && "focus" in client) {
           return client.focus();
         }
       }
-      if (clients.openWindow) return clients.openWindow(targetUrl);
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
     })
   );
 });
