@@ -472,6 +472,36 @@ async def editar_tarefa(
     db.refresh(tarefa)
     return tarefa.to_dict()
 
+from fastapi import HTTPException
+
+@app.post("/tarefas_editar")
+def editar_tarefa(
+    tarefa_id: int,
+    titulo: str,
+    origem: str = "",
+    data: str = "",
+    hora_inicio: str = "",
+    duracao_min: int = 60,
+    prioridade: int = 2,
+    db: Session = Depends(get_db)
+):
+    tarefa = db.query(Tarefa).filter(Tarefa.id == tarefa_id).first()
+
+    if not tarefa:
+        raise HTTPException(status_code=404, detail="Tarefa não encontrada")
+
+    tarefa.titulo = titulo
+    tarefa.origem = origem
+    tarefa.data = data
+    tarefa.hora_inicio = hora_inicio
+    tarefa.duracao_min = duracao_min
+    tarefa.prioridade = prioridade
+
+    db.commit()
+    db.refresh(tarefa)
+
+    return {"ok": True, "mensagem": "Tarefa atualizada com sucesso"}
+
 
 @app.post("/tarefas_excluir")
 def excluir_tarefa(
