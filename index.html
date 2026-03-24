@@ -116,6 +116,88 @@
       .card-header h2 { margin: 0; font-size: 16px; font-weight: 600; color: #111827; }
       .secao-subtitulo { font-size: 11px; color: #6b7280; margin-bottom: 8px; }
 
+      /* ── PESSOAL ───────────────────────────────────────────── */
+.pessoal-bloco-vazio {
+  font-size: 12px;
+  color: #6b7280;
+  padding: 6px 2px;
+}
+
+.pessoal-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.pessoal-item:last-child {
+  border-bottom: none;
+}
+
+.pessoal-datahora {
+  width: 64px;
+  flex-shrink: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #111827;
+  font-weight: 600;
+}
+
+.pessoal-conteudo {
+  flex: 1;
+  min-width: 0;
+}
+
+.pessoal-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.pessoal-acoes {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.pessoal-btn {
+  border: none;
+  background: #eef2ff;
+  color: #1f2937;
+  border-radius: 999px;
+  width: 30px;
+  height: 30px;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pessoal-btn:hover {
+  opacity: 0.9;
+}
+
+.pessoal-btn.feito {
+  background: #dcfce7;
+}
+
+.pessoal-btn.editar {
+  background: #dbeafe;
+}
+
+.pessoal-btn.excluir {
+  background: #fee2e2;
+}
+
+.pessoal-status-feito {
+  opacity: 0.7;
+  text-decoration: line-through;
+}
       /* ── SCREENS ── */
       .screen { display: none; animation: fadeIn 0.15s ease-out; }
       .screen.active { display: block; }
@@ -646,31 +728,59 @@
         </div>
 
         <!-- ══ ABA PESSOAL ══ -->
-        <div class="screen" id="screen-pessoal">
-          <div class="card">
-            <div class="card-header">
-              <!-- user-circle duotone -->
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
-                <circle cx="128" cy="128" r="96" fill="currentColor" opacity="0.2"/>
-                <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
-                <circle cx="128" cy="104" r="36" fill="currentColor" opacity="0.4"/>
-                <circle cx="128" cy="104" r="36" stroke="currentColor" stroke-width="14"/>
-                <path d="M63,212 Q64,168 128,168 Q192,168 193,212" stroke="currentColor" stroke-width="16" stroke-linecap="round" fill="none"/>
-              </svg>
-              <h2>Pessoal</h2>
-            </div>
-            <div class="secao-subtitulo">Tudo que for vida pessoal: agenda e rotinas.</div>
-            <div>
-              <h3 style="margin:4px 0;font-size:13px;color:#111827">Agenda pessoal</h3>
-              <div id="pessoal-agenda"><small>Carregando...</small></div>
-            </div>
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"/>
-            <div>
-              <h3 style="margin:4px 0;font-size:13px;color:#111827">Checklist pessoal</h3>
-              <div id="pessoal-checklist"><small>Carregando...</small></div>
-            </div>
-          </div>
-        </div>
+        <!-- ══ ABA PESSOAL ══ -->
+<div class="screen" id="screen-pessoal">
+  <div class="card">
+    <div class="card-header">
+      <!-- user-circle duotone -->
+      <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+        <circle cx="128" cy="128" r="96" fill="currentColor" opacity="0.2"/>
+        <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
+        <circle cx="128" cy="104" r="36" fill="currentColor" opacity="0.4"/>
+        <circle cx="128" cy="104" r="36" stroke="currentColor" stroke-width="14"/>
+        <path d="M63,212 Q64,168 128,168 Q192,168 193,212" stroke="currentColor" stroke-width="16" stroke-linecap="round" fill="none"/>
+      </svg>
+      <h2>Pessoal</h2>
+    </div>
+
+    <div class="secao-subtitulo">
+      Compromissos e rotinas pessoais organizados por momento.
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px; flex-wrap:wrap;">
+      <h3 style="margin:0; font-size:14px; color:#111827;">Agenda pessoal</h3>
+      <button id="btn-toggle-passados-pessoal" class="btn-secondary" type="button">
+        Mostrar passados
+      </button>
+    </div>
+
+    <div id="pessoal-hoje-box" style="margin-bottom:12px;">
+      <h4 style="margin:0 0 8px 0; font-size:13px; color:#111827;">Hoje</h4>
+      <div id="pessoal-agenda-hoje"><small>Carregando...</small></div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"/>
+
+    <div id="pessoal-proximos-box" style="margin-bottom:12px;">
+      <h4 style="margin:0 0 8px 0; font-size:13px; color:#111827;">Próximos</h4>
+      <div id="pessoal-agenda-proximos"><small>Carregando...</small></div>
+    </div>
+
+    <hr id="hr-passados-pessoal" style="border:none;border-top:1px solid #e5e7eb;margin:8px 0; display:none;"/>
+
+    <div id="pessoal-passados-box" style="display:none; margin-bottom:12px;">
+      <h4 style="margin:0 0 8px 0; font-size:13px; color:#111827;">Passados</h4>
+      <div id="pessoal-agenda-passados"><small>Nenhum compromisso passado.</small></div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"/>
+
+    <div>
+      <h3 style="margin:4px 0 8px 0;font-size:14px;color:#111827">Checklist pessoal</h3>
+      <div id="pessoal-checklist"><small>Carregando...</small></div>
+    </div>
+  </div>
+</div>
 
         <!-- ══ ABA NOTAS ══ -->
         <div class="screen" id="screen-notas">
@@ -890,6 +1000,8 @@
       return normalizarDataParaISO(d)===iso;
     }
 
+      let mostrarPassadosPessoal = false;
+      
     function ehStatusFeito(s) {
       if (!s) return false;
       return ["concluida","concluído","reagendada_confirmada","reagendada_manual","feito"].includes(s.toLowerCase());
@@ -1325,52 +1437,255 @@
     }
 
     // ── ABA PESSOAL ───────────────────────────────────────────────
-    async function carregarPessoalLista() {
-      const dA=document.getElementById("pessoal-agenda"); const dC=document.getElementById("pessoal-checklist");
-      try {
-        const resT=await fetch(API+"/tarefas",{headers:authHeaders()});
-        let tarefas=(await resT.json());
-        tarefas=(Array.isArray(tarefas)?tarefas:[]).filter(t=>(t.origem||"").toUpperCase()==="PESSOAL");
+   async function carregarPessoalLista() {
+  const hojeDiv      = document.getElementById("pessoal-agenda-hoje");
+  const proximosDiv  = document.getElementById("pessoal-agenda-proximos");
+  const passadosDiv  = document.getElementById("pessoal-agenda-passados");
+  const checklistDiv = document.getElementById("pessoal-checklist");
+  const boxPassados  = document.getElementById("pessoal-passados-box");
+  const hrPassados   = document.getElementById("hr-passados-pessoal");
+  const btnToggle    = document.getElementById("btn-toggle-passados-pessoal");
 
-        if (tarefas.length===0){dA.innerHTML="<small>Nenhum compromisso pessoal.</small>";}
-        else {
-          tarefas.sort((a,b)=>{ const da=normalizarDataParaISO(a.data||""),db=normalizarDataParaISO(b.data||""); return da!==db?da.localeCompare(db):(a.hora_inicio||"").localeCompare(b.hora_inicio||""); });
-          dA.innerHTML="";
-          tarefas.forEach(t=>{
-            const item=document.createElement("div"); item.className="agenda-item";
-            const data=normalizarDataParaISO(t.data||""); const dataBR=data?formatarDataCurtaBR(data):"--/--";
-            const hor=document.createElement("div"); hor.className="agenda-horario"; hor.innerHTML=`${textoSeguro(dataBR)}<br>${textoSeguro(t.hora_inicio||"--:--")}`;
-            const con=document.createElement("div"); con.className="agenda-conteudo";
-            const ti=document.createElement("div"); ti.className="agenda-titulo"; ti.textContent=t.titulo;
-            con.appendChild(ti); con.insertAdjacentHTML("beforeend",`<span class="agenda-tag pessoal">Pessoal</span>`);
-            item.appendChild(hor); item.appendChild(con); dA.appendChild(item);
-          });
-        }
+  function compararDataHora(a, b) {
+    const da = normalizarDataParaISO(a.data || "");
+    const db = normalizarDataParaISO(b.data || "");
+    if (da !== db) return da.localeCompare(db);
+    return (a.hora_inicio || "").localeCompare(b.hora_inicio || "");
+  }
 
-        const resC=await fetch(API+"/checklist",{headers:authHeaders()});
-        let itens=(await resC.json());
-        itens=(Array.isArray(itens)?itens:[]).filter(i=>i.ativo!==false&&(i.origem||"").toUpperCase()==="PESSOAL");
+  function dataHoraJaPassou(t) {
+    const data = normalizarDataParaISO(t.data || "");
+    if (!data) return false;
 
-        if (itens.length===0){dC.innerHTML="<small>Nenhuma rotina pessoal.</small>";}
-        else {
-          dC.innerHTML="";
-          itens.forEach(item=>{
-            const status=item.status||"pendente";
-            const div=document.createElement("div"); div.className="checklist-item pessoal";
-            const bolinha=document.createElement("div"); bolinha.className=`check-status ${status}`; bolinha.dataset.status=status;
-            if(status==="feito")        bolinha.innerHTML=`<svg width="11" height="11" viewBox="0 0 256 256" fill="none"><polyline points="48,128 104,184 208,72" stroke="white" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-            if(status==="em_andamento") bolinha.innerHTML=`<svg width="11" height="11" viewBox="0 0 256 256" fill="none"><circle cx="128" cy="128" r="80" stroke="#f97316" stroke-width="28"/><line x1="128" y1="80" x2="128" y2="128" stroke="#f97316" stroke-width="28" stroke-linecap="round"/><line x1="128" y1="128" x2="162" y2="154" stroke="#f97316" stroke-width="28" stroke-linecap="round"/></svg>`;
-            const info=document.createElement("div"); info.className="check-info";
-            const tituloEl=document.createElement("div"); tituloEl.className="check-titulo"; tituloEl.textContent=item.titulo;
-            const sub=document.createElement("div"); sub.className="check-sub"; sub.textContent=`${item.frequencia} · ${item.origem}`;
-            info.appendChild(tituloEl); info.appendChild(sub); div.appendChild(bolinha); div.appendChild(info);
-            bolinha.addEventListener("click", async()=>{ const atual=bolinha.dataset.status||"pendente"; const novo=proximoStatus(atual); await atualizarStatusChecklist(item.id,novo); await carregarChecklistHoje(); await carregarChecklistGeral(); await carregarPessoalLista(); await atualizarResumoBar(); });
-            dC.appendChild(div);
-          });
-        }
-      } catch(e){console.error(e); dA.innerHTML="<small>Erro.</small>"; dC.innerHTML="<small>Erro.</small>";}
+    const agora = new Date();
+    const hora = (t.hora_inicio || "00:00").split(":");
+    const dt = new Date(
+      Number(data.slice(0, 4)),
+      Number(data.slice(5, 7)) - 1,
+      Number(data.slice(8, 10)),
+      Number(hora[0] || 0),
+      Number(hora[1] || 0),
+      0
+    );
+
+    return dt < agora && !dataEhHoje(data);
+  }
+
+  function renderBlocoAgenda(container, itens, vazioTexto) {
+    if (!container) return;
+    if (!itens.length) {
+      container.innerHTML = `<div class="pessoal-bloco-vazio">${vazioTexto}</div>`;
+      return;
     }
 
+    container.innerHTML = "";
+
+    itens.forEach(t => {
+      const item = document.createElement("div");
+      item.className = "pessoal-item";
+
+      const data = normalizarDataParaISO(t.data || "");
+      const dataBR = data ? formatarDataCurtaBR(data) : "--/--";
+      const hora = t.hora_inicio || "--:--";
+
+      const dataHora = document.createElement("div");
+      dataHora.className = "pessoal-datahora";
+      dataHora.innerHTML = `${textoSeguro(dataBR)}<br>${textoSeguro(hora)}`;
+
+      const conteudo = document.createElement("div");
+      conteudo.className = "pessoal-conteudo";
+
+      const titulo = document.createElement("div");
+      titulo.className = "pessoal-titulo" + (ehStatusFeito(t.status) ? " pessoal-status-feito" : "");
+      titulo.textContent = t.titulo;
+
+      const tags = document.createElement("div");
+      tags.innerHTML = `<span class="agenda-tag pessoal">Pessoal</span>`;
+
+      conteudo.appendChild(titulo);
+      conteudo.appendChild(tags);
+
+      const acoes = document.createElement("div");
+      acoes.className = "pessoal-acoes";
+
+      const btnFeito = document.createElement("button");
+      btnFeito.className = "pessoal-btn feito";
+      btnFeito.type = "button";
+      btnFeito.title = "Marcar como feito";
+      btnFeito.textContent = "✔";
+      btnFeito.addEventListener("click", async () => {
+        const novoStatus = ehStatusFeito(t.status) ? "pendente" : "feito";
+        const ok = await atualizarStatusTarefa(t.id, novoStatus);
+        if (ok) {
+          await carregarAgendaHoje();
+          await atualizarAgendaMesEDia();
+          await carregarPessoalLista();
+        }
+      });
+
+      const btnEditar = document.createElement("button");
+      btnEditar.className = "pessoal-btn editar";
+      btnEditar.type = "button";
+      btnEditar.title = "Editar";
+      btnEditar.textContent = "✏";
+      btnEditar.addEventListener("click", async () => {
+        const novoTitulo = await modal.perguntar("Editar título do compromisso:", "Editar compromisso", t.titulo || "");
+        if (novoTitulo === null || !novoTitulo.trim()) return;
+
+        try {
+          const params = new URLSearchParams({
+            tarefa_id: String(t.id),
+            titulo: novoTitulo.trim(),
+            origem: t.origem || "PESSOAL",
+            data: normalizarDataParaISO(t.data || ""),
+            hora_inicio: t.hora_inicio || "00:00",
+            duracao_min: String(t.duracao_min || 60),
+            prioridade: String(t.prioridade || 2)
+          });
+
+          const res = await fetch(API + "/tarefas_editar?" + params.toString(), {
+            method: "POST",
+            headers: authHeaders()
+          });
+
+          if (!res.ok) {
+            await modal.alerta("Não foi possível editar o compromisso.", "Erro");
+            return;
+          }
+
+          await carregarAgendaHoje();
+          await atualizarAgendaMesEDia();
+          await carregarPessoalLista();
+        } catch (e) {
+          console.error(e);
+          await modal.alerta("Erro ao editar compromisso.", "Erro");
+        }
+      });
+
+      const btnExcluir = document.createElement("button");
+      btnExcluir.className = "pessoal-btn excluir";
+      btnExcluir.type = "button";
+      btnExcluir.title = "Excluir";
+      btnExcluir.textContent = "🗑";
+      btnExcluir.addEventListener("click", async () => {
+        if (!await modal.confirmar(`Excluir "${t.titulo}"?`, "Excluir compromisso", "vermelho")) return;
+        await excluirTarefa(t.id);
+        await carregarAgendaHoje();
+        await atualizarAgendaMesEDia();
+        await carregarPessoalLista();
+      });
+
+      acoes.appendChild(btnFeito);
+      acoes.appendChild(btnEditar);
+      acoes.appendChild(btnExcluir);
+
+      item.appendChild(dataHora);
+      item.appendChild(conteudo);
+      item.appendChild(acoes);
+
+      container.appendChild(item);
+    });
+  }
+
+  try {
+    // ── AGENDA PESSOAL ──
+    const resT = await fetch(API + "/tarefas", { headers: authHeaders() });
+    let tarefas = await resT.json();
+
+    tarefas = (Array.isArray(tarefas) ? tarefas : []).filter(
+      t => (t.origem || "").toUpperCase() === "PESSOAL" && t.ativo !== false
+    );
+
+    tarefas.sort(compararDataHora);
+
+    const hojeItens = tarefas.filter(t => dataEhHoje(t.data || ""));
+    const proximosItens = tarefas.filter(t => {
+      const d = normalizarDataParaISO(t.data || "");
+      return d && d > dataHojeISO();
+    });
+    const passadosItens = tarefas.filter(t => dataHoraJaPassou(t));
+
+    renderBlocoAgenda(hojeDiv, hojeItens, "Nenhum compromisso pessoal para hoje.");
+    renderBlocoAgenda(proximosDiv, proximosItens, "Nenhum próximo compromisso pessoal.");
+
+    if (mostrarPassadosPessoal) {
+      boxPassados.style.display = "block";
+      hrPassados.style.display = "block";
+      btnToggle.textContent = "Ocultar passados";
+      renderBlocoAgenda(passadosDiv, passadosItens, "Nenhum compromisso passado.");
+    } else {
+      boxPassados.style.display = "none";
+      hrPassados.style.display = "none";
+      btnToggle.textContent = "Mostrar passados";
+    }
+
+    // ── CHECKLIST PESSOAL ──
+    const resC = await fetch(API + "/checklist", { headers: authHeaders() });
+    let itens = await resC.json();
+
+    itens = (Array.isArray(itens) ? itens : []).filter(
+      i => i.ativo !== false && (i.origem || "").toUpperCase() === "PESSOAL"
+    );
+
+    if (itens.length === 0) {
+      checklistDiv.innerHTML = "<small>Nenhuma rotina pessoal.</small>";
+    } else {
+      checklistDiv.innerHTML = "";
+      itens.forEach(item => {
+        const status = item.status || "pendente";
+
+        const div = document.createElement("div");
+        div.className = "checklist-item pessoal";
+
+        const bolinha = document.createElement("div");
+        bolinha.className = `check-status ${status}`;
+        bolinha.dataset.status = status;
+
+        if (status === "feito") {
+          bolinha.innerHTML = `<svg width="11" height="11" viewBox="0 0 256 256" fill="none"><polyline points="48,128 104,184 208,72" stroke="white" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        }
+        if (status === "em_andamento") {
+          bolinha.innerHTML = `<svg width="11" height="11" viewBox="0 0 256 256" fill="none"><circle cx="128" cy="128" r="80" stroke="#f97316" stroke-width="28"/><line x1="128" y1="80" x2="128" y2="128" stroke="#f97316" stroke-width="28" stroke-linecap="round"/><line x1="128" y1="128" x2="162" y2="154" stroke="#f97316" stroke-width="28" stroke-linecap="round"/></svg>`;
+        }
+
+        const info = document.createElement("div");
+        info.className = "check-info";
+
+        const tituloEl = document.createElement("div");
+        tituloEl.className = "check-titulo";
+        tituloEl.textContent = item.titulo;
+
+        const sub = document.createElement("div");
+        sub.className = "check-sub";
+        sub.textContent = `${item.frequencia} · ${item.origem}`;
+
+        info.appendChild(tituloEl);
+        info.appendChild(sub);
+
+        div.appendChild(bolinha);
+        div.appendChild(info);
+
+        bolinha.addEventListener("click", async () => {
+          const atual = bolinha.dataset.status || "pendente";
+          const novo = proximoStatus(atual);
+          await atualizarStatusChecklist(item.id, novo);
+          await carregarChecklistHoje();
+          await carregarChecklistGeral();
+          await carregarPessoalLista();
+          await atualizarResumoBar();
+        });
+
+        checklistDiv.appendChild(div);
+      });
+    }
+  } catch (e) {
+    console.error(e);
+    if (hojeDiv) hojeDiv.innerHTML = "<small>Erro ao carregar agenda pessoal.</small>";
+    if (proximosDiv) proximosDiv.innerHTML = "<small>Erro ao carregar agenda pessoal.</small>";
+    if (passadosDiv) passadosDiv.innerHTML = "<small>Erro ao carregar agenda pessoal.</small>";
+    if (checklistDiv) checklistDiv.innerHTML = "<small>Erro ao carregar checklist pessoal.</small>";
+  }
+}
     // ── CALENDÁRIO ────────────────────────────────────────────────
     let calendarioMesAtual          = new Date();
     let calendarioDiaSelecionadoISO = dataHojeISO();
@@ -1538,6 +1853,11 @@
           navItems.forEach(n=>n.classList.remove("active")); item.classList.add("active");
         });
       });
+
+      document.getElementById("btn-toggle-passados-pessoal")?.addEventListener("click", async () => {
+  mostrarPassadosPessoal = !mostrarPassadosPessoal;
+  await carregarPessoalLista();
+});
 
       document.getElementById("botao-add-tarefa")?.addEventListener("click", novaTarefaHoje);
       document.getElementById("botao-nova-rotina-hoje")?.addEventListener("click", novaRotinaHoje);
