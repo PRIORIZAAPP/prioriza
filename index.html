@@ -279,6 +279,64 @@
         border: none; padding: 6px 12px; font-size: 12px; cursor: pointer;
       }
       .btn-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+      .checklist-toolbar {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 10px; margin: 10px 0 12px 0; flex-wrap: wrap;
+      }
+      .checklist-toolbar-info {
+        font-size: 11px; color: #6b7280;
+      }
+      .btn-ghost-action {
+        border-radius: 999px;
+        border: 1px solid #d1d5db;
+        padding: 7px 12px;
+        font-size: 12px;
+        background: #ffffff;
+        color: #111827;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+      }
+      .btn-ghost-action:hover {
+        border-color: #94a3b8;
+        background: #f8fafc;
+      }
+      .btn-ghost-action.is-open {
+        border-color: #cbd5e1;
+        background: #eff6ff;
+        color: #1d4ed8;
+      }
+      .checklist-form-wrap {
+        display: none;
+        margin-bottom: 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #f8fafc;
+        padding: 12px;
+      }
+      .checklist-form-wrap.open {
+        display: block;
+      }
+      .checklist-form-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .checklist-form-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #111827;
+      }
+      .checklist-form-subtitle {
+        font-size: 11px;
+        color: #6b7280;
+        margin-top: 2px;
+      }
       .checklist-delete-btn {
         border-radius: 999px; border: none; padding: 4px 8px;
         font-size: 11px; background: #ef4444; color: #f9fafb; cursor: pointer; flex-shrink: 0;
@@ -286,6 +344,11 @@
 
       /* ── FORM ── */
       .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+      @media (max-width: 560px) {
+        .form-grid { grid-template-columns: 1fr; }
+        .checklist-toolbar { align-items: stretch; }
+        .btn-ghost-action { justify-content: center; width: 100%; }
+      }
       label { display: block; font-size: 11px; color: #4b5563; margin-bottom: 2px; }
       input[type="text"], input[type="time"], input[type="number"],
       input[type="date"], textarea, select {
@@ -662,6 +725,56 @@
               <h2>Checklist geral</h2>
             </div>
             <div class="secao-subtitulo">Todas as rotinas. Arraste direita = mudar status · esquerda = excluir.</div>
+            <div class="checklist-toolbar">
+              <div class="checklist-toolbar-info">Crie novas rotinas sem poluir a tela. O formulário só aparece quando necessário.</div>
+              <button id="btn-toggle-form-checklist" class="btn-ghost-action" type="button" aria-expanded="false" aria-controls="checklist-form-wrap">
+                <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor">
+                  <circle cx="128" cy="128" r="96" fill="currentColor" opacity="0.18"/>
+                  <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
+                  <line x1="88" y1="128" x2="168" y2="128" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                  <line x1="128" y1="88" x2="128" y2="168" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                </svg>
+                <span id="btn-toggle-form-checklist-text">Nova rotina</span>
+              </button>
+            </div>
+
+            <div id="checklist-form-wrap" class="checklist-form-wrap">
+              <div class="checklist-form-header">
+                <div>
+                  <div class="checklist-form-title">Nova rotina</div>
+                  <div class="checklist-form-subtitle">Preencha os campos abaixo para adicionar um novo item ao checklist.</div>
+                </div>
+                <button id="btn-fechar-form-checklist" class="btn-secondary" type="button">Fechar</button>
+              </div>
+
+              <form id="form-checklist">
+                <div><label for="chk-titulo">Título</label><input id="chk-titulo" type="text" placeholder="Ex: Revisar protocolo, Fechar relatório" required /></div>
+                <div class="form-grid">
+                  <div>
+                    <label for="chk-local">Local / contexto</label>
+                    <input id="chk-local" type="text" placeholder="Ex: HGG, Escritório" />
+                    <div id="chk-locais-sugeridos" class="tag-row"></div>
+                  </div>
+                  <div>
+                    <label for="chk-frequencia">Frequência</label>
+                    <select id="chk-frequencia">
+                      <option value="Único">Único (esporádico)</option>
+                      <option value="Diária">Diária</option>
+                      <option value="Semanal" selected>Semanal</option>
+                      <option value="Mensal">Mensal</option>
+                      <option value="Bimestral">Bimestral</option>
+                      <option value="Trimestral">Trimestral</option>
+                      <option value="Semestral">Semestral</option>
+                      <option value="Anual">Anual</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="btn-row">
+                  <button type="submit" id="btn-salvar-rotina" class="btn-primary">Salvar rotina</button>
+                </div>
+              </form>
+            </div>
+
             <div class="swipe-hint"><span>← Excluir</span><span>Mudar status →</span></div>
             <div class="filtros-row">
               <div class="filtro-select">
@@ -684,46 +797,6 @@
               </div>
             </div>
             <div id="checklist-geral-lista"><small>Carregando checklist...</small></div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">
-              <!-- plus circle -->
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
-                <circle cx="128" cy="128" r="96" fill="currentColor" opacity="0.2"/>
-                <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
-                <line x1="88" y1="128" x2="168" y2="128" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                <line x1="128" y1="88" x2="128" y2="168" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-              </svg>
-              <h2>Nova rotina</h2>
-            </div>
-            <div class="secao-subtitulo">Adicione itens ao checklist geral.</div>
-            <form id="form-checklist">
-              <div><label for="chk-titulo">Título</label><input id="chk-titulo" type="text" placeholder="Ex: Revisar protocolo, Fechar relatório" required /></div>
-              <div class="form-grid">
-                <div>
-                  <label for="chk-local">Local / contexto</label>
-                  <input id="chk-local" type="text" placeholder="Ex: HGG, Escritório" />
-                  <div id="chk-locais-sugeridos" class="tag-row"></div>
-                </div>
-                <div>
-                  <label for="chk-frequencia">Frequência</label>
-                  <select id="chk-frequencia">
-                    <option value="Único">Único (esporádico)</option>
-                    <option value="Diária">Diária</option>
-                    <option value="Semanal" selected>Semanal</option>
-                    <option value="Mensal">Mensal</option>
-                    <option value="Bimestral">Bimestral</option>
-                    <option value="Trimestral">Trimestral</option>
-                    <option value="Semestral">Semestral</option>
-                    <option value="Anual">Anual</option>
-                  </select>
-                </div>
-              </div>
-              <div class="btn-row">
-                <button type="submit" id="btn-salvar-rotina" class="btn-primary">Salvar rotina</button>
-              </div>
-            </form>
           </div>
         </div>
 
@@ -1394,6 +1467,21 @@
       } catch(e) { console.error(e); container.innerHTML="<small>Erro ao carregar checklist.</small>"; }
     }
 
+    function toggleFormChecklist(forceOpen = null) {
+      const wrap = document.getElementById("checklist-form-wrap");
+      const btn = document.getElementById("btn-toggle-form-checklist");
+      const btnText = document.getElementById("btn-toggle-form-checklist-text");
+      if (!wrap || !btn || !btnText) return;
+      const abrir = forceOpen === null ? !wrap.classList.contains("open") : !!forceOpen;
+      wrap.classList.toggle("open", abrir);
+      btn.classList.toggle("is-open", abrir);
+      btn.setAttribute("aria-expanded", abrir ? "true" : "false");
+      btnText.textContent = abrir ? "Ocultar formulário" : "Nova rotina";
+      if (abrir) {
+        setTimeout(() => document.getElementById("chk-titulo")?.focus(), 50);
+      }
+    }
+
     // ── SALVAR ROTINA (form) ──────────────────────────────────────
     async function salvarNovaRotinaChecklist(e) {
       e.preventDefault();
@@ -1411,6 +1499,7 @@
           }
         }
         document.getElementById("chk-titulo").value=""; document.getElementById("chk-local").value=""; document.getElementById("chk-frequencia").value="Diária";
+        toggleFormChecklist(false);
         await carregarChecklistHoje(); await carregarChecklistGeral(); await carregarPessoalLista();
       } catch(e){console.error(e); await modal.alerta("Erro de conexão.","Erro");}
       finally{btn.disabled=false;}
