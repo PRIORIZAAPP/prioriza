@@ -744,71 +744,62 @@
             </div>
             <div class="secao-subtitulo">Calendário mensal. Toque num dia para ver e adicionar compromissos.</div>
 
-            <div id="calendar-container" class="calendar-wrapper">
-              <div class="calendar-header">
-                <button id="btn-cal-prev" class="calendar-nav-btn">◀</button>
-                <div class="calendar-header-title" id="calendar-title">Mês Ano</div>
-                <button id="btn-cal-next" class="calendar-nav-btn">▶</button>
-              </div>
-              <div class="calendar-grid" id="calendar-grid"></div>
+            <div class="checklist-toolbar" style="margin-top: 6px;">
+              <button id="btn-toggle-form-agenda" class="btn-ghost-action" type="button" aria-expanded="false" aria-controls="agenda-form-wrap">
+                <svg width="16" height="16" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                  <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
+                  <line x1="128" y1="80" x2="128" y2="176" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                  <line x1="80" y1="128" x2="176" y2="128" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                </svg>
+                <span id="btn-toggle-form-agenda-text">Novo compromisso</span>
+              </button>
             </div>
 
-            <div id="agenda-dia-container" style="display:none; margin-top:8px">
-              <div class="agenda-dia-header">
-                <span id="agenda-dia-label"><strong>Agenda do dia</strong></span>
-                <button id="btn-voltar-calendario" class="btn-secondary">Ver calendário</button>
+            <div id="agenda-form-wrap" class="checklist-form-wrap">
+              <div class="checklist-form-header">
+                <div>
+                  <div class="checklist-form-title">Adicionar compromisso</div>
+                  <div class="checklist-form-subtitle">Preencha os campos e salve quando precisar.</div>
+                </div>
+                <button id="btn-fechar-form-agenda" class="btn-secondary" type="button">Fechar</button>
               </div>
-              <div id="agenda-geral-lista"><small>Nenhum compromisso.</small></div>
-            </div>
-          </div>
 
-          <div class="card">
-            <div class="card-header">
-              <!-- plus circle -->
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
-                <circle cx="128" cy="128" r="96" fill="currentColor" opacity="0.2"/>
-                <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
-                <line x1="88" y1="128" x2="168" y2="128" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                <line x1="128" y1="88" x2="128" y2="168" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-              </svg>
-              <h2>Novo compromisso</h2>
+              <form id="form-agenda">
+                <div>
+                  <label for="agenda-titulo">Título</label>
+                  <input id="agenda-titulo" type="text" placeholder="Ex: Reunião equipe, Fórum gestão..." required />
+                </div>
+                <div class="form-grid">
+                  <div><label for="agenda-data">Data</label><input id="agenda-data" type="date" /></div>
+                  <div><label for="agenda-hora">Hora início</label><input id="agenda-hora" type="time" value="08:00" /></div>
+                </div>
+                <div class="form-grid">
+                  <div><label for="agenda-duracao">Duração (min)</label><input id="agenda-duracao" type="number" value="60" min="10" step="5" /></div>
+                  <div>
+                    <label for="agenda-prioridade">Prioridade</label>
+                    <select id="agenda-prioridade">
+                      <option value="1">1 – Alta</option>
+                      <option value="2" selected>2 – Média</option>
+                      <option value="3">3 – Baixa</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label for="agenda-local">Local / contexto (opcional)</label>
+                  <input id="agenda-local" type="text" placeholder="Ex: HGG, Escritório, Home office" />
+                  <div id="agenda-locais-sugeridos" class="tag-row"></div>
+                </div>
+                <div class="campo-em-breve form-grid" style="margin-top:6px">
+                  <div>
+                    <label><input type="checkbox" id="agenda-repetir" disabled /> Repetir semanalmente <span class="badge-em-breve">em breve</span></label>
+                  </div>
+                  <div><label for="agenda-repetir-ate">Até (data)</label><input id="agenda-repetir-ate" type="date" disabled /></div>
+                </div>
+                <div class="btn-row">
+                  <button type="submit" id="btn-salvar-compromisso" class="btn-primary">Salvar compromisso</button>
+                </div>
+              </form>
             </div>
-            <div class="secao-subtitulo">Defina data, horário, local/contexto e prioridade.</div>
-            <form id="form-agenda">
-              <div>
-                <label for="agenda-titulo">Título</label>
-                <input id="agenda-titulo" type="text" placeholder="Ex: Reunião equipe, Fórum gestão..." required />
-              </div>
-              <div class="form-grid">
-                <div><label for="agenda-data">Data</label><input id="agenda-data" type="date" /></div>
-                <div><label for="agenda-hora">Hora início</label><input id="agenda-hora" type="time" value="08:00" /></div>
-              </div>
-              <div class="form-grid">
-                <div><label for="agenda-duracao">Duração (min)</label><input id="agenda-duracao" type="number" value="60" min="10" step="5" /></div>
-                <div>
-                  <label for="agenda-prioridade">Prioridade</label>
-                  <select id="agenda-prioridade">
-                    <option value="1">1 – Alta</option>
-                    <option value="2" selected>2 – Média</option>
-                    <option value="3">3 – Baixa</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label for="agenda-local">Local / contexto (opcional)</label>
-                <input id="agenda-local" type="text" placeholder="Ex: HGG, Escritório, Home office" />
-                <div id="agenda-locais-sugeridos" class="tag-row"></div>
-              </div>
-              <div class="campo-em-breve form-grid" style="margin-top:6px">
-                <div>
-                  <label><input type="checkbox" id="agenda-repetir" disabled /> Repetir semanalmente <span class="badge-em-breve">em breve</span></label>
-                </div>
-                <div><label for="agenda-repetir-ate">Até (data)</label><input id="agenda-repetir-ate" type="date" disabled /></div>
-              </div>
-              <div class="btn-row">
-                <button type="submit" id="btn-salvar-compromisso" class="btn-primary">Salvar compromisso</button>
-              </div>
-            </form>
           </div>
         </div>
 
@@ -1826,6 +1817,21 @@
       }
     }
 
+    function toggleFormAgenda(forceOpen = null) {
+      const wrap = document.getElementById("agenda-form-wrap");
+      const btn = document.getElementById("btn-toggle-form-agenda");
+      const btnText = document.getElementById("btn-toggle-form-agenda-text");
+      if (!wrap || !btn || !btnText) return;
+      const abrir = forceOpen === null ? !wrap.classList.contains("open") : !!forceOpen;
+      wrap.classList.toggle("open", abrir);
+      btn.classList.toggle("is-open", abrir);
+      btn.setAttribute("aria-expanded", abrir ? "true" : "false");
+      btnText.textContent = abrir ? "Ocultar formulário" : "Novo compromisso";
+      if (abrir) {
+        setTimeout(() => document.getElementById("agenda-titulo")?.focus(), 50);
+      }
+    }
+
     // ── SALVAR ROTINA (form) ──────────────────────────────────────
     async function salvarNovaRotinaChecklist(e) {
       e.preventDefault();
@@ -2306,6 +2312,12 @@
         if (ev.key === "Escape") toggleFormChecklist(false);
       });
 
+      document.getElementById("btn-toggle-form-agenda")?.addEventListener("click", () => toggleFormAgenda());
+      document.getElementById("btn-fechar-form-agenda")?.addEventListener("click", () => toggleFormAgenda(false));
+      document.getElementById("agenda-titulo")?.addEventListener("keydown", (ev) => {
+        if (ev.key === "Escape") toggleFormAgenda(false);
+      });
+
       document.getElementById("form-checklist")?.addEventListener("submit", salvarNovaRotinaChecklist);
 
       document.getElementById("form-agenda")?.addEventListener("submit", async(ev)=>{
@@ -2327,6 +2339,7 @@
             }
           }
           document.getElementById("form-agenda").reset();
+          toggleFormAgenda(false);
           await modal.alerta("Compromisso salvo.","Sucesso");
           await carregarAgendaHoje(); await atualizarAgendaMesEDia(); await carregarPessoalLista();
         } catch(e){console.error(e); await modal.alerta("Erro ao conectar com o servidor.","Erro");}
