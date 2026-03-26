@@ -744,7 +744,8 @@
             </div>
             <div class="secao-subtitulo">Calendário mensal. Toque num dia para ver e adicionar compromissos.</div>
 
-            <div class="checklist-toolbar" style="margin-top: 6px;">
+            <div class="checklist-toolbar">
+              <div class="checklist-toolbar-info">Defina data, horário, local/contexto e prioridade apenas quando for adicionar algo novo.</div>
               <button id="btn-toggle-form-agenda" class="btn-ghost-action" type="button" aria-expanded="false" aria-controls="agenda-form-wrap">
                 <svg width="16" height="16" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
                   <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
@@ -801,7 +802,27 @@
               </form>
             </div>
           </div>
-        </div>
+
+
+            <div id="calendar-container" class="calendar-wrapper">
+              <div class="calendar-header">
+                <button id="btn-cal-prev" class="calendar-nav-btn">◀</button>
+                <div class="calendar-header-title" id="calendar-title">Mês Ano</div>
+                <button id="btn-cal-next" class="calendar-nav-btn">▶</button>
+              </div>
+              <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+
+            <div id="agenda-dia-container" style="display:none; margin-top:8px">
+              <div class="agenda-dia-header">
+                <span id="agenda-dia-label"><strong>Agenda do dia</strong></span>
+                <button id="btn-voltar-calendario" class="btn-secondary">Ver calendário</button>
+              </div>
+              <div id="agenda-geral-lista"><small>Nenhum compromisso.</small></div>
+            </div>
+          </div>
+
+          
 
         <!-- ══ ABA CHECKLIST ══ -->
         <div class="screen" id="screen-checklist">
