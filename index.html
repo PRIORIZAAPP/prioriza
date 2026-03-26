@@ -382,8 +382,9 @@
         position: relative; padding: 10px 10px 10px 12px;
         border-radius: 10px; margin-bottom: 8px; background: #f3f4f6;
         display: flex; align-items: center; gap: 10px;
-        transition: transform 0.15s ease-out, background 0.15s ease-out;
+        transition: transform 0.15s ease-out, background 0.15s ease-out, box-shadow 0.15s ease-out;
         touch-action: pan-y; overflow: hidden;
+        will-change: transform;
       }
       .checklist-item.pessoal { background: #e0f2fe; }
       .check-status {
@@ -484,13 +485,31 @@
         background: #f8fafc;
       }
 
+      .swipe-dragging {
+        transition: none !important;
+      }
+      .swipe-preview-right {
+        background: #dcfce7 !important;
+        box-shadow: inset 0 0 0 1px rgba(34,197,94,0.18);
+      }
+      .swipe-preview-left {
+        background: #fef3c7 !important;
+        box-shadow: inset 0 0 0 1px rgba(245,158,11,0.22);
+      }
+      .swipe-preview-left-danger {
+        background: #fee2e2 !important;
+        box-shadow: inset 0 0 0 1px rgba(239,68,68,0.18);
+      }
+
+
       /* ── NOTAS ── */
       .nota-item {
         position: relative; padding: 10px 10px 10px 12px;
         border-radius: 10px; margin-bottom: 8px; background: #f3f4f6;
         display: flex; align-items: center; gap: 10px;
         touch-action: pan-y; overflow: hidden;
-        transition: transform 0.15s ease-out, background 0.15s ease-out;
+        transition: transform 0.15s ease-out, background 0.15s ease-out, box-shadow 0.15s ease-out;
+        will-change: transform;
       }
       .nota-dot { width: 10px; height: 10px; border-radius: 999px; background: #2563eb; flex-shrink: 0; }
       .nota-info { flex: 1; font-size: 13px; min-width: 0; }
@@ -529,7 +548,7 @@
       .full-flash-overlay {
         position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
         font-size: 52px; font-weight: 700; color: #f9fafb; z-index: 9999;
-        animation: flashFade 2s ease-out forwards;
+        animation: flashFade 0.7s ease-out forwards;
       }
       .full-flash-overlay.success { background: rgba(34,197,94,0.9); }
       .full-flash-overlay.warning { background: rgba(234,179,8,0.9); }
@@ -1181,10 +1200,12 @@
     }
 
     // ── FLASH ────────────────────────────────────────────────────
+    const FLASH_DURATION_MS = 700;
+
     function mostrarFlashFull(tipo) {
       const div=document.createElement("div"); div.className="full-flash-overlay "+tipo;
       div.textContent=tipo==="success"?"✔":tipo==="warning"?"⏳":"✕";
-      document.body.appendChild(div); setTimeout(()=>div.parentNode&&div.parentNode.removeChild(div),2000);
+      document.body.appendChild(div); setTimeout(()=>div.parentNode&&div.parentNode.removeChild(div),FLASH_DURATION_MS);
     }
 
     // ── LOADING ──────────────────────────────────────────────────
@@ -1194,14 +1215,84 @@
     function textoSeguro(str) { const d=document.createElement("div"); d.textContent=str||""; return d.innerHTML; }
 
     // ── SWIPE ────────────────────────────────────────────────────
-    function adicionarSwipe(div, onDireita, onEsquerda) {
-      let sx=null, ax=null;
-      div.addEventListener("touchstart",(e)=>{ sx=e.touches[0].clientX; ax=sx; },{passive:true});
-      div.addEventListener("touchmove", (e)=>{ if(sx===null) return; ax=e.touches[0].clientX; div.style.transform=`translateX(${ax-sx}px)`; },{passive:true});
+    function adicionarSwipe(div, onDireita, onEsquerda, opts = {}) {
+      const minHorizontal = opts.minHorizontal || 96;
+      const directionLockRatio = opts.directionLockRatio || 1.7;
+      const maxVisualDrag = opts.maxVisualDrag || 96;
+      const previewLeftClass = opts.previewLeftClass || "swipe-preview-left-danger";
+      const previewRightClass = opts.previewRightClass || "swipe-preview-right";
+
+      let startX = null, startY = null, currentX = null, currentY = null, lockedAxis = null;
+
+      function limparVisual() {
+        div.style.transform = "";
+        div.classList.remove("swipe-dragging", "swipe-preview-right", "swipe-preview-left", "swipe-preview-left-danger");
+      }
+
+      div.addEventListener("touchstart",(e)=>{
+        const t = e.touches[0];
+        startX = t.clientX; startY = t.clientY;
+        currentX = startX; currentY = startY;
+        lockedAxis = null;
+      },{passive:true});
+
+      div.addEventListener("touchmove", (e)=>{
+        if(startX===null || startY===null) return;
+
+        const t = e.touches[0];
+        currentX = t.clientX; currentY = t.clientY;
+
+        const deltaX = currentX - startX;
+        const deltaY = currentY - startY;
+        const absX = Math.abs(deltaX);
+        const absY = Math.abs(deltaY);
+
+        if(!lockedAxis) {
+          if(absX < 10 && absY < 10) return;
+          lockedAxis = absY > absX ? "y" : "x";
+        }
+
+        if(lockedAxis === "y") {
+          limparVisual();
+          return;
+        }
+
+        if(absX < absY * directionLockRatio) {
+          limparVisual();
+          return;
+        }
+
+        const limited = Math.max(-maxVisualDrag, Math.min(maxVisualDrag, deltaX));
+        div.classList.add("swipe-dragging");
+        div.style.transform = `translateX(${limited}px)`;
+
+        div.classList.remove("swipe-preview-right", "swipe-preview-left", "swipe-preview-left-danger");
+        if(deltaX > 24) div.classList.add(previewRightClass);
+        if(deltaX < -24) div.classList.add(previewLeftClass);
+      },{passive:true});
+
       div.addEventListener("touchend", ()=>{
-        if(sx===null) return; const delta=ax-sx; div.style.transform=""; sx=null; ax=null;
-        if(delta>70 && onDireita)   onDireita();
-        else if(delta<-70 && onEsquerda) onEsquerda();
+        if(startX===null || startY===null) return;
+
+        const deltaX = (currentX ?? startX) - startX;
+        const deltaY = (currentY ?? startY) - startY;
+        const absX = Math.abs(deltaX);
+        const absY = Math.abs(deltaY);
+
+        limparVisual();
+
+        const acionar = lockedAxis === "x" && absX >= minHorizontal && absX > absY * directionLockRatio;
+
+        startX = null; startY = null; currentX = null; currentY = null; lockedAxis = null;
+
+        if(!acionar) return;
+        if(deltaX > 0 && onDireita) onDireita();
+        else if(deltaX < 0 && onEsquerda) onEsquerda();
+      });
+
+      div.addEventListener("touchcancel", ()=>{
+        limparVisual();
+        startX = null; startY = null; currentX = null; currentY = null; lockedAxis = null;
       });
     }
 
@@ -1473,8 +1564,9 @@
           });
 
           adicionarSwipe(div,
-            ()=>{ mostrarFlashFull("success"); setTimeout(async()=>{ await atualizarStatusChecklist(item.id,"feito"); await carregarChecklistHoje(); await carregarChecklistGeral(); await atualizarResumoBar(); },2000); },
-            ()=>{ mostrarFlashFull("warning"); setTimeout(async()=>{ await atualizarStatusChecklist(item.id,"em_andamento"); await carregarChecklistHoje(); await carregarChecklistGeral(); },2000); }
+            ()=>{ mostrarFlashFull("success"); setTimeout(async()=>{ await atualizarStatusChecklist(item.id,"feito"); await carregarChecklistHoje(); await carregarChecklistGeral(); await atualizarResumoBar(); },FLASH_DURATION_MS); },
+            ()=>{ mostrarFlashFull("warning"); setTimeout(async()=>{ await atualizarStatusChecklist(item.id,"em_andamento"); await carregarChecklistHoje(); await carregarChecklistGeral(); },FLASH_DURATION_MS); },
+            { previewRightClass: "swipe-preview-right", previewLeftClass: "swipe-preview-left" }
           );
           container.appendChild(div);
         });
@@ -1558,7 +1650,7 @@
           await excluirChecklistItem(item.id);
           await carregarChecklistGeral();
           await carregarChecklistHoje();
-        }, 2000);
+        }, FLASH_DURATION_MS);
       });
 
       adicionarSwipe(
@@ -1572,7 +1664,7 @@
             await carregarChecklistGeral();
             await carregarChecklistHoje();
             await atualizarResumoBar();
-          }, 2000);
+          }, FLASH_DURATION_MS);
         },
         () => {
           mostrarFlashFull("danger");
@@ -1580,8 +1672,9 @@
             await excluirChecklistItem(item.id);
             await carregarChecklistGeral();
             await carregarChecklistHoje();
-          }, 2000);
-        }
+          }, FLASH_DURATION_MS);
+        },
+        { previewRightClass: "swipe-preview-right", previewLeftClass: "swipe-preview-left-danger" }
       );
 
       return div;
@@ -2071,7 +2164,7 @@
         const btnDel=document.createElement("button"); btnDel.className="checklist-delete-btn"; btnDel.textContent="✕"; btnDel.title="Excluir";
         btnDel.addEventListener("click", async()=>{
           if(!await modal.confirmar("Excluir este compromisso?","Excluir","vermelho")) return;
-          mostrarFlashFull("danger"); setTimeout(async()=>{ await excluirTarefa(t.id); await carregarAgendaHoje(); await atualizarAgendaMesEDia(); },2000);
+          mostrarFlashFull("danger"); setTimeout(async()=>{ await excluirTarefa(t.id); await carregarAgendaHoje(); await atualizarAgendaMesEDia(); },FLASH_DURATION_MS);
         });
         item.appendChild(hor); item.appendChild(con); item.appendChild(btnDel); lista.appendChild(item);
       });
@@ -2108,8 +2201,9 @@
           const dataEl=document.createElement("div"); dataEl.className="nota-data"; dataEl.textContent=`${nota.data?formatarDataCurtaBR(nota.data):""} · ${nota.tipo||"GERAL"}`;
           info.appendChild(textoEl); info.appendChild(dataEl); div.appendChild(dot); div.appendChild(info);
           adicionarSwipe(div,
-            ()=>{ mostrarFlashFull("success"); setTimeout(async()=>{ await fetch(API+"/notes_status?"+new URLSearchParams({note_id:String(nota.id),status:"feito"}),{method:"POST",headers:authHeaders()}); await carregarNotas(); },2000); },
-            ()=>{ mostrarFlashFull("danger");  setTimeout(async()=>{ await fetch(API+"/notes_delete?"+new URLSearchParams({note_id:String(nota.id)}),{method:"POST",headers:authHeaders()});  await carregarNotas(); },2000); }
+            ()=>{ mostrarFlashFull("success"); setTimeout(async()=>{ await fetch(API+"/notes_status?"+new URLSearchParams({note_id:String(nota.id),status:"feito"}),{method:"POST",headers:authHeaders()}); await carregarNotas(); },FLASH_DURATION_MS); },
+            ()=>{ mostrarFlashFull("danger");  setTimeout(async()=>{ await fetch(API+"/notes_delete?"+new URLSearchParams({note_id:String(nota.id)}),{method:"POST",headers:authHeaders()});  await carregarNotas(); },FLASH_DURATION_MS); },
+            { previewRightClass: "swipe-preview-right", previewLeftClass: "swipe-preview-left-danger" }
           );
           container.appendChild(div);
         });
