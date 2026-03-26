@@ -403,6 +403,87 @@
       .check-proxima.hoje     { color: #f97316; }
       .check-proxima.futuro   { color: #6b7280; }
 
+
+      .checklist-secao {
+        margin-top: 14px;
+      }
+      .checklist-secao:first-child {
+        margin-top: 0;
+      }
+      .checklist-secao-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .checklist-secao-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+      .checklist-secao-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        flex-shrink: 0;
+      }
+      .checklist-secao-dot.pendente { background: #9ca3af; }
+      .checklist-secao-dot.em_andamento { background: #f97316; }
+      .checklist-secao-dot.feito { background: #22c55e; }
+      .checklist-secao-titulo {
+        font-size: 13px;
+        font-weight: 700;
+        color: #111827;
+      }
+      .checklist-secao-count {
+        font-size: 11px;
+        color: #6b7280;
+        font-weight: 600;
+      }
+      .checklist-secao-toggle {
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 0;
+      }
+      .checklist-secao-caixa {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 8px;
+      }
+      .checklist-secao-lista.collapsed {
+        display: none;
+      }
+      .checklist-empty {
+        font-size: 12px;
+        color: #6b7280;
+        padding: 8px 4px;
+      }
+      .checklist-item:last-child {
+        margin-bottom: 0;
+      }
+      .checklist-ver-mais {
+        width: 100%;
+        margin-top: 8px;
+        border: 1px solid #d1d5db;
+        background: #ffffff;
+        color: #374151;
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .checklist-ver-mais:hover {
+        background: #f8fafc;
+      }
+
       /* ── NOTAS ── */
       .nota-item {
         position: relative; padding: 10px 10px 10px 12px;
@@ -724,7 +805,7 @@
               </svg>
               <h2>Checklist geral</h2>
             </div>
-            <div class="secao-subtitulo">Todas as rotinas. Arraste direita = mudar status · esquerda = excluir.</div>
+            <div class="secao-subtitulo">Lista organizada por status. Arraste direita = mudar status · esquerda = excluir.</div>
             <div class="checklist-toolbar">
               <div class="checklist-toolbar-info">Crie novas rotinas sem poluir a tela. O formulário só aparece quando necessário.</div>
               <button id="btn-toggle-form-checklist" class="btn-ghost-action" type="button" aria-expanded="false" aria-controls="checklist-form-wrap">
@@ -775,7 +856,6 @@
               </form>
             </div>
 
-            <div class="swipe-hint"><span>← Excluir</span><span>Mudar status →</span></div>
             <div class="filtros-row">
               <div class="filtro-select">
                 <label for="filtro-frequencia">Frequência</label>
@@ -1402,69 +1482,240 @@
     }
 
     // ── CHECKLIST GERAL ───────────────────────────────────────────
+
+    const CHECKLIST_GERAL_LIMITE_INICIAL = 5;
+    let checklistSecoesEstado = {
+      pendente: { expanded: false, collapsed: false },
+      em_andamento: { expanded: false, collapsed: false },
+      feito: { expanded: false, collapsed: true }
+    };
+
+    function normalizarStatusChecklist(status) {
+      if (status === "em_andamento" || status === "feito") return status;
+      return "pendente";
+    }
+
+    function criarElementoChecklistItem(item) {
+      const status = normalizarStatusChecklist(item.status || "pendente");
+      const origem = (item.origem || "").toUpperCase();
+      const div = document.createElement("div");
+      div.className = "checklist-item" + (origem === "PESSOAL" ? " pessoal" : "");
+      div.dataset.id = item.id;
+
+      const bolinha = document.createElement("div");
+      bolinha.className = `check-status ${status}`;
+      bolinha.dataset.status = status;
+      if (status === "feito") {
+        bolinha.innerHTML = `<svg width="11" height="11" viewBox="0 0 256 256" fill="none"><polyline points="48,128 104,184 208,72" stroke="white" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      }
+      if (status === "em_andamento") {
+        bolinha.innerHTML = `<svg width="11" height="11" viewBox="0 0 256 256" fill="none"><circle cx="128" cy="128" r="80" stroke="#f97316" stroke-width="28"/><line x1="128" y1="80" x2="128" y2="128" stroke="#f97316" stroke-width="28" stroke-linecap="round"/><line x1="128" y1="128" x2="162" y2="154" stroke="#f97316" stroke-width="28" stroke-linecap="round"/></svg>`;
+      }
+
+      const info = document.createElement("div");
+      info.className = "check-info";
+
+      const tituloEl = document.createElement("div");
+      tituloEl.className = "check-titulo";
+      tituloEl.textContent = item.titulo;
+
+      const sub = document.createElement("div");
+      sub.className = "check-sub";
+      sub.textContent = `${item.frequencia} · ${item.origem || "Sem local"}`;
+
+      info.appendChild(tituloEl);
+      info.appendChild(sub);
+
+      if (item.dias_para_proxima !== undefined) {
+        const d = item.dias_para_proxima;
+        const prox = document.createElement("div");
+        prox.className = "check-proxima " + (d < 0 ? "atrasado" : d === 0 ? "hoje" : "futuro");
+        prox.textContent = d < 0 ? `Atrasado ${Math.abs(d)} dia(s)` : d === 0 ? "Executar hoje" : `Próxima em ${d} dia(s)`;
+        info.appendChild(prox);
+      }
+
+      const btnDel = document.createElement("button");
+      btnDel.className = "checklist-delete-btn";
+      btnDel.textContent = "Excluir";
+
+      div.appendChild(bolinha);
+      div.appendChild(info);
+      div.appendChild(btnDel);
+
+      bolinha.addEventListener("click", async () => {
+        const atual = bolinha.dataset.status || "pendente";
+        const novo = proximoStatus(atual);
+        await atualizarStatusChecklist(item.id, novo);
+        await carregarChecklistGeral();
+        await carregarChecklistHoje();
+        await atualizarResumoBar();
+      });
+
+      btnDel.addEventListener("click", async () => {
+        if (!await modal.confirmar(`Remover "${item.titulo}"?`, "Excluir rotina", "vermelho")) return;
+        mostrarFlashFull("danger");
+        setTimeout(async () => {
+          await excluirChecklistItem(item.id);
+          await carregarChecklistGeral();
+          await carregarChecklistHoje();
+        }, 2000);
+      });
+
+      adicionarSwipe(
+        div,
+        () => {
+          const atual = item.status || "pendente";
+          const novo = proximoStatus(atual);
+          mostrarFlashFull(novo === "feito" ? "success" : "warning");
+          setTimeout(async () => {
+            await atualizarStatusChecklist(item.id, novo);
+            await carregarChecklistGeral();
+            await carregarChecklistHoje();
+            await atualizarResumoBar();
+          }, 2000);
+        },
+        () => {
+          mostrarFlashFull("danger");
+          setTimeout(async () => {
+            await excluirChecklistItem(item.id);
+            await carregarChecklistGeral();
+            await carregarChecklistHoje();
+          }, 2000);
+        }
+      );
+
+      return div;
+    }
+
+    function renderChecklistSecao(container, titulo, statusKey, itens) {
+      const estado = checklistSecoesEstado[statusKey] || { expanded: false, collapsed: false };
+      const secao = document.createElement("div");
+      secao.className = "checklist-secao";
+
+      const header = document.createElement("div");
+      header.className = "checklist-secao-header";
+
+      const titleWrap = document.createElement("div");
+      titleWrap.className = "checklist-secao-title-wrap";
+
+      const dot = document.createElement("span");
+      dot.className = `checklist-secao-dot ${statusKey}`;
+
+      const title = document.createElement("div");
+      title.className = "checklist-secao-titulo";
+      title.textContent = titulo;
+
+      const count = document.createElement("div");
+      count.className = "checklist-secao-count";
+      count.textContent = `${itens.length} item(ns)`;
+
+      titleWrap.appendChild(dot);
+      titleWrap.appendChild(title);
+      titleWrap.appendChild(count);
+
+      header.appendChild(titleWrap);
+
+      if (statusKey === "feito") {
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "checklist-secao-toggle";
+        toggle.textContent = estado.collapsed ? "Mostrar" : "Ocultar";
+        toggle.addEventListener("click", async () => {
+          checklistSecoesEstado[statusKey].collapsed = !checklistSecoesEstado[statusKey].collapsed;
+          await carregarChecklistGeral();
+        });
+        header.appendChild(toggle);
+      }
+
+      secao.appendChild(header);
+
+      const caixa = document.createElement("div");
+      caixa.className = "checklist-secao-caixa";
+
+      const lista = document.createElement("div");
+      lista.className = "checklist-secao-lista";
+      if (estado.collapsed) {
+        lista.classList.add("collapsed");
+      }
+
+      if (itens.length === 0) {
+        const vazio = document.createElement("div");
+        vazio.className = "checklist-empty";
+        vazio.textContent = statusKey === "feito" ? "Nenhuma rotina concluída." : "Nenhum item nesta seção.";
+        lista.appendChild(vazio);
+      } else {
+        const limite = estado.expanded ? itens.length : CHECKLIST_GERAL_LIMITE_INICIAL;
+        itens.slice(0, limite).forEach(item => lista.appendChild(criarElementoChecklistItem(item)));
+
+        if (itens.length > CHECKLIST_GERAL_LIMITE_INICIAL) {
+          const btnMais = document.createElement("button");
+          btnMais.type = "button";
+          btnMais.className = "checklist-ver-mais";
+          btnMais.textContent = estado.expanded ? "Mostrar menos" : `Ver mais ${itens.length - CHECKLIST_GERAL_LIMITE_INICIAL} item(ns)`;
+          btnMais.addEventListener("click", async () => {
+            checklistSecoesEstado[statusKey].expanded = !checklistSecoesEstado[statusKey].expanded;
+            await carregarChecklistGeral();
+          });
+          caixa.appendChild(lista);
+          caixa.appendChild(btnMais);
+          secao.appendChild(caixa);
+          container.appendChild(secao);
+          return;
+        }
+      }
+
+      caixa.appendChild(lista);
+      secao.appendChild(caixa);
+      container.appendChild(secao);
+    }
+
+    // ── CHECKLIST GERAL ───────────────────────────────────────────
     async function carregarChecklistGeral() {
       const container = document.getElementById("checklist-geral-lista");
       container.innerHTML = "<small>Carregando...</small>";
-      const filtroFreq   = document.getElementById("filtro-frequencia").value;
+      const filtroFreq = document.getElementById("filtro-frequencia").value;
       const filtroOrigem = document.getElementById("filtro-origem").value;
 
       try {
-        const res = await fetch(API+"/checklist",{headers:authHeaders()});
+        const res = await fetch(API + "/checklist", { headers: authHeaders() });
         let itens = (await res.json());
-        itens = (Array.isArray(itens)?itens:[]).filter(i=>i.ativo!==false);
-        if (filtroFreq)   itens=itens.filter(i=>(i.frequencia||"").toLowerCase()===filtroFreq.toLowerCase());
-        if (filtroOrigem) itens=itens.filter(i=>(i.origem||"").toUpperCase().includes(filtroOrigem.toUpperCase()));
+        itens = (Array.isArray(itens) ? itens : []).filter(i => i.ativo !== false);
 
-        if (itens.length===0) { container.innerHTML="<small>Nenhum item encontrado.</small>"; return; }
-        container.innerHTML="";
+        if (filtroFreq) itens = itens.filter(i => (i.frequencia || "").toLowerCase() === filtroFreq.toLowerCase());
+        if (filtroOrigem) itens = itens.filter(i => (i.origem || "").toUpperCase().includes(filtroOrigem.toUpperCase()));
 
-        itens.forEach(item => {
-          const status=(item.status||"pendente"); const origem=(item.origem||"").toUpperCase();
-          const div=document.createElement("div");
-          div.className="checklist-item"+(origem==="PESSOAL"?" pessoal":"");
-          div.dataset.id=item.id;
+        if (itens.length === 0) {
+          container.innerHTML = "<small>Nenhum item encontrado.</small>";
+          return;
+        }
 
-          const bolinha=document.createElement("div");
-          bolinha.className=`check-status ${status}`; bolinha.dataset.status=status;
-          if (status==="feito")        bolinha.innerHTML=`<svg width="11" height="11" viewBox="0 0 256 256" fill="none"><polyline points="48,128 104,184 208,72" stroke="white" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-          if (status==="em_andamento") bolinha.innerHTML=`<svg width="11" height="11" viewBox="0 0 256 256" fill="none"><circle cx="128" cy="128" r="80" stroke="#f97316" stroke-width="28"/><line x1="128" y1="80" x2="128" y2="128" stroke="#f97316" stroke-width="28" stroke-linecap="round"/><line x1="128" y1="128" x2="162" y2="154" stroke="#f97316" stroke-width="28" stroke-linecap="round"/></svg>`;
+        itens.sort((a, b) => {
+          const ordem = { pendente: 0, em_andamento: 1, feito: 2 };
+          const statusA = normalizarStatusChecklist(a.status || "pendente");
+          const statusB = normalizarStatusChecklist(b.status || "pendente");
+          if (ordem[statusA] !== ordem[statusB]) return ordem[statusA] - ordem[statusB];
 
-          const info=document.createElement("div"); info.className="check-info";
-          const tituloEl=document.createElement("div"); tituloEl.className="check-titulo"; tituloEl.textContent=item.titulo;
-          const sub=document.createElement("div"); sub.className="check-sub"; sub.textContent=`${item.frequencia} · ${item.origem}`;
-          info.appendChild(tituloEl); info.appendChild(sub);
+          const diasA = typeof a.dias_para_proxima === "number" ? a.dias_para_proxima : 999999;
+          const diasB = typeof b.dias_para_proxima === "number" ? b.dias_para_proxima : 999999;
+          if (diasA !== diasB) return diasA - diasB;
 
-          if (item.dias_para_proxima !== undefined) {
-            const d=item.dias_para_proxima;
-            const prox=document.createElement("div");
-            prox.className="check-proxima "+(d<0?"atrasado":d===0?"hoje":"futuro");
-            prox.textContent=d<0?`Atrasado ${Math.abs(d)} dia(s)`:d===0?"Executar hoje":`Próxima em ${d} dia(s)`;
-            info.appendChild(prox);
-          }
-
-          const btnDel=document.createElement("button"); btnDel.className="checklist-delete-btn"; btnDel.textContent="Excluir";
-
-          div.appendChild(bolinha); div.appendChild(info); div.appendChild(btnDel);
-
-          bolinha.addEventListener("click", async()=>{
-            const atual=bolinha.dataset.status||"pendente"; const novo=proximoStatus(atual);
-            await atualizarStatusChecklist(item.id,novo);
-            await carregarChecklistGeral(); await carregarChecklistHoje(); await atualizarResumoBar();
-          });
-
-          btnDel.addEventListener("click", async()=>{
-            if (!await modal.confirmar(`Remover "${item.titulo}"?`,"Excluir rotina","vermelho")) return;
-            mostrarFlashFull("danger");
-            setTimeout(async()=>{ await excluirChecklistItem(item.id); await carregarChecklistGeral(); await carregarChecklistHoje(); },2000);
-          });
-
-          adicionarSwipe(div,
-            ()=>{ const atual=item.status||"pendente"; const novo=proximoStatus(atual); mostrarFlashFull(novo==="feito"?"success":"warning"); setTimeout(async()=>{ await atualizarStatusChecklist(item.id,novo); await carregarChecklistGeral(); await carregarChecklistHoje(); await atualizarResumoBar(); },2000); },
-            ()=>{ mostrarFlashFull("danger"); setTimeout(async()=>{ await excluirChecklistItem(item.id); await carregarChecklistGeral(); await carregarChecklistHoje(); },2000); }
-          );
-          container.appendChild(div);
+          return String(a.titulo || "").localeCompare(String(b.titulo || ""), "pt-BR");
         });
-      } catch(e) { console.error(e); container.innerHTML="<small>Erro ao carregar checklist.</small>"; }
+
+        const grupos = {
+          pendente: itens.filter(i => normalizarStatusChecklist(i.status || "pendente") === "pendente"),
+          em_andamento: itens.filter(i => normalizarStatusChecklist(i.status || "pendente") === "em_andamento"),
+          feito: itens.filter(i => normalizarStatusChecklist(i.status || "pendente") === "feito")
+        };
+
+        container.innerHTML = "";
+        renderChecklistSecao(container, "Pendentes", "pendente", grupos.pendente);
+        renderChecklistSecao(container, "Em andamento", "em_andamento", grupos.em_andamento);
+        renderChecklistSecao(container, "Feitas", "feito", grupos.feito);
+      } catch (e) {
+        console.error(e);
+        container.innerHTML = "<small>Erro ao carregar checklist.</small>";
+      }
     }
 
     function toggleFormChecklist(forceOpen = null) {
@@ -1896,7 +2147,7 @@
         const res=await fetch(API+"/tarefas?"+new URLSearchParams({titulo:conteudo,origem,data,hora_inicio:hora,duracao_min:"60",prioridade:"2"}),{method:"POST",headers:authHeaders()});
         if(!res.ok){await modal.alerta("Erro ao salvar.","Erro");return;}
         await carregarAgendaHoje(); await atualizarAgendaMesEDia(); if(origem==="PESSOAL") await carregarPessoalLista();
-        await modal.alerta("Compromisso salvo! ✅","Sucesso"); return;
+        await modal.alerta("Compromisso salvo.","Sucesso"); return;
       }
       if (tipo==="tarefa") {
         const conteudo=text.replace(/^(adicionar|nova|novo)\s+(tarefa|checklist)\s*/i,"").trim()||text;
@@ -1955,6 +2206,12 @@
       document.getElementById("btn-cal-next")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()+1); montarCalendarioMes(); });
       document.getElementById("btn-voltar-calendario")?.addEventListener("click",()=>{ document.getElementById("calendar-container").style.display="block"; document.getElementById("agenda-dia-container").style.display="none"; });
 
+      document.getElementById("btn-toggle-form-checklist")?.addEventListener("click", () => toggleFormChecklist());
+      document.getElementById("btn-fechar-form-checklist")?.addEventListener("click", () => toggleFormChecklist(false));
+      document.getElementById("chk-titulo")?.addEventListener("keydown", (ev) => {
+        if (ev.key === "Escape") toggleFormChecklist(false);
+      });
+
       document.getElementById("form-checklist")?.addEventListener("submit", salvarNovaRotinaChecklist);
 
       document.getElementById("form-agenda")?.addEventListener("submit", async(ev)=>{
@@ -1976,7 +2233,7 @@
             }
           }
           document.getElementById("form-agenda").reset();
-          await modal.alerta("Compromisso salvo! ✅","Sucesso");
+          await modal.alerta("Compromisso salvo.","Sucesso");
           await carregarAgendaHoje(); await atualizarAgendaMesEDia(); await carregarPessoalLista();
         } catch(e){console.error(e); await modal.alerta("Erro ao conectar com o servidor.","Erro");}
         finally{btn.disabled=false;}
