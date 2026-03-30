@@ -94,12 +94,16 @@
 
       /* ── RESUMO BAR ── */
       .resumo-bar {
+        position: sticky;
+        top: 80px;
+        z-index: 19;
         background: #e5edff; color: #1e3a8a;
         padding: 6px 16px; font-size: 12px; font-weight: 600;
         display: flex; align-items: center; gap: 8px;
         border-bottom: 1px solid rgba(148,163,184,0.4);
       }
       .resumo-bar svg { flex-shrink: 0; }
+      .resumo-bar { box-shadow: 0 1px 4px rgba(15,23,42,0.08); }
 
       /* ── CONTENT ── */
       .content { flex: 1; padding: 12px 10px 60px 10px; }
@@ -1377,9 +1381,11 @@
         try {
           const resC = await fetch(API+"/checklist",{headers:authHeaders()});
           const chkItens = await resC.json();
-          const chkHoje = (Array.isArray(chkItens)?chkItens:[]).filter(i=>i.ativo!==false && i.pode_mostrar_hoje!==false);
-          const chkFeitos = chkHoje.filter(i=>ehStatusFeito(i.status)).length;
-          const chkTotal  = chkHoje.length;
+          const chkBase = Array.isArray(chkItens) ? chkItens.filter(i => i.ativo !== false) : [];
+          const chkVisiveisHoje = chkBase.filter(i => i.pode_mostrar_hoje !== false);
+          const chkConcluidasOcultas = chkBase.filter(i => i.pode_mostrar_hoje === false && ehStatusFeito(i.status));
+          const chkFeitos = chkVisiveisHoje.filter(i => ehStatusFeito(i.status)).length + chkConcluidasOcultas.length;
+          const chkTotal  = chkVisiveisHoje.length + chkConcluidasOcultas.length;
           resumoText.textContent = `${feitos} tarefa${feitos!==1?"s":""} concluída${feitos!==1?"s":""} · ${andamento} em andamento · ${chkFeitos}/${chkTotal} rotinas`;
         } catch {
           resumoText.textContent = `${feitos} tarefa${feitos!==1?"s":""} concluída${feitos!==1?"s":""} · ${andamento} em andamento`;
@@ -1454,9 +1460,11 @@
       try {
         const resC = await fetch(API+"/checklist",{headers:authHeaders()});
         const chkItens = await resC.json();
-        const chkHoje   = (Array.isArray(chkItens)?chkItens:[]).filter(i=>i.ativo!==false && i.pode_mostrar_hoje!==false);
-        const chkFeitos = chkHoje.filter(i=>ehStatusFeito(i.status)).length;
-        const chkTotal  = chkHoje.length;
+        const chkBase = Array.isArray(chkItens) ? chkItens.filter(i => i.ativo !== false) : [];
+        const chkVisiveisHoje = chkBase.filter(i => i.pode_mostrar_hoje !== false);
+        const chkConcluidasOcultas = chkBase.filter(i => i.pode_mostrar_hoje === false && ehStatusFeito(i.status));
+        const chkFeitos = chkVisiveisHoje.filter(i => ehStatusFeito(i.status)).length + chkConcluidasOcultas.length;
+        const chkTotal  = chkVisiveisHoje.length + chkConcluidasOcultas.length;
         resumoText.textContent = `${feitos} tarefa${feitos!==1?"s":""} concluída${feitos!==1?"s":""} · ${andamento} em andamento · ${chkFeitos}/${chkTotal} rotinas`;
       } catch {
         resumoText.textContent = `${feitos} tarefa${feitos!==1?"s":""} concluída${feitos!==1?"s":""} · ${andamento} em andamento`;
