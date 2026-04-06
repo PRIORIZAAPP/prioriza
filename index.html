@@ -612,6 +612,161 @@
         background: #e5e7eb; color: #111827; border: none; border-radius: 999px;
         padding: 7px 16px; font-size: 13px; cursor: pointer;
       }
+    
+
+      /* ── GOOGLE AGENDA ── */
+      .agenda-integracao-card {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+      .agenda-integracao-topo {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+      .agenda-integracao-titulo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #111827;
+      }
+      .agenda-integracao-subtitulo {
+        font-size: 11px;
+        color: #6b7280;
+        margin-top: 4px;
+        line-height: 1.45;
+      }
+      .agenda-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+        border: 1px solid #d1d5db;
+      }
+      .agenda-status-badge svg { flex-shrink: 0; }
+      .agenda-status-badge.conectado {
+        background: #dcfce7;
+        color: #166534;
+        border-color: #bbf7d0;
+      }
+      .agenda-status-badge.desconectado {
+        background: #f3f4f6;
+        color: #374151;
+      }
+      .agenda-integracao-acoes {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      .btn-outline {
+        border: 1px solid #d1d5db;
+        background: #ffffff;
+        color: #111827;
+        border-radius: 999px;
+        padding: 7px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .btn-outline:hover { background: #f8fafc; }
+      .btn-outline.danger {
+        border-color: #fecaca;
+        color: #b91c1c;
+        background: #fff5f5;
+      }
+      .btn-outline:disabled { opacity: 0.55; cursor: not-allowed; }
+      .agenda-google-opcao {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #e5e7eb;
+      }
+      .agenda-google-check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #111827;
+        font-weight: 600;
+      }
+      .agenda-google-check input { width: auto; }
+      .agenda-google-ajuda {
+        font-size: 11px;
+        color: #6b7280;
+        margin-top: 4px;
+        line-height: 1.45;
+      }
+      .agenda-tag.google {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      .agenda-tag.local-google {
+        background: #ede9fe;
+        color: #6d28d9;
+      }
+      .agenda-meta {
+        font-size: 11px;
+        color: #6b7280;
+        margin-top: 4px;
+        line-height: 1.4;
+      }
+      .agenda-dia-linha {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 6px;
+      }
+      .agenda-icon-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        border: none;
+        background: #fee2e2;
+        color: #b91c1c;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .agenda-icon-link {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        border: 1px solid #dbeafe;
+        background: #eff6ff;
+        color: #2563eb;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        text-decoration: none;
+      }
+      .agenda-icon-link:hover,
+      .agenda-icon-btn:hover { opacity: 0.9; }
+      .calendar-day-dots {
+        display: flex;
+        gap: 3px;
+        margin-top: 2px;
+        flex-wrap: wrap;
+      }
+      .calendar-dot.google { background: #2563eb; }
+      .calendar-dot.local-google { background: #7c3aed; }
+
     </style>
   </head>
   <body>
@@ -746,7 +901,54 @@
               </svg>
               <h2>Agenda geral</h2>
             </div>
-            <div class="secao-subtitulo">Calendário mensal. Toque num dia para ver e adicionar compromissos.</div>
+            <div class="secao-subtitulo">Calendário mensal com compromissos do PRIORIZA e eventos do Google Agenda no mesmo layout.</div>
+
+            <div id="agenda-google-card" class="agenda-integracao-card">
+              <div class="agenda-integracao-topo">
+                <div>
+                  <div class="agenda-integracao-titulo">
+                    <svg width="18" height="18" viewBox="0 0 256 256" fill="none" color="#2563eb" aria-hidden="true">
+                      <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.14"/>
+                      <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
+                      <line x1="40" y1="96" x2="216" y2="96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                      <line x1="80" y1="16" x2="80" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                      <line x1="176" y1="16" x2="176" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                    </svg>
+                    Integração com Google Agenda
+                  </div>
+                  <div id="agenda-google-subtitulo" class="agenda-integracao-subtitulo">Verificando status da integração...</div>
+                </div>
+                <div id="agenda-google-status" class="agenda-status-badge desconectado">
+                  <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <circle cx="128" cy="128" r="84" stroke="currentColor" stroke-width="20"/>
+                  </svg>
+                  Desconectado
+                </div>
+              </div>
+              <div class="agenda-integracao-acoes">
+                <button id="btn-google-conectar" class="btn-outline" type="button">
+                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <path d="M128 48v160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                    <path d="M48 128h160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                  </svg>
+                  Conectar Google
+                </button>
+                <button id="btn-google-atualizar" class="btn-outline" type="button">
+                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <path d="M216 128a88 88 0 1 1-26-62" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M216 56v56h-56" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Atualizar eventos
+                </button>
+                <button id="btn-google-desconectar" class="btn-outline danger" type="button" style="display:none">
+                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <path d="M200 56L56 200" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                    <path d="M56 56l144 144" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                  </svg>
+                  Desconectar
+                </button>
+              </div>
+            </div>
 
             <div class="checklist-toolbar">
               <div class="checklist-toolbar-info">Defina data, horário, local/contexto e prioridade apenas quando for adicionar algo novo.</div>
@@ -794,6 +996,13 @@
                   <input id="agenda-local" type="text" placeholder="Ex: HGG, Escritório, Home office" />
                   <div id="agenda-locais-sugeridos" class="tag-row"></div>
                 </div>
+                <div class="agenda-google-opcao">
+                  <label class="agenda-google-check" for="agenda-sincronizar-google">
+                    <input id="agenda-sincronizar-google" type="checkbox" />
+                    Enviar também para o Google Agenda
+                  </label>
+                  <div id="agenda-google-sync-ajuda" class="agenda-google-ajuda">Ative esta opção quando quiser criar o mesmo compromisso no Google Agenda além do PRIORIZA.</div>
+                </div>
                 <div class="campo-em-breve form-grid" style="margin-top:6px">
                   <div>
                     <label><input type="checkbox" id="agenda-repetir" disabled /> Repetir semanalmente <span class="badge-em-breve">em breve</span></label>
@@ -810,9 +1019,17 @@
 
             <div id="calendar-container" class="calendar-wrapper">
               <div class="calendar-header">
-                <button id="btn-cal-prev" class="calendar-nav-btn">◀</button>
+                <button id="btn-cal-prev" class="calendar-nav-btn" aria-label="Mês anterior">
+                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <path d="M160 48L80 128l80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
                 <div class="calendar-header-title" id="calendar-title">Mês Ano</div>
-                <button id="btn-cal-next" class="calendar-nav-btn">▶</button>
+                <button id="btn-cal-next" class="calendar-nav-btn" aria-label="Próximo mês">
+                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <path d="M96 48l80 80-80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
               </div>
               <div class="calendar-grid" id="calendar-grid"></div>
             </div>
@@ -1108,6 +1325,10 @@
     const API = "";
     function authHeaders(extra = {}) { return { ...extra }; }
 
+    let tarefasAgendaCache = [];
+    let googleAgendaCache = [];
+    let googleAgendaStatus = { configurado: false, conectado: false };
+
     // ── MODAL ────────────────────────────────────────────────────
     const modal = (() => {
       const overlay   = document.getElementById("modal-overlay");
@@ -1314,10 +1535,16 @@
 
     // ── TAGS DE TAREFA ────────────────────────────────────────────
     function criarTagHTML(t) {
-      const origem=(t.origem||"").toUpperCase(); const status=(t.status||"").toLowerCase(); const prio=String(t.prioridade||"");
+      const origem=(t.origem||"").toUpperCase();
+      const status=(t.status||"").toLowerCase();
+      const prio=String(t.prioridade||"");
+      const tipo=(t.tipo_evento||"").toLowerCase();
+      const sincronizado=origem==="GOOGLE_SYNC" || t.google_sync===true;
+      if(tipo==="google")                            return `<span class="agenda-tag google">Google</span>`;
+      if(sincronizado)                                 return `<span class="agenda-tag local-google">PRIORIZA + Google</span>`;
       if(origem==="PESSOAL")                          return `<span class="agenda-tag pessoal">Pessoal</span>`;
-      if(status==="extra"||status==="imprevisto")     return `<span class="agenda-tag extra">Extra</span>`;
-      if(ehStatusFeito(status))                       return `<span class="agenda-tag concluida">Concluída</span>`;
+      if(status==="extra"||status==="imprevisto")    return `<span class="agenda-tag extra">Extra</span>`;
+      if(ehStatusFeito(status))                        return `<span class="agenda-tag concluida">Concluída</span>`;
       if(prio==="1") return `<span class="agenda-tag prio1">Prio 1</span>`;
       if(prio==="2") return `<span class="agenda-tag prio2">Prio 2</span>`;
       if(prio==="3") return `<span class="agenda-tag prio3">Prio 3</span>`;
@@ -1352,8 +1579,180 @@
       catch(e){console.error(e);}
     }
 
+    // ── GOOGLE AGENDA ────────────────────────────────────────────
+    function obterFaixaMesAtual() {
+      const ano = calendarioMesAtual.getFullYear();
+      const mes = calendarioMesAtual.getMonth();
+      const inicio = new Date(ano, mes, 1);
+      const fim = new Date(ano, mes + 1, 0);
+      return { date_from: dateToISO(inicio), date_to: dateToISO(fim) };
+    }
+
+    function formatarHoraEvento(valor) {
+      if (!valor) return "--:--";
+      if (/^\d{2}:\d{2}$/.test(valor)) return valor;
+      const data = new Date(valor);
+      if (!Number.isNaN(data.getTime())) {
+        return `${String(data.getHours()).padStart(2,"0")}:${String(data.getMinutes()).padStart(2,"0")}`;
+      }
+      const match = String(valor).match(/T(\d{2}:\d{2})/);
+      return match ? match[1] : "--:--";
+    }
+
+    function somarMinutosHora(hora, minutos) {
+      const [h, m] = String(hora || "00:00").split(":").map(Number);
+      const total = (h * 60) + m + Number(minutos || 0);
+      const horaFinal = Math.floor(total / 60) % 24;
+      const minFinal = total % 60;
+      return `${String(horaFinal).padStart(2, "0")}:${String(minFinal).padStart(2, "0")}`;
+    }
+
+    function normalizarEventoGoogle(evento) {
+      const inicioRaw = evento?.inicio || "";
+      const fimRaw = evento?.fim || "";
+      const allDay = !String(inicioRaw).includes("T");
+      const dataISO = allDay ? normalizarDataParaISO(String(inicioRaw).slice(0, 10)) : normalizarDataParaISO(new Date(inicioRaw).toISOString().slice(0, 10));
+      return {
+        id: evento?.id || `google-${Math.random().toString(36).slice(2)}`,
+        titulo: evento?.titulo || "(Sem título)",
+        data: dataISO,
+        hora_inicio: allDay ? "Dia todo" : formatarHoraEvento(inicioRaw),
+        hora_fim: allDay ? "" : formatarHoraEvento(fimRaw),
+        origem: "google_calendar",
+        tipo_evento: "google",
+        descricao: evento?.descricao || "",
+        local: evento?.local || "",
+        link: evento?.link || "",
+        status: evento?.status || "confirmed",
+        ativo: true,
+        prioridade: "",
+        all_day: allDay,
+      };
+    }
+
+    function agendaDoDiaCombinada(iso) {
+      const locais = tarefasAgendaCache
+        .filter(t => t.ativo !== false && normalizarDataParaISO(t.data || "") === iso)
+        .map(t => ({ ...t, tipo_evento: "prioriza" }));
+      const google = googleAgendaCache
+        .filter(t => t.ativo !== false && normalizarDataParaISO(t.data || "") === iso)
+        .map(t => ({ ...t, tipo_evento: "google" }));
+      return [...locais, ...google].sort((a, b) => {
+        const ha = a.all_day ? "00:00" : (a.hora_inicio === "Dia todo" ? "00:00" : (a.hora_inicio || "23:59"));
+        const hb = b.all_day ? "00:00" : (b.hora_inicio === "Dia todo" ? "00:00" : (b.hora_inicio || "23:59"));
+        return ha.localeCompare(hb) || String(a.titulo || "").localeCompare(String(b.titulo || ""));
+      });
+    }
+
+    async function carregarStatusGoogleAgenda() {
+      const statusEl = document.getElementById("agenda-google-status");
+      const subtituloEl = document.getElementById("agenda-google-subtitulo");
+      const btnConectar = document.getElementById("btn-google-conectar");
+      const btnDesconectar = document.getElementById("btn-google-desconectar");
+      const syncCheckbox = document.getElementById("agenda-sincronizar-google");
+      const syncAjuda = document.getElementById("agenda-google-sync-ajuda");
+
+      try {
+        const res = await fetch(API + "/google/status", { headers: authHeaders() });
+        const data = await res.json();
+        googleAgendaStatus = {
+          configurado: !!data?.configurado,
+          conectado: !!data?.conectado,
+          redirect_uri: data?.redirect_uri || "",
+        };
+      } catch (e) {
+        console.error(e);
+        googleAgendaStatus = { configurado: false, conectado: false };
+      }
+
+      const conectado = googleAgendaStatus.conectado === true;
+      if (statusEl) {
+        statusEl.className = `agenda-status-badge ${conectado ? "conectado" : "desconectado"}`;
+        statusEl.innerHTML = conectado
+          ? `<svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true"><circle cx="128" cy="128" r="84" stroke="currentColor" stroke-width="20"/><path d="M84 132l28 28 60-60" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/></svg>Conectado`
+          : `<svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true"><circle cx="128" cy="128" r="84" stroke="currentColor" stroke-width="20"/></svg>Desconectado`;
+      }
+      if (subtituloEl) {
+        if (!googleAgendaStatus.configurado) subtituloEl.textContent = "As credenciais do Google ainda não foram configuradas no backend.";
+        else if (conectado) subtituloEl.textContent = "Eventos do Google Agenda serão exibidos junto com os compromissos do PRIORIZA nesta aba.";
+        else subtituloEl.textContent = "Conecte sua conta Google para visualizar os eventos automaticamente dentro da Agenda.";
+      }
+      if (btnConectar) btnConectar.style.display = conectado ? "none" : "inline-flex";
+      if (btnDesconectar) btnDesconectar.style.display = conectado ? "inline-flex" : "none";
+      if (syncCheckbox) {
+        syncCheckbox.disabled = !conectado;
+        if (!conectado) syncCheckbox.checked = false;
+      }
+      if (syncAjuda) {
+        syncAjuda.textContent = conectado
+          ? "Ative esta opção quando quiser criar o mesmo compromisso no Google Agenda além do PRIORIZA."
+          : "A sincronização de novos compromissos só fica disponível depois que a conta Google estiver conectada.";
+      }
+      return googleAgendaStatus;
+    }
+
+    async function carregarEventosGoogleAgendaMes() {
+      if (!googleAgendaStatus.conectado) {
+        googleAgendaCache = [];
+        return [];
+      }
+      const { date_from, date_to } = obterFaixaMesAtual();
+      try {
+        const params = new URLSearchParams({ date_from, date_to, max_results: "100" });
+        const res = await fetch(API + "/google/calendar/events?" + params.toString(), { headers: authHeaders() });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const eventos = await res.json();
+        googleAgendaCache = Array.isArray(eventos) ? eventos.map(normalizarEventoGoogle) : [];
+      } catch (e) {
+        console.error(e);
+        googleAgendaCache = [];
+      }
+      return googleAgendaCache;
+    }
+
+    async function sincronizarAgendaGoogleCompleta() {
+      await carregarStatusGoogleAgenda();
+      await carregarEventosGoogleAgendaMes();
+      montarCalendarioMes();
+      preencherAgendaDiaSelecionado();
+    }
+
+    async function desconectarGoogleAgenda() {
+      const ok = await modal.confirmar("Desconectar o Google Agenda desta conta do PRIORIZA?", "Desconectar Google", "vermelho");
+      if (!ok) return;
+      const btn = document.getElementById("btn-google-desconectar");
+      if (btn) btn.disabled = true;
+      try {
+        await fetch(API + "/google/disconnect", { method: "POST", headers: authHeaders() });
+        googleAgendaCache = [];
+        await sincronizarAgendaGoogleCompleta();
+      } catch (e) {
+        console.error(e);
+        await modal.alerta("Não foi possível desconectar o Google Agenda.", "Erro");
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function criarEventoGooglePeloFormulario({ titulo, data, hora, duracao, local }) {
+      const horaFim = somarMinutosHora(hora, Number(duracao || 60));
+      const params = new URLSearchParams({
+        titulo,
+        data,
+        hora_inicio: hora,
+        hora_fim: horaFim,
+        descricao: "Criado pelo PRIORIZA",
+        local: local || "",
+      });
+      const res = await fetch(API + "/google/calendar/events?" + params.toString(), {
+        method: "POST",
+        headers: authHeaders(),
+      });
+      if (!res.ok) throw new Error("Falha ao criar evento no Google Agenda");
+      return res.json();
+    }
+
     // ── AGENDA DO DIA + RESUMO BAR ────────────────────────────────
-    let tarefasAgendaCache = [];
 
     async function carregarAgendaHoje() {
       const agendaDiv  = document.getElementById("agenda-dia");
@@ -1369,15 +1768,29 @@
           .filter(t => dataEhHoje(t.data||""))
           .sort((a,b)=>(a.hora_inicio||"").localeCompare(b.hora_inicio||""));
 
-        // ── CALCULAR RESUMO (usa cache local após fetch) ──
+        try {
+          await carregarStatusGoogleAgenda();
+          if (googleAgendaStatus.conectado) {
+            const hojeIso = dataHojeISO();
+            const params = new URLSearchParams({ date_from: hojeIso, date_to: hojeIso, max_results: "100" });
+            const resGoogle = await fetch(API + "/google/calendar/events?" + params.toString(), { headers: authHeaders() });
+            const eventosGoogle = await resGoogle.json();
+            googleAgendaCache = Array.isArray(eventosGoogle) ? eventosGoogle.map(normalizarEventoGoogle) : [];
+          } else {
+            googleAgendaCache = [];
+          }
+        } catch (e) {
+          console.error(e);
+          googleAgendaCache = [];
+        }
+
         const hojeItens2 = tarefasAgendaCache.filter(t => t.ativo !== false && dataEhHoje(t.data||""));
         let feitos=0, andamento=0;
         hojeItens2.forEach(t => {
-          if (ehStatusFeito(t.status))    feitos++;
+          if (ehStatusFeito(t.status)) feitos++;
           if (ehStatusAndamento(t.status)) andamento++;
         });
 
-        // também conta checklist feitos do dia
         try {
           const resC = await fetch(API+"/checklist",{headers:authHeaders()});
           const chkItens = await resC.json();
@@ -1391,51 +1804,74 @@
           resumoText.textContent = `${feitos} tarefa${feitos!==1?"s":""} concluída${feitos!==1?"s":""} · ${andamento} em andamento`;
         }
 
-        if (hoje.length === 0) {
+        const combinadaHoje = agendaDoDiaCombinada(dataHojeISO());
+        if (combinadaHoje.length === 0) {
           agendaDiv.innerHTML = "<small>Nenhum compromisso agendado para hoje.</small>";
         } else {
           agendaDiv.innerHTML = "";
-          hoje.forEach(t => {
+          combinadaHoje.forEach(t => {
             const item = document.createElement("div");
             item.className = "agenda-item";
 
-            // ── BOLINHA DE STATUS (FIX DO DASHBOARD) ──
-            const statusAtual = t.status || "pendente";
-            const bolinha = document.createElement("div");
-            bolinha.className      = `agenda-status-btn ${statusAtual}`;
-            bolinha.dataset.status = statusAtual;
-            bolinha.title = "Toque para mudar status";
-            bolinha.innerHTML = iconStatusInline(statusAtual);
-
-            bolinha.addEventListener("click", async () => {
-              const atual = bolinha.dataset.status || "pendente";
-              const novo  = proximoStatus(atual);
-              // 1) Atualiza DOM imediatamente (feedback visual)
-              bolinha.dataset.status = novo;
-              bolinha.className = `agenda-status-btn ${novo}`;
-              bolinha.innerHTML = iconStatusInline(novo);
-              // 2) Persiste no servidor E atualiza cache local
-              const ok = await atualizarStatusTarefa(t.id, novo);
-              if (!ok) { console.warn("[PRIORIZA] PUT falhou para tarefa", t.id); }
-              // 3) Recalcula barra usando cache (sem round-trip ao /resumo)
-              await recalcularResumoBar();
-            });
+            if ((t.tipo_evento || "") === "google") {
+              const marcador = document.createElement("div");
+              marcador.className = "agenda-status-btn pendente";
+              marcador.innerHTML = `<svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="#2563eb"><rect x="48" y="48" width="160" height="160" rx="24" fill="currentColor" opacity="0.18"/><rect x="48" y="48" width="160" height="160" rx="24" stroke="currentColor" stroke-width="20"/></svg>`;
+              marcador.title = "Evento do Google Agenda";
+              item.appendChild(marcador);
+            } else {
+              const statusAtual = t.status || "pendente";
+              const bolinha = document.createElement("div");
+              bolinha.className = `agenda-status-btn ${statusAtual}`;
+              bolinha.dataset.status = statusAtual;
+              bolinha.title = "Toque para mudar status";
+              bolinha.innerHTML = iconStatusInline(statusAtual);
+              bolinha.addEventListener("click", async () => {
+                const atual = bolinha.dataset.status || "pendente";
+                const novo  = proximoStatus(atual);
+                bolinha.dataset.status = novo;
+                bolinha.className = `agenda-status-btn ${novo}`;
+                bolinha.innerHTML = iconStatusInline(novo);
+                const ok = await atualizarStatusTarefa(t.id, novo);
+                if (!ok) console.warn("[PRIORIZA] PUT falhou para tarefa", t.id);
+                await recalcularResumoBar();
+              });
+              item.appendChild(bolinha);
+            }
 
             const horario = document.createElement("div");
-            horario.className   = "agenda-horario";
+            horario.className = "agenda-horario";
             horario.textContent = t.hora_inicio || "--:--";
 
             const conteudo = document.createElement("div");
             conteudo.className = "agenda-conteudo";
             const tituloEl = document.createElement("div");
-            tituloEl.className   = "agenda-titulo";
+            tituloEl.className = "agenda-titulo";
             tituloEl.textContent = t.titulo;
             conteudo.appendChild(tituloEl);
             conteudo.insertAdjacentHTML("beforeend", criarTagHTML(t));
 
-            item.appendChild(bolinha);
+            if (t.local) {
+              const meta = document.createElement("div");
+              meta.className = "agenda-meta";
+              meta.textContent = t.local;
+              conteudo.appendChild(meta);
+            }
+
             item.appendChild(horario);
             item.appendChild(conteudo);
+
+            if ((t.tipo_evento || "") === "google" && t.link) {
+              const link = document.createElement("a");
+              link.className = "agenda-icon-link";
+              link.href = t.link;
+              link.target = "_blank";
+              link.rel = "noopener noreferrer";
+              link.title = "Abrir no Google Agenda";
+              link.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M104 152l72-72" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M136 80h40v40" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 136v48a8 8 0 0 1-8 8H72a8 8 0 0 1-8-8V112a8 8 0 0 1 8-8h48" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+              item.appendChild(link);
+            }
+
             agendaDiv.appendChild(item);
           });
         }
@@ -2167,16 +2603,41 @@
       title.textContent=`${nomesMes[mes]} de ${ano}`;
       grid.innerHTML="";
       ["D","S","T","Q","Q","S","S"].forEach(ds=>{ const d=document.createElement("div"); d.className="calendar-weekday"; d.textContent=ds; grid.appendChild(d); });
-      function prioDoDia(iso){ const l=tarefasAgendaCache.filter(t=>normalizarDataParaISO(t.data||"")===iso&&t.ativo!==false); if(!l.length) return null; let t1=false,t2=false,t3=false; l.forEach(t=>{const p=String(t.prioridade||""); if(p==="1")t1=true;if(p==="2")t2=true;if(p==="3")t3=true;}); if(t1&&t2&&t3)return"misto";if(t1)return"1";if(t2)return"2";if(t3)return"3"; return null; }
+
+      function marcadoresDoDia(iso) {
+        const locais = tarefasAgendaCache.filter(t => normalizarDataParaISO(t.data||"")===iso && t.ativo!==false);
+        const google = googleAgendaCache.filter(t => normalizarDataParaISO(t.data||"")===iso && t.ativo!==false);
+        const dots = [];
+        if (locais.length && google.length) {
+          dots.push("local-google");
+        } else {
+          if (locais.length) {
+            let t1=false,t2=false,t3=false;
+            locais.forEach(t=>{const p=String(t.prioridade||""); if(p==="1")t1=true; if(p==="2")t2=true; if(p==="3")t3=true;});
+            if(t1&&t2&&t3) dots.push("misto");
+            else if(t1) dots.push("prio1");
+            else if(t2) dots.push("prio2");
+            else if(t3) dots.push("prio3");
+            else dots.push("prio2");
+          }
+          if (google.length) dots.push("google");
+        }
+        return dots.slice(0,2);
+      }
+
       for(let i=0;i<42;i++){
         const dia=new Date(inicio); dia.setDate(inicio.getDate()+i); const iso=dateToISO(dia);
         const cel=document.createElement("div"); cel.className="calendar-day"; if(dia.getMonth()!==mes)cel.classList.add("out-month"); if(iso===calendarioDiaSelecionadoISO)cel.classList.add("selected");
         const num=document.createElement("div"); num.className="calendar-day-number"; num.textContent=dia.getDate();
         const dots=document.createElement("div"); dots.className="calendar-day-dots";
-        const prio=prioDoDia(iso); if(prio){const dot=document.createElement("div"); dot.className="calendar-dot"; dot.classList.add(prio==="1"?"prio1":prio==="2"?"prio2":prio==="3"?"prio3":"misto"); dots.appendChild(dot);}
+        marcadoresDoDia(iso).forEach(tipo=>{ const dot=document.createElement("div"); dot.className=`calendar-dot ${tipo}`; dots.appendChild(dot); });
         cel.appendChild(num); cel.appendChild(dots);
-        const mmdd=iso.slice(5); if(feriadosFixos[mmdd]){const f=document.createElement("div"); f.className="calendar-holiday"; f.textContent=feriadosFixos[mmdd]; cel.appendChild(f);}
-        cel.addEventListener("click",()=>{ calendarioDiaSelecionadoISO=iso; document.getElementById("calendar-container").style.display="none"; document.getElementById("agenda-dia-container").style.display="block"; montarCalendarioMes(); preencherAgendaDiaSelecionado(); });
+        cel.addEventListener("click",()=>{
+          calendarioDiaSelecionadoISO=iso;
+          document.getElementById("calendar-container").style.display="none";
+          document.getElementById("agenda-dia-container").style.display="block";
+          montarCalendarioMes(); preencherAgendaDiaSelecionado();
+        });
         grid.appendChild(cel);
       }
     }
@@ -2186,22 +2647,54 @@
       if(!lista||!label) return;
       label.textContent="Agenda de "+formatarDataCurtaBR(calendarioDiaSelecionadoISO);
       if(inputData) inputData.value=calendarioDiaSelecionadoISO;
-      const tarefasDoDia=tarefasAgendaCache.filter(t=>t.ativo!==false&&normalizarDataParaISO(t.data||"")===calendarioDiaSelecionadoISO).sort((a,b)=>(a.hora_inicio||"").localeCompare(b.hora_inicio||""));
-      if(tarefasDoDia.length===0){lista.innerHTML="<small>Nenhum compromisso para este dia.</small>";return;}
+      const itensDoDia = agendaDoDiaCombinada(calendarioDiaSelecionadoISO);
+      if(itensDoDia.length===0){lista.innerHTML="<small>Nenhum compromisso para este dia.</small>";return;}
       lista.innerHTML="";
-      tarefasDoDia.forEach(t=>{
+      itensDoDia.forEach(t=>{
         const item=document.createElement("div"); item.className="agenda-item";
         const hor=document.createElement("div"); hor.className="agenda-horario"; hor.textContent=t.hora_inicio||"--:--";
         const con=document.createElement("div"); con.className="agenda-conteudo"; con.style.flex="1";
         const ti=document.createElement("div"); ti.className="agenda-titulo"; ti.textContent=t.titulo;
-        const prioEl=document.createElement("div"); prioEl.style.cssText="font-size:11px;color:#6b7280;margin-top:2px"; prioEl.textContent=`Prioridade ${t.prioridade||"–"}`;
-        con.appendChild(ti); con.insertAdjacentHTML("beforeend",criarTagHTML(t)); con.appendChild(prioEl);
-        const btnDel=document.createElement("button"); btnDel.className="checklist-delete-btn"; btnDel.textContent="✕"; btnDel.title="Excluir";
-        btnDel.addEventListener("click", async()=>{
-          if(!await modal.confirmar("Excluir este compromisso?","Excluir","vermelho")) return;
-          mostrarFlashFull("danger"); setTimeout(async()=>{ await excluirTarefa(t.id); await carregarAgendaHoje(); await atualizarAgendaMesEDia(); },FLASH_DURATION_MS);
-        });
-        item.appendChild(hor); item.appendChild(con); item.appendChild(btnDel); lista.appendChild(item);
+        con.appendChild(ti);
+        con.insertAdjacentHTML("beforeend",criarTagHTML(t));
+
+        const metaLinhas = [];
+        if ((t.tipo_evento || "") !== "google") metaLinhas.push(`Prioridade ${t.prioridade||"–"}`);
+        if (t.local) metaLinhas.push(t.local);
+        if (t.hora_fim && t.hora_inicio !== "Dia todo") metaLinhas.push(`${t.hora_inicio} até ${t.hora_fim}`);
+        if (t.descricao) metaLinhas.push(t.descricao);
+        if (metaLinhas.length) {
+          const meta=document.createElement("div"); meta.className="agenda-meta"; meta.textContent=metaLinhas.join(" · "); con.appendChild(meta);
+        }
+
+        item.appendChild(hor); item.appendChild(con);
+
+        if ((t.tipo_evento || "") === "google") {
+          if (t.link) {
+            const link=document.createElement("a");
+            link.className="agenda-icon-link";
+            link.href=t.link;
+            link.target="_blank";
+            link.rel="noopener noreferrer";
+            link.title="Abrir no Google Agenda";
+            link.innerHTML=`<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M104 152l72-72" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M136 80h40v40" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 136v48a8 8 0 0 1-8 8H72a8 8 0 0 1-8-8V112a8 8 0 0 1 8-8h48" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+            item.appendChild(link);
+          }
+        } else {
+          const btnDel=document.createElement("button");
+          btnDel.className="agenda-icon-btn";
+          btnDel.title="Excluir compromisso";
+          btnDel.innerHTML=`<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M96 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M160 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M40 72h176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M72 72l8-24h96l8 24" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M56 72l8 128a8 8 0 0 0 8 8h112a8 8 0 0 0 8-8l8-128" stroke="currentColor" stroke-width="20" stroke-linejoin="round"/></svg>`;
+          btnDel.addEventListener("click", async()=>{
+            const confirmou = await modal.confirmar("Excluir este compromisso?","Excluir","vermelho");
+            if(!confirmou) return;
+            mostrarFlashFull("danger");
+            setTimeout(async()=>{ await excluirTarefa(t.id); await carregarAgendaHoje(); await atualizarAgendaMesEDia(); },FLASH_DURATION_MS);
+          });
+          item.appendChild(btnDel);
+        }
+
+        lista.appendChild(item);
       });
     }
 
@@ -2209,7 +2702,11 @@
       try {
         const res=await fetch(API+"/tarefas",{headers:authHeaders()});
         tarefasAgendaCache=(await res.json())||[];
-        montarCalendarioMes(); preencherAgendaDiaSelecionado();
+        if (!Array.isArray(tarefasAgendaCache)) tarefasAgendaCache = [];
+        await carregarStatusGoogleAgenda();
+        await carregarEventosGoogleAgendaMes();
+        montarCalendarioMes();
+        preencherAgendaDiaSelecionado();
       } catch(e){console.error(e);}
     }
 
@@ -2347,6 +2844,21 @@
         if (ev.key === "Escape") toggleFormAgenda(false);
       });
 
+      document.getElementById("btn-google-conectar")?.addEventListener("click", async () => {
+        const status = await carregarStatusGoogleAgenda();
+        if (!status.configurado) {
+          await modal.alerta("O backend ainda não está com as credenciais do Google configuradas.", "Google Agenda");
+          return;
+        }
+        window.location.href = API + "/auth/google";
+      });
+      document.getElementById("btn-google-atualizar")?.addEventListener("click", async () => {
+        await sincronizarAgendaGoogleCompleta();
+      });
+      document.getElementById("btn-google-desconectar")?.addEventListener("click", async () => {
+        await desconectarGoogleAgenda();
+      });
+
       document.getElementById("form-checklist")?.addEventListener("submit", salvarNovaRotinaChecklist);
 
       document.getElementById("form-agenda")?.addEventListener("submit", async(ev)=>{
@@ -2357,19 +2869,33 @@
         const hora      = document.getElementById("agenda-hora")?.value||"00:00";
         const duracao   = document.getElementById("agenda-duracao")?.value||"60";
         const prioridade= document.getElementById("agenda-prioridade")?.value||"2";
+        const syncGoogle = document.getElementById("agenda-sincronizar-google")?.checked === true;
         if(!titulo||!data){await modal.alerta("Preencha pelo menos Título e Data.","Atenção");return;}
         const btn=document.getElementById("btn-salvar-compromisso"); btn.disabled=true;
         try {
           const res=await fetch(API+"/tarefas?"+new URLSearchParams({titulo,origem,data,hora_inicio:hora,duracao_min:duracao,prioridade}),{method:"POST",headers:authHeaders()});
           if(!res.ok){await modal.alerta("Não foi possível salvar o compromisso.","Erro");return;}
+
+          let mensagemSucesso = "Compromisso salvo no PRIORIZA.";
+          if(syncGoogle){
+            try {
+              await criarEventoGooglePeloFormulario({ titulo, data, hora, duracao, local: origem });
+              mensagemSucesso = "Compromisso salvo no PRIORIZA e enviado ao Google Agenda.";
+            } catch(e) {
+              console.error(e);
+              mensagemSucesso = "Compromisso salvo no PRIORIZA, mas não foi possível enviar ao Google Agenda.";
+            }
+          }
+
           if(origem&&!getLocaisSalvos().includes(origem)){
             if(await modal.confirmar(`Salvar "${origem}" como local frequente?`,"Local frequente","verde")){
               adicionarLocalSalvo(origem); renderLocaisSugeridos("agenda-locais-sugeridos","agenda-local"); renderLocaisSugeridos("chk-locais-sugeridos","chk-local");
             }
           }
           document.getElementById("form-agenda").reset();
+          document.getElementById("agenda-sincronizar-google").checked = false;
           toggleFormAgenda(false);
-          await modal.alerta("Compromisso salvo.","Sucesso");
+          await modal.alerta(mensagemSucesso,"Sucesso");
           await carregarAgendaHoje(); await atualizarAgendaMesEDia(); await carregarPessoalLista();
         } catch(e){console.error(e); await modal.alerta("Erro ao conectar com o servidor.","Erro");}
         finally{btn.disabled=false;}
@@ -2395,6 +2921,11 @@
       // Carregamento inicial
       carregarAgendaHoje();
       atualizarAgendaMesEDia();
+      carregarStatusGoogleAgenda();
+      if (new URLSearchParams(window.location.search).get("google") === "conectado") {
+        modal.alerta("Google Agenda conectado com sucesso.", "Integração Google");
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
       carregarChecklistHoje();
       carregarChecklistGeral();
       carregarPessoalLista();
