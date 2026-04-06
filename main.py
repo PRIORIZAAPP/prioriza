@@ -1,5 +1,4 @@
 import os
-import json
 from datetime import datetime, date, timezone
 
 from fastapi import (
@@ -15,6 +14,7 @@ from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request as GoogleAuthRequest
 from googleapiclient.discovery import build
+from requests_oauthlib import OAuth2Session
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -383,16 +383,18 @@ if not os.path.exists("static"):
     os.makedirs("static")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-from fastapi.responses import FileResponse
+
 
 @app.get("/favicon.ico")
 def favicon():
     return FileResponse("favicon.ico")
 
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
-    
+
+
 @app.get("/")
 def root():
     return RedirectResponse(url="/app")
@@ -477,22 +479,32 @@ def auth_google_callback(
     if not code:
         raise HTTPException(status_code=400, detail="Código de autorização não recebido.")
 
-    flow = Flow.from_client_config(
-        {
-            "web": {
-                "client_id": GOOGLE_CLIENT_ID,
-                "client_secret": GOOGLE_CLIENT_SECRET,
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-            }
-        },
-        scopes=GOOGLE_SCOPES,
-    )
-    flow.redirect_uri = GOOGLE_REDIRECT_URI
-    flow.fetch_token(code=code)
+    try:
+        oauth = OAuth2Session(
+            client_id=GOOGLE_CLIENT_ID,
+            redirect_uri=GOOGLE_REDIRECT_URI,
+            scope=GOOGLE_SCOPES,
+        )
 
-    credentials = flow.credentials
-    salvar_google_credentials(db, credentials)
+        token = oauth.fetch_token(
+            token_url="https://oauth2.googleapis.com/token",
+            client_secret=GOOGLE_CLIENT_SECRET,
+            code=code,
+        )
+
+        credentials = Credentials(
+            token=token.get("access_token"),
+            refresh_token=token.get("refresh_token"),
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=GOOGLE_CLIENT_ID,
+            client_secret=GOOGLE_CLIENT_SECRET,
+            scopes=GOOGLE_SCOPES,
+        )
+
+        salvar_google_credentials(db, credentials)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao concluir login Google: {str(e)}")
 
     return RedirectResponse(url="/app?google=conectado")
 
@@ -800,10 +812,9 @@ async def editar_tarefa(
     db.refresh(tarefa)
     return tarefa.to_dict()
 
-from fastapi import HTTPException
 
 @app.post("/tarefas_editar")
-def editar_tarefa(
+def editar_tarefa_legado(
     tarefa_id: int,
     titulo: str,
     origem: str = "",
