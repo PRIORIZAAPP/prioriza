@@ -1,4 +1,5 @@
 import os
+import json
 from datetime import datetime, date, timezone
 
 from fastapi import (
@@ -10,6 +11,10 @@ from fastapi import (
     Request,
 )
 from fastapi.responses import FileResponse, RedirectResponse
+from google_auth_oauthlib.flow import Flow
+from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request as GoogleAuthRequest
+from googleapiclient.discovery import build
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -20,6 +25,7 @@ from sqlalchemy import (
     String,
     Boolean,
     DateTime,
+    Text,
 )
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 
@@ -41,6 +47,14 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 app = FastAPI(title="PRIORIZA API")
+
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "").strip()
+GOOGLE_REDIRECT_URI = os.environ.get(
+    "GOOGLE_REDIRECT_URI",
+    "http://localhost:8000/auth/google/callback",
+).strip()
+GOOGLE_SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -136,6 +150,37 @@ class Note(Base):
             "status": self.status,
             "ativo": self.ativo,
             "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class GoogleCalendarToken(Base):
+    __tablename__ = "google_calendar_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    provider = Column(String, default="google", nullable=False)
+    access_token = Column(Text, nullable=False)
+    refresh_token = Column(Text, nullable=True)
+    token_uri = Column(String, default="https://oauth2.googleapis.com/token")
+    client_id = Column(Text, nullable=False)
+    client_secret = Column(Text, nullable=False)
+    scopes = Column(Text, default="")
+    expiry = Column(DateTime, nullable=True)
+    ativo = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "provider": self.provider,
+            "expiry": self.expiry.isoformat() if self.expiry else None,
+            "ativo": self.ativo,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
 
 
@@ -255,6 +300,81 @@ def calcular_dias_para_proxima(item: ChecklistItem) -> int:
     return (proxima - date.today()).days
 
 
+def google_configurado() -> bool:
+    return bool(GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET and GOOGLE_REDIRECT_URI)
+
+
+def salvar_google_credentials(db: Session, credentials: Credentials):
+    token_row = db.query(GoogleCalendarToken).filter(GoogleCalendarToken.provider == "google").first()
+
+    scopes_str = ",".join(credentials.scopes or GOOGLE_SCOPES)
+    expiry = credentials.expiry
+    if expiry and expiry.tzinfo is None:
+        expiry = expiry.replace(tzinfo=timezone.utc)
+
+    if not token_row:
+        token_row = GoogleCalendarToken(
+            provider="google",
+            access_token=credentials.token,
+            refresh_token=credentials.refresh_token,
+            token_uri=credentials.token_uri or "https://oauth2.googleapis.com/token",
+            client_id=credentials.client_id or GOOGLE_CLIENT_ID,
+            client_secret=credentials.client_secret or GOOGLE_CLIENT_SECRET,
+            scopes=scopes_str,
+            expiry=expiry,
+            ativo=True,
+        )
+        db.add(token_row)
+    else:
+        token_row.access_token = credentials.token
+        if credentials.refresh_token:
+            token_row.refresh_token = credentials.refresh_token
+        token_row.token_uri = credentials.token_uri or "https://oauth2.googleapis.com/token"
+        token_row.client_id = credentials.client_id or GOOGLE_CLIENT_ID
+        token_row.client_secret = credentials.client_secret or GOOGLE_CLIENT_SECRET
+        token_row.scopes = scopes_str
+        token_row.expiry = expiry
+        token_row.ativo = True
+        token_row.updated_at = datetime.now(timezone.utc)
+
+    db.commit()
+    db.refresh(token_row)
+    return token_row
+
+
+def get_google_credentials(db: Session) -> Credentials:
+    token_row = db.query(GoogleCalendarToken).filter(
+        GoogleCalendarToken.provider == "google",
+        GoogleCalendarToken.ativo == True,
+    ).first()
+
+    if not token_row:
+        raise HTTPException(status_code=404, detail="Google Agenda ainda não foi conectado.")
+
+    scopes = [s for s in (token_row.scopes or "").split(",") if s] or GOOGLE_SCOPES
+
+    credentials = Credentials(
+        token=token_row.access_token,
+        refresh_token=token_row.refresh_token,
+        token_uri=token_row.token_uri or "https://oauth2.googleapis.com/token",
+        client_id=token_row.client_id,
+        client_secret=token_row.client_secret,
+        scopes=scopes,
+    )
+
+    if credentials.expired and credentials.refresh_token:
+        credentials.refresh(GoogleAuthRequest())
+        salvar_google_credentials(db, credentials)
+        return credentials
+
+    return credentials
+
+
+def google_service(db: Session):
+    credentials = get_google_credentials(db)
+    return build("calendar", "v3", credentials=credentials)
+
+
 # ============================================================
 # STATIC / FRONT
 # ============================================================
@@ -281,6 +401,214 @@ def root():
 @app.get("/app")
 def serve_app():
     return FileResponse("index.html")
+
+
+# ============================================================
+# GOOGLE AGENDA
+# ============================================================
+
+@app.get("/google/status")
+def google_status(db: Session = Depends(get_db)):
+    token_row = db.query(GoogleCalendarToken).filter(
+        GoogleCalendarToken.provider == "google",
+        GoogleCalendarToken.ativo == True,
+    ).first()
+
+    return {
+        "configurado": google_configurado(),
+        "conectado": token_row is not None,
+        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "token": token_row.to_dict() if token_row else None,
+    }
+
+
+@app.get("/auth/google")
+def auth_google():
+    if not google_configurado():
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Google não configurado. Defina GOOGLE_CLIENT_ID, "
+                "GOOGLE_CLIENT_SECRET e GOOGLE_REDIRECT_URI nas variáveis de ambiente."
+            ),
+        )
+
+    flow = Flow.from_client_config(
+        {
+            "web": {
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        },
+        scopes=GOOGLE_SCOPES,
+    )
+
+    flow.redirect_uri = GOOGLE_REDIRECT_URI
+    auth_url, _state = flow.authorization_url(
+        access_type="offline",
+        prompt="consent",
+        include_granted_scopes="true",
+    )
+
+    return RedirectResponse(auth_url)
+
+
+@app.get("/auth/google/callback")
+def auth_google_callback(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    if not google_configurado():
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Google não configurado. Defina GOOGLE_CLIENT_ID, "
+                "GOOGLE_CLIENT_SECRET e GOOGLE_REDIRECT_URI nas variáveis de ambiente."
+            ),
+        )
+
+    error = request.query_params.get("error")
+    if error:
+        raise HTTPException(status_code=400, detail=f"Falha na autorização Google: {error}")
+
+    code = request.query_params.get("code")
+    if not code:
+        raise HTTPException(status_code=400, detail="Código de autorização não recebido.")
+
+    flow = Flow.from_client_config(
+        {
+            "web": {
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        },
+        scopes=GOOGLE_SCOPES,
+    )
+    flow.redirect_uri = GOOGLE_REDIRECT_URI
+    flow.fetch_token(code=code)
+
+    credentials = flow.credentials
+    salvar_google_credentials(db, credentials)
+
+    return RedirectResponse(url="/app?google=conectado")
+
+
+@app.get("/google/calendar/events")
+def listar_eventos_google(
+    date_from: str = Query(None, description="Data inicial YYYY-MM-DD"),
+    date_to: str = Query(None, description="Data final YYYY-MM-DD"),
+    max_results: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    service = google_service(db)
+
+    if date_from and not validar_data_iso(date_from):
+        raise HTTPException(status_code=400, detail="date_from inválida. Use YYYY-MM-DD.")
+    if date_to and not validar_data_iso(date_to):
+        raise HTTPException(status_code=400, detail="date_to inválida. Use YYYY-MM-DD.")
+
+    if date_from:
+        time_min = f"{date_from}T00:00:00Z"
+    else:
+        time_min = datetime.now(timezone.utc).isoformat()
+
+    time_max = f"{date_to}T23:59:59Z" if date_to else None
+
+    eventos = service.events().list(
+        calendarId="primary",
+        timeMin=time_min,
+        timeMax=time_max,
+        maxResults=max_results,
+        singleEvents=True,
+        orderBy="startTime",
+    ).execute()
+
+    items = []
+    for event in eventos.get("items", []):
+        inicio = (event.get("start") or {}).get("dateTime") or (event.get("start") or {}).get("date")
+        fim = (event.get("end") or {}).get("dateTime") or (event.get("end") or {}).get("date")
+        items.append(
+            {
+                "id": event.get("id"),
+                "titulo": event.get("summary") or "(Sem título)",
+                "descricao": event.get("description") or "",
+                "local": event.get("location") or "",
+                "inicio": inicio,
+                "fim": fim,
+                "status": event.get("status"),
+                "link": event.get("htmlLink"),
+                "origem": "google_calendar",
+            }
+        )
+
+    return items
+
+
+@app.post("/google/calendar/events")
+def criar_evento_google(
+    titulo: str = Query(...),
+    data: str = Query(..., description="YYYY-MM-DD"),
+    hora_inicio: str = Query(..., description="HH:MM"),
+    hora_fim: str = Query(..., description="HH:MM"),
+    descricao: str = Query(""),
+    local: str = Query(""),
+    db: Session = Depends(get_db),
+):
+    if not validar_data_iso(data):
+        raise HTTPException(status_code=400, detail="Data inválida. Use YYYY-MM-DD.")
+
+    try:
+        inicio_dt = datetime.fromisoformat(f"{data}T{hora_inicio}:00")
+        fim_dt = datetime.fromisoformat(f"{data}T{hora_fim}:00")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Hora inválida. Use HH:MM.")
+
+    if fim_dt <= inicio_dt:
+        raise HTTPException(status_code=400, detail="Hora final deve ser maior que a inicial.")
+
+    service = google_service(db)
+
+    evento = {
+        "summary": titulo.strip(),
+        "description": (descricao or "").strip(),
+        "location": (local or "").strip(),
+        "start": {
+            "dateTime": inicio_dt.isoformat(),
+            "timeZone": "America/Sao_Paulo",
+        },
+        "end": {
+            "dateTime": fim_dt.isoformat(),
+            "timeZone": "America/Sao_Paulo",
+        },
+    }
+
+    criado = service.events().insert(calendarId="primary", body=evento).execute()
+
+    return {
+        "ok": True,
+        "evento_id": criado.get("id"),
+        "link": criado.get("htmlLink"),
+        "titulo": criado.get("summary"),
+        "inicio": (criado.get("start") or {}).get("dateTime"),
+        "fim": (criado.get("end") or {}).get("dateTime"),
+    }
+
+
+@app.post("/google/disconnect")
+def desconectar_google(db: Session = Depends(get_db)):
+    token_row = db.query(GoogleCalendarToken).filter(GoogleCalendarToken.provider == "google").first()
+    if not token_row:
+        return {"ok": True, "mensagem": "Google já estava desconectado."}
+
+    token_row.ativo = False
+    token_row.updated_at = datetime.now(timezone.utc)
+    db.commit()
+
+    return {"ok": True, "mensagem": "Google Agenda desconectado com sucesso."}
 
 
 # ============================================================
