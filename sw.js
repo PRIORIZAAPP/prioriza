@@ -52,34 +52,40 @@ self.addEventListener("fetch", event => {
 
 // ── Push: recebe e exibe notificação ──
 self.addEventListener("push", event => {
+  // Suporta tanto {"titulo","corpo"} (servidor Python) quanto {"title","body"} (padrão)
   let data = {
-    title: "PRIORIZA",
-    body: "Você tem tarefas pendentes!",
+    titulo: "PRIORIZA",
+    corpo: "Você tem tarefas pendentes!",
     url: "/app"
   };
 
   try {
     if (event.data) {
-      data = JSON.parse(event.data.text());
+      const parsed = JSON.parse(event.data.text());
+      // Aceita os dois formatos
+      data.titulo = parsed.titulo || parsed.title || data.titulo;
+      data.corpo   = parsed.corpo  || parsed.body  || data.corpo;
+      data.url     = parsed.url    || data.url;
+      data.icone   = parsed.icone  || parsed.icon  || "/icon-192x192.png";
     }
   } catch (e) {
     console.log("Push com payload inválido.");
   }
 
   const options = {
-    body: data.body || "",
-    icon: "/icon-192x192.png",
+    body: data.corpo,
+    icon: data.icone || "/icon-192x192.png",
     badge: "/icon-192x192.png",
     vibrate: [100, 50, 100],
     data: { url: data.url || "/app" },
     actions: [
-      { action: "open", title: "Abrir app" },
+      { action: "open",    title: "Abrir app" },
       { action: "dismiss", title: "Dispensar" }
     ]
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || "PRIORIZA", options)
+    self.registration.showNotification(data.titulo, options)
   );
 });
 
