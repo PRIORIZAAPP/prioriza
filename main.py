@@ -1,6 +1,7 @@
 import os
 import json
 import threading
+from pathlib import Path
 from datetime import datetime, date, timezone, timedelta
 from typing import Optional
 
@@ -37,6 +38,9 @@ from sqlalchemy.orm import sessionmaker, declarative_base, Session
 # ============================================================
 # CONFIG GERAL
 # ============================================================
+
+# Diretório base do projeto (onde está o main.py)
+BASE_DIR = Path(__file__).resolve().parent
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./prioriza.db")
 
@@ -434,29 +438,41 @@ def google_service(db: Session):
 if not os.path.exists("static"):
     os.makedirs("static")
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Pasta static (cria se não existir)
+_static_dir = BASE_DIR / "static"
+_static_dir.mkdir(exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(_static_dir)), name="static")
 
 
 @app.get("/favicon.ico")
 def favicon():
-    return FileResponse("favicon.ico")
+    p = BASE_DIR / "favicon.ico"
+    return FileResponse(str(p)) if p.exists() else FileResponse(str(BASE_DIR / "ícone-48x48.png")) if (BASE_DIR / "ícone-48x48.png").exists() else __import__('fastapi').Response(status_code=404)
 
 
 @app.get("/sw.js")
 def service_worker():
-    return FileResponse("sw.js", media_type="application/javascript")
+    p = BASE_DIR / "sw.js"
+    if not p.exists():
+        raise HTTPException(status_code=404, detail="sw.js não encontrado")
+    return FileResponse(str(p), media_type="application/javascript")
 
 
 @app.get("/site.webmanifest")
 def webmanifest():
-    return FileResponse("site.webmanifest", media_type="application/manifest+json")
+    p = BASE_DIR / "site.webmanifest"
+    if not p.exists():
+        raise HTTPException(status_code=404, detail="site.webmanifest não encontrado")
+    return FileResponse(str(p), media_type="application/manifest+json")
 
 
 @app.get("/icon-{filename}")
 def icone(filename: str):
-    path = f"icon-{filename}"
-    if os.path.exists(path):
-        return FileResponse(path)
+    # Tenta o nome padrão primeiro, depois o nome em português
+    for nome in [f"icon-{filename}", f"ícone-{filename}"]:
+        p = BASE_DIR / nome
+        if p.exists():
+            return FileResponse(str(p))
     from fastapi import Response
     return Response(status_code=404)
 
@@ -473,7 +489,7 @@ def root():
 
 @app.get("/app")
 def serve_app():
-    return FileResponse("index.html")
+    return FileResponse(str(BASE_DIR / "index.html"))
 
 
 # ============================================================
@@ -1264,7 +1280,16 @@ async def push_unsubscribe(request: Request, db: Session = Depends(get_db)):
 @app.get("/push/status")
 async def push_status(db: Session = Depends(get_db)):
     """Retorna o status do sistema de push notifications."""
-    total = db.query(PushSubscription).filter(PushSubscription.ativo == True).count()
+    try:
+        total = db.query(PushSubscription).filter(PushSubscription.ativo == True).count()
+    except Exception as e:
+        # Tabela ainda não tem todas as colunas — retorna info parcial
+        return {
+            "vapid_configurado": bool(VAPID_PRIVATE_KEY),
+            "assinantes": -1,
+            "erro_tabela": str(e),
+            "solucao": "Redeploy ou migração necessária",
+        }
     return {
         "vapid_configurado": bool(VAPID_PRIVATE_KEY),
         "assinantes": total,
