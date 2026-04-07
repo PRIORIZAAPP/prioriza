@@ -26,6 +26,7 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     Text,
+    text,
 )
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 
@@ -214,6 +215,14 @@ def get_db():
 
 
 init_db()
+
+# Migração automática: adiciona coluna descricao se ainda não existir
+try:
+    with engine.connect() as conn:
+        conn.execute(text("ALTER TABLE tarefas ADD COLUMN descricao VARCHAR DEFAULT ''"))
+        conn.commit()
+except Exception:
+    pass  # coluna já existe, tudo certo
 
 
 # ============================================================
