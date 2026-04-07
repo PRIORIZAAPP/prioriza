@@ -238,13 +238,21 @@ def get_db():
 
 init_db()
 
-# Migração automática: adiciona coluna descricao se ainda não existir
-try:
-    with engine.connect() as conn:
-        conn.execute(text("ALTER TABLE tarefas ADD COLUMN descricao VARCHAR DEFAULT ''"))
-        conn.commit()
-except Exception:
-    pass  # coluna já existe, tudo certo
+# Migração automática: adiciona colunas novas sem apagar dados existentes
+_migracoes = [
+    "ALTER TABLE tarefas ADD COLUMN descricao VARCHAR DEFAULT ''",
+    "ALTER TABLE push_subscriptions ADD COLUMN p256dh TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE push_subscriptions ADD COLUMN auth TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE push_subscriptions ADD COLUMN ativo BOOLEAN DEFAULT TRUE",
+    "ALTER TABLE push_subscriptions ADD COLUMN created_at TIMESTAMP DEFAULT NOW()",
+]
+for _sql in _migracoes:
+    try:
+        with engine.connect() as conn:
+            conn.execute(text(_sql))
+            conn.commit()
+    except Exception:
+        pass  # coluna já existe, tudo certo
 
 
 # ============================================================
@@ -432,6 +440,25 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.get("/favicon.ico")
 def favicon():
     return FileResponse("favicon.ico")
+
+
+@app.get("/sw.js")
+def service_worker():
+    return FileResponse("sw.js", media_type="application/javascript")
+
+
+@app.get("/site.webmanifest")
+def webmanifest():
+    return FileResponse("site.webmanifest", media_type="application/manifest+json")
+
+
+@app.get("/icon-{filename}")
+def icone(filename: str):
+    path = f"icon-{filename}"
+    if os.path.exists(path):
+        return FileResponse(path)
+    from fastapi import Response
+    return Response(status_code=404)
 
 
 @app.get("/health")
