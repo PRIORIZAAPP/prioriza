@@ -85,6 +85,7 @@ class Tarefa(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     titulo = Column(String, nullable=False)
+    descricao = Column(String, default="")      # campo de observações/descrição
     origem = Column(String, default="")
     data = Column(String, nullable=False)       # YYYY-MM-DD
     hora_inicio = Column(String, default="")    # HH:MM
@@ -98,6 +99,7 @@ class Tarefa(Base):
         return {
             "id": self.id,
             "titulo": self.titulo,
+            "descricao": self.descricao or "",
             "origem": self.origem,
             "data": self.data,
             "hora_inicio": self.hora_inicio,
@@ -731,6 +733,7 @@ async def criar_tarefa(
     q = request.query_params
 
     titulo = q.get("titulo")
+    descricao = q.get("descricao")
     origem = q.get("origem")
     data_str = q.get("data")
     hora_inicio = q.get("hora_inicio")
@@ -741,6 +744,7 @@ async def criar_tarefa(
         try:
             form = await request.form()
             titulo = form.get("titulo")
+            descricao = form.get("descricao")
             origem = form.get("origem")
             data_str = form.get("data")
             hora_inicio = form.get("hora_inicio")
@@ -773,6 +777,7 @@ async def criar_tarefa(
 
     tarefa = Tarefa(
         titulo=titulo.strip(),
+        descricao=(descricao or "").strip(),
         origem=origem,
         data=data_str,
         hora_inicio=hora_inicio,
@@ -808,6 +813,7 @@ async def editar_tarefa(
         return q.get(campo) or (form.get(campo) if hasattr(form, "get") else None)
 
     titulo = pegar("titulo")
+    descricao = pegar("descricao")
     origem = pegar("origem")
     data_str = pegar("data")
     hora_inicio = pegar("hora_inicio")
@@ -817,6 +823,8 @@ async def editar_tarefa(
 
     if titulo:
         tarefa.titulo = titulo.strip()
+    if descricao is not None:
+        tarefa.descricao = descricao.strip()
     if origem is not None:
         tarefa.origem = origem.strip()
     if data_str:
