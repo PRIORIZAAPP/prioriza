@@ -14,9 +14,9 @@ from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request as GoogleAuthRequest
 from googleapiclient.discovery import build
-from requests_oauthlib import OAuth2Session
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 
 from sqlalchemy import (
     create_engine,
@@ -55,6 +55,17 @@ GOOGLE_REDIRECT_URI = os.environ.get(
     "http://localhost:8000/auth/google/callback",
 ).strip()
 GOOGLE_SCOPES = ["https://www.googleapis.com/auth/calendar"]
+SESSION_SECRET = os.environ.get(
+    "SESSION_SECRET",
+    "prioriza_google_session_secret_trocar_em_producao",
+).strip()
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SESSION_SECRET,
+    same_site="lax",
+    https_only=True,
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -425,7 +436,7 @@ def google_status(db: Session = Depends(get_db)):
 
 
 @app.get("/auth/google")
-def auth_google():
+def auth_google(request: Request):
     if not google_configurado():
         raise HTTPException(
             status_code=500,
@@ -448,11 +459,15 @@ def auth_google():
     )
 
     flow.redirect_uri = GOOGLE_REDIRECT_URI
-    auth_url, _state = flow.authorization_url(
+
+    auth_url, state = flow.authorization_url(
         access_type="offline",
         prompt="consent",
         include_granted_scopes="true",
     )
+
+    request.session["google_oauth_state"] = state
+    request.session["google_code_verifier"] = flow.code_verifier
 
     return RedirectResponse(auth_url)
 
@@ -479,29 +494,45 @@ def auth_google_callback(
     if not code:
         raise HTTPException(status_code=400, detail="Código de autorização não recebido.")
 
+    saved_state = request.session.get("google_oauth_state")
+    saved_code_verifier = request.session.get("google_code_verifier")
+    returned_state = request.query_params.get("state")
+
+    if not saved_state or not saved_code_verifier:
+        raise HTTPException(
+            status_code=400,
+            detail="Sessão OAuth do Google não encontrada. Tente conectar novamente."
+        )
+
+    if returned_state != saved_state:
+        raise HTTPException(
+            status_code=400,
+            detail="State OAuth inválido. Tente conectar novamente."
+        )
+
     try:
-        oauth = OAuth2Session(
-            client_id=GOOGLE_CLIENT_ID,
-            redirect_uri=GOOGLE_REDIRECT_URI,
-            scope=GOOGLE_SCOPES,
-        )
-
-        token = oauth.fetch_token(
-            token_url="https://oauth2.googleapis.com/token",
-            client_secret=GOOGLE_CLIENT_SECRET,
-            code=code,
-        )
-
-        credentials = Credentials(
-            token=token.get("access_token"),
-            refresh_token=token.get("refresh_token"),
-            token_uri="https://oauth2.googleapis.com/token",
-            client_id=GOOGLE_CLIENT_ID,
-            client_secret=GOOGLE_CLIENT_SECRET,
+        flow = Flow.from_client_config(
+            {
+                "web": {
+                    "client_id": GOOGLE_CLIENT_ID,
+                    "client_secret": GOOGLE_CLIENT_SECRET,
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                }
+            },
             scopes=GOOGLE_SCOPES,
+            state=saved_state,
         )
 
+        flow.redirect_uri = GOOGLE_REDIRECT_URI
+        flow.code_verifier = saved_code_verifier
+        flow.fetch_token(code=code)
+
+        credentials = flow.credentials
         salvar_google_credentials(db, credentials)
+
+        request.session.pop("google_oauth_state", None)
+        request.session.pop("google_code_verifier", None)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao concluir login Google: {str(e)}")
@@ -620,7 +651,8 @@ def desconectar_google(db: Session = Depends(get_db)):
     token_row.updated_at = datetime.now(timezone.utc)
     db.commit()
 
-    return {"ok": True, "mensagem": "Google Agenda desconectado com sucesso."}
+    request_message = {"ok": True, "mensagem": "Google Agenda desconectado com sucesso."}
+    return request_message
 
 
 # ============================================================
