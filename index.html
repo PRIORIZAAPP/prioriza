@@ -3419,6 +3419,48 @@
       await notificacaoSegunda(tarefas);
     }
 
+    // ── Chave pública VAPID (gerada para prioriza.onrender.com) ───
+    const VAPID_PUBLIC_KEY = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBkYIRPqbb5ZfElDa1Ew";
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = "=".repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+      const rawData = atob(base64);
+      return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
+    }
+
+    // ── Registra o Service Worker e inscreve no push ───────────────
+    async function registrarServiceWorker() {
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+        console.warn("[NOTIF] Push não suportado neste navegador.");
+        return;
+      }
+      try {
+        const reg = await navigator.serviceWorker.register("/sw.js");
+        await navigator.serviceWorker.ready;
+
+        // Verifica se já tem inscrição
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+          });
+        }
+
+        // Envia inscrição pro servidor
+        await fetch(API + "/push/subscribe", {
+          method: "POST",
+          headers: { ...authHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify(sub.toJSON()),
+        });
+
+        console.log("[NOTIF] Push registrado com sucesso.");
+      } catch(e) {
+        console.warn("[NOTIF] Erro ao registrar push:", e);
+      }
+    }
+
     // ── Pede permissão e inicia o sistema ─────────────────────────
     async function iniciarSistemaNotificacoes() {
       if (!("Notification" in window)) {
@@ -3439,7 +3481,9 @@
       }
 
       if (Notification.permission === "granted") {
-        // Roda imediatamente e depois a cada minuto
+        // Registra SW para push (app fechado)
+        await registrarServiceWorker();
+        // Roda imediatamente e depois a cada minuto (app aberto)
         loopNotificacoes();
         setInterval(loopNotificacoes, 60 * 1000);
       }
