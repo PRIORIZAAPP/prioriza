@@ -1,5 +1,8 @@
 import os
-from datetime import datetime, date, timezone
+import json
+import threading
+from datetime import datetime, date, timezone, timedelta
+from typing import Optional
 
 from fastapi import (
     FastAPI,
@@ -164,6 +167,25 @@ class Note(Base):
             "status": self.status,
             "ativo": self.ativo,
             "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class PushSubscription(Base):
+    """Armazena a inscrição push de cada dispositivo"""
+    __tablename__ = "push_subscriptions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    endpoint = Column(Text, nullable=False, unique=True)
+    p256dh = Column(Text, nullable=False)
+    auth = Column(Text, nullable=False)
+    ativo = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "endpoint": self.endpoint,
+            "ativo": self.ativo,
         }
 
 
@@ -1125,6 +1147,238 @@ def excluir_nota(
     nota.ativo = False
     db.commit()
     return {"ok": True}
+
+
+# ============================================================
+# PUSH NOTIFICATIONS
+# ============================================================
+
+VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY", "")
+VAPID_PUBLIC_KEY  = os.environ.get("VAPID_PUBLIC_KEY", "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBkYIRPqbb5ZfElDa1Ew")
+VAPID_CLAIMS      = {"sub": "mailto:contato@prioriza.onrender.com"}
+
+
+def _enviar_push(sub: PushSubscription, titulo: str, corpo: str, url: str = "/app"):
+    """Envia uma notificação push para um dispositivo inscrito."""
+    try:
+        from pywebpush import webpush, WebPushException
+        dados = json.dumps({"titulo": titulo, "corpo": corpo, "url": url, "icone": "/icon-180x180.png"})
+        webpush(
+            subscription_info={
+                "endpoint": sub.endpoint,
+                "keys": {"p256dh": sub.p256dh, "auth": sub.auth},
+            },
+            data=dados,
+            vapid_private_key=VAPID_PRIVATE_KEY,
+            vapid_claims=VAPID_CLAIMS,
+        )
+    except Exception as e:
+        print(f"[PUSH] Erro ao enviar para {sub.endpoint[:40]}...: {e}")
+
+
+def _enviar_push_todos(titulo: str, corpo: str, url: str = "/app"):
+    """Envia push para todos os dispositivos inscritos."""
+    if not VAPID_PRIVATE_KEY:
+        return
+    db = SessionLocal()
+    try:
+        subs = db.query(PushSubscription).filter(PushSubscription.ativo == True).all()
+        for sub in subs:
+            _enviar_push(sub, titulo, corpo, url)
+    finally:
+        db.close()
+
+
+@app.post("/push/subscribe")
+async def push_subscribe(request: Request, db: Session = Depends(get_db)):
+    """Recebe a inscrição push do navegador e salva no banco."""
+    try:
+        dados = await request.json()
+        endpoint = dados.get("endpoint", "")
+        keys = dados.get("keys", {})
+        p256dh = keys.get("p256dh", "")
+        auth = keys.get("auth", "")
+
+        if not endpoint or not p256dh or not auth:
+            raise HTTPException(status_code=400, detail="Dados de inscrição inválidos.")
+
+        sub = db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint).first()
+        if sub:
+            sub.p256dh = p256dh
+            sub.auth = auth
+            sub.ativo = True
+        else:
+            sub = PushSubscription(endpoint=endpoint, p256dh=p256dh, auth=auth, ativo=True)
+            db.add(sub)
+
+        db.commit()
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/push/subscribe")
+async def push_unsubscribe(request: Request, db: Session = Depends(get_db)):
+    """Remove inscrição push de um dispositivo."""
+    try:
+        dados = await request.json()
+        endpoint = dados.get("endpoint", "")
+        sub = db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint).first()
+        if sub:
+            sub.ativo = False
+            db.commit()
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Agendador de notificações push ───────────────────────────
+FERIADOS_BR = [
+    (1, 1, "Ano Novo"), (21, 4, "Tiradentes"), (1, 5, "Dia do Trabalho"),
+    (7, 9, "Independência"), (12, 10, "N.S. Aparecida"), (2, 11, "Finados"),
+    (15, 11, "Proclamação da República"), (20, 11, "Consciência Negra"), (25, 12, "Natal"),
+]
+
+
+def _feriado_hoje_ou_amanha():
+    hoje = date.today()
+    amanha = hoje + timedelta(days=1)
+    for d, m, nome in FERIADOS_BR:
+        if hoje.day == d and hoje.month == m:
+            return ("hoje", nome)
+        if amanha.day == d and amanha.month == m:
+            return ("amanha", nome)
+    return None
+
+
+def _loop_notificacoes_push():
+    """Roda a cada minuto e dispara notificações push conforme o horário."""
+    import time
+    while True:
+        try:
+            agora = datetime.now()
+            hora  = agora.hour
+            minuto = agora.minute
+            dia_semana = agora.weekday()  # 0=segunda, 4=sexta
+
+            db = SessionLocal()
+            try:
+                hoje_iso = date.today().isoformat()
+                tarefas_hoje = db.query(Tarefa).filter(
+                    Tarefa.ativo == True, Tarefa.data == hoje_iso
+                ).order_by(Tarefa.hora_inicio).all()
+
+                amanha_iso = (date.today() + timedelta(days=1)).isoformat()
+                tarefas_amanha = db.query(Tarefa).filter(
+                    Tarefa.ativo == True, Tarefa.data == amanha_iso
+                ).all()
+
+                checklist = db.query(ChecklistItem).filter(ChecklistItem.ativo == True).all()
+                chk_hoje = [i for i in checklist if calcular_pode_mostrar_hoje(i)]
+
+                # ── Compromissos próximos (a cada minuto) ──
+                minutos_agora = hora * 60 + minuto
+                for t in tarefas_hoje:
+                    if not t.hora_inicio or t.status == "feito":
+                        continue
+                    try:
+                        h, m = map(int, t.hora_inicio.split(":"))
+                        diff = (h * 60 + m) - minutos_agora
+                        origem = f" · {t.origem}" if t.origem else ""
+                        if diff == 15:
+                            _enviar_push_todos("🔔 Em 15 minutos", f"{t.titulo}{origem} começa às {t.hora_inicio}")
+                        elif diff == 5:
+                            _enviar_push_todos("⏰ Em 5 minutos", f"{t.titulo}{origem} começa às {t.hora_inicio}")
+                        elif diff == 0:
+                            _enviar_push_todos("🚨 Agora!", f"{t.titulo}{origem} está começando!")
+                        elif diff == 60:
+                            _enviar_push_todos("📅 Em 1 hora", f"{t.titulo}{origem} às {t.hora_inicio}")
+                    except Exception:
+                        pass
+
+                # ── Bom dia às 6h ──
+                if hora == 6 and minuto == 0:
+                    total = len(tarefas_hoje)
+                    chk_total = len(chk_hoje)
+                    alta_prio = [t for t in tarefas_hoje if t.prioridade == 1]
+                    if total == 0 and chk_total == 0:
+                        _enviar_push_todos("☀️ Bom dia!", "Agenda livre hoje. Aproveite ou adiante algo!")
+                    elif alta_prio:
+                        _enviar_push_todos("☀️ Bom dia! Dia importante", f"{len(alta_prio)} tarefa(s) de alta prioridade hoje. Primeira: {alta_prio[0].titulo}")
+                    else:
+                        _enviar_push_todos("☀️ Bom dia!", f"Hoje: {total} compromisso(s) e {chk_total} rotina(s) no checklist.")
+
+                # ── Alta prioridade às 9h ──
+                if hora == 9 and minuto == 0:
+                    alta = [t for t in tarefas_hoje if t.prioridade == 1 and t.status != "feito"]
+                    if alta:
+                        _enviar_push_todos("🔴 Tarefa prioritária", f'"{alta[0].titulo}" é alta prioridade. Não deixe passar!' if len(alta) == 1 else f"{len(alta)} tarefas de alta prioridade hoje!")
+
+                # ── Checklist às 11h ──
+                if hora == 11 and minuto == 0:
+                    pendentes = [i for i in chk_hoje if i.status == "pendente"]
+                    feitos = [i for i in chk_hoje if i.status == "feito"]
+                    if pendentes and not feitos:
+                        _enviar_push_todos("📋 Checklist do dia", f"Você ainda não iniciou nenhuma rotina. {len(pendentes)} pendente(s).")
+                    elif pendentes:
+                        _enviar_push_todos("📋 Checklist em andamento", f"{len(feitos)} feita(s), faltam {len(pendentes)}.")
+
+                # ── Fim do dia às 20h ──
+                if hora == 20 and minuto == 0:
+                    feitas = len([t for t in tarefas_hoje if t.status == "feito"])
+                    pendentes_count = len([t for t in tarefas_hoje if t.status == "pendente"])
+                    total = len(tarefas_hoje)
+                    amanha_count = len(tarefas_amanha)
+                    if total == 0:
+                        _enviar_push_todos("🌙 Encerrando o dia", "Nenhum compromisso hoje. Descanse bem!")
+                    elif feitas == total:
+                        _enviar_push_todos("🌙 Parabéns! ✅", f"Todas as {total} tarefa(s) concluídas hoje. Excelente!")
+                    else:
+                        _enviar_push_todos("🌙 Fim do dia", f"{feitas}/{total} tarefas concluídas. {f'Amanhã: {amanha_count} compromisso(s).' if amanha_count else ''}")
+
+                # ── Segunda-feira às 8h ──
+                if dia_semana == 0 and hora == 8 and minuto == 0:
+                    semana_total = db.query(Tarefa).filter(
+                        Tarefa.ativo == True,
+                        Tarefa.data >= hoje_iso,
+                        Tarefa.data <= (date.today() + timedelta(days=4)).isoformat()
+                    ).count()
+                    _enviar_push_todos("💪 Semana começando!", f"Você tem {semana_total} compromisso(s) essa semana. Bora!")
+
+                # ── Sexta-feira às 17h ──
+                if dia_semana == 4 and hora == 17 and minuto == 0:
+                    pendentes_sexta = [t for t in tarefas_hoje if t.status != "feito"]
+                    if not pendentes_sexta:
+                        _enviar_push_todos("🎉 Sexta-feira! Semana concluída", "Você zerou todas as tarefas. Bom descanso!")
+                    else:
+                        _enviar_push_todos("🏁 Sexta-feira! Reta final", f"Faltam {len(pendentes_sexta)} tarefa(s) para fechar a semana.")
+
+                # ── Feriados ──
+                if hora == 7 and minuto == 0:
+                    feriado = _feriado_hoje_ou_amanha()
+                    if feriado:
+                        quando, nome = feriado
+                        tarefas_feriado = tarefas_hoje if quando == "hoje" else tarefas_amanha
+                        n = len(tarefas_feriado)
+                        if quando == "hoje":
+                            _enviar_push_todos(f"🎉 Hoje é feriado — {nome}!", f"{f'Você tem {n} tarefa(s) mesmo assim.' if n else 'Aproveite o dia de folga! 😊'}")
+                        else:
+                            _enviar_push_todos(f"📅 Feriado amanhã — {nome}", f"{f'Você tem {n} tarefa(s) no dia do feriado. Considere adiantar!' if n else 'Amanhã é folga. Adiantar tarefas hoje?'}")
+
+            finally:
+                db.close()
+
+        except Exception as e:
+            print(f"[PUSH LOOP] Erro: {e}")
+
+        time.sleep(60)  # espera 1 minuto
+
+
+# Inicia o loop em thread separada ao subir o servidor
+_thread_push = threading.Thread(target=_loop_notificacoes_push, daemon=True)
+_thread_push.start()
 
 
 # ============================================================
