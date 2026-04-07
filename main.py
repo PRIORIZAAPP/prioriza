@@ -1234,6 +1234,30 @@ async def push_unsubscribe(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/push/status")
+async def push_status(db: Session = Depends(get_db)):
+    """Retorna o status do sistema de push notifications."""
+    total = db.query(PushSubscription).filter(PushSubscription.ativo == True).count()
+    return {
+        "vapid_configurado": bool(VAPID_PRIVATE_KEY),
+        "assinantes": total,
+        "public_key": VAPID_PUBLIC_KEY,
+    }
+
+
+@app.get("/push/teste")
+async def push_teste(db: Session = Depends(get_db)):
+    """Dispara uma notificação de teste para todos os dispositivos inscritos."""
+    if not VAPID_PRIVATE_KEY:
+        raise HTTPException(status_code=503, detail="VAPID_PRIVATE_KEY não configurada no servidor.")
+    subs = db.query(PushSubscription).filter(PushSubscription.ativo == True).all()
+    if not subs:
+        raise HTTPException(status_code=404, detail="Nenhum dispositivo inscrito. Abra o app primeiro.")
+    for sub in subs:
+        _enviar_push(sub, "🧪 Teste PRIORIZA", "Push funcionando com app fechado! 🎉", "/app")
+    return {"ok": True, "enviado_para": len(subs)}
+
+
 # ── Agendador de notificações push ───────────────────────────
 FERIADOS_BR = [
     (1, 1, "Ano Novo"), (21, 4, "Tiradentes"), (1, 5, "Dia do Trabalho"),
