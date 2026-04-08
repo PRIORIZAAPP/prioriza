@@ -254,22 +254,23 @@ for _sql in _migracoes:
     except Exception:
         pass  # coluna já existe, tudo certo
 
-# Migração especial: recria push_subscriptions se estiver quebrada
+# Migração especial: força recriação da tabela push_subscriptions
+# (necessário porque a estrutura antiga tinha coluna 'keys_json' que não existe mais)
 try:
     with engine.connect() as conn:
-        # Testa se a tabela está OK
-        conn.execute(text("SELECT id, endpoint, p256dh, auth, ativo FROM push_subscriptions LIMIT 1"))
-except Exception:
-    # Tabela quebrada ou incompleta — recria do zero
-    try:
-        with engine.connect() as conn:
-            conn.execute(text("DROP TABLE IF EXISTS push_subscriptions"))
-            conn.commit()
-        # Recria usando o modelo ORM
-        PushSubscription.__table__.create(bind=engine, checkfirst=True)
-        print("[MIGRAÇÃO] Tabela push_subscriptions recriada com sucesso.")
-    except Exception as e:
-        print(f"[MIGRAÇÃO] Erro ao recriar push_subscriptions: {e}")
+        # Apaga a tabela antiga completamente
+        conn.execute(text("DROP TABLE IF EXISTS push_subscriptions CASCADE"))
+        conn.commit()
+        print("[MIGRAÇÃO] Tabela push_subscriptions antiga removida.")
+except Exception as e:
+    print(f"[MIGRAÇÃO] Aviso ao remover push_subscriptions: {e}")
+
+# Recria a tabela com a estrutura correta
+try:
+    PushSubscription.__table__.create(bind=engine, checkfirst=True)
+    print("[MIGRAÇÃO] Tabela push_subscriptions recriada com sucesso (endpoint, p256dh, auth, ativo, created_at).")
+except Exception as e:
+    print(f"[MIGRAÇÃO] Erro ao criar push_subscriptions: {e}")
 
 
 # ============================================================
