@@ -1333,12 +1333,13 @@ async def push_teste(db: Session = Depends(get_db)):
     return {"ok": True, "enviado_para": len(subs)}
 
 
-@app.post("/push/limpar")
+@app.get("/push/limpar")
 async def push_limpar(db: Session = Depends(get_db)):
     """Remove TODAS as inscrições push antigas (útil quando as chaves VAPID mudam)."""
+    count = db.query(PushSubscription).count()
     db.query(PushSubscription).delete()
     db.commit()
-    return {"ok": True, "mensagem": "Todas as inscrições foram removidas. Recarregue o app para criar nova inscrição."}
+    return {"ok": True, "removidas": count, "mensagem": "Todas as inscrições foram removidas. Recarregue o app para criar nova inscrição."}
 
 
 # ── Agendador de notificações push ───────────────────────────
