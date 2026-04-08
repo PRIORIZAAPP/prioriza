@@ -245,10 +245,6 @@ init_db()
 # Migração automática: adiciona colunas novas sem apagar dados existentes
 _migracoes = [
     "ALTER TABLE tarefas ADD COLUMN descricao VARCHAR DEFAULT ''",
-    "ALTER TABLE push_subscriptions ADD COLUMN p256dh TEXT NOT NULL DEFAULT ''",
-    "ALTER TABLE push_subscriptions ADD COLUMN auth TEXT NOT NULL DEFAULT ''",
-    "ALTER TABLE push_subscriptions ADD COLUMN ativo BOOLEAN DEFAULT TRUE",
-    "ALTER TABLE push_subscriptions ADD COLUMN created_at TIMESTAMP DEFAULT NOW()",
 ]
 for _sql in _migracoes:
     try:
@@ -257,6 +253,23 @@ for _sql in _migracoes:
             conn.commit()
     except Exception:
         pass  # coluna já existe, tudo certo
+
+# Migração especial: recria push_subscriptions se estiver quebrada
+try:
+    with engine.connect() as conn:
+        # Testa se a tabela está OK
+        conn.execute(text("SELECT id, endpoint, p256dh, auth, ativo FROM push_subscriptions LIMIT 1"))
+except Exception:
+    # Tabela quebrada ou incompleta — recria do zero
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("DROP TABLE IF EXISTS push_subscriptions"))
+            conn.commit()
+        # Recria usando o modelo ORM
+        PushSubscription.__table__.create(bind=engine, checkfirst=True)
+        print("[MIGRAÇÃO] Tabela push_subscriptions recriada com sucesso.")
+    except Exception as e:
+        print(f"[MIGRAÇÃO] Erro ao recriar push_subscriptions: {e}")
 
 
 # ============================================================
@@ -1242,24 +1255,33 @@ async def push_subscribe(request: Request, db: Session = Depends(get_db)):
         p256dh = keys.get("p256dh", "")
         auth = keys.get("auth", "")
 
+        print(f"[PUSH] Tentando inscrever: endpoint={endpoint[:50]}... p256dh={bool(p256dh)} auth={bool(auth)}")
+
         if not endpoint or not p256dh or not auth:
             raise HTTPException(status_code=400, detail="Dados de inscrição inválidos.")
 
         sub = db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint).first()
         if sub:
+            print(f"[PUSH] Atualizando inscrição existente id={sub.id}")
             sub.p256dh = p256dh
             sub.auth = auth
             sub.ativo = True
         else:
+            print(f"[PUSH] Criando nova inscrição")
             sub = PushSubscription(endpoint=endpoint, p256dh=p256dh, auth=auth, ativo=True)
             db.add(sub)
 
         db.commit()
-        return {"ok": True}
+        db.refresh(sub)
+        print(f"[PUSH] ✅ Inscrição salva com sucesso! id={sub.id}")
+        return {"ok": True, "id": sub.id}
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[PUSH] ❌ Erro ao salvar inscrição: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erro ao salvar inscrição: {str(e)}")
 
 
 @app.delete("/push/subscribe")
