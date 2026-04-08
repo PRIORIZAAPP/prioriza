@@ -21,6 +21,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>PRIORIZA</title>
+    
+    <!-- Console mobile para debug (ativa com ?debug na URL) -->
+    <script>
+      if (window.location.search.includes('debug')) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/eruda';
+        document.head.appendChild(script);
+        script.onload = () => eruda.init();
+      }
+    </script>
     <style>
       * { box-sizing: border-box; }
 
@@ -842,7 +852,7 @@
               <h2>Agenda do dia</h2>
             </div>
             <div class="secao-subtitulo">Toque na bolinha para mudar o status (pendente → em andamento → feito).</div>
-            <div style="text-align:right; margin-bottom:8px">
+            <div style="text-align:right; margin-bottom:8px; display: flex; gap: 8px; justify-content: flex-end;">
               <button id="botao-add-tarefa" class="btn-add-tarefa">
                 <!-- plus circle -->
                 <svg width="13" height="13" viewBox="0 0 256 256" fill="none" color="currentColor">
@@ -852,6 +862,9 @@
                   <line x1="128" y1="88" x2="128" y2="168" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
                 </svg>
                 Nova tarefa
+              </button>
+              <button id="botao-testar-push" class="btn-add-tarefa" style="background: #10b981; font-size: 11px; padding: 6px 10px;">
+                🔔 Testar Push
               </button>
             </div>
             <div id="agenda-dia"><small>Carregando agenda...</small></div>
@@ -2934,6 +2947,60 @@
 
       document.getElementById("botao-add-tarefa")?.addEventListener("click", novaTarefaHoje);
       document.getElementById("botao-nova-rotina-hoje")?.addEventListener("click", novaRotinaHoje);
+      
+      document.getElementById("botao-testar-push")?.addEventListener("click", async () => {
+        const btn = document.getElementById("botao-testar-push");
+        btn.disabled = true;
+        btn.textContent = "Testando...";
+        try {
+          // 1. Verifica service worker
+          const reg = await navigator.serviceWorker.ready;
+          console.log("✅ Service Worker OK");
+          
+          // 2. Pega inscrição
+          let sub = await reg.pushManager.getSubscription();
+          console.log("📱 Inscrição:", sub ? "Existe" : "Criando...");
+          
+          // 3. Cria se não existir
+          if (!sub) {
+            sub = await reg.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+            });
+            console.log("✅ Inscrição criada!");
+          }
+          
+          // 4. Envia pro servidor
+          console.log("📤 Enviando para servidor...");
+          const resposta = await fetch(API + "/push/subscribe", {
+            method: "POST",
+            headers: { ...authHeaders(), "Content-Type": "application/json" },
+            body: JSON.stringify(sub.toJSON()),
+          });
+          
+          if (!resposta.ok) {
+            const erro = await resposta.text();
+            throw new Error(`Servidor retornou ${resposta.status}: ${erro}`);
+          }
+          
+          console.log("✅ Inscrito com sucesso!");
+          
+          // 5. Testa envio
+          const testeResp = await fetch(API + "/push/teste");
+          if (testeResp.ok) {
+            await modal.alerta("✅ Push configurado!", "Notificação de teste enviada. Feche o app e veja se chega!");
+          } else {
+            const erro = await testeResp.text();
+            await modal.alerta("⚠️ Inscrito mas teste falhou", erro);
+          }
+        } catch(e) {
+          console.error("❌ Erro:", e);
+          await modal.alerta("❌ Erro ao testar push", e.message);
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '🔔 Testar Push';
+        }
+      });
 
       document.getElementById("btn-cal-prev")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()-1); montarCalendarioMes(); });
       document.getElementById("btn-cal-next")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()+1); montarCalendarioMes(); });
