@@ -3449,15 +3449,26 @@
         }
 
         // Envia inscrição pro servidor
-        await fetch(API + "/push/subscribe", {
+        const resposta = await fetch(API + "/push/subscribe", {
           method: "POST",
           headers: { ...authHeaders(), "Content-Type": "application/json" },
           body: JSON.stringify(sub.toJSON()),
         });
 
-        console.log("[NOTIF] Push registrado com sucesso.");
+        if (!resposta.ok) {
+          const erro = await resposta.text();
+          console.error("[NOTIF] ❌ Erro do servidor ao inscrever:", resposta.status, erro);
+          throw new Error(`Servidor retornou ${resposta.status}: ${erro}`);
+        }
+
+        const resultado = await resposta.json();
+        console.log("[NOTIF] ✅ Push registrado com sucesso!", resultado);
       } catch(e) {
-        console.warn("[NOTIF] Erro ao registrar push:", e);
+        console.error("[NOTIF] ❌ Erro ao registrar push:", e);
+        // Mostra alerta visual para debug
+        if (window.location.search.includes("debug")) {
+          alert("Erro push: " + e.message);
+        }
       }
     }
 
@@ -3488,6 +3499,52 @@
         setInterval(loopNotificacoes, 60 * 1000);
       }
     }
+
+    // ── Função de debug global (acessível pelo console) ────────────
+    window.debugPushSubscribe = async function() {
+      console.log("🔍 Iniciando debug de push subscription...");
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        let sub = await reg.pushManager.getSubscription();
+        console.log("📱 Inscrição atual:", sub ? "Existe" : "Não existe");
+        if (sub) {
+          console.log("🔑 Endpoint:", sub.endpoint);
+          console.log("📦 Keys:", sub.toJSON().keys);
+        }
+        
+        // Tenta inscrever
+        if (!sub) {
+          console.log("📝 Criando nova inscrição...");
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+          });
+          console.log("✅ Inscrição criada!");
+        }
+        
+        // Envia pro servidor
+        console.log("📤 Enviando para servidor...");
+        const resposta = await fetch(API + "/push/subscribe", {
+          method: "POST",
+          headers: { ...authHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify(sub.toJSON()),
+        });
+        
+        const texto = await resposta.text();
+        console.log("📥 Resposta do servidor:", resposta.status, texto);
+        
+        if (resposta.ok) {
+          console.log("🎉 Push subscription registrada com sucesso!");
+          return JSON.parse(texto);
+        } else {
+          console.error("❌ Erro do servidor:", texto);
+          throw new Error(texto);
+        }
+      } catch(e) {
+        console.error("❌ Erro:", e);
+        throw e;
+      }
+    };
 
     </script>
   </body>
