@@ -1342,6 +1342,16 @@
     let googleAgendaCache = [];
     let googleAgendaStatus = { configurado: false, conectado: false };
 
+    // ── VAPID e Push Notifications (definições globais) ────────────
+    const VAPID_PUBLIC_KEY = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBkYIRPqbb5ZfElDa1Ew";
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = "=".repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+      const rawData = atob(base64);
+      return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
+    }
+
     // ── MODAL ────────────────────────────────────────────────────
     const modal = (() => {
       const overlay   = document.getElementById("modal-overlay");
@@ -2952,26 +2962,28 @@
         const btn = document.getElementById("botao-testar-push");
         btn.disabled = true;
         btn.textContent = "Testando...";
+        
+        const mostrarPasso = (msg) => {
+          btn.textContent = msg;
+          console.log(msg);
+        };
+        
         try {
-          // 1. Verifica service worker
+          mostrarPasso("1/5 Service Worker...");
           const reg = await navigator.serviceWorker.ready;
-          console.log("✅ Service Worker OK");
           
-          // 2. Pega inscrição
+          mostrarPasso("2/5 Verificando inscrição...");
           let sub = await reg.pushManager.getSubscription();
-          console.log("📱 Inscrição:", sub ? "Existe" : "Criando...");
           
-          // 3. Cria se não existir
           if (!sub) {
+            mostrarPasso("3/5 Criando inscrição...");
             sub = await reg.pushManager.subscribe({
               userVisibleOnly: true,
               applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
             });
-            console.log("✅ Inscrição criada!");
           }
           
-          // 4. Envia pro servidor
-          console.log("📤 Enviando para servidor...");
+          mostrarPasso("4/5 Enviando ao servidor...");
           const resposta = await fetch(API + "/push/subscribe", {
             method: "POST",
             headers: { ...authHeaders(), "Content-Type": "application/json" },
@@ -2980,25 +2992,40 @@
           
           if (!resposta.ok) {
             const erro = await resposta.text();
-            throw new Error(`Servidor retornou ${resposta.status}: ${erro}`);
+            throw new Error(`Servidor: ${resposta.status}`);
           }
           
-          console.log("✅ Inscrito com sucesso!");
-          
-          // 5. Testa envio
+          mostrarPasso("5/5 Testando push...");
           const testeResp = await fetch(API + "/push/teste");
+          
           if (testeResp.ok) {
-            await modal.alerta("✅ Push configurado!", "Notificação de teste enviada. Feche o app e veja se chega!");
+            btn.textContent = "✅ Configurado!";
+            btn.style.background = "#10b981";
+            setTimeout(() => {
+              btn.style.background = "";
+              btn.innerHTML = '🔔 Testar Push';
+              btn.disabled = false;
+            }, 3000);
+            
+            // Notificação local imediata
+            if (Notification.permission === "granted") {
+              new Notification("✅ Push configurado!", {
+                body: "O sistema está pronto. Mantenha o app em segundo plano para receber notificações.",
+                icon: "/icon-180x180.png"
+              });
+            }
           } else {
-            const erro = await testeResp.text();
-            await modal.alerta("⚠️ Inscrito mas teste falhou", erro);
+            throw new Error("Teste falhou");
           }
         } catch(e) {
           console.error("❌ Erro:", e);
-          await modal.alerta("❌ Erro ao testar push", e.message);
-        } finally {
-          btn.disabled = false;
-          btn.innerHTML = '🔔 Testar Push';
+          btn.textContent = "❌ " + e.message;
+          btn.style.background = "#ef4444";
+          setTimeout(() => {
+            btn.style.background = "";
+            btn.innerHTML = '🔔 Testar Push';
+            btn.disabled = false;
+          }, 3000);
         }
       });
 
@@ -3486,15 +3513,7 @@
       await notificacaoSegunda(tarefas);
     }
 
-    // ── Chave pública VAPID (gerada para prioriza.onrender.com) ───
-    const VAPID_PUBLIC_KEY = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBkYIRPqbb5ZfElDa1Ew";
-
-    function urlBase64ToUint8Array(base64String) {
-      const padding = "=".repeat((4 - base64String.length % 4) % 4);
-      const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-      const rawData = atob(base64);
-      return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
-    }
+    // (VAPID_PUBLIC_KEY e urlBase64ToUint8Array definidos no topo do script)
 
     // ── Registra o Service Worker e inscreve no push ───────────────
     async function registrarServiceWorker() {
