@@ -52,7 +52,6 @@ self.addEventListener("fetch", event => {
 
 // ── Push: recebe e exibe notificação ──
 self.addEventListener("push", event => {
-  // Suporta tanto {"titulo","corpo"} (servidor Python) quanto {"title","body"} (padrão)
   let data = {
     titulo: "PRIORIZA",
     corpo: "Você tem tarefas pendentes!",
@@ -62,14 +61,13 @@ self.addEventListener("push", event => {
   try {
     if (event.data) {
       const parsed = JSON.parse(event.data.text());
-      // Aceita os dois formatos
       data.titulo = parsed.titulo || parsed.title || data.titulo;
       data.corpo   = parsed.corpo  || parsed.body  || data.corpo;
       data.url     = parsed.url    || data.url;
       data.icone   = parsed.icone  || parsed.icon  || "/icon-192x192.png";
     }
   } catch (e) {
-    console.log("Push com payload inválido.");
+    console.log("Push com payload invalido.");
   }
 
   const options = {
