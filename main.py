@@ -145,6 +145,7 @@ class ChecklistItem(Base):
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC))
 
     def to_dict(self, incluir_pode_hoje: bool = False):
+        frequencia_corrigida = frequencia_interna_efetiva(self.frequencia, self.frequencia_interna)
         proxima = calcular_proxima_execucao(self)
         dias = calcular_dias_para_proxima(self)
         atraso = dias < 0
@@ -157,7 +158,7 @@ class ChecklistItem(Base):
             "titulo": self.titulo,
             "origem": self.origem,
             "frequencia": self.frequencia,
-            "frequencia_interna": self.frequencia_interna,
+            "frequencia_interna": frequencia_corrigida,
             "status": self.status,
             "status_exibicao": status_exibicao,
             "ativo": self.ativo,
@@ -344,6 +345,23 @@ def normalizar_status(status: Optional[str]) -> str:
     return s
 
 
+def frequencia_interna_efetiva(freq_label: Optional[str], freq_interna: Optional[str]) -> str:
+    """
+    Usa primeiro a frequência textual exibida ao usuário.
+    Se ela vier vazia, cai para a frequência interna já salva.
+    Isso evita divergência do tipo:
+    frequencia='Diária' + frequencia_interna='SEMANAL'
+    """
+    freq_label = (freq_label or "").strip()
+    if freq_label:
+        return normalizar_frequencia_interna(freq_label)
+
+    freq_interna = (freq_interna or "").strip().upper()
+    if freq_interna in {"DIARIA", "SEMANAL", "MENSAL", "BIMESTRAL", "TRIMESTRAL", "SEMESTRAL", "ANUAL", "UNICO"}:
+        return freq_interna
+    return "SEMANAL"
+
+
 def normalizar_frequencia_interna(freq: str) -> str:
     if not freq:
         return "SEMANAL"
@@ -384,7 +402,7 @@ def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
     if not item.ativo:
         return False
 
-    freq = (item.frequencia_interna or "").upper()
+    freq = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
     hoje = date.today()
 
     if freq == "UNICO":
@@ -398,7 +416,7 @@ def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
 
 
 def calcular_proxima_execucao(item: ChecklistItem) -> Optional[str]:
-    freq = (item.frequencia_interna or "").upper()
+    freq = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
     if freq == "UNICO":
         return None if item.ultimo_exec else date.today().isoformat()
     if item.ultimo_exec is None:
