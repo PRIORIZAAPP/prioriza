@@ -267,32 +267,80 @@ def executar_sql_seguro(sql: str):
         with engine.connect() as conn:
             conn.execute(text(sql))
             conn.commit()
-    except Exception:
-        pass
+        return True, None
+    except Exception as e:
+        return False, str(e)
 
 
-init_db()
+def _sql_tipo_coluna(nome_coluna: str) -> str:
+    if nome_coluna in ("descricao", "local", "hora_fim", "tipo_evento", "origem_evento", "google_event_id"):
+        return "VARCHAR"
+    if nome_coluna == "google_html_link":
+        return "TEXT"
+    if nome_coluna == "ultima_sync_google":
+        return "TIMESTAMP" if not IS_SQLITE else "DATETIME"
+    if nome_coluna in ("sincronizado_google", "all_day"):
+        return "BOOLEAN"
+    return "VARCHAR"
 
-# Migrações leves para ambientes já existentes.
-migracoes = [
-    "ALTER TABLE tarefas ADD COLUMN descricao VARCHAR DEFAULT ''",
-    "ALTER TABLE tarefas ADD COLUMN local VARCHAR DEFAULT ''",
-    "ALTER TABLE tarefas ADD COLUMN hora_fim VARCHAR DEFAULT ''",
-    "ALTER TABLE tarefas ADD COLUMN tipo_evento VARCHAR DEFAULT 'prioriza'",
-    "ALTER TABLE tarefas ADD COLUMN origem_evento VARCHAR DEFAULT 'prioriza'",
-    "ALTER TABLE tarefas ADD COLUMN google_event_id VARCHAR",
-    "ALTER TABLE tarefas ADD COLUMN google_html_link TEXT",
-    "ALTER TABLE tarefas ADD COLUMN sincronizado_google BOOLEAN DEFAULT 0",
-    "ALTER TABLE tarefas ADD COLUMN ultima_sync_google DATETIME",
-    "ALTER TABLE tarefas ADD COLUMN all_day BOOLEAN DEFAULT 0",
-]
-for sql in migracoes:
-    executar_sql_seguro(sql)
 
-try:
-    PushSubscription.__table__.create(bind=engine, checkfirst=True)
-except Exception as e:
-    print(f"[MIGRAÇÃO] Aviso ao criar push_subscriptions: {e}")
+def _sql_default_coluna(nome_coluna: str) -> str:
+    if nome_coluna in ("descricao", "local", "hora_fim"):
+        return " DEFAULT ''"
+    if nome_coluna in ("tipo_evento", "origem_evento"):
+        return " DEFAULT 'prioriza'"
+    if nome_coluna in ("sincronizado_google", "all_day"):
+        return " DEFAULT false" if not IS_SQLITE else " DEFAULT 0"
+    return ""
+
+
+def garantir_coluna_tabela(nome_tabela: str, nome_coluna: str):
+    try:
+        insp = inspect(engine)
+        colunas_existentes = {c["name"] for c in insp.get_columns(nome_tabela)}
+    except Exception as e:
+        print(f"[MIGRAÇÃO] Não foi possível inspecionar {nome_tabela}: {e}")
+        return
+
+    if nome_coluna in colunas_existentes:
+        return
+
+    sql = (
+        f"ALTER TABLE {nome_tabela} ADD COLUMN {nome_coluna} "
+        f"{_sql_tipo_coluna(nome_coluna)}{_sql_default_coluna(nome_coluna)}"
+    )
+    ok, erro = executar_sql_seguro(sql)
+    if ok:
+        print(f"[MIGRAÇÃO] Coluna criada: {nome_tabela}.{nome_coluna}")
+    else:
+        print(f"[MIGRAÇÃO] Falha ao criar {nome_tabela}.{nome_coluna}: {erro}")
+
+
+def rodar_migracoes_automaticas():
+    init_db()
+
+    colunas_tarefas = [
+        "descricao",
+        "local",
+        "hora_fim",
+        "tipo_evento",
+        "origem_evento",
+        "google_event_id",
+        "google_html_link",
+        "sincronizado_google",
+        "ultima_sync_google",
+        "all_day",
+    ]
+    for coluna in colunas_tarefas:
+        garantir_coluna_tabela("tarefas", coluna)
+
+    try:
+        PushSubscription.__table__.create(bind=engine, checkfirst=True)
+    except Exception as e:
+        print(f"[MIGRAÇÃO] Aviso ao criar push_subscriptions: {e}")
+
+
+rodar_migracoes_automaticas()
 
 
 # ============================================================
