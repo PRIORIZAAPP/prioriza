@@ -1248,6 +1248,31 @@
             </div>
             <div id="lista-notas"><small>Carregando notas...</small></div>
           </div>
+
+          <!-- BACKUP E RESTAURAÇÃO -->
+          <div class="card" id="card-backup">
+            <div class="card-header">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+                <rect x="48" y="32" width="160" height="192" rx="8" fill="currentColor" opacity="0.2"/>
+                <rect x="48" y="32" width="160" height="192" rx="8" stroke="currentColor" stroke-width="16"/>
+                <path d="M128 88 L128 168" stroke="currentColor" stroke-width="18" stroke-linecap="round"/>
+                <path d="M96 140 L128 168 L160 140" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <h2>Backup e Restauração</h2>
+            </div>
+            <p style="font-size:12px;color:#6b7280;margin:0 0 12px">Faça backup dos seus dados regularmente para não perder suas tarefas, rotinas e notas em caso de troca de banco ou servidor.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+              <button id="btn-exportar-backup" class="btn-add-tarefa" style="background:#2563eb;font-size:12px;padding:8px 14px">
+                📥 Baixar Backup (JSON)
+              </button>
+              <label id="label-importar-backup" class="btn-add-tarefa" style="background:#10b981;font-size:12px;padding:8px 14px;cursor:pointer">
+                📤 Restaurar Backup
+                <input id="input-importar-backup" type="file" accept=".json" style="display:none">
+              </label>
+            </div>
+            <div id="backup-status" style="font-size:12px;color:#6b7280;min-height:16px"></div>
+          </div>
+
         </div>
 
       </div><!-- /content -->
@@ -1822,6 +1847,7 @@
 
       try {
         const res = await fetch(API+"/tarefas",{headers:authHeaders()});
+        if (!res.ok) throw new Error("Servidor retornou " + res.status);
         tarefasAgendaCache = await res.json();
         if (!Array.isArray(tarefasAgendaCache)) tarefasAgendaCache = [];
 
@@ -1970,8 +1996,8 @@
           });
         }
       } catch(e) {
-        console.error(e);
-        agendaDiv.innerHTML = "<small>Erro ao carregar agenda do dia.</small>";
+        console.error("[PRIORIZA] carregarAgendaHoje:", e);
+        agendaDiv.innerHTML = `<small style="color:#ef4444">⚠️ Erro ao carregar agenda. <button onclick="carregarAgendaHoje()" style="color:#2563eb;background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline">Tentar novamente</button></small>`;
       }
     }
 
@@ -2591,6 +2617,7 @@
   try {
     // ── AGENDA PESSOAL ──
     const resT = await fetch(API + "/tarefas", { headers: authHeaders() });
+    if (!resT.ok) throw new Error("Servidor retornou " + resT.status);
     let tarefas = await resT.json();
 
     tarefas = (Array.isArray(tarefas) ? tarefas : []).filter(
@@ -2824,6 +2851,7 @@
     async function atualizarAgendaMesEDia() {
       try {
         const res=await fetch(API+"/tarefas",{headers:authHeaders()});
+        if (!res.ok) throw new Error("Servidor retornou " + res.status);
         tarefasAgendaCache=(await res.json())||[];
         if (!Array.isArray(tarefasAgendaCache)) tarefasAgendaCache = [];
         await carregarStatusGoogleAgenda();
@@ -3118,6 +3146,93 @@
 
       renderLocaisSugeridos("agenda-locais-sugeridos","agenda-local");
       renderLocaisSugeridos("chk-locais-sugeridos","chk-local");
+
+      // ── BACKUP E RESTAURAÇÃO ──────────────────────────────────────
+      document.getElementById("btn-exportar-backup")?.addEventListener("click", async () => {
+        const statusEl = document.getElementById("backup-status");
+        const btn = document.getElementById("btn-exportar-backup");
+        btn.disabled = true;
+        btn.textContent = "Exportando...";
+        statusEl.textContent = "";
+        try {
+          const res = await fetch(API + "/backup", { headers: authHeaders() });
+          if (!res.ok) throw new Error("Servidor retornou " + res.status);
+          const dados = await res.json();
+          const json = JSON.stringify(dados, null, 2);
+          const blob = new Blob([json], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          const dataHoje = new Date().toISOString().slice(0,10);
+          a.href = url;
+          a.download = `prioriza_backup_${dataHoje}.json`;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+          const t = dados.tarefas?.length || 0;
+          const c = dados.checklist?.length || 0;
+          const n = dados.notas?.length || 0;
+          statusEl.textContent = `✅ Backup baixado: ${t} tarefas, ${c} rotinas, ${n} notas.`;
+          statusEl.style.color = "#10b981";
+        } catch(e) {
+          console.error(e);
+          statusEl.textContent = "❌ Erro ao exportar backup. Tente novamente.";
+          statusEl.style.color = "#ef4444";
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "📥 Baixar Backup (JSON)";
+        }
+      });
+
+      document.getElementById("input-importar-backup")?.addEventListener("change", async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const statusEl = document.getElementById("backup-status");
+        const label = document.getElementById("label-importar-backup");
+
+        const confirmou = await modal.confirmar(
+          `Deseja restaurar o arquivo "${file.name}"?\n\nOs dados serão ADICIONADOS ao banco atual (nada será apagado).`,
+          "Restaurar Backup"
+        );
+        if (!confirmou) { e.target.value = ""; return; }
+
+        label.style.opacity = "0.6";
+        label.style.pointerEvents = "none";
+        statusEl.textContent = "Importando...";
+        statusEl.style.color = "#6b7280";
+
+        try {
+          const texto = await file.text();
+          const dados = JSON.parse(texto);
+          const res = await fetch(API + "/restaurar", {
+            method: "POST",
+            headers: { ...authHeaders(), "Content-Type": "application/json" },
+            body: JSON.stringify(dados)
+          });
+          const resultado = await res.json();
+          if (!res.ok) throw new Error(resultado.detail || "Erro ao restaurar.");
+          const imp = resultado.importadas || {};
+          statusEl.textContent = `✅ ${resultado.mensagem}`;
+          statusEl.style.color = "#10b981";
+          if (imp.erros?.length) {
+            console.warn("[BACKUP] Erros na importação:", imp.erros);
+          }
+          // Recarrega tudo
+          await carregarAgendaHoje();
+          await atualizarAgendaMesEDia();
+          await carregarChecklistHoje();
+          await carregarChecklistGeral();
+          await carregarPessoalLista();
+          await carregarNotas();
+        } catch(err) {
+          console.error(err);
+          statusEl.textContent = "❌ Erro ao restaurar: " + err.message;
+          statusEl.style.color = "#ef4444";
+        } finally {
+          label.style.opacity = "";
+          label.style.pointerEvents = "";
+          e.target.value = "";
+        }
+      });
 
       // Carregamento inicial
       carregarAgendaHoje();
