@@ -46,21 +46,23 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 
 # Se não foi definida nenhuma variável, usa SQLite local
 if not DATABASE_URL:
-    DATABASE_URL = f"sqlite:///{BASE_DIR / 'prioriza.db'}"
-    print(f"[DB] ⚠️  DATABASE_URL não definida — usando SQLite local: {DATABASE_URL}")
+    _sqlite_path = str(BASE_DIR / "prioriza.db")
+    DATABASE_URL = f"sqlite:///{_sqlite_path}"
+    print(f"[DB] ⚠️  DATABASE_URL não definida — usando SQLite local: {_sqlite_path}")
 else:
-    print(f"[DB] ✅ DATABASE_URL encontrada: {DATABASE_URL[:40]}...")
+    print(f"[DB] ✅ DATABASE_URL encontrada: {DATABASE_URL[:50]}")
 
 # Render costuma fornecer postgres://, mas o SQLAlchemy espera postgresql://
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
     print("[DB] URL corrigida de postgres:// para postgresql://")
 
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+IS_SQLITE = DATABASE_URL.startswith("sqlite")
+connect_args = {"check_same_thread": False} if IS_SQLITE else {}
 
 try:
     engine = create_engine(DATABASE_URL, connect_args=connect_args)
-    print(f"[DB] Engine criado com sucesso.")
+    print("[DB] Engine criado com sucesso.")
 except Exception as _e:
     print(f"[DB] ❌ Erro ao criar engine: {_e}")
     raise
@@ -246,8 +248,8 @@ def init_db():
         Base.metadata.create_all(bind=engine)
         print("[DB] ✅ Tabelas criadas/verificadas com sucesso.")
     except Exception as e:
+        # Não deixa o app crashar por problema de schema — loga e continua
         print(f"[DB] ❌ Erro no init_db: {e}")
-        raise
 
 
 def get_db():
@@ -273,11 +275,13 @@ for _sql in _migracoes:
         pass  # coluna já existe, tudo certo
 
 # Migração especial: força recriação da tabela push_subscriptions
-# (necessário porque a estrutura antiga tinha coluna 'keys_json' que não existe mais)
+# (CASCADE só funciona no PostgreSQL, SQLite usa sintaxe diferente)
 try:
     with engine.connect() as conn:
-        # Apaga a tabela antiga completamente
-        conn.execute(text("DROP TABLE IF EXISTS push_subscriptions CASCADE"))
+        if IS_SQLITE:
+            conn.execute(text("DROP TABLE IF EXISTS push_subscriptions"))
+        else:
+            conn.execute(text("DROP TABLE IF EXISTS push_subscriptions CASCADE"))
         conn.commit()
         print("[MIGRAÇÃO] Tabela push_subscriptions antiga removida.")
 except Exception as e:
@@ -286,7 +290,7 @@ except Exception as e:
 # Recria a tabela com a estrutura correta
 try:
     PushSubscription.__table__.create(bind=engine, checkfirst=True)
-    print("[MIGRAÇÃO] Tabela push_subscriptions recriada com sucesso (endpoint, p256dh, auth, ativo, created_at).")
+    print("[MIGRAÇÃO] Tabela push_subscriptions recriada com sucesso.")
 except Exception as e:
     print(f"[MIGRAÇÃO] Erro ao criar push_subscriptions: {e}")
 
