@@ -1207,6 +1207,110 @@ def excluir_nota(
 
 
 # ============================================================
+# BACKUP E RESTAURAÇÃO
+# ============================================================
+
+@app.get("/backup")
+def exportar_backup(db: Session = Depends(get_db)):
+    """Exporta todos os dados do usuário em JSON para backup."""
+    tarefas = db.query(Tarefa).filter(Tarefa.ativo == True).all()
+    checklist = db.query(ChecklistItem).filter(ChecklistItem.ativo == True).all()
+    notas = db.query(Note).filter(Note.ativo == True).all()
+
+    return {
+        "versao": "1.0",
+        "exportado_em": datetime.now(timezone.utc).isoformat(),
+        "tarefas": [t.to_dict() for t in tarefas],
+        "checklist": [c.to_dict() for c in checklist],
+        "notas": [n.to_dict() for n in notas],
+    }
+
+
+@app.post("/restaurar")
+async def importar_backup(request: Request, db: Session = Depends(get_db)):
+    """Importa dados de um backup JSON. Não apaga dados existentes - apenas adiciona os novos."""
+    try:
+        dados = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="JSON inválido.")
+
+    versao = dados.get("versao", "1.0")
+    tarefas_raw = dados.get("tarefas", [])
+    checklist_raw = dados.get("checklist", [])
+    notas_raw = dados.get("notas", [])
+
+    importadas = {"tarefas": 0, "checklist": 0, "notas": 0, "erros": []}
+
+    # ── Tarefas ──
+    for t in tarefas_raw:
+        try:
+            titulo = (t.get("titulo") or "").strip()
+            data_str = (t.get("data") or "").strip()
+            if not titulo or not data_str or not validar_data_iso(data_str):
+                continue
+            nova = Tarefa(
+                titulo=titulo,
+                descricao=(t.get("descricao") or "").strip(),
+                origem=(t.get("origem") or "").strip(),
+                data=data_str,
+                hora_inicio=(t.get("hora_inicio") or "").strip(),
+                duracao_min=int(t.get("duracao_min") or 60),
+                prioridade=int(t.get("prioridade") or 2),
+                status=t.get("status") or "pendente",
+                ativo=True,
+            )
+            db.add(nova)
+            importadas["tarefas"] += 1
+        except Exception as e:
+            importadas["erros"].append(f"Tarefa '{t.get('titulo','?')}': {e}")
+
+    # ── Checklist ──
+    for c in checklist_raw:
+        try:
+            titulo = (c.get("titulo") or "").strip()
+            if not titulo:
+                continue
+            novo = ChecklistItem(
+                titulo=titulo,
+                origem=(c.get("origem") or "").strip(),
+                frequencia=c.get("frequencia") or "Semanal",
+                frequencia_interna=c.get("frequencia_interna") or "SEMANAL",
+                status=c.get("status") or "pendente",
+                ativo=True,
+            )
+            db.add(novo)
+            importadas["checklist"] += 1
+        except Exception as e:
+            importadas["erros"].append(f"Checklist '{c.get('titulo','?')}': {e}")
+
+    # ── Notas ──
+    for n in notas_raw:
+        try:
+            texto = (n.get("texto") or "").strip()
+            if not texto:
+                continue
+            nova_nota = Note(
+                texto=texto,
+                data=n.get("data") or "",
+                tipo=n.get("tipo") or "GERAL",
+                status=n.get("status") or "pendente",
+                ativo=True,
+            )
+            db.add(nova_nota)
+            importadas["notas"] += 1
+        except Exception as e:
+            importadas["erros"].append(f"Nota '{n.get('texto','?')[:30]}': {e}")
+
+    db.commit()
+
+    return {
+        "ok": True,
+        "importadas": importadas,
+        "mensagem": f"Restauração concluída: {importadas['tarefas']} tarefas, {importadas['checklist']} rotinas, {importadas['notas']} notas importadas.",
+    }
+
+
+# ============================================================
 # PUSH NOTIFICATIONS
 # ============================================================
 
