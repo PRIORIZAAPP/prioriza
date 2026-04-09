@@ -42,15 +42,28 @@ from sqlalchemy.orm import sessionmaker, declarative_base, Session
 # Diretório base do projeto (onde está o main.py)
 BASE_DIR = Path(__file__).resolve().parent
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./prioriza.db")
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+
+# Se não foi definida nenhuma variável, usa SQLite local
+if not DATABASE_URL:
+    DATABASE_URL = f"sqlite:///{BASE_DIR / 'prioriza.db'}"
+    print(f"[DB] ⚠️  DATABASE_URL não definida — usando SQLite local: {DATABASE_URL}")
+else:
+    print(f"[DB] ✅ DATABASE_URL encontrada: {DATABASE_URL[:40]}...")
 
 # Render costuma fornecer postgres://, mas o SQLAlchemy espera postgresql://
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    print("[DB] URL corrigida de postgres:// para postgresql://")
 
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
+try:
+    engine = create_engine(DATABASE_URL, connect_args=connect_args)
+    print(f"[DB] Engine criado com sucesso.")
+except Exception as _e:
+    print(f"[DB] ❌ Erro ao criar engine: {_e}")
+    raise
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -229,7 +242,12 @@ class GoogleCalendarToken(Base):
 # ============================================================
 
 def init_db():
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("[DB] ✅ Tabelas criadas/verificadas com sucesso.")
+    except Exception as e:
+        print(f"[DB] ❌ Erro no init_db: {e}")
+        raise
 
 
 def get_db():
@@ -494,6 +512,33 @@ def icone(filename: str):
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/debug")
+def debug_info(db: Session = Depends(get_db)):
+    """Diagnóstico completo — banco, tabelas e variáveis de ambiente."""
+    info = {
+        "database_url_tipo": "postgresql" if DATABASE_URL.startswith("postgresql") else "sqlite",
+        "database_url_prefixo": DATABASE_URL[:50] + "..." if len(DATABASE_URL) > 50 else DATABASE_URL,
+        "base_dir": str(BASE_DIR),
+        "env_vars": {
+            "DATABASE_URL": "✅ definida" if os.environ.get("DATABASE_URL") else "❌ NÃO definida (usando SQLite local)",
+            "VAPID_PRIVATE_KEY": "✅ definida" if os.environ.get("VAPID_PRIVATE_KEY") else "❌ não definida",
+            "GOOGLE_CLIENT_ID": "✅ definida" if os.environ.get("GOOGLE_CLIENT_ID") else "❌ não definida",
+        },
+        "tabelas": {},
+        "erro": None,
+    }
+    try:
+        info["tabelas"]["tarefas"] = db.query(Tarefa).count()
+        info["tabelas"]["checklist"] = db.query(ChecklistItem).count()
+        info["tabelas"]["notas"] = db.query(Note).count()
+        info["tabelas"]["push_subscriptions"] = db.query(PushSubscription).count()
+        info["banco_ok"] = True
+    except Exception as e:
+        info["banco_ok"] = False
+        info["erro"] = str(e)
+    return info
 
 
 @app.get("/")
