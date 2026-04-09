@@ -852,7 +852,7 @@
               <h2>Agenda do dia</h2>
             </div>
             <div class="secao-subtitulo">Toque na bolinha para mudar o status (pendente → em andamento → feito).</div>
-            <div style="text-align:right; margin-bottom:8px; display: flex; gap: 8px; justify-content: flex-end;">
+            <div style="text-align:right; margin-bottom:8px">
               <button id="botao-add-tarefa" class="btn-add-tarefa">
                 <!-- plus circle -->
                 <svg width="13" height="13" viewBox="0 0 256 256" fill="none" color="currentColor">
@@ -862,9 +862,6 @@
                   <line x1="128" y1="88" x2="128" y2="168" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
                 </svg>
                 Nova tarefa
-              </button>
-              <button id="botao-testar-push" class="btn-add-tarefa" style="background: #10b981; font-size: 11px; padding: 6px 10px;">
-                🔔 Testar Push
               </button>
             </div>
             <div id="agenda-dia"><small>Carregando agenda...</small></div>
@@ -2099,12 +2096,14 @@
 
       try {
         const res = await fetch(API+"/checklist",{headers:authHeaders()});
+        if (!res.ok) throw new Error("Servidor retornou " + res.status);
         let itens = (await res.json());
         itens = (Array.isArray(itens)?itens:[]).filter(i=>i.ativo!==false);
 
         const houvePeset = await resetarItensVencidos(itens);
         if (houvePeset) {
           const r2 = await fetch(API+"/checklist",{headers:authHeaders()});
+          if (!r2.ok) throw new Error("Servidor retornou " + r2.status);
           itens = (await r2.json()).filter(i=>i.ativo!==false);
         }
 
@@ -2149,7 +2148,10 @@
           );
           container.appendChild(div);
         });
-      } catch(e) { console.error(e); container.innerHTML="<small>Erro ao carregar checklist.</small>"; }
+      } catch(e) {
+        console.error("[PRIORIZA] carregarChecklistHoje:", e);
+        container.innerHTML="<small style='color:#ef4444'>⚠️ Erro ao carregar checklist. <button onclick='carregarChecklistHoje()' style='color:#2563eb;background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline'>Tentar novamente</button></small>";
+      }
     }
 
     // ── CHECKLIST GERAL ───────────────────────────────────────────
@@ -2350,6 +2352,7 @@
 
       try {
         const res = await fetch(API + "/checklist", { headers: authHeaders() });
+        if (!res.ok) throw new Error("Servidor retornou " + res.status);
         let itens = (await res.json());
         itens = (Array.isArray(itens) ? itens : []).filter(i => i.ativo !== false);
 
@@ -2385,8 +2388,8 @@
         renderChecklistSecao(container, "Em andamento", "em_andamento", grupos.em_andamento);
         renderChecklistSecao(container, "Feitas", "feito", grupos.feito);
       } catch (e) {
-        console.error(e);
-        container.innerHTML = "<small>Erro ao carregar checklist.</small>";
+        console.error("[PRIORIZA] carregarChecklistGeral:", e);
+        container.innerHTML = "<small style='color:#ef4444'>⚠️ Erro ao carregar checklist. <button onclick='carregarChecklistGeral()' style='color:#2563eb;background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline'>Tentar novamente</button></small>";
       }
     }
 
@@ -2649,6 +2652,7 @@
 
     // ── CHECKLIST PESSOAL ──
     const resC = await fetch(API + "/checklist", { headers: authHeaders() });
+    if (!resC.ok) throw new Error("Servidor retornou " + resC.status);
     let itens = await resC.json();
 
     itens = (Array.isArray(itens) ? itens : []).filter(
@@ -2986,76 +2990,7 @@
       document.getElementById("botao-add-tarefa")?.addEventListener("click", novaTarefaHoje);
       document.getElementById("botao-nova-rotina-hoje")?.addEventListener("click", novaRotinaHoje);
       
-      document.getElementById("botao-testar-push")?.addEventListener("click", async () => {
-        const btn = document.getElementById("botao-testar-push");
-        btn.disabled = true;
-        btn.textContent = "Testando...";
-        
-        const mostrarPasso = (msg) => {
-          btn.textContent = msg;
-          console.log(msg);
-        };
-        
-        try {
-          mostrarPasso("1/5 Service Worker...");
-          const reg = await navigator.serviceWorker.ready;
-          
-          mostrarPasso("2/5 Verificando inscrição...");
-          let sub = await reg.pushManager.getSubscription();
-          
-          if (!sub) {
-            mostrarPasso("3/5 Criando inscrição...");
-            sub = await reg.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-            });
-          }
-          
-          mostrarPasso("4/5 Enviando ao servidor...");
-          const resposta = await fetch(API + "/push/subscribe", {
-            method: "POST",
-            headers: { ...authHeaders(), "Content-Type": "application/json" },
-            body: JSON.stringify(sub.toJSON()),
-          });
-          
-          if (!resposta.ok) {
-            const erro = await resposta.text();
-            throw new Error(`Servidor: ${resposta.status}`);
-          }
-          
-          mostrarPasso("5/5 Testando push...");
-          const testeResp = await fetch(API + "/push/teste");
-          
-          if (testeResp.ok) {
-            btn.textContent = "✅ Configurado!";
-            btn.style.background = "#10b981";
-            setTimeout(() => {
-              btn.style.background = "";
-              btn.innerHTML = '🔔 Testar Push';
-              btn.disabled = false;
-            }, 3000);
-            
-            // Notificação local imediata
-            if (Notification.permission === "granted") {
-              new Notification("✅ Push configurado!", {
-                body: "O sistema está pronto. Mantenha o app em segundo plano para receber notificações.",
-                icon: "/icon-180x180.png"
-              });
-            }
-          } else {
-            throw new Error("Teste falhou");
-          }
-        } catch(e) {
-          console.error("❌ Erro:", e);
-          btn.textContent = "❌ " + e.message;
-          btn.style.background = "#ef4444";
-          setTimeout(() => {
-            btn.style.background = "";
-            btn.innerHTML = '🔔 Testar Push';
-            btn.disabled = false;
-          }, 3000);
-        }
-      });
+      // Botão testar push removido
 
       document.getElementById("btn-cal-prev")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()-1); montarCalendarioMes(); });
       document.getElementById("btn-cal-next")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()+1); montarCalendarioMes(); });
