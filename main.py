@@ -1,6 +1,7 @@
 import json
 import os
 import threading
+import unicodedata
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
@@ -43,7 +44,6 @@ engine = create_engine(DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-APP_BUILD = "checklist-fix-2026-04-13-v3"
 app = FastAPI(title="PRIORIZA API")
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
@@ -146,8 +146,7 @@ class ChecklistItem(Base):
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC))
 
     def to_dict(self, incluir_pode_hoje: bool = False):
-        normalizar_item_checklist(self)
-        frequencia_corrigida = self.frequencia_interna
+        frequencia_corrigida = frequencia_interna_efetiva(self.frequencia, self.frequencia_interna)
         proxima = calcular_proxima_execucao(self)
         dias = calcular_dias_para_proxima(self)
         atraso = dias < 0
@@ -413,15 +412,25 @@ def frequencia_interna_efetiva(freq_label: Optional[str], freq_interna: Optional
     return "SEMANAL"
 
 
+def _texto_sem_acentos(valor: str) -> str:
+    valor = (valor or "").strip().lower()
+    return "".join(
+        ch for ch in unicodedata.normalize("NFD", valor)
+        if unicodedata.category(ch) != "Mn"
+    )
+
+
 def normalizar_frequencia_interna(freq: str) -> str:
     if not freq:
         return "SEMANAL"
-    f = freq.strip().lower()
-    if any(x in f for x in ["único", "unico", "pontual", "esporádico", "esporadico"]):
+
+    f = _texto_sem_acentos(freq)
+
+    if any(x in f for x in ["unico", "pontual", "esporadico"]):
         return "UNICO"
-    if "dia" in f:
+    if "diari" in f or "todo dia" in f or "todos os dias" in f:
         return "DIARIA"
-    if "semana" in f:
+    if "seman" in f:
         return "SEMANAL"
     if "bimes" in f:
         return "BIMESTRAL"
@@ -429,17 +438,11 @@ def normalizar_frequencia_interna(freq: str) -> str:
         return "TRIMESTRAL"
     if "semes" in f:
         return "SEMESTRAL"
-    if "ano" in f:
+    if "anual" in f or f == "ano":
         return "ANUAL"
-    if "mes" in f:
+    if "mens" in f:
         return "MENSAL"
     return "SEMANAL"
-
-
-def normalizar_item_checklist(item: ChecklistItem) -> ChecklistItem:
-    freq_corrigida = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
-    item.frequencia_interna = freq_corrigida
-    return item
 
 
 def _intervalo_dias(freq_interna: str) -> int:
@@ -466,7 +469,6 @@ def _proxima_data_diaria_visivel(data_ref: date) -> date:
 
 
 def _data_base_proxima_execucao(item: ChecklistItem) -> Optional[date]:
-    normalizar_item_checklist(item)
     freq = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
 
     if freq == "UNICO":
@@ -485,7 +487,6 @@ def _data_base_proxima_execucao(item: ChecklistItem) -> Optional[date]:
 
 
 def calcular_mensagem_status_checklist(item: ChecklistItem) -> str:
-    normalizar_item_checklist(item)
     if not item.ativo:
         return ""
 
@@ -513,7 +514,6 @@ def calcular_mensagem_status_checklist(item: ChecklistItem) -> str:
 
 
 def _ultima_execucao_ajustada(item: ChecklistItem) -> Optional[date]:
-    normalizar_item_checklist(item)
     if not item.ultimo_exec:
         return None
 
@@ -548,7 +548,7 @@ def _ultima_execucao_ajustada(item: ChecklistItem) -> Optional[date]:
 
 
 def sincronizar_frequencia_checklist_existente(db: Session):
-    itens = db.query(ChecklistItem).all()
+    itens = db.query(ChecklistItem).filter(ChecklistItem.ativo == True).all()
     alterou = False
 
     for item in itens:
@@ -560,11 +560,8 @@ def sincronizar_frequencia_checklist_existente(db: Session):
     if alterou:
         db.commit()
 
-    return alterou
-
 
 def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
-    normalizar_item_checklist(item)
     if not item.ativo:
         return False
 
@@ -585,7 +582,6 @@ def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
 
 
 def calcular_proxima_execucao(item: ChecklistItem) -> Optional[str]:
-    normalizar_item_checklist(item)
     proxima_data = _data_base_proxima_execucao(item)
     if proxima_data is None:
         return None
@@ -593,7 +589,6 @@ def calcular_proxima_execucao(item: ChecklistItem) -> Optional[str]:
 
 
 def calcular_dias_para_proxima(item: ChecklistItem) -> int:
-    normalizar_item_checklist(item)
     proxima = calcular_proxima_execucao(item)
     if not proxima:
         return 0
@@ -860,7 +855,7 @@ def icone(filename: str):
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "build": APP_BUILD}
+    return {"status": "ok"}
 
 
 @app.get("/debug")
@@ -878,7 +873,6 @@ def debug_info(db: Session = Depends(get_db)):
         },
         "tabelas": {},
         "erro": None,
-        "build": APP_BUILD,
     }
     try:
         info["tabelas"]["tarefas"] = db.query(Tarefa).count()
@@ -1503,18 +1497,6 @@ def excluir_checklist_item(item_id: int = Query(...), db: Session = Depends(get_
     return {"ok": True}
 
 
-@app.post("/checklist_forcar_correcao")
-def checklist_forcar_correcao(db: Session = Depends(get_db)):
-    alterou = sincronizar_frequencia_checklist_existente(db)
-    itens = db.query(ChecklistItem).filter(ChecklistItem.ativo == True).order_by(ChecklistItem.id).all()
-    return {
-        "ok": True,
-        "alterou": alterou,
-        "build": APP_BUILD,
-        "itens": [i.to_dict(incluir_pode_hoje=True) for i in itens],
-    }
-
-
 # ============================================================
 # NOTAS
 # ============================================================
@@ -1979,17 +1961,6 @@ def _loop_notificacoes_push():
 
 @app.on_event("startup")
 def iniciar_thread_push():
-    try:
-        db = SessionLocal()
-        sincronizar_frequencia_checklist_existente(db)
-    except Exception as e:
-        print(f"[CHECKLIST] Aviso ao sincronizar frequências no startup: {e}")
-    finally:
-        try:
-            db.close()
-        except Exception:
-            pass
-
     global _push_thread_started
     if _push_thread_started:
         return
