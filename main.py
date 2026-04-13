@@ -43,6 +43,7 @@ engine = create_engine(DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+APP_BUILD = "checklist-fix-2026-04-13-v3"
 app = FastAPI(title="PRIORIZA API")
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
@@ -145,7 +146,8 @@ class ChecklistItem(Base):
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC))
 
     def to_dict(self, incluir_pode_hoje: bool = False):
-        frequencia_corrigida = frequencia_interna_efetiva(self.frequencia, self.frequencia_interna)
+        normalizar_item_checklist(self)
+        frequencia_corrigida = self.frequencia_interna
         proxima = calcular_proxima_execucao(self)
         dias = calcular_dias_para_proxima(self)
         atraso = dias < 0
@@ -434,12 +436,13 @@ def normalizar_frequencia_interna(freq: str) -> str:
     return "SEMANAL"
 
 
+def normalizar_item_checklist(item: ChecklistItem) -> ChecklistItem:
+    freq_corrigida = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
+    item.frequencia_interna = freq_corrigida
+    return item
+
+
 def _intervalo_dias(freq_interna: str) -> int:
-    freq = (freq_interna or "").strip().upper()
-
-    if freq not in {"DIARIA", "SEMANAL", "MENSAL", "BIMESTRAL", "TRIMESTRAL", "SEMESTRAL", "ANUAL", "UNICO"}:
-        freq = "SEMANAL"
-
     return {
         "DIARIA": 1,
         "SEMANAL": 7,
@@ -449,7 +452,7 @@ def _intervalo_dias(freq_interna: str) -> int:
         "SEMESTRAL": 180,
         "ANUAL": 365,
         "UNICO": 999999,
-    }[freq]
+    }.get((freq_interna or "SEMANAL").upper(), 7)
 
 
 def _eh_domingo(data_ref: date) -> bool:
@@ -463,6 +466,7 @@ def _proxima_data_diaria_visivel(data_ref: date) -> date:
 
 
 def _data_base_proxima_execucao(item: ChecklistItem) -> Optional[date]:
+    normalizar_item_checklist(item)
     freq = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
 
     if freq == "UNICO":
@@ -481,6 +485,7 @@ def _data_base_proxima_execucao(item: ChecklistItem) -> Optional[date]:
 
 
 def calcular_mensagem_status_checklist(item: ChecklistItem) -> str:
+    normalizar_item_checklist(item)
     if not item.ativo:
         return ""
 
@@ -508,6 +513,7 @@ def calcular_mensagem_status_checklist(item: ChecklistItem) -> str:
 
 
 def _ultima_execucao_ajustada(item: ChecklistItem) -> Optional[date]:
+    normalizar_item_checklist(item)
     if not item.ultimo_exec:
         return None
 
@@ -542,7 +548,7 @@ def _ultima_execucao_ajustada(item: ChecklistItem) -> Optional[date]:
 
 
 def sincronizar_frequencia_checklist_existente(db: Session):
-    itens = db.query(ChecklistItem).filter(ChecklistItem.ativo == True).all()
+    itens = db.query(ChecklistItem).all()
     alterou = False
 
     for item in itens:
@@ -554,8 +560,11 @@ def sincronizar_frequencia_checklist_existente(db: Session):
     if alterou:
         db.commit()
 
+    return alterou
+
 
 def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
+    normalizar_item_checklist(item)
     if not item.ativo:
         return False
 
@@ -576,6 +585,7 @@ def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
 
 
 def calcular_proxima_execucao(item: ChecklistItem) -> Optional[str]:
+    normalizar_item_checklist(item)
     proxima_data = _data_base_proxima_execucao(item)
     if proxima_data is None:
         return None
@@ -583,6 +593,7 @@ def calcular_proxima_execucao(item: ChecklistItem) -> Optional[str]:
 
 
 def calcular_dias_para_proxima(item: ChecklistItem) -> int:
+    normalizar_item_checklist(item)
     proxima = calcular_proxima_execucao(item)
     if not proxima:
         return 0
@@ -849,7 +860,7 @@ def icone(filename: str):
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "build": APP_BUILD}
 
 
 @app.get("/debug")
@@ -867,6 +878,7 @@ def debug_info(db: Session = Depends(get_db)):
         },
         "tabelas": {},
         "erro": None,
+        "build": APP_BUILD,
     }
     try:
         info["tabelas"]["tarefas"] = db.query(Tarefa).count()
@@ -1415,10 +1427,6 @@ def criar_checklist_item(
     db.add(item)
     db.commit()
     db.refresh(item)
-    item.frequencia_interna = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
-    item.frequencia_interna = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
-    db.commit()
-    db.refresh(item)
     return item.to_dict(incluir_pode_hoje=True)
 
 
@@ -1480,7 +1488,6 @@ def resetar_status_checklist(item_id: int = Query(...), db: Session = Depends(ge
     if not item:
         raise HTTPException(status_code=404, detail="Item não encontrado.")
     item.status = "pendente"
-    item.frequencia_interna = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
     db.commit()
     db.refresh(item)
     return item.to_dict(incluir_pode_hoje=True)
@@ -1494,6 +1501,18 @@ def excluir_checklist_item(item_id: int = Query(...), db: Session = Depends(get_
     item.ativo = False
     db.commit()
     return {"ok": True}
+
+
+@app.post("/checklist_forcar_correcao")
+def checklist_forcar_correcao(db: Session = Depends(get_db)):
+    alterou = sincronizar_frequencia_checklist_existente(db)
+    itens = db.query(ChecklistItem).filter(ChecklistItem.ativo == True).order_by(ChecklistItem.id).all()
+    return {
+        "ok": True,
+        "alterou": alterou,
+        "build": APP_BUILD,
+        "itens": [i.to_dict(incluir_pode_hoje=True) for i in itens],
+    }
 
 
 # ============================================================
@@ -1960,6 +1979,17 @@ def _loop_notificacoes_push():
 
 @app.on_event("startup")
 def iniciar_thread_push():
+    try:
+        db = SessionLocal()
+        sincronizar_frequencia_checklist_existente(db)
+    except Exception as e:
+        print(f"[CHECKLIST] Aviso ao sincronizar frequências no startup: {e}")
+    finally:
+        try:
+            db.close()
+        except Exception:
+            pass
+
     global _push_thread_started
     if _push_thread_started:
         return
