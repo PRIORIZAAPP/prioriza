@@ -13,7 +13,7 @@ from google.auth.transport.requests import Request as GoogleAuthRequest
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, create_engine, text
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, create_engine, inspect, text
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -170,6 +170,7 @@ class ChecklistItem(Base):
             d["proxima_execucao"] = proxima
             d["dias_para_proxima"] = dias
             d["atrasado"] = atraso
+            d["mensagem_status"] = calcular_mensagem_status_checklist(self)
         return d
 
 
@@ -446,31 +447,134 @@ def _intervalo_dias(freq_interna: str) -> int:
     }.get((freq_interna or "SEMANAL").upper(), 7)
 
 
+def _eh_domingo(data_ref: date) -> bool:
+    return data_ref.weekday() == 6
+
+
+def _proxima_data_diaria_visivel(data_ref: date) -> date:
+    if _eh_domingo(data_ref):
+        return data_ref + timedelta(days=1)
+    return data_ref
+
+
+def _data_base_proxima_execucao(item: ChecklistItem) -> Optional[date]:
+    freq = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
+
+    if freq == "UNICO":
+        return None if item.ultimo_exec else date.today()
+
+    ultimo = _ultima_execucao_ajustada(item)
+    if ultimo is None:
+        base = date.today()
+    else:
+        base = ultimo + timedelta(days=_intervalo_dias(freq))
+
+    if freq == "DIARIA":
+        return _proxima_data_diaria_visivel(base)
+
+    return base
+
+
+def calcular_mensagem_status_checklist(item: ChecklistItem) -> str:
+    if not item.ativo:
+        return ""
+
+    hoje = date.today()
+    if _eh_domingo(hoje):
+        return "Folga de domingo"
+
+    dias = calcular_dias_para_proxima(item)
+    if item.status == "feito" and dias >= 0:
+        if dias == 0:
+            return "Disponível hoje"
+        if dias == 1:
+            return "Próxima em 1 dia"
+        return f"Próxima em {dias} dia(s)"
+
+    if dias == -1:
+        return "Vencido ontem"
+    if dias < -1:
+        return f"Vencido há {abs(dias)} dia(s)"
+    if dias == 0:
+        return "Disponível hoje"
+    if dias == 1:
+        return "Próxima em 1 dia"
+    return f"Próxima em {dias} dia(s)"
+
+
+def _ultima_execucao_ajustada(item: ChecklistItem) -> Optional[date]:
+    if not item.ultimo_exec:
+        return None
+
+    freq = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
+    ultimo = item.ultimo_exec
+
+    if ultimo.tzinfo is not None:
+        try:
+            ultimo = ultimo.astimezone()
+        except Exception:
+            pass
+
+    ultimo_date = ultimo.date()
+    hoje = date.today()
+    intervalo = _intervalo_dias(freq)
+
+    # Corrige registros antigos/inconsistentes que ficaram com ultimo_exec no futuro
+    # e acabavam escondendo itens diários por vários dias.
+    if ultimo_date > hoje:
+        if freq == "DIARIA":
+            return hoje - timedelta(days=1)
+        return hoje
+
+    # Se o item já venceu o próximo ciclo, mantém a última execução ajustada para
+    # o ciclo imediatamente anterior, evitando contagens estouradas.
+    if freq != "UNICO":
+        dias_passados = (hoje - ultimo_date).days
+        if dias_passados > intervalo:
+            return hoje - timedelta(days=intervalo)
+
+    return ultimo_date
+
+
+def sincronizar_frequencia_checklist_existente(db: Session):
+    itens = db.query(ChecklistItem).filter(ChecklistItem.ativo == True).all()
+    alterou = False
+
+    for item in itens:
+        freq_corrigida = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
+        if (item.frequencia_interna or "").strip().upper() != freq_corrigida:
+            item.frequencia_interna = freq_corrigida
+            alterou = True
+
+    if alterou:
+        db.commit()
+
+
 def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
     if not item.ativo:
         return False
 
-    freq = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
     hoje = date.today()
+    if _eh_domingo(hoje):
+        return False
+
+    freq = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
 
     if freq == "UNICO":
         return item.ultimo_exec is None and item.status != "feito"
 
-    if item.ultimo_exec is None:
-        return True
+    proxima_data = _data_base_proxima_execucao(item)
+    if proxima_data is None:
+        return False
 
-    ultimo = item.ultimo_exec.date()
-    return hoje >= (ultimo + timedelta(days=_intervalo_dias(freq)))
+    return hoje >= proxima_data
 
 
 def calcular_proxima_execucao(item: ChecklistItem) -> Optional[str]:
-    freq = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
-    if freq == "UNICO":
-        return None if item.ultimo_exec else date.today().isoformat()
-    if item.ultimo_exec is None:
-        return date.today().isoformat()
-    proxima = item.ultimo_exec.date() + timedelta(days=_intervalo_dias(freq))
-    return proxima.isoformat()
+    proxima_data = _data_base_proxima_execucao(item)
+    if proxima_data is None:
+        return None
+    return proxima_data.isoformat()
 
 
 def calcular_dias_para_proxima(item: ChecklistItem) -> int:
@@ -998,6 +1102,7 @@ def desconectar_google(db: Session = Depends(get_db)):
 
 @app.get("/resumo")
 def resumo(data_ref: str = Query(None, description="Data de referência YYYY-MM-DD"), db: Session = Depends(get_db)):
+    sincronizar_frequencia_checklist_existente(db)
     hoje = data_ref.strip() if data_ref and validar_data_iso(data_ref) else date.today().isoformat()
 
     tarefas_hoje = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.data == hoje).all()
@@ -1280,6 +1385,7 @@ def excluir_tarefa(tarefa_id: int = Query(..., alias="tarefa_id"), db: Session =
 
 @app.get("/checklist")
 def listar_checklist(db: Session = Depends(get_db)):
+    sincronizar_frequencia_checklist_existente(db)
     itens = db.query(ChecklistItem).filter(ChecklistItem.ativo == True).order_by(ChecklistItem.criado_em, ChecklistItem.id).all()
     return [i.to_dict(incluir_pode_hoje=True) for i in itens]
 
@@ -1334,6 +1440,7 @@ def editar_checklist_item(
 
 @app.post("/checklist_status")
 def alterar_status_checklist(item_id: int = Query(...), status: str = Query(...), db: Session = Depends(get_db)):
+    sincronizar_frequencia_checklist_existente(db)
     item = db.query(ChecklistItem).filter(ChecklistItem.id == item_id, ChecklistItem.ativo == True).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item não encontrado.")
@@ -1343,10 +1450,15 @@ def alterar_status_checklist(item_id: int = Query(...), status: str = Query(...)
         novo_status = "pendente"
 
     item.status = novo_status
+    item.frequencia_interna = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
+
     if novo_status == "feito":
         item.ultimo_exec = datetime.now(UTC)
-    elif novo_status == "pendente" and (item.frequencia_interna or "").upper() == "UNICO":
-        item.ultimo_exec = None
+    elif novo_status == "pendente":
+        if (item.frequencia_interna or "").upper() == "UNICO":
+            item.ultimo_exec = None
+        elif item.ultimo_exec and _ultima_execucao_ajustada(item) and _ultima_execucao_ajustada(item) < date.today():
+            item.ultimo_exec = datetime.combine(_ultima_execucao_ajustada(item), datetime.min.time(), tzinfo=UTC)
 
     db.commit()
     db.refresh(item)
