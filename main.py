@@ -435,6 +435,11 @@ def normalizar_frequencia_interna(freq: str) -> str:
 
 
 def _intervalo_dias(freq_interna: str) -> int:
+    freq = (freq_interna or "").strip().upper()
+
+    if freq not in {"DIARIA", "SEMANAL", "MENSAL", "BIMESTRAL", "TRIMESTRAL", "SEMESTRAL", "ANUAL", "UNICO"}:
+        freq = "SEMANAL"
+
     return {
         "DIARIA": 1,
         "SEMANAL": 7,
@@ -444,7 +449,7 @@ def _intervalo_dias(freq_interna: str) -> int:
         "SEMESTRAL": 180,
         "ANUAL": 365,
         "UNICO": 999999,
-    }.get((freq_interna or "SEMANAL").upper(), 7)
+    }[freq]
 
 
 def _eh_domingo(data_ref: date) -> bool:
@@ -1410,6 +1415,10 @@ def criar_checklist_item(
     db.add(item)
     db.commit()
     db.refresh(item)
+    item.frequencia_interna = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
+    item.frequencia_interna = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
+    db.commit()
+    db.refresh(item)
     return item.to_dict(incluir_pode_hoje=True)
 
 
@@ -1471,6 +1480,7 @@ def resetar_status_checklist(item_id: int = Query(...), db: Session = Depends(ge
     if not item:
         raise HTTPException(status_code=404, detail="Item não encontrado.")
     item.status = "pendente"
+    item.frequencia_interna = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
     db.commit()
     db.refresh(item)
     return item.to_dict(incluir_pode_hoje=True)
