@@ -777,97 +777,6 @@
       .calendar-dot.google { background: #2563eb; }
       .calendar-dot.local-google { background: #7c3aed; }
 
-
-      /* ── NOTIFICAÇÕES ── */
-      .notif-card {
-        background: #f8fafc;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 12px;
-        margin-bottom: 12px;
-      }
-      .notif-head {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 10px;
-        margin-bottom: 8px;
-      }
-      .notif-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 13px;
-        font-weight: 700;
-        color: #111827;
-      }
-      .notif-subtitle {
-        font-size: 11px;
-        color: #6b7280;
-        line-height: 1.45;
-        margin-top: 4px;
-      }
-      .notif-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        border-radius: 999px;
-        padding: 5px 10px;
-        font-size: 11px;
-        font-weight: 700;
-        white-space: nowrap;
-        border: 1px solid #d1d5db;
-        background: #f3f4f6;
-        color: #374151;
-      }
-      .notif-badge.ativo {
-        background: #dcfce7;
-        color: #166534;
-        border-color: #bbf7d0;
-      }
-      .notif-badge.alerta {
-        background: #fff7ed;
-        color: #9a3412;
-        border-color: #fdba74;
-      }
-      .notif-badge.erro {
-        background: #fef2f2;
-        color: #b91c1c;
-        border-color: #fecaca;
-      }
-      .notif-status-lista {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 6px;
-        margin-top: 10px;
-      }
-      .notif-status-item {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        font-size: 12px;
-        color: #111827;
-        padding: 8px 10px;
-        border-radius: 10px;
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-      }
-      .notif-status-item small {
-        color: #6b7280;
-      }
-      .notif-actions {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 10px;
-      }
-      .notif-helper {
-        min-height: 16px;
-        margin-top: 8px;
-        font-size: 12px;
-        color: #6b7280;
-      }
-
     </style>
   </head>
   <body>
@@ -1337,39 +1246,6 @@
             <div id="lista-notas"><small>Carregando notas...</small></div>
           </div>
 
-          <div class="card" id="card-notificacoes">
-            <div class="card-header">
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
-                <path d="M128 232a24 24 0 0 0 24-24h-48a24 24 0 0 0 24 24Z" fill="currentColor" opacity="0.22"/>
-                <path d="M128 232a24 24 0 0 0 24-24h-48a24 24 0 0 0 24 24Z" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M56 192h144l-16-24v-56a56 56 0 1 0-112 0v56l-16 24Z" fill="currentColor" opacity="0.16"/>
-                <path d="M56 192h144l-16-24v-56a56 56 0 1 0-112 0v56l-16 24Z" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <h2>Notificações</h2>
-            </div>
-            <div class="notif-card">
-              <div class="notif-head">
-                <div>
-                  <div class="notif-title">Avisos do PRIORIZA</div>
-                  <div class="notif-subtitle">Ative neste aparelho para receber lembretes com o app fechado. No iPhone, abra pelo ícone da Tela de Início.</div>
-                </div>
-                <div id="notif-badge" class="notif-badge">Verificando</div>
-              </div>
-              <div class="notif-status-lista">
-                <div class="notif-status-item"><span>Compatibilidade</span><small id="notif-status-suporte">Verificando</small></div>
-                <div class="notif-status-item"><span>Modo do app</span><small id="notif-status-standalone">Verificando</small></div>
-                <div class="notif-status-item"><span>Permissão</span><small id="notif-status-permissao">Verificando</small></div>
-                <div class="notif-status-item"><span>Inscrição neste aparelho</span><small id="notif-status-inscricao">Verificando</small></div>
-                <div class="notif-status-item"><span>Total de assinantes</span><small id="notif-status-total">Verificando</small></div>
-              </div>
-              <div class="notif-actions">
-                <button id="btn-ativar-notificacoes" class="btn-primary" type="button">Ativar notificações</button>
-                <button id="btn-atualizar-notificacoes" class="btn-outline" type="button">Atualizar status</button>
-              </div>
-              <div id="notif-helper" class="notif-helper"></div>
-            </div>
-          </div>
-
           <!-- BACKUP E RESTAURAÇÃO -->
           <div class="card" id="card-backup">
             <div class="card-header">
@@ -1815,25 +1691,56 @@
     }
 
     function normalizarEventoGoogle(evento) {
-      const inicioRaw = evento?.inicio || "";
-      const fimRaw = evento?.fim || "";
-      const allDay = !String(inicioRaw).includes("T");
-      const dataISO = allDay ? normalizarDataParaISO(String(inicioRaw).slice(0, 10)) : normalizarDataParaISO(new Date(inicioRaw).toISOString().slice(0, 10));
+      const dataDireta = normalizarDataParaISO(evento?.data || "");
+      const horaInicioDireta = String(evento?.hora_inicio || "").trim();
+      const horaFimDireta = String(evento?.hora_fim || "").trim();
+      const inicioRaw = String(evento?.inicio || "").trim();
+      const fimRaw = String(evento?.fim || "").trim();
+
+      const allDayBackend = evento?.all_day === true || horaInicioDireta === "Dia todo";
+      const allDayLegado = inicioRaw ? !inicioRaw.includes("T") : false;
+      const allDay = allDayBackend || allDayLegado;
+
+      let dataISO = dataDireta;
+      if (!dataISO && inicioRaw) {
+        if (allDayLegado) dataISO = normalizarDataParaISO(inicioRaw.slice(0, 10));
+        else {
+          try {
+            dataISO = normalizarDataParaISO(new Date(inicioRaw).toISOString().slice(0, 10));
+          } catch (e) {
+            dataISO = "";
+          }
+        }
+      }
+
+      let horaInicio = "";
+      let horaFim = "";
+
+      if (allDay) {
+        horaInicio = "Dia todo";
+        horaFim = "";
+      } else {
+        horaInicio = horaInicioDireta || (inicioRaw ? formatarHoraEvento(inicioRaw) : "");
+        horaFim = horaFimDireta || (fimRaw ? formatarHoraEvento(fimRaw) : "");
+      }
+
       return {
-        id: evento?.id || `google-${Math.random().toString(36).slice(2)}`,
+        id: evento?.id || evento?.google_event_id || `google-${Math.random().toString(36).slice(2)}`,
         titulo: evento?.titulo || "(Sem título)",
         data: dataISO,
-        hora_inicio: allDay ? "Dia todo" : formatarHoraEvento(inicioRaw),
-        hora_fim: allDay ? "" : formatarHoraEvento(fimRaw),
-        origem: "google_calendar",
+        hora_inicio: horaInicio,
+        hora_fim: horaFim,
+        origem: (evento?.origem || "google_calendar"),
         tipo_evento: "google",
         descricao: evento?.descricao || "",
         local: evento?.local || "",
-        link: evento?.link || "",
+        link: evento?.link || evento?.google_html_link || "",
         status: evento?.status || "confirmed",
-        ativo: true,
-        prioridade: "",
+        ativo: evento?.ativo !== false,
+        prioridade: evento?.prioridade || "",
         all_day: allDay,
+        google_event_id: evento?.google_event_id || evento?.id || "",
+        google_html_link: evento?.google_html_link || evento?.link || "",
       };
     }
 
@@ -3308,8 +3215,6 @@
       initUniversalMic();
 
       // ── NOTIFICAÇÕES ─────────────────────────────────────────────
-      document.getElementById("btn-ativar-notificacoes")?.addEventListener("click", ativarNotificacoesUsuario);
-      document.getElementById("btn-atualizar-notificacoes")?.addEventListener("click", atualizarPainelNotificacoes);
       iniciarSistemaNotificacoes();
     });
 
@@ -3693,175 +3598,15 @@
 
     // ── Registra o Service Worker e inscreve no push ───────────────
     async function registrarServiceWorker() {
-      if (!("serviceWorker" in navigator)) {
-        throw new Error("Service Worker não suportado neste navegador.");
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+        console.warn("[NOTIF] Push não suportado neste navegador.");
+        return;
       }
-      const reg = await navigator.serviceWorker.register("/sw.js");
-      await navigator.serviceWorker.ready;
-      return reg;
-    }
-
-    function appEstaInstalado() {
-      return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-    }
-
-    function dispositivoIOS() {
-      const ua = window.navigator.userAgent || "";
-      return /iPhone|iPad|iPod/i.test(ua);
-    }
-
-    function pushSuportado() {
-      return ("Notification" in window) && ("serviceWorker" in navigator) && ("PushManager" in window);
-    }
-
-    async function obterInscricaoLocal() {
-      if (!("serviceWorker" in navigator) || !("PushManager" in window)) return null;
-      const reg = await registrarServiceWorker();
-      return await reg.pushManager.getSubscription();
-    }
-
-    async function enviarInscricaoParaServidor(subscription) {
-      const resposta = await fetch(API + "/push/subscribe", {
-        method: "POST",
-        headers: { ...authHeaders(), "Content-Type": "application/json" },
-        body: JSON.stringify(subscription.toJSON()),
-      });
-
-      if (!resposta.ok) {
-        const erro = await resposta.text();
-        throw new Error(`Servidor retornou ${resposta.status}: ${erro}`);
-      }
-
-      return await resposta.json();
-    }
-
-    async function obterStatusNotificacoes() {
-      const status = {
-        suporte: pushSuportado(),
-        standalone: appEstaInstalado(),
-        permissao: ("Notification" in window) ? Notification.permission : "indisponivel",
-        inscricaoLocal: false,
-        assinantes: null,
-        erro: "",
-      };
-
       try {
-        if (status.suporte) {
-          const sub = await obterInscricaoLocal();
-          status.inscricaoLocal = !!sub;
-        }
-      } catch (e) {
-        status.erro = e?.message || String(e);
-      }
+        const reg = await navigator.serviceWorker.register("/sw.js");
+        await navigator.serviceWorker.ready;
 
-      try {
-        const res = await fetch(API + "/push/status", { headers: authHeaders() });
-        if (res.ok) {
-          const dados = await res.json();
-          status.assinantes = dados.assinantes;
-        }
-      } catch (e) {
-        if (!status.erro) status.erro = e?.message || String(e);
-      }
-
-      return status;
-    }
-
-    function definirTexto(elId, texto) {
-      const el = document.getElementById(elId);
-      if (el) el.textContent = texto;
-    }
-
-    function definirAjudaNotificacao(texto, cor = "#6b7280") {
-      const el = document.getElementById("notif-helper");
-      if (!el) return;
-      el.textContent = texto;
-      el.style.color = cor;
-    }
-
-    async function atualizarPainelNotificacoes() {
-      const status = await obterStatusNotificacoes();
-      const badge = document.getElementById("notif-badge");
-      const btnAtivar = document.getElementById("btn-ativar-notificacoes");
-
-      definirTexto("notif-status-suporte", status.suporte ? "Compatível" : "Não suportado");
-      definirTexto("notif-status-standalone", status.standalone ? "Tela de Início" : (dispositivoIOS() ? "Abra pelo ícone do app" : "Navegador"));
-      definirTexto("notif-status-permissao", status.permissao === "granted" ? "Permitida" : status.permissao === "denied" ? "Bloqueada" : status.permissao === "default" ? "Pendente" : "Indisponível");
-      definirTexto("notif-status-inscricao", status.inscricaoLocal ? "Ativa" : "Não ativa");
-      definirTexto("notif-status-total", typeof status.assinantes === "number" ? `${status.assinantes} dispositivo(s)` : "Não foi possível ler");
-
-      if (!badge || !btnAtivar) return status;
-
-      badge.className = "notif-badge";
-      btnAtivar.style.display = "inline-flex";
-      btnAtivar.disabled = false;
-      btnAtivar.textContent = "Ativar notificações";
-
-      if (!status.suporte) {
-        badge.textContent = "Indisponível";
-        badge.classList.add("erro");
-        btnAtivar.style.display = "none";
-        definirAjudaNotificacao("Este navegador não suporta push neste aparelho.", "#b91c1c");
-        return status;
-      }
-
-      if (dispositivoIOS() && !status.standalone) {
-        badge.textContent = "Instale o app";
-        badge.classList.add("alerta");
-        btnAtivar.style.display = "none";
-        definirAjudaNotificacao("No iPhone, abra no Safari, toque em Compartilhar e escolha Adicionar à Tela de Início. Depois abra pelo ícone do app.", "#9a3412");
-        return status;
-      }
-
-      if (status.permissao === "denied") {
-        badge.textContent = "Bloqueado";
-        badge.classList.add("erro");
-        btnAtivar.style.display = "none";
-        definirAjudaNotificacao("A permissão foi bloqueada. Reative nas configurações do aparelho e abra o PRIORIZA novamente.", "#b91c1c");
-        return status;
-      }
-
-      if (status.permissao === "granted" && status.inscricaoLocal) {
-        badge.textContent = "Ativo neste aparelho";
-        badge.classList.add("ativo");
-        btnAtivar.style.display = "none";
-        definirAjudaNotificacao("As notificações estão prontas neste aparelho.", "#166534");
-        return status;
-      }
-
-      badge.textContent = status.permissao === "granted" ? "Finalizar ativação" : "Pendente";
-      badge.classList.add("alerta");
-      btnAtivar.textContent = status.permissao === "granted" ? "Concluir ativação" : "Ativar notificações";
-      definirAjudaNotificacao(status.erro ? `Detalhe: ${status.erro}` : "Toque no botão para ativar neste aparelho.");
-      return status;
-    }
-
-    async function ativarNotificacoesUsuario() {
-      const btn = document.getElementById("btn-ativar-notificacoes");
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = "Ativando...";
-      }
-
-      try {
-        if (!pushSuportado()) {
-          throw new Error("Este aparelho não suporta notificações web.");
-        }
-
-        if (dispositivoIOS() && !appEstaInstalado()) {
-          throw new Error("No iPhone, abra o PRIORIZA pelo ícone da Tela de Início antes de ativar.");
-        }
-
-        let permissao = Notification.permission;
-        if (permissao !== "granted") {
-          permissao = await Notification.requestPermission();
-        }
-
-        if (permissao !== "granted") {
-          throw new Error("Permissão não concedida.");
-        }
-
-        const reg = await registrarServiceWorker();
+        // Verifica se já tem inscrição
         let sub = await reg.pushManager.getSubscription();
         if (!sub) {
           sub = await reg.pushManager.subscribe({
@@ -3870,40 +3615,53 @@
           });
         }
 
-        await enviarInscricaoParaServidor(sub);
-        definirAjudaNotificacao("Notificações ativadas com sucesso neste aparelho.", "#166534");
-        enviarNotificacao("PRIORIZA", "Notificações ativadas com sucesso.");
-        await iniciarSistemaNotificacoes();
-      } catch (e) {
-        console.error("[NOTIF] ❌ Erro ao ativar notificações:", e);
-        definirAjudaNotificacao(e?.message || "Erro ao ativar notificações.", "#b91c1c");
-        if (window.location.search.includes("debug")) {
-          alert("Erro push: " + (e?.message || e));
+        // Envia inscrição pro servidor
+        const resposta = await fetch(API + "/push/subscribe", {
+          method: "POST",
+          headers: { ...authHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify(sub.toJSON()),
+        });
+
+        if (!resposta.ok) {
+          const erro = await resposta.text();
+          console.error("[NOTIF] ❌ Erro do servidor ao inscrever:", resposta.status, erro);
+          throw new Error(`Servidor retornou ${resposta.status}: ${erro}`);
         }
-      } finally {
-        await atualizarPainelNotificacoes();
-        if (btn) {
-          btn.disabled = false;
+
+        const resultado = await resposta.json();
+        console.log("[NOTIF] ✅ Push registrado com sucesso!", resultado);
+      } catch(e) {
+        console.error("[NOTIF] ❌ Erro ao registrar push:", e);
+        // Mostra alerta visual para debug
+        if (window.location.search.includes("debug")) {
+          alert("Erro push: " + e.message);
         }
       }
     }
 
-    // ── Inicia sistema local quando a permissão já existe ─────────────────
-    let notificacoesLoopAtivo = false;
+    // ── Pede permissão e inicia o sistema ─────────────────────────
     async function iniciarSistemaNotificacoes() {
-      await atualizarPainelNotificacoes();
-
-      if (!pushSuportado()) return;
-      if (Notification.permission !== "granted") return;
-
-      try {
-        await registrarServiceWorker();
-      } catch (e) {
-        console.error("[NOTIF] ❌ Erro ao preparar Service Worker:", e);
+      if (!("Notification" in window)) {
+        console.warn("[NOTIF] Navegador não suporta notificações.");
+        return;
       }
 
-      if (!notificacoesLoopAtivo) {
-        notificacoesLoopAtivo = true;
+      if (Notification.permission === "default") {
+        // Aguarda 3 segundos para não assustar o usuário ao abrir
+        await new Promise(r => setTimeout(r, 3000));
+        const permissao = await Notification.requestPermission();
+        if (permissao === "granted") {
+          enviarNotificacao(
+            "🔔 Notificações ativadas!",
+            "O PRIORIZA vai te lembrar dos seus compromissos."
+          );
+        }
+      }
+
+      if (Notification.permission === "granted") {
+        // Registra SW para push (app fechado)
+        await registrarServiceWorker();
+        // Roda imediatamente e depois a cada minuto (app aberto)
         loopNotificacoes();
         setInterval(loopNotificacoes, 60 * 1000);
       }
@@ -3911,16 +3669,46 @@
 
     // ── Função de debug global (acessível pelo console) ────────────
     window.debugPushSubscribe = async function() {
-      console.log("Iniciando debug de push subscription...");
-      const statusAntes = await obterStatusNotificacoes();
-      console.log("Status atual:", statusAntes);
+      console.log("🔍 Iniciando debug de push subscription...");
       try {
-        await ativarNotificacoesUsuario();
-        const statusDepois = await obterStatusNotificacoes();
-        console.log("Status final:", statusDepois);
-        return statusDepois;
-      } catch (e) {
-        console.error("Erro no debug:", e);
+        const reg = await navigator.serviceWorker.ready;
+        let sub = await reg.pushManager.getSubscription();
+        console.log("📱 Inscrição atual:", sub ? "Existe" : "Não existe");
+        if (sub) {
+          console.log("🔑 Endpoint:", sub.endpoint);
+          console.log("📦 Keys:", sub.toJSON().keys);
+        }
+        
+        // Tenta inscrever
+        if (!sub) {
+          console.log("📝 Criando nova inscrição...");
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+          });
+          console.log("✅ Inscrição criada!");
+        }
+        
+        // Envia pro servidor
+        console.log("📤 Enviando para servidor...");
+        const resposta = await fetch(API + "/push/subscribe", {
+          method: "POST",
+          headers: { ...authHeaders(), "Content-Type": "application/json" },
+          body: JSON.stringify(sub.toJSON()),
+        });
+        
+        const texto = await resposta.text();
+        console.log("📥 Resposta do servidor:", resposta.status, texto);
+        
+        if (resposta.ok) {
+          console.log("🎉 Push subscription registrada com sucesso!");
+          return JSON.parse(texto);
+        } else {
+          console.error("❌ Erro do servidor:", texto);
+          throw new Error(texto);
+        }
+      } catch(e) {
+        console.error("❌ Erro:", e);
         throw e;
       }
     };
