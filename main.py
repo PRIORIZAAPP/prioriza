@@ -25,6 +25,7 @@ from starlette.middleware.sessions import SessionMiddleware
 BASE_DIR = Path(__file__).resolve().parent
 TIMEZONE_PADRAO = "America/Sao_Paulo"
 UTC = timezone.utc
+CHECKLIST_HORA_LIBERACAO = int(os.environ.get("CHECKLIST_HORA_LIBERACAO", "5"))
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 if not DATABASE_URL:
@@ -468,15 +469,36 @@ def _proxima_data_diaria_visivel(data_ref: date) -> date:
     return data_ref
 
 
+def _agora_local() -> datetime:
+    return datetime.now()
+
+
+def _data_operacional_atual() -> date:
+    agora = _agora_local()
+    hoje = agora.date()
+    if agora.hour < CHECKLIST_HORA_LIBERACAO:
+        return hoje - timedelta(days=1)
+    return hoje
+
+
+def _inicio_do_dia_operacional() -> datetime:
+    agora = _agora_local()
+    return datetime.combine(agora.date(), time(hour=CHECKLIST_HORA_LIBERACAO))
+
+
+def _dia_operacional_liberado() -> bool:
+    return _agora_local() >= _inicio_do_dia_operacional()
+
+
 def _data_base_proxima_execucao(item: ChecklistItem) -> Optional[date]:
     freq = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
 
     if freq == "UNICO":
-        return None if item.ultimo_exec else date.today()
+        return None if item.ultimo_exec else _data_operacional_atual()
 
     ultimo = _ultima_execucao_ajustada(item)
     if ultimo is None:
-        base = date.today()
+        base = _data_operacional_atual()
     else:
         base = ultimo + timedelta(days=_intervalo_dias(freq))
 
@@ -490,9 +512,12 @@ def calcular_mensagem_status_checklist(item: ChecklistItem) -> str:
     if not item.ativo:
         return ""
 
-    hoje = date.today()
+    hoje = _data_operacional_atual()
     if _eh_domingo(hoje):
         return "Folga de domingo"
+
+    if not _dia_operacional_liberado():
+        return f"Disponível às {CHECKLIST_HORA_LIBERACAO:02d}:00"
 
     dias = calcular_dias_para_proxima(item)
     if item.status == "feito" and dias >= 0:
@@ -527,7 +552,7 @@ def _ultima_execucao_ajustada(item: ChecklistItem) -> Optional[date]:
             pass
 
     ultimo_date = ultimo.date()
-    hoje = date.today()
+    hoje = _data_operacional_atual()
     intervalo = _intervalo_dias(freq)
 
     # Corrige registros antigos/inconsistentes que ficaram com ultimo_exec no futuro
@@ -565,8 +590,11 @@ def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
     if not item.ativo:
         return False
 
-    hoje = date.today()
+    hoje = _data_operacional_atual()
     if _eh_domingo(hoje):
+        return False
+
+    if not _dia_operacional_liberado():
         return False
 
     freq = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
@@ -592,7 +620,7 @@ def calcular_dias_para_proxima(item: ChecklistItem) -> int:
     proxima = calcular_proxima_execucao(item)
     if not proxima:
         return 0
-    return (date.fromisoformat(proxima) - date.today()).days
+    return (date.fromisoformat(proxima) - _data_operacional_atual()).days
 
 
 def google_configurado() -> bool:
@@ -855,7 +883,7 @@ def icone(filename: str):
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "build": "checklist-hora-liberacao-v1", "checklist_hora_liberacao": CHECKLIST_HORA_LIBERACAO}
 
 
 @app.get("/debug")
