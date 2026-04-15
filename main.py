@@ -882,8 +882,13 @@ def icone(filename: str):
 
 
 @app.get("/health")
+@app.head("/health")
 def health():
-    return {"status": "ok", "build": "checklist-hora-liberacao-v1", "checklist_hora_liberacao": CHECKLIST_HORA_LIBERACAO}
+    return {
+        "status": "ok",
+        "build": "checklist-hora-liberacao-v1",
+        "checklist_hora_liberacao": CHECKLIST_HORA_LIBERACAO
+    }
 
 
 @app.get("/debug")
