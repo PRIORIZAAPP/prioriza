@@ -929,52 +929,6 @@
             </div>
             <div class="secao-subtitulo">Calendário mensal com compromissos do PRIORIZA e eventos do Google Agenda no mesmo layout.</div>
 
-            <div id="agenda-google-card" class="agenda-integracao-card">
-              <div class="agenda-integracao-topo">
-                <div>
-                  <div class="agenda-integracao-titulo">
-                    <svg width="18" height="18" viewBox="0 0 256 256" fill="none" color="#2563eb" aria-hidden="true">
-                      <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.14"/>
-                      <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
-                      <line x1="40" y1="96" x2="216" y2="96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                      <line x1="80" y1="16" x2="80" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                      <line x1="176" y1="16" x2="176" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                    </svg>
-                    Integração com Google Agenda
-                  </div>
-                  <div id="agenda-google-subtitulo" class="agenda-integracao-subtitulo">Verificando status da integração...</div>
-                </div>
-                <div id="agenda-google-status" class="agenda-status-badge desconectado">
-                  <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                    <circle cx="128" cy="128" r="84" stroke="currentColor" stroke-width="20"/>
-                  </svg>
-                  Desconectado
-                </div>
-              </div>
-              <div class="agenda-integracao-acoes">
-                <button id="btn-google-conectar" class="btn-outline" type="button">
-                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                    <path d="M128 48v160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                    <path d="M48 128h160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                  </svg>
-                  Conectar Google
-                </button>
-                <button id="btn-google-atualizar" class="btn-outline" type="button">
-                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                    <path d="M216 128a88 88 0 1 1-26-62" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M216 56v56h-56" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  Atualizar eventos
-                </button>
-                <button id="btn-google-desconectar" class="btn-outline danger" type="button" style="display:none">
-                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                    <path d="M200 56L56 200" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                    <path d="M56 56l144 144" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                  </svg>
-                  Desconectar
-                </button>
-              </div>
-            </div>
 
             <div class="checklist-toolbar">
               <div class="checklist-toolbar-info">Defina data, horário, local/contexto e prioridade apenas quando for adicionar algo novo.</div>
@@ -1222,8 +1176,94 @@
               </svg>
               <h2>Ajustes</h2>
             </div>
-            <p style="font-size:12px;color:#6b7280;margin:0">Área reservada para Google Agenda, notificações e backup. Vou manter esta tela limpa por enquanto para não bagunçar o restante do app.</p>
+            <div class="secao-subtitulo">Organize recursos do app em um só lugar. Vamos evoluindo por partes.</div>
           </div>
+
+
+          <!-- INTEGRAÇÕES -->
+          <div class="card" id="card-integracoes">
+            <div class="card-header">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+                <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.2"/>
+                <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
+                <path d="M80 128h96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                <path d="M128 80v96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+              </svg>
+              <h2>Integrações</h2>
+            </div>
+            <p style="font-size:12px;color:#6b7280;margin:0 0 12px">Conecte serviços externos para manter sua agenda unificada dentro do PRIORIZA.</p>
+            <div id="agenda-google-card" class="agenda-integracao-card" style="margin-bottom:0">
+              <div class="agenda-integracao-topo">
+                <div>
+                  <div class="agenda-integracao-titulo">
+                    <svg width="18" height="18" viewBox="0 0 256 256" fill="none" color="#2563eb" aria-hidden="true">
+                      <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.14"/>
+                      <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
+                      <line x1="40" y1="96" x2="216" y2="96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                      <line x1="80" y1="16" x2="80" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                      <line x1="176" y1="16" x2="176" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                    </svg>
+                    Google Agenda
+                  </div>
+                  <div id="agenda-google-subtitulo" class="agenda-integracao-subtitulo">Verificando status da integração...</div>
+                </div>
+                <div id="agenda-google-status" class="agenda-status-badge desconectado">
+                  <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <circle cx="128" cy="128" r="84" stroke="currentColor" stroke-width="20"/>
+                  </svg>
+                  Desconectado
+                </div>
+              </div>
+              <div class="agenda-integracao-acoes">
+                <button id="btn-google-conectar" class="btn-outline" type="button">
+                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <path d="M128 48v160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                    <path d="M48 128h160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                  </svg>
+                  Conectar Google
+                </button>
+                <button id="btn-google-atualizar" class="btn-outline" type="button">
+                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <path d="M216 128a88 88 0 1 1-26-62" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M216 56v56h-56" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Atualizar eventos
+                </button>
+                <button id="btn-google-desconectar" class="btn-outline danger" type="button" style="display:none">
+                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <path d="M200 56L56 200" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                    <path d="M56 56l144 144" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                  </svg>
+                  Desconectar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- BACKUP E RESTAURAÇÃO -->
+          <div class="card" id="card-backup">
+            <div class="card-header">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+                <rect x="48" y="32" width="160" height="192" rx="8" fill="currentColor" opacity="0.2"/>
+                <rect x="48" y="32" width="160" height="192" rx="8" stroke="currentColor" stroke-width="16"/>
+                <path d="M128 88 L128 168" stroke="currentColor" stroke-width="18" stroke-linecap="round"/>
+                <path d="M96 140 L128 168 L160 140" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <h2>Backup e Restauração</h2>
+            </div>
+            <p style="font-size:12px;color:#6b7280;margin:0 0 12px">Faça backup dos seus dados regularmente para não perder suas tarefas, rotinas e notas em caso de troca de banco ou servidor.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+              <button id="btn-exportar-backup" class="btn-add-tarefa" style="background:#2563eb;font-size:12px;padding:8px 14px">
+                📥 Baixar Backup (JSON)
+              </button>
+              <label id="label-importar-backup" class="btn-add-tarefa" style="background:#10b981;font-size:12px;padding:8px 14px;cursor:pointer">
+                📤 Restaurar Backup
+                <input id="input-importar-backup" type="file" accept=".json" style="display:none">
+              </label>
+            </div>
+            <div id="backup-status" style="font-size:12px;color:#6b7280;min-height:16px"></div>
+          </div>
+
         </div>
 
         <div class="screen" id="screen-notas">
@@ -1274,29 +1314,7 @@
             <div id="lista-notas"><small>Carregando notas...</small></div>
           </div>
 
-          <!-- BACKUP E RESTAURAÇÃO -->
-          <div class="card" id="card-backup">
-            <div class="card-header">
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
-                <rect x="48" y="32" width="160" height="192" rx="8" fill="currentColor" opacity="0.2"/>
-                <rect x="48" y="32" width="160" height="192" rx="8" stroke="currentColor" stroke-width="16"/>
-                <path d="M128 88 L128 168" stroke="currentColor" stroke-width="18" stroke-linecap="round"/>
-                <path d="M96 140 L128 168 L160 140" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <h2>Backup e Restauração</h2>
-            </div>
-            <p style="font-size:12px;color:#6b7280;margin:0 0 12px">Faça backup dos seus dados regularmente para não perder suas tarefas, rotinas e notas em caso de troca de banco ou servidor.</p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-              <button id="btn-exportar-backup" class="btn-add-tarefa" style="background:#2563eb;font-size:12px;padding:8px 14px">
-                📥 Baixar Backup (JSON)
-              </button>
-              <label id="label-importar-backup" class="btn-add-tarefa" style="background:#10b981;font-size:12px;padding:8px 14px;cursor:pointer">
-                📤 Restaurar Backup
-                <input id="input-importar-backup" type="file" accept=".json" style="display:none">
-              </label>
-            </div>
-            <div id="backup-status" style="font-size:12px;color:#6b7280;min-height:16px"></div>
-          </div>
+
 
         </div>
 
