@@ -233,7 +233,7 @@
         border-radius: 999px; font-size: 11px;
         background: #e5e7eb; color: #4b5563;
       }
-      .agenda-tag.pessoal   { background: #ede9fe; color: #6d28d9; }
+      .agenda-tag.pessoal   { background: #e0f2fe; color: #075985; }
       .agenda-tag.extra     { background: #fef3c7; color: #92400e; }
       .agenda-tag.concluida { background: #dcfce7; color: #166534; }
       .agenda-tag.prio1     { background: #fee2e2; color: #b91c1c; }
@@ -263,36 +263,31 @@
         display: flex; justify-content: space-around; align-items: stretch;
         padding: 6px 4px 8px 4px;
         border-top: 1px solid rgba(148,163,184,0.4);
+        background: #0f172a;
       }
       .nav-item {
-        flex: 1; min-height: 56px;
-        text-align: center; color: #9ca3af;
+        position: relative;
+        flex: 1; text-align: center; color: #9ca3af;
         font-size: 11px; padding: 4px 0;
         display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px;
-        cursor: pointer;
-        transition: transform 0.14s ease, color 0.18s ease, opacity 0.18s ease;
-        -webkit-tap-highlight-color: transparent;
+        cursor: pointer; min-height: 54px;
+        transition: transform 0.12s ease, color 0.2s ease;
+        user-select: none;
       }
+      .nav-item:active { transform: scale(0.96); }
       .nav-item.active { color: #f9fafb; font-weight: 600; }
-      .nav-item:active { transform: scale(0.94); }
-      .nav-item svg {
-        display: block;
-        width: 22px;
-        height: 22px;
-        flex-shrink: 0;
-        transition: transform 0.18s ease;
+      .nav-item.active::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 20%;
+        width: 60%;
+        height: 2px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #2563eb, #60a5fa);
       }
-      .nav-item.active svg { transform: translateY(-1px); }
-      .nav-item span {
-        display: block;
-        line-height: 1.1;
-        text-align: center;
-        white-space: nowrap;
-      }
-      .nav-item.settings svg {
-        width: 22px;
-        height: 22px;
-      }
+      .nav-item svg { display: block; width: 22px; height: 22px; flex-shrink: 0; }
+      .nav-item span { display: block; line-height: 1.1; text-align: center; white-space: nowrap; }
 
       /* ── BUTTONS ── */
       .btn-add-tarefa {
@@ -578,164 +573,6 @@
       .calendar-dot.misto     { background: linear-gradient(90deg, #dc2626, #facc15, #22c55e); }
       .calendar-holiday       { font-size: 9px; color: #b91c1c; margin-top: 2px; }
       .agenda-dia-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-
-
-      .nav-item.settings svg {
-        width: 26px;
-        height: 26px;
-      }
-
-      /* ── TIMELINE AGENDA ── */
-      .agenda-filtros {
-        display: flex;
-        gap: 8px;
-        margin: 10px 0 12px 0;
-        flex-wrap: wrap;
-      }
-      .agenda-filtro-btn {
-        border: 1px solid #d1d5db;
-        background: #ffffff;
-        color: #374151;
-        border-radius: 999px;
-        padding: 6px 12px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-      }
-      .agenda-filtro-btn.active {
-        background: #eff6ff;
-        color: #1d4ed8;
-        border-color: #bfdbfe;
-      }
-      .agenda-dia-subtitulo {
-        font-size: 11px;
-        color: #6b7280;
-        margin: 6px 0 10px 0;
-      }
-      .agenda-timeline-wrap {
-        position: relative;
-        border: 1px solid #e5e7eb;
-        border-radius: 14px;
-        background: #f8fafc;
-        overflow: hidden;
-      }
-      .agenda-all-day-lista {
-        padding: 10px 10px 0 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .agenda-all-day-item {
-        border-radius: 10px;
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        padding: 8px 10px;
-      }
-      .agenda-all-day-item .agenda-titulo {
-        margin-bottom: 4px;
-      }
-      .timeline-grid {
-        position: relative;
-        padding-bottom: 8px;
-      }
-      .timeline-row {
-        display: grid;
-        grid-template-columns: 56px 1fr;
-        min-height: 56px;
-      }
-      .timeline-time {
-        font-size: 11px;
-        color: #6b7280;
-        font-weight: 600;
-        padding: 8px 8px 0 10px;
-        border-top: 1px solid #e5e7eb;
-        background: #f8fafc;
-        z-index: 1;
-      }
-      .timeline-slot {
-        position: relative;
-        border-top: 1px solid #e5e7eb;
-        background: linear-gradient(to bottom, rgba(255,255,255,0.7), rgba(248,250,252,0.96));
-      }
-      .timeline-eventos-camada {
-        position: absolute;
-        top: 0;
-        left: 56px;
-        right: 0;
-        pointer-events: none;
-      }
-      .timeline-evento {
-        position: absolute;
-        left: 8px;
-        right: 8px;
-        border-radius: 12px;
-        padding: 8px 10px;
-        background: #ffffff;
-        border: 1px solid #dbeafe;
-        border-left: 4px solid #2563eb;
-        box-shadow: 0 4px 10px rgba(15,23,42,0.08);
-        color: #111827;
-        pointer-events: auto;
-        overflow: hidden;
-      }
-      .timeline-evento.prio1 { border-left-color: #dc2626; }
-      .timeline-evento.prio2 { border-left-color: #f59e0b; }
-      .timeline-evento.prio3 { border-left-color: #16a34a; }
-      .timeline-evento.pessoal {
-        background: #f5f3ff;
-        border-color: #ddd6fe;
-      }
-      .timeline-evento.google {
-        background: #eff6ff;
-        border-color: #bfdbfe;
-        border-left-color: #2563eb;
-      }
-      .timeline-evento-titulo {
-        font-size: 12px;
-        font-weight: 700;
-        color: #111827;
-        line-height: 1.3;
-        margin-bottom: 4px;
-      }
-      .timeline-evento-meta {
-        font-size: 10px;
-        color: #4b5563;
-        line-height: 1.35;
-      }
-      .timeline-evento-tags {
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
-        margin-top: 6px;
-      }
-      .timeline-chip {
-        display: inline-flex;
-        align-items: center;
-        border-radius: 999px;
-        padding: 2px 8px;
-        font-size: 10px;
-        font-weight: 700;
-      }
-      .timeline-chip.pessoal {
-        background: #ede9fe;
-        color: #6d28d9;
-      }
-      .timeline-chip.google {
-        background: #dbeafe;
-        color: #1d4ed8;
-      }
-      .timeline-chip.prio1 {
-        background: #fee2e2;
-        color: #b91c1c;
-      }
-      .timeline-chip.prio2 {
-        background: #fef3c7;
-        color: #92400e;
-      }
-      .timeline-chip.prio3 {
-        background: #dcfce7;
-        color: #166534;
-      }
 
       /* ── FLASH ── */
       .full-flash-overlay {
@@ -1090,7 +927,7 @@
               </svg>
               <h2>Agenda geral</h2>
             </div>
-            <div class="secao-subtitulo">Calendário mensal com compromissos profissionais, pessoais e eventos do Google Agenda no mesmo layout.</div>
+            <div class="secao-subtitulo">Calendário mensal com compromissos do PRIORIZA e eventos do Google Agenda no mesmo layout.</div>
 
             <div id="agenda-google-card" class="agenda-integracao-card">
               <div class="agenda-integracao-topo">
@@ -1180,16 +1017,6 @@
                     </select>
                   </div>
                 </div>
-                <div class="form-grid">
-                  <div>
-                    <label for="agenda-tipo">Tipo</label>
-                    <select id="agenda-tipo">
-                      <option value="TRABALHO" selected>Trabalho</option>
-                      <option value="PESSOAL">Pessoal</option>
-                    </select>
-                  </div>
-                  <div></div>
-                </div>
                 <div>
                   <label for="agenda-local">Local / contexto (opcional)</label>
                   <input id="agenda-local" type="text" placeholder="Ex: HGG, Escritório, Home office" />
@@ -1238,13 +1065,7 @@
                 <span id="agenda-dia-label"><strong>Agenda do dia</strong></span>
                 <button id="btn-voltar-calendario" class="btn-secondary">Ver calendário</button>
               </div>
-              <div class="agenda-dia-subtitulo">Visualização em linha do tempo para compromissos profissionais, pessoais e Google.</div>
-              <div class="agenda-filtros">
-                <button type="button" class="agenda-filtro-btn active" data-agenda-filtro="todos">Todos</button>
-                <button type="button" class="agenda-filtro-btn" data-agenda-filtro="trabalho">Trabalho</button>
-                <button type="button" class="agenda-filtro-btn" data-agenda-filtro="pessoal">Pessoal</button>
-              </div>
-              <div id="agenda-geral-lista" class="agenda-timeline-wrap"><small>Nenhum compromisso.</small></div>
+              <div id="agenda-geral-lista"><small>Nenhum compromisso.</small></div>
             </div>
           </div>
 
@@ -1337,20 +1158,74 @@
           </div>
         </div>
 
-        <!-- ══ ABA AJUSTES ══ -->
+        <!-- ══ ABA PESSOAL ══ -->
+        <!-- ══ ABA PESSOAL ══ -->
+<div class="screen" id="screen-pessoal">
+  <div class="card">
+    <div class="card-header">
+      <!-- user-circle duotone -->
+      <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+        <circle cx="128" cy="128" r="96" fill="currentColor" opacity="0.2"/>
+        <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
+        <circle cx="128" cy="104" r="36" fill="currentColor" opacity="0.4"/>
+        <circle cx="128" cy="104" r="36" stroke="currentColor" stroke-width="14"/>
+        <path d="M63,212 Q64,168 128,168 Q192,168 193,212" stroke="currentColor" stroke-width="16" stroke-linecap="round" fill="none"/>
+      </svg>
+      <h2>Pessoal</h2>
+    </div>
+
+    <div class="secao-subtitulo">
+      Compromissos e rotinas pessoais organizados por momento.
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px; flex-wrap:wrap;">
+      <h3 style="margin:0; font-size:14px; color:#111827;">Agenda pessoal</h3>
+      <button id="btn-toggle-passados-pessoal" class="btn-secondary" type="button">
+        Mostrar passados
+      </button>
+    </div>
+
+    <div id="pessoal-hoje-box" style="margin-bottom:12px;">
+      <h4 style="margin:0 0 8px 0; font-size:13px; color:#111827;">Hoje</h4>
+      <div id="pessoal-agenda-hoje"><small>Carregando...</small></div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"/>
+
+    <div id="pessoal-proximos-box" style="margin-bottom:12px;">
+      <h4 style="margin:0 0 8px 0; font-size:13px; color:#111827;">Próximos</h4>
+      <div id="pessoal-agenda-proximos"><small>Carregando...</small></div>
+    </div>
+
+    <hr id="hr-passados-pessoal" style="border:none;border-top:1px solid #e5e7eb;margin:8px 0; display:none;"/>
+
+    <div id="pessoal-passados-box" style="display:none; margin-bottom:12px;">
+      <h4 style="margin:0 0 8px 0; font-size:13px; color:#111827;">Passados</h4>
+      <div id="pessoal-agenda-passados"><small>Nenhum compromisso passado.</small></div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"/>
+
+    <div>
+      <h3 style="margin:4px 0 8px 0;font-size:14px;color:#111827">Checklist pessoal</h3>
+      <div id="pessoal-checklist"><small>Carregando...</small></div>
+    </div>
+  </div>
+</div>
+
+        <!-- ══ ABA NOTAS ══ -->
         <div class="screen" id="screen-ajustes">
           <div class="card">
             <div class="card-header">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M19.14 12.94a7.43 7.43 0 0 0 .05-.94 7.43 7.43 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.28 7.28 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.49.42l-.36 2.54a7.28 7.28 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.43 7.43 0 0 0-.05.94 7.43 7.43 0 0 0 .05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96a7.28 7.28 0 0 0 1.63.94l.36 2.54a.5.5 0 0 0 .49.42h3.8a.5.5 0 0 0 .49-.42l.36-2.54a7.28 7.28 0 0 0 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64zM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5z"/>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" color="#2563eb">
+                <path d="M19.14,12.94a7.43,7.43,0,0,0,.05-1,7.43,7.43,0,0,0-.05-1l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.28,7.28,0,0,0-1.73-1l-.38-2.65A.5.5,0,0,0,13.67,2H10.33a.5.5,0,0,0-.5.42L9.45,5.07a7.28,7.28,0,0,0-1.73,1l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L4.86,10a7.43,7.43,0,0,0-.05,1,7.43,7.43,0,0,0,.05,1L2.75,13.65a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.28,7.28,0,0,0,1.73,1l.38,2.65a.5.5,0,0,0,.5.42h3.34a.5.5,0,0,0,.5-.42l.38-2.65a7.28,7.28,0,0,0,1.73-1l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64ZM12,15.5A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/>
               </svg>
               <h2>Ajustes</h2>
             </div>
-            <div class="secao-subtitulo">Em breve vamos concentrar aqui integrações, notificações e recursos administrativos do PRIORIZA.</div>
+            <p style="font-size:12px;color:#6b7280;margin:0">Área reservada para Google Agenda, notificações e backup. Vou manter esta tela limpa por enquanto para não bagunçar o restante do app.</p>
           </div>
         </div>
 
-        <!-- ══ ABA NOTAS ══ -->
         <div class="screen" id="screen-notas">
           <div class="card">
             <div class="card-header">
@@ -1431,41 +1306,38 @@
       <div class="bottom-nav-wrapper">
         <div class="bottom-nav">
 
-          <!-- HOJE -->
           <div class="nav-item active" data-target="screen-hoje">
-            <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor">
+            <svg viewBox="0 0 256 256" fill="none" color="currentColor">
               <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.2"/>
               <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
               <line x1="40" y1="96" x2="216" y2="96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
               <line x1="80" y1="16" x2="80" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
               <line x1="176" y1="16" x2="176" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-              <circle cx="84"  cy="156" r="13" fill="currentColor"/>
+              <circle cx="84" cy="156" r="13" fill="currentColor"/>
               <circle cx="128" cy="156" r="13" fill="currentColor"/>
               <circle cx="172" cy="156" r="13" fill="currentColor"/>
             </svg>
             <span>Hoje</span>
           </div>
 
-          <!-- AGENDA -->
           <div class="nav-item" data-target="screen-agenda">
-            <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor">
+            <svg viewBox="0 0 256 256" fill="none" color="currentColor">
               <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.2"/>
               <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
               <line x1="40" y1="96" x2="216" y2="96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
               <line x1="80" y1="16" x2="80" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
               <line x1="176" y1="16" x2="176" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-              <line x1="80"  y1="136" x2="80"  y2="136" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+              <line x1="80" y1="136" x2="80" y2="136" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
               <line x1="128" y1="136" x2="128" y2="136" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
               <line x1="176" y1="136" x2="176" y2="136" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-              <line x1="80"  y1="172" x2="80"  y2="172" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+              <line x1="80" y1="172" x2="80" y2="172" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
               <line x1="128" y1="172" x2="128" y2="172" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
             </svg>
             <span>Agenda</span>
           </div>
 
-          <!-- CHECKLIST -->
           <div class="nav-item" data-target="screen-checklist">
-            <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor">
+            <svg viewBox="0 0 256 256" fill="none" color="currentColor">
               <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.2"/>
               <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
               <polyline points="88,128 112,152 168,96" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1473,9 +1345,8 @@
             <span>Checklist</span>
           </div>
 
-          <!-- NOTAS -->
           <div class="nav-item" data-target="screen-notas">
-            <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor">
+            <svg viewBox="0 0 256 256" fill="none" color="currentColor">
               <rect x="48" y="32" width="160" height="192" rx="8" fill="currentColor" opacity="0.2"/>
               <rect x="48" y="32" width="160" height="192" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
               <line x1="88" y1="112" x2="168" y2="112" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>
@@ -1487,17 +1358,15 @@
             <span>Notas</span>
           </div>
 
-          <!-- AJUSTES -->
-          <div class="nav-item settings" data-target="screen-ajustes">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M19.14 12.94a7.43 7.43 0 0 0 .05-.94 7.43 7.43 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.28 7.28 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.49.42l-.36 2.54a7.28 7.28 0 0 0-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.43 7.43 0 0 0-.05.94 7.43 7.43 0 0 0 .05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96a7.28 7.28 0 0 0 1.63.94l.36 2.54a.5.5 0 0 0 .49.42h3.8a.5.5 0 0 0 .49-.42l.36-2.54a7.28 7.28 0 0 0 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64zM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5z"/>
+          <div class="nav-item" data-target="screen-ajustes">
+            <svg viewBox="0 0 24 24" fill="currentColor" color="currentColor">
+              <path d="M19.14,12.94a7.43,7.43,0,0,0,.05-1,7.43,7.43,0,0,0-.05-1l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.28,7.28,0,0,0-1.73-1l-.38-2.65A.5.5,0,0,0,13.67,2H10.33a.5.5,0,0,0-.5.42L9.45,5.07a7.28,7.28,0,0,0-1.73,1l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L4.86,10a7.43,7.43,0,0,0-.05,1,7.43,7.43,0,0,0,.05,1L2.75,13.65a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.28,7.28,0,0,0,1.73,1l.38,2.65a.5.5,0,0,0,.5.42h3.34a.5.5,0,0,0,.5-.42l.38-2.65a7.28,7.28,0,0,0,1.73-1l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64ZM12,15.5A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/>
             </svg>
             <span>Ajustes</span>
           </div>
 
         </div>
-      </div>
-    </div><!-- /app-shell -->
+      </div></div><!-- /app-shell -->
 
     <!-- ══════════════════════════════════════════════════════════ -->
     <!-- JAVASCRIPT                                                 -->
@@ -1773,9 +1642,6 @@
       const sincronizado=origem==="GOOGLE_SYNC" || t.google_sync===true;
       if(tipo==="google")                            return `<span class="agenda-tag google">Google</span>`;
       if(sincronizado)                                 return `<span class="agenda-tag local-google">PRIORIZA + Google</span>`;
-      if(origem==="PESSOAL" && prio==="1")            return `<span class="agenda-tag pessoal">Pessoal</span> <span class="agenda-tag prio1">Prio 1</span>`;
-      if(origem==="PESSOAL" && prio==="2")            return `<span class="agenda-tag pessoal">Pessoal</span> <span class="agenda-tag prio2">Prio 2</span>`;
-      if(origem==="PESSOAL" && prio==="3")            return `<span class="agenda-tag pessoal">Pessoal</span> <span class="agenda-tag prio3">Prio 3</span>`;
       if(origem==="PESSOAL")                          return `<span class="agenda-tag pessoal">Pessoal</span>`;
       if(status==="extra"||status==="imprevisto")    return `<span class="agenda-tag extra">Extra</span>`;
       if(ehStatusFeito(status))                        return `<span class="agenda-tag concluida">Concluída</span>`;
@@ -2903,7 +2769,6 @@
     // ── CALENDÁRIO ────────────────────────────────────────────────
     let calendarioMesAtual          = new Date();
     let calendarioDiaSelecionadoISO = dataHojeISO();
-    let agendaFiltroTipo            = "todos";
 
     function montarCalendarioMes() {
       const grid=document.getElementById("calendar-grid"); const title=document.getElementById("calendar-title");
@@ -2953,136 +2818,86 @@
       }
     }
 
-    
-    function tipoAgendaItem(t) {
-      const tipo = String(t?.tipo_evento || "").toLowerCase();
-      const origem = String(t?.origem || "").toUpperCase();
-      if (tipo === "google") return "google";
-      if (origem === "PESSOAL") return "pessoal";
-      return "trabalho";
-    }
-
-    function agendaItemPassaFiltro(t) {
-      const tipo = tipoAgendaItem(t);
-      if (agendaFiltroTipo === "todos") return true;
-      if (agendaFiltroTipo === "pessoal") return tipo === "pessoal";
-      if (agendaFiltroTipo === "trabalho") return tipo === "trabalho" || tipo === "google";
-      return true;
-    }
-
-    function atualizarBotoesFiltroAgenda() {
-      document.querySelectorAll("[data-agenda-filtro]").forEach(btn => {
-        btn.classList.toggle("active", btn.getAttribute("data-agenda-filtro") === agendaFiltroTipo);
-      });
-    }
-
-    function renderTimelineDia(container, itensDoDia) {
-      const listaFiltrada = itensDoDia.filter(agendaItemPassaFiltro);
-      if (listaFiltrada.length === 0) {
-        container.innerHTML = "<div style=\"padding:12px\"><small>Nenhum compromisso para este filtro neste dia.</small></div>";
-        return;
-      }
-
-      const allDay = listaFiltrada.filter(t => t.all_day === true || t.hora_inicio === "Dia todo" || !t.hora_inicio);
-      const temporizados = listaFiltrada.filter(t => !(t.all_day === true || t.hora_inicio === "Dia todo" || !t.hora_inicio));
-
-      const wrap = document.createElement("div");
-
-      if (allDay.length) {
-        const blocoAllDay = document.createElement("div");
-        blocoAllDay.className = "agenda-all-day-lista";
-        allDay.forEach(t => {
-          const item = document.createElement("div");
-          item.className = "agenda-all-day-item";
-          item.innerHTML = `
-            <div class="agenda-titulo">${textoSeguro(t.titulo || "(Sem título)")}</div>
-            <div class="agenda-meta">${criarTagTextoTimeline(t)}</div>
-          `;
-          blocoAllDay.appendChild(item);
-        });
-        wrap.appendChild(blocoAllDay);
-      }
-
-      const timelineWrap = document.createElement("div");
-      timelineWrap.className = "timeline-grid";
-
-      const inicioHora = 6;
-      const fimHora = 22;
-      const alturaHora = 56;
-
-      for (let h = inicioHora; h <= fimHora; h++) {
-        const row = document.createElement("div");
-        row.className = "timeline-row";
-        row.innerHTML = `<div class="timeline-time">${String(h).padStart(2, "0")}:00</div><div class="timeline-slot"></div>`;
-        timelineWrap.appendChild(row);
-      }
-
-      const camada = document.createElement("div");
-      camada.className = "timeline-eventos-camada";
-      camada.style.height = `${(fimHora - inicioHora + 1) * alturaHora}px`;
-
-      temporizados.forEach(t => {
-        const [hora, minuto] = String(t.hora_inicio || "00:00").split(":").map(Number);
-        const top = Math.max(0, ((hora - inicioHora) * alturaHora) + ((minuto || 0) / 60 * alturaHora));
-        const duracao = Math.max(40, Math.round((Number(t.duracao_min || 60) / 60) * alturaHora));
-        const tipo = tipoAgendaItem(t);
-        const prioridade = String(t.prioridade || "");
-
-        const evento = document.createElement("div");
-        evento.className = `timeline-evento ${tipo} ${prioridade ? `prio${prioridade}` : ""}`.trim();
-        evento.style.top = `${top}px`;
-        evento.style.minHeight = `${duracao}px`;
-
-        const tags = [];
-        if (tipo === "pessoal") tags.push('<span class="timeline-chip pessoal">Pessoal</span>');
-        else if (tipo === "google") tags.push('<span class="timeline-chip google">Google</span>');
-        else tags.push('<span class="timeline-chip">Trabalho</span>');
-        if (prioridade === "1") tags.push('<span class="timeline-chip prio1">Prio 1</span>');
-        if (prioridade === "2") tags.push('<span class="timeline-chip prio2">Prio 2</span>');
-        if (prioridade === "3") tags.push('<span class="timeline-chip prio3">Prio 3</span>');
-
-        const meta = [];
-        if (t.hora_inicio && t.hora_fim) meta.push(`${t.hora_inicio} até ${t.hora_fim}`);
-        else if (t.hora_inicio) meta.push(t.hora_inicio);
-        if (t.local) meta.push(t.local);
-        else if (t.origem && String(t.origem).toUpperCase() !== "PESSOAL" && tipo !== "google") meta.push(t.origem);
-        if (t.descricao) meta.push(t.descricao);
-
-        evento.innerHTML = `
-          <div class="timeline-evento-titulo">${textoSeguro(t.titulo || "(Sem título)")}</div>
-          <div class="timeline-evento-meta">${textoSeguro(meta.join(" · "))}</div>
-          <div class="timeline-evento-tags">${tags.join("")}</div>
-        `;
-        camada.appendChild(evento);
-      });
-
-      timelineWrap.appendChild(camada);
-      wrap.appendChild(timelineWrap);
-      container.innerHTML = "";
-      container.appendChild(wrap);
-    }
-
-    function criarTagTextoTimeline(t) {
-      const partes = [];
-      const tipo = tipoAgendaItem(t);
-      if (tipo === "pessoal") partes.push("Pessoal");
-      else if (tipo === "google") partes.push("Google");
-      else partes.push("Trabalho");
-      if (String(t.prioridade || "") === "1") partes.push("Prio 1");
-      if (String(t.prioridade || "") === "2") partes.push("Prio 2");
-      if (String(t.prioridade || "") === "3") partes.push("Prio 3");
-      if (t.local) partes.push(t.local);
-      return partes.join(" · ");
-    }
-
     function preencherAgendaDiaSelecionado() {
       const lista=document.getElementById("agenda-geral-lista"); const label=document.getElementById("agenda-dia-label"); const inputData=document.getElementById("agenda-data");
       if(!lista||!label) return;
       label.textContent="Agenda de "+formatarDataCurtaBR(calendarioDiaSelecionadoISO);
       if(inputData) inputData.value=calendarioDiaSelecionadoISO;
-      atualizarBotoesFiltroAgenda();
       const itensDoDia = agendaDoDiaCombinada(calendarioDiaSelecionadoISO);
-      renderTimelineDia(lista, itensDoDia);
+      if(itensDoDia.length===0){lista.innerHTML="<small>Nenhum compromisso para este dia.</small>";return;}
+      lista.innerHTML="";
+      itensDoDia.forEach(t=>{
+        const item=document.createElement("div"); item.className="agenda-item";
+        const hor=document.createElement("div"); hor.className="agenda-horario"; hor.textContent=t.hora_inicio||"--:--";
+        const con=document.createElement("div"); con.className="agenda-conteudo"; con.style.flex="1";
+        const ti=document.createElement("div"); ti.className="agenda-titulo"; ti.textContent=t.titulo;
+        con.appendChild(ti);
+        con.insertAdjacentHTML("beforeend",criarTagHTML(t));
+
+        const metaLinhas = [];
+        if ((t.tipo_evento || "") !== "google") metaLinhas.push(`Prioridade ${t.prioridade||"–"}`);
+        if (t.local) metaLinhas.push(t.local);
+        if (t.hora_fim && t.hora_inicio !== "Dia todo") metaLinhas.push(`${t.hora_inicio} até ${t.hora_fim}`);
+        if (t.descricao) metaLinhas.push(t.descricao);
+        if (metaLinhas.length) {
+          const meta=document.createElement("div"); meta.className="agenda-meta"; meta.textContent=metaLinhas.join(" · "); con.appendChild(meta);
+        }
+
+        item.appendChild(hor); item.appendChild(con);
+
+        if ((t.tipo_evento || "") === "google") {
+          if (t.link) {
+            const link=document.createElement("a");
+            link.className="agenda-icon-link";
+            link.href=t.link;
+            link.target="_blank";
+            link.rel="noopener noreferrer";
+            link.title="Abrir no Google Agenda";
+            link.innerHTML=`<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M104 152l72-72" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M136 80h40v40" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 136v48a8 8 0 0 1-8 8H72a8 8 0 0 1-8-8V112a8 8 0 0 1 8-8h48" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+            item.appendChild(link);
+          }
+        } else {
+          // Botão editar na aba Agenda (calendário)
+          const btnEditCal = document.createElement("button");
+          btnEditCal.className = "agenda-icon-btn";
+          btnEditCal.style.background = "#dbeafe";
+          btnEditCal.style.color = "#1d4ed8";
+          btnEditCal.title = "Editar compromisso";
+          btnEditCal.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M180 32l44 44L72 228H28v-44L180 32z" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 60l44 44" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
+          btnEditCal.addEventListener("click", async()=>{
+            const novoTitulo = await modal.perguntar("Título:","Editar compromisso", t.titulo);
+            if (!novoTitulo?.trim()) return;
+            const novaHora = await modal.perguntar("Hora de início (HH:MM):","Hora", t.hora_inicio||"08:00");
+            if (novaHora === null) return;
+            const novaDescricao = await modal.perguntar("Observação (opcional):","Observação", t.descricao||"");
+            if (novaDescricao === null) return;
+            try {
+              const params = new URLSearchParams({ titulo: novoTitulo.trim(), hora_inicio: novaHora||"", descricao: novaDescricao||"" });
+              const res = await fetch(API+"/tarefas/"+t.id+"?"+params,{method:"PUT",headers:authHeaders()});
+              if (!res.ok) { await modal.alerta("Erro ao editar.","Erro"); return; }
+              await atualizarAgendaMesEDia();
+              await carregarAgendaHoje();
+            } catch(e){ console.error(e); await modal.alerta("Erro de conexão.","Erro"); }
+          });
+          item.appendChild(btnEditCal);
+
+          const btnDel=document.createElement("button");
+          btnDel.className="agenda-icon-btn";
+          btnDel.title="Excluir compromisso";
+          btnDel.innerHTML=`<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M96 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M160 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M40 72h176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M72 72l8-24h96l8 24" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M56 72l8 128a8 8 0 0 0 8 8h112a8 8 0 0 0 8-8l8-128" stroke="currentColor" stroke-width="20" stroke-linejoin="round"/></svg>`;
+          btnDel.addEventListener("click", async()=>{
+            mostrarFlashFull("danger");
+            mostrarToastUndo(
+              `"${t.titulo}" será excluído`,
+              async () => { await excluirTarefa(t.id); await carregarAgendaHoje(); await atualizarAgendaMesEDia(); },
+              () => { /* não faz nada — tarefa NÃO foi excluída ainda */ }
+            );
+          });
+          item.appendChild(btnDel);
+        }
+
+        lista.appendChild(item);
+      });
     }
 
     async function atualizarAgendaMesEDia() {
@@ -3220,13 +3035,6 @@
   await carregarPessoalLista();
 });
 
-      document.querySelectorAll("[data-agenda-filtro]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          agendaFiltroTipo = btn.getAttribute("data-agenda-filtro") || "todos";
-          preencherAgendaDiaSelecionado();
-        });
-      });
-
       document.getElementById("botao-add-tarefa")?.addEventListener("click", novaTarefaHoje);
       document.getElementById("botao-nova-rotina-hoje")?.addEventListener("click", novaRotinaHoje);
       
@@ -3274,12 +3082,10 @@
         const duracao   = document.getElementById("agenda-duracao")?.value||"60";
         const prioridade= document.getElementById("agenda-prioridade")?.value||"2";
         const syncGoogle = document.getElementById("agenda-sincronizar-google")?.checked === true;
-        const tipoAgenda = document.getElementById("agenda-tipo")?.value || "TRABALHO";
-        const origemFinal = tipoAgenda === "PESSOAL" ? "PESSOAL" : origem;
         if(!titulo||!data){await modal.alerta("Preencha pelo menos Título e Data.","Atenção");return;}
         const btn=document.getElementById("btn-salvar-compromisso"); btn.disabled=true;
         try {
-          const res=await fetch(API+"/tarefas?"+new URLSearchParams({titulo,origem:origemFinal,data,hora_inicio:hora,duracao_min:duracao,prioridade}),{method:"POST",headers:authHeaders()});
+          const res=await fetch(API+"/tarefas?"+new URLSearchParams({titulo,origem,data,hora_inicio:hora,duracao_min:duracao,prioridade}),{method:"POST",headers:authHeaders()});
           if(!res.ok){await modal.alerta("Não foi possível salvar o compromisso.","Erro");return;}
 
           let mensagemSucesso = "Compromisso salvo no PRIORIZA.";
@@ -3293,14 +3099,13 @@
             }
           }
 
-          if(origemFinal && origemFinal !== "PESSOAL" && !getLocaisSalvos().includes(origemFinal)){
-            if(await modal.confirmar(`Salvar "${origemFinal}" como local frequente?`,"Local frequente","verde")){
-              adicionarLocalSalvo(origemFinal); renderLocaisSugeridos("agenda-locais-sugeridos","agenda-local"); renderLocaisSugeridos("chk-locais-sugeridos","chk-local");
+          if(origem&&!getLocaisSalvos().includes(origem)){
+            if(await modal.confirmar(`Salvar "${origem}" como local frequente?`,"Local frequente","verde")){
+              adicionarLocalSalvo(origem); renderLocaisSugeridos("agenda-locais-sugeridos","agenda-local"); renderLocaisSugeridos("chk-locais-sugeridos","chk-local");
             }
           }
           document.getElementById("form-agenda").reset();
           document.getElementById("agenda-sincronizar-google").checked = false;
-          document.getElementById("agenda-tipo").value = "TRABALHO";
           toggleFormAgenda(false);
           await modal.alerta(mensagemSucesso,"Sucesso");
           await carregarAgendaHoje(); await atualizarAgendaMesEDia(); await carregarPessoalLista();
