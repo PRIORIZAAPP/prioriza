@@ -1179,6 +1179,37 @@
             <div class="secao-subtitulo">Organize recursos do app em um só lugar. Vamos evoluindo por partes.</div>
           </div>
 
+          <!-- NOTIFICAÇÕES -->
+          <div class="card" id="card-notificacoes">
+            <div class="card-header">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+                <path d="M128 232a24 24 0 0 0 24-24H104a24 24 0 0 0 24 24Z" fill="currentColor" opacity="0.22"/>
+                <path d="M128 232a24 24 0 0 0 24-24H104a24 24 0 0 0 24 24Z" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
+                <path d="M56 200h144" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                <path d="M80 200v-64a48 48 0 1 1 96 0v64" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <h2>Notificações</h2>
+            </div>
+            <p style="font-size:12px;color:#6b7280;margin:0 0 12px">Ative alertas do PRIORIZA para receber lembretes das suas tarefas e compromissos.</p>
+            <div id="notif-status" style="font-size:12px;color:#374151;margin-bottom:8px">Verificando status...</div>
+            <div id="notif-status-detalhe" style="font-size:11px;color:#6b7280;margin-bottom:12px;line-height:1.45">As notificações dependem da permissão do navegador e podem variar conforme o dispositivo.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button id="btn-ativar-notificacoes" class="btn-outline" type="button">
+                <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                  <path d="M128 40v176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                  <path d="M40 128h176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                </svg>
+                Ativar notificações
+              </button>
+              <button id="btn-testar-notificacao" class="btn-outline" type="button">
+                <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                  <path d="M48 128h160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                  <path d="M160 80l48 48-48 48" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Testar
+              </button>
+            </div>
+          </div>
 
           <!-- INTEGRAÇÕES -->
           <div class="card" id="card-integracoes">
@@ -3045,6 +3076,9 @@
           const id=item.getAttribute("data-target");
           screens.forEach(s=>s.id===id?s.classList.add("active"):s.classList.remove("active"));
           navItems.forEach(n=>n.classList.remove("active")); item.classList.add("active");
+          if (id === "screen-ajustes") {
+            setTimeout(atualizarStatusNotificacoesUI, 50);
+          }
         });
       });
 
@@ -3056,7 +3090,8 @@
       document.getElementById("botao-add-tarefa")?.addEventListener("click", novaTarefaHoje);
       document.getElementById("botao-nova-rotina-hoje")?.addEventListener("click", novaRotinaHoje);
       
-      // Botão testar push removido
+      document.getElementById("btn-ativar-notificacoes")?.addEventListener("click", ativarNotificacoesManual);
+      document.getElementById("btn-testar-notificacao")?.addEventListener("click", testarNotificacaoManual);
 
       document.getElementById("btn-cal-prev")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()-1); montarCalendarioMes(); });
       document.getElementById("btn-cal-next")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()+1); montarCalendarioMes(); });
@@ -3251,6 +3286,7 @@
 
       // ── NOTIFICAÇÕES ─────────────────────────────────────────────
       iniciarSistemaNotificacoes();
+      atualizarStatusNotificacoesUI();
     });
 
     // ═══════════════════════════════════════════════════════════════
@@ -3674,6 +3710,111 @@
       }
     }
 
+    function atualizarStatusNotificacoesUI() {
+      const statusEl = document.getElementById("notif-status");
+      const detalheEl = document.getElementById("notif-status-detalhe");
+      const ativarBtn = document.getElementById("btn-ativar-notificacoes");
+      const testarBtn = document.getElementById("btn-testar-notificacao");
+
+      if (!statusEl || !detalheEl) return;
+
+      if (!("Notification" in window)) {
+        statusEl.textContent = "Este dispositivo não suporta notificações.";
+        detalheEl.textContent = "Abra o PRIORIZA em um navegador compatível para usar alertas.";
+        if (ativarBtn) ativarBtn.disabled = true;
+        if (testarBtn) testarBtn.disabled = true;
+        return;
+      }
+
+      if (Notification.permission === "granted") {
+        statusEl.textContent = "Notificações ativadas.";
+        detalheEl.textContent = "O PRIORIZA pode enviar alertas locais enquanto o app estiver em uso e push quando a inscrição estiver ativa.";
+        if (ativarBtn) {
+          ativarBtn.disabled = false;
+          ativarBtn.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+              <path d="M52 136l44 44L204 72" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Ativadas
+          `;
+        }
+        if (testarBtn) testarBtn.disabled = false;
+        return;
+      }
+
+      if (Notification.permission === "denied") {
+        statusEl.textContent = "Notificações bloqueadas neste dispositivo.";
+        detalheEl.textContent = "Libere a permissão nas configurações do navegador ou do aparelho para voltar a receber alertas.";
+        if (ativarBtn) {
+          ativarBtn.disabled = true;
+          ativarBtn.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+              <path d="M56 56l144 144" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+              <path d="M200 56L56 200" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+            </svg>
+            Bloqueadas
+          `;
+        }
+        if (testarBtn) testarBtn.disabled = true;
+        return;
+      }
+
+      statusEl.textContent = "Notificações desativadas.";
+      detalheEl.textContent = "Toque em ativar para permitir alertas do PRIORIZA neste dispositivo.";
+      if (ativarBtn) {
+        ativarBtn.disabled = false;
+        ativarBtn.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+            <path d="M128 40v176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+            <path d="M40 128h176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+          </svg>
+          Ativar notificações
+        `;
+      }
+      if (testarBtn) testarBtn.disabled = false;
+    }
+
+    async function ativarNotificacoesManual() {
+      if (!("Notification" in window)) {
+        await modal.alerta("Este dispositivo não suporta notificações.", "Notificações");
+        return;
+      }
+
+      try {
+        const permissao = await Notification.requestPermission();
+        atualizarStatusNotificacoesUI();
+
+        if (permissao === "granted") {
+          await registrarServiceWorker();
+          enviarNotificacao("Notificações ativadas", "O PRIORIZA já pode te lembrar dos compromissos.");
+          loopNotificacoes();
+          if (!window.__priorizaNotifLoopAtivo) {
+            window.__priorizaNotifLoopAtivo = true;
+            setInterval(loopNotificacoes, 60 * 1000);
+          }
+        } else if (permissao === "denied") {
+          await modal.alerta("As notificações foram bloqueadas neste dispositivo.", "Notificações");
+        }
+      } catch (e) {
+        console.error("[NOTIF] Falha ao ativar notificações:", e);
+        await modal.alerta("Não foi possível ativar as notificações agora.", "Notificações");
+      }
+    }
+
+    function testarNotificacaoManual() {
+      if (!("Notification" in window)) {
+        modal.alerta("Este dispositivo não suporta notificações.", "Notificações");
+        return;
+      }
+
+      if (Notification.permission !== "granted") {
+        modal.alerta("Ative as notificações antes de testar.", "Notificações");
+        return;
+      }
+
+      enviarNotificacao("Teste PRIORIZA", "Se você recebeu este alerta, as notificações estão funcionando.");
+    }
+
     // ── Pede permissão e inicia o sistema ─────────────────────────
     async function iniciarSistemaNotificacoes() {
       if (!("Notification" in window)) {
@@ -3681,25 +3822,18 @@
         return;
       }
 
-      if (Notification.permission === "default") {
-        // Aguarda 3 segundos para não assustar o usuário ao abrir
-        await new Promise(r => setTimeout(r, 3000));
-        const permissao = await Notification.requestPermission();
-        if (permissao === "granted") {
-          enviarNotificacao(
-            "🔔 Notificações ativadas!",
-            "O PRIORIZA vai te lembrar dos seus compromissos."
-          );
-        }
-      }
-
       if (Notification.permission === "granted") {
         // Registra SW para push (app fechado)
         await registrarServiceWorker();
         // Roda imediatamente e depois a cada minuto (app aberto)
         loopNotificacoes();
-        setInterval(loopNotificacoes, 60 * 1000);
+        if (!window.__priorizaNotifLoopAtivo) {
+          window.__priorizaNotifLoopAtivo = true;
+          setInterval(loopNotificacoes, 60 * 1000);
+        }
       }
+
+      atualizarStatusNotificacoesUI();
     }
 
     // ── Função de debug global (acessível pelo console) ────────────
