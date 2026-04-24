@@ -34,6 +34,18 @@
     <style>
       * { box-sizing: border-box; }
 
+      :root {
+        --cor-tema: #2563eb;
+        --cor-tema-rgb: 37, 99, 235;
+        --cor-tema-clara: #dbeafe;
+        --cor-tema-suave: #eff6ff;
+        --cor-tema-escura: #1e40af;
+        --cor-topbar-texto: #223247;
+        --cor-topbar-suave: #f8fafc;
+        --cor-resumo-texto: #314155;
+        --cor-resumo-icone: #526174;
+      }
+
     body {
         margin: 0;
     }
@@ -75,45 +87,97 @@
 
       /* ── TOPBAR ── */
       .topbar {
-        position: sticky; top: 0; z-index: 20;
-        background: linear-gradient(135deg, #f3f6ff 0%, #c7d7ff 22%, #2563eb 60%, #0f172a 100%);
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background:
+          linear-gradient(
+            100deg,
+            #fbfcfe 0%,
+            #ffffff 12%,
+            #eef3fa 22%,
+            var(--cor-tema-clara) 34%,
+            color-mix(in srgb, var(--cor-tema) 72%, white 28%) 56%,
+            var(--cor-tema) 78%,
+            var(--cor-tema-escura) 100%
+          );
         padding: 14px 18px 10px 18px;
-        display: flex; justify-content: space-between; align-items: flex-start;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        overflow: hidden;
+        isolation: isolate;
+        border-bottom: 1px solid #d7deea;
+        box-shadow: 0 10px 22px rgba(15,23,42,0.14);
       }
       .topbar-main { display: flex; flex-direction: column; gap: 4px; }
-      .topbar-brand-row { display: flex; align-items: center; }
-      .prioriza-logo { height: 56px; width: auto; display: block; }
+      .topbar-brand-row {
+        display: inline-flex;
+        align-items: center;
+        padding: 0;
+        background: transparent;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .prioriza-logo {
+        height: 56px;
+        width: auto;
+        display: block;
+        transition: opacity 180ms ease;
+      }
       .topbar-date-line {
-        margin-top: 4px; font-size: 13px; color: #111827;
-        font-weight: 500; opacity: 0.9;
+        margin-top: 4px;
+        font-size: 13px;
+        color: var(--cor-topbar-texto);
+        font-weight: 600;
+        opacity: 0.96;
+        text-shadow: none;
       }
       .topbar-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
       .mic-button {
         border-radius: 999px;
-        border: 1px solid rgba(248,250,252,0.18);
-        background: rgba(15,23,42,0.82);
+        border: 1px solid rgba(15,23,42,0.10);
+        background: rgba(15,23,42,0.88);
         color: #f9fafb;
         width: 42px; height: 42px; padding: 0;
         display: flex; align-items: center; justify-content: center;
         cursor: pointer;
+        box-shadow: 0 4px 10px rgba(15,23,42,0.12);
       }
-      .mic-button.listening { background: rgba(34,197,94,0.25); border-color: #22c55e; }
+      .mic-button.listening { background: rgba(34,197,94,0.22); border-color: #22c55e; }
       .mic-svg { width: 20px; height: 20px; color: #ffffff; }
       .mic-button.listening .mic-svg { color: #22c55e; }
-      .audio-tip { font-size: 10px; color: #c7d2fe; max-width: 200px; line-height: 1.3; text-align: right; }
+      .audio-tip {
+        font-size: 10px;
+        color: var(--cor-topbar-suave);
+        max-width: 200px;
+        line-height: 1.3;
+        text-align: right;
+        opacity: 0.98;
+      }
 
       /* ── RESUMO BAR ── */
       .resumo-bar {
         position: sticky;
         top: 80px;
         z-index: 19;
-        background: #e5edff; color: #1e3a8a;
-        padding: 6px 16px; font-size: 12px; font-weight: 600;
-        display: flex; align-items: center; gap: 8px;
-        border-bottom: 1px solid rgba(148,163,184,0.4);
+        background: linear-gradient(
+          180deg,
+          #f5f7fb 0%,
+          #eef3fb 100%
+        );
+        color: var(--cor-resumo-texto);
+        padding: 6px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        overflow: hidden;
+        border-bottom: 1px solid #dde5ef;
       }
       .resumo-bar svg { flex-shrink: 0; }
-      .resumo-bar { box-shadow: 0 1px 4px rgba(15,23,42,0.08); }
+      .resumo-bar { box-shadow: 0 4px 10px rgba(15,23,42,0.05); }
 
       /* ── CONTENT ── */
       .content { flex: 1; padding: 12px 10px 60px 10px; }
@@ -271,7 +335,7 @@
         font-size: 11px; padding: 4px 0;
         display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px;
         cursor: pointer; min-height: 54px;
-        transition: transform 0.12s ease, color 0.2s ease;
+        transition: transform 0.12s ease, color 0.18s ease, opacity 0.18s ease;
         user-select: none;
       }
       .nav-item:active { transform: scale(0.96); }
@@ -284,7 +348,7 @@
         width: 60%;
         height: 2px;
         border-radius: 999px;
-        background: linear-gradient(90deg, #2563eb, #60a5fa);
+        background: var(--cor-tema);
       }
       .nav-item svg { display: block; width: 22px; height: 22px; flex-shrink: 0; }
       .nav-item span { display: block; line-height: 1.1; text-align: center; white-space: nowrap; }
@@ -292,17 +356,18 @@
       /* ── BUTTONS ── */
       .btn-add-tarefa {
         border-radius: 999px; border: none; padding: 6px 12px;
-        font-size: 12px; background: #2563eb; color: #f9fafb;
+        font-size: 12px; background: var(--cor-tema); color: #f9fafb;
         cursor: pointer; transition: opacity 0.2s;
         display: inline-flex; align-items: center; gap: 5px;
       }
       .btn-add-tarefa:disabled { opacity: 0.5; cursor: not-allowed; }
       .btn-primary {
-        background: #22c55e; color: #022c22; font-weight: 600;
+        background: var(--cor-tema); color: #f8fafc; font-weight: 600;
         border-radius: 999px; border: none; padding: 7px 14px;
-        font-size: 12px; cursor: pointer; transition: opacity 0.2s;
+        font-size: 12px; cursor: pointer; transition: background 0.18s ease, opacity 0.2s;
         display: inline-flex; align-items: center; gap: 5px;
       }
+      .btn-primary:hover { background: var(--cor-tema-escura); }
       .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
       .btn-secondary {
         background: #e5e7eb; color: #111827; border-radius: 999px;
@@ -335,9 +400,9 @@
         background: #f8fafc;
       }
       .btn-ghost-action.is-open {
-        border-color: #cbd5e1;
-        background: #eff6ff;
-        color: #1d4ed8;
+        border-color: rgba(var(--cor-tema-rgb), 0.25);
+        background: var(--cor-tema-suave);
+        color: var(--cor-tema-escura);
       }
       .checklist-form-wrap {
         display: none;
@@ -388,8 +453,8 @@
       }
       textarea { resize: vertical; min-height: 50px; }
       input:focus, textarea:focus, select:focus {
-        outline: none; border-color: #2563eb;
-        box-shadow: 0 0 0 1px rgba(37,99,235,0.3);
+        outline: none; border-color: var(--cor-tema);
+        box-shadow: 0 0 0 1px rgba(var(--cor-tema-rgb), 0.28);
       }
       .tag-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
       .checkbox-pill {
@@ -541,7 +606,7 @@
         transition: transform 0.15s ease-out, background 0.15s ease-out, box-shadow 0.15s ease-out;
         will-change: transform;
       }
-      .nota-dot { width: 10px; height: 10px; border-radius: 999px; background: #2563eb; flex-shrink: 0; }
+      .nota-dot { width: 10px; height: 10px; border-radius: 999px; background: var(--cor-tema); flex-shrink: 0; }
       .nota-info { flex: 1; font-size: 13px; min-width: 0; }
       .nota-texto { color: #111827; }
       .nota-data  { font-size: 11px; color: #6b7280; margin-top: 2px; }
@@ -563,7 +628,7 @@
         display: flex; flex-direction: column; justify-content: space-between;
       }
       .calendar-day.out-month { opacity: 0.35; }
-      .calendar-day.selected  { border-color: #2563eb; background: #dbeafe; }
+      .calendar-day.selected  { border-color: var(--cor-tema); background: var(--cor-tema-clara); box-shadow: inset 0 0 0 1px rgba(var(--cor-tema-rgb), 0.1); }
       .calendar-day-number    { font-size: 12px; font-weight: 600; color: #111827; }
       .calendar-day-dots      { display: flex; gap: 2px; margin-top: 2px; }
       .calendar-dot           { width: 6px; height: 6px; border-radius: 999px; }
@@ -626,10 +691,10 @@
         border: 1px solid #d1d5db; font-size: 16px;
         background: #f9fafb; color: #111827; margin-bottom: 12px;
       }
-      .modal-campo:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 1px rgba(37,99,235,0.3); }
+      .modal-campo:focus { outline: none; border-color: var(--cor-tema); box-shadow: 0 0 0 1px rgba(var(--cor-tema-rgb), 0.28); }
       .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
       .modal-btn-ok {
-        background: #2563eb; color: #f9fafb; border: none; border-radius: 999px;
+        background: var(--cor-tema); color: #f9fafb; border: none; border-radius: 999px;
         padding: 7px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
       }
       .modal-btn-ok.verde   { background: #22c55e; color: #022c22; }
@@ -708,8 +773,13 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
       }
-      .btn-outline:hover { background: #f8fafc; }
+      .btn-outline:hover {
+        background: var(--cor-tema-suave);
+        border-color: rgba(var(--cor-tema-rgb), 0.36);
+        color: var(--cor-tema);
+      }
       .btn-outline.danger {
         border-color: #fecaca;
         color: #b91c1c;
@@ -737,8 +807,8 @@
         line-height: 1.45;
       }
       .agenda-tag.google {
-        background: #dbeafe;
-        color: #1d4ed8;
+        background: var(--cor-tema-clara);
+        color: var(--cor-tema-escura);
       }
       .agenda-tag.local-google {
         background: #ede9fe;
@@ -773,9 +843,9 @@
         width: 32px;
         height: 32px;
         border-radius: 999px;
-        border: 1px solid #dbeafe;
-        background: #eff6ff;
-        color: #2563eb;
+        border: 1px solid rgba(var(--cor-tema-rgb), 0.2);
+        background: var(--cor-tema-suave);
+        color: var(--cor-tema);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -790,8 +860,68 @@
         margin-top: 2px;
         flex-wrap: wrap;
       }
-      .calendar-dot.google { background: #2563eb; }
+      .calendar-dot.google { background: var(--cor-tema); }
       .calendar-dot.local-google { background: #7c3aed; }
+
+      .icon-tema { color: var(--cor-tema) !important; }
+      .resumo-icon { color: rgba(var(--cor-tema-rgb), 0.68) !important; }
+
+      .appearance-options {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .theme-option {
+        border: 1px solid #d7dee8;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        color: #111827;
+        border-radius: 16px;
+        padding: 12px 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        text-align: center;
+        cursor: pointer;
+        min-height: 82px;
+        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      }
+
+      .theme-option:hover {
+        transform: translateY(-1px);
+        border-color: rgba(var(--cor-tema-rgb), 0.24);
+        box-shadow: 0 8px 18px rgba(15,23,42,0.08);
+      }
+
+      .theme-option.active {
+        border-color: var(--cor-tema);
+        background: linear-gradient(180deg, #ffffff 0%, var(--cor-tema-suave) 100%);
+        box-shadow: inset 0 0 0 1px rgba(var(--cor-tema-rgb), 0.12), 0 10px 20px rgba(var(--cor-tema-rgb), 0.1);
+      }
+
+      .theme-swatch {
+        width: 32px;
+        height: 32px;
+        border-radius: 12px;
+        flex-shrink: 0;
+        box-shadow: inset 0 1px 1px rgba(255,255,255,0.35), 0 0 0 1px rgba(15,23,42,0.08);
+      }
+
+      .theme-option strong {
+        display: block;
+        font-size: 12px;
+        line-height: 1.1;
+        color: #334155;
+        font-weight: 700;
+      }
+
+      @media (max-width: 420px) {
+        .appearance-options {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
 
     </style>
   </head>
@@ -840,7 +970,7 @@
       <!-- RESUMO BAR -->
       <div class="resumo-bar">
         <!-- icon: chart-bar duotone -->
-        <svg width="16" height="16" viewBox="0 0 256 256" fill="none" color="#1e3a8a">
+        <svg width="16" height="16" viewBox="0 0 256 256" fill="none" class="resumo-icon" color="currentColor">
           <rect x="24" y="128" width="56" height="88" rx="4" fill="currentColor" opacity="0.25"/>
           <rect x="100" y="80" width="56" height="136" rx="4" fill="currentColor" opacity="0.5"/>
           <rect x="176" y="40" width="56" height="176" rx="4" fill="currentColor"/>
@@ -855,7 +985,7 @@
           <div class="card">
             <div class="card-header">
               <!-- icon: calendar-dots duotone -->
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
                 <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.2"/>
                 <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
                 <line x1="40" y1="96" x2="216" y2="96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
@@ -886,7 +1016,7 @@
           <div class="card">
             <div class="card-header">
               <!-- icon: clipboard-list duotone -->
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
                 <rect x="48" y="32" width="160" height="192" rx="8" fill="currentColor" opacity="0.2"/>
                 <rect x="48" y="32" width="160" height="192" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
                 <rect x="96" y="16" width="64" height="36" rx="6" fill="currentColor" stroke="currentColor" stroke-width="14"/>
@@ -918,7 +1048,7 @@
           <div class="card">
             <div class="card-header">
               <!-- icon: calendar blank duotone -->
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
                 <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.2"/>
                 <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
                 <line x1="40" y1="96" x2="216" y2="96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
@@ -1030,7 +1160,7 @@
           <div class="card">
             <div class="card-header">
               <!-- check-square duotone -->
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
                 <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.2"/>
                 <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
                 <polyline points="88,128 112,152 168,96" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1118,7 +1248,7 @@
   <div class="card">
     <div class="card-header">
       <!-- user-circle duotone -->
-      <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+      <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
         <circle cx="128" cy="128" r="96" fill="currentColor" opacity="0.2"/>
         <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
         <circle cx="128" cy="104" r="36" fill="currentColor" opacity="0.4"/>
@@ -1171,7 +1301,7 @@
         <div class="screen" id="screen-ajustes">
           <div class="card">
             <div class="card-header">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" color="#2563eb">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" class="icon-tema" color="currentColor">
                 <path d="M19.14,12.94a7.43,7.43,0,0,0,.05-1,7.43,7.43,0,0,0-.05-1l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.28,7.28,0,0,0-1.73-1l-.38-2.65A.5.5,0,0,0,13.67,2H10.33a.5.5,0,0,0-.5.42L9.45,5.07a7.28,7.28,0,0,0-1.73,1l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L4.86,10a7.43,7.43,0,0,0-.05,1,7.43,7.43,0,0,0,.05,1L2.75,13.65a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.28,7.28,0,0,0,1.73,1l.38,2.65a.5.5,0,0,0,.5.42h3.34a.5.5,0,0,0,.5-.42l.38-2.65a7.28,7.28,0,0,0,1.73-1l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64ZM12,15.5A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/>
               </svg>
               <h2>Ajustes</h2>
@@ -1179,10 +1309,39 @@
             <div class="secao-subtitulo">Organize recursos do app em um só lugar. Vamos evoluindo por partes.</div>
           </div>
 
+          <div class="card" id="card-aparencia">
+            <div class="card-header">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
+                <circle cx="76" cy="96" r="36" fill="currentColor" opacity="0.22"/>
+                <circle cx="180" cy="96" r="36" fill="currentColor" opacity="0.4"/>
+                <circle cx="128" cy="168" r="36" fill="currentColor"/>
+              </svg>
+              <h2>Aparência</h2>
+            </div>
+            <div class="appearance-options">
+              <button class="theme-option" type="button" data-theme-option="azul">
+                <span class="theme-swatch" style="background:#2563eb"></span>
+                <strong>Azul</strong>
+              </button>
+              <button class="theme-option" type="button" data-theme-option="verde">
+                <span class="theme-swatch" style="background:#3b8f6a"></span>
+                <strong>Verde</strong>
+              </button>
+              <button class="theme-option" type="button" data-theme-option="roxo">
+                <span class="theme-swatch" style="background:#6f5aa8"></span>
+                <strong>Roxo</strong>
+              </button>
+              <button class="theme-option" type="button" data-theme-option="grafite">
+                <span class="theme-swatch" style="background:#5a6878"></span>
+                <strong>Grafite</strong>
+              </button>
+            </div>
+          </div>
+
           <!-- NOTIFICAÇÕES -->
           <div class="card" id="card-notificacoes">
             <div class="card-header">
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
                 <path d="M128 232a24 24 0 0 0 24-24H104a24 24 0 0 0 24 24Z" fill="currentColor" opacity="0.22"/>
                 <path d="M128 232a24 24 0 0 0 24-24H104a24 24 0 0 0 24 24Z" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
                 <path d="M56 200h144" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
@@ -1214,7 +1373,7 @@
           <!-- INTEGRAÇÕES -->
           <div class="card" id="card-integracoes">
             <div class="card-header">
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
                 <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.2"/>
                 <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
                 <path d="M80 128h96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
@@ -1227,7 +1386,7 @@
               <div class="agenda-integracao-topo">
                 <div>
                   <div class="agenda-integracao-titulo">
-                    <svg width="18" height="18" viewBox="0 0 256 256" fill="none" color="#2563eb" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor" aria-hidden="true">
                       <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.14"/>
                       <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
                       <line x1="40" y1="96" x2="216" y2="96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
@@ -1274,7 +1433,7 @@
           <!-- BACKUP E RESTAURAÇÃO -->
           <div class="card" id="card-backup">
             <div class="card-header">
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
                 <rect x="48" y="32" width="160" height="192" rx="8" fill="currentColor" opacity="0.2"/>
                 <rect x="48" y="32" width="160" height="192" rx="8" stroke="currentColor" stroke-width="16"/>
                 <path d="M128 88 L128 168" stroke="currentColor" stroke-width="18" stroke-linecap="round"/>
@@ -1284,7 +1443,7 @@
             </div>
             <p style="font-size:12px;color:#6b7280;margin:0 0 12px">Faça backup dos seus dados regularmente para não perder suas tarefas, rotinas e notas em caso de troca de banco ou servidor.</p>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-              <button id="btn-exportar-backup" class="btn-add-tarefa" style="background:#2563eb;font-size:12px;padding:8px 14px">
+              <button id="btn-exportar-backup" class="btn-add-tarefa" style="font-size:12px;padding:8px 14px">
                 📥 Baixar Backup (JSON)
               </button>
               <label id="label-importar-backup" class="btn-add-tarefa" style="background:#10b981;font-size:12px;padding:8px 14px;cursor:pointer">
@@ -1301,7 +1460,7 @@
           <div class="card">
             <div class="card-header">
               <!-- note-pencil duotone -->
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
                 <path d="M 208,32 L 48,32 A 16,16 0 0 0 32,48 L 32,208 A 16,16 0 0 0 48,224 L 208,224 A 16,16 0 0 0 224,208 L 224,48 A 16,16 0 0 0 208,32 Z" fill="currentColor" opacity="0.2"/>
                 <path d="M 208,32 L 48,32 A 16,16 0 0 0 32,48 L 32,208 A 16,16 0 0 0 48,224 L 208,224 A 16,16 0 0 0 224,208 L 224,48 A 16,16 0 0 0 208,32 Z" stroke="currentColor" stroke-width="16" fill="none"/>
                 <line x1="80" y1="116" x2="124" y2="116" stroke="currentColor" stroke-width="15" stroke-linecap="round"/>
@@ -1335,7 +1494,7 @@
           <div class="card">
             <div class="card-header">
               <!-- folder-open duotone -->
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="#2563eb">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
                 <path d="M 32,80 L 32,200 A 8,8 0 0 0 40,208 L 216,208 A 8,8 0 0 0 224,200 L 224,104 A 8,8 0 0 0 216,96 L 120,96 L 96,72 A 8,8 0 0 0 90,70 L 40,70 A 8,8 0 0 0 32,80 Z" fill="currentColor" opacity="0.25"/>
                 <path d="M 32,80 L 32,200 A 8,8 0 0 0 40,208 L 216,208 A 8,8 0 0 0 224,200 L 224,104 A 8,8 0 0 0 216,96 L 120,96 L 96,72 A 8,8 0 0 0 90,70 L 40,70 A 8,8 0 0 0 32,80 Z" stroke="currentColor" stroke-width="16" fill="none" stroke-linejoin="round"/>
                 <path d="M 32,96 L 24,160 A 8,8 0 0 0 32,168 L 224,168" stroke="currentColor" stroke-width="14" stroke-linecap="round" fill="none"/>
@@ -1424,7 +1583,213 @@
     "use strict";
 
     const API = "";
+    const TEMA_STORAGE_KEY = "prioriza_tema";
+    const TEMAS_PRIORIZA = {
+      azul: {
+        cor: "#2563eb",
+        rgb: "37, 99, 235",
+        clara: "#dbeafe",
+        suave: "#eff6ff",
+        escura: "#1e40af",
+        logo: "#2f7fd3",
+      },
+      verde: {
+        cor: "#16a34a",
+        rgb: "22, 163, 74",
+        clara: "#dcfce7",
+        suave: "#f0fdf4",
+        escura: "#166534",
+        logo: "#3b8f6a",
+      },
+      roxo: {
+        cor: "#7c3aed",
+        rgb: "124, 58, 237",
+        clara: "#ede9fe",
+        suave: "#f5f3ff",
+        escura: "#5b21b6",
+        logo: "#6f5aa8",
+      },
+      grafite: {
+        cor: "#334155",
+        rgb: "51, 65, 85",
+        clara: "#e2e8f0",
+        suave: "#f8fafc",
+        escura: "#0f172a",
+        logo: "#5a6878",
+      },
+    };
     function authHeaders(extra = {}) { return { ...extra }; }
+
+    const logoTemaCache = new Map();
+
+    function hexParaRgb(hex) {
+      const valor = hex.replace("#", "");
+      const normalizado = valor.length === 3
+        ? valor.split("").map((char) => char + char).join("")
+        : valor;
+      return {
+        r: parseInt(normalizado.slice(0, 2), 16),
+        g: parseInt(normalizado.slice(2, 4), 16),
+        b: parseInt(normalizado.slice(4, 6), 16),
+      };
+    }
+
+    function rgbParaHsl(r, g, b) {
+      const rn = r / 255;
+      const gn = g / 255;
+      const bn = b / 255;
+      const max = Math.max(rn, gn, bn);
+      const min = Math.min(rn, gn, bn);
+      const delta = max - min;
+      let h = 0;
+      const l = (max + min) / 2;
+      let s = 0;
+
+      if (delta !== 0) {
+        s = delta / (1 - Math.abs(2 * l - 1));
+        switch (max) {
+          case rn:
+            h = 60 * (((gn - bn) / delta) % 6);
+            break;
+          case gn:
+            h = 60 * (((bn - rn) / delta) + 2);
+            break;
+          default:
+            h = 60 * (((rn - gn) / delta) + 4);
+            break;
+        }
+      }
+
+      if (h < 0) h += 360;
+      return { h, s, l };
+    }
+
+    function hslParaRgb(h, s, l) {
+      const c = (1 - Math.abs(2 * l - 1)) * s;
+      const hp = h / 60;
+      const x = c * (1 - Math.abs((hp % 2) - 1));
+      let r1 = 0, g1 = 0, b1 = 0;
+
+      if (hp >= 0 && hp < 1) [r1, g1, b1] = [c, x, 0];
+      else if (hp < 2) [r1, g1, b1] = [x, c, 0];
+      else if (hp < 3) [r1, g1, b1] = [0, c, x];
+      else if (hp < 4) [r1, g1, b1] = [0, x, c];
+      else if (hp < 5) [r1, g1, b1] = [x, 0, c];
+      else [r1, g1, b1] = [c, 0, x];
+
+      const m = l - c / 2;
+      return {
+        r: Math.round((r1 + m) * 255),
+        g: Math.round((g1 + m) * 255),
+        b: Math.round((b1 + m) * 255),
+      };
+    }
+
+    function recolorirLogoTema(srcOriginal, corHex) {
+      const chave = `${srcOriginal}|${corHex}`;
+      if (logoTemaCache.has(chave)) return logoTemaCache.get(chave);
+
+      const tarefa = new Promise((resolve) => {
+        const imagem = new Image();
+        imagem.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = imagem.naturalWidth;
+          canvas.height = imagem.naturalHeight;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve(srcOriginal);
+            return;
+          }
+
+          ctx.drawImage(imagem, 0, 0);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
+          const temaRgb = hexParaRgb(corHex);
+          const temaHsl = rgbParaHsl(temaRgb.r, temaRgb.g, temaRgb.b);
+
+          for (let i = 0; i < data.length; i += 4) {
+            const alpha = data[i + 3];
+            if (alpha === 0) continue;
+
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const hsl = rgbParaHsl(r, g, b);
+            const saturado = hsl.s > 0.18;
+            const azulDaMarca = hsl.h >= 175 && hsl.h <= 245;
+
+            if (!saturado || !azulDaMarca) continue;
+
+            const rgbFinal = hslParaRgb(
+              temaHsl.h,
+              Math.min(0.72, Math.max(0.42, temaHsl.s * 0.78)),
+              Math.min(0.62, Math.max(0.32, hsl.l))
+            );
+
+            data[i] = rgbFinal.r;
+            data[i + 1] = rgbFinal.g;
+            data[i + 2] = rgbFinal.b;
+          }
+
+          ctx.putImageData(imageData, 0, 0);
+          resolve(canvas.toDataURL("image/png"));
+        };
+        imagem.onerror = () => resolve(srcOriginal);
+        imagem.src = srcOriginal;
+      });
+
+      logoTemaCache.set(chave, tarefa);
+      return tarefa;
+    }
+
+    async function atualizarLogoTema(temaAtual) {
+      const logo = document.querySelector(".prioriza-logo");
+      if (!logo) return;
+
+      if (!logo.dataset.logoOriginal) {
+        logo.dataset.logoOriginal = logo.getAttribute("src") || "";
+      }
+
+      const srcOriginal = logo.dataset.logoOriginal;
+      const config = TEMAS_PRIORIZA[temaAtual] || TEMAS_PRIORIZA.azul;
+      if (!srcOriginal || !config.logo) return;
+
+      const srcTema = await recolorirLogoTema(srcOriginal, config.logo);
+      if ((document.documentElement.dataset.tema || "azul") === temaAtual) {
+        logo.src = srcTema;
+      }
+    }
+
+    function atualizarEstadoBotoesTema(temaAtual) {
+      document.querySelectorAll("[data-theme-option]").forEach((botao) => {
+        botao.classList.toggle("active", botao.dataset.themeOption === temaAtual);
+      });
+    }
+
+    async function aplicarTema(tema) {
+      const temaSeguro = TEMAS_PRIORIZA[tema] ? tema : "azul";
+      const config = TEMAS_PRIORIZA[temaSeguro];
+      const root = document.documentElement;
+
+      root.style.setProperty("--cor-tema", config.cor);
+      root.style.setProperty("--cor-tema-rgb", config.rgb);
+      root.style.setProperty("--cor-tema-clara", config.clara);
+      root.style.setProperty("--cor-tema-suave", config.suave);
+      root.style.setProperty("--cor-tema-escura", config.escura);
+      root.dataset.tema = temaSeguro;
+
+      try {
+        localStorage.setItem(TEMA_STORAGE_KEY, temaSeguro);
+      } catch (e) {
+        console.warn("[PRIORIZA] Não foi possível salvar o tema:", e);
+      }
+
+      const metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) metaTheme.setAttribute("content", config.cor);
+
+      atualizarEstadoBotoesTema(temaSeguro);
+      await atualizarLogoTema(temaSeguro);
+    }
 
     let tarefasAgendaCache = [];
     let googleAgendaCache = [];
@@ -1567,7 +1932,7 @@
 
       const btnDesfazer = document.createElement("button");
       btnDesfazer.textContent = "Desfazer";
-      btnDesfazer.style.cssText = "background:#2563eb;color:#fff;border:none;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap";
+      btnDesfazer.style.cssText = "background:var(--cor-tema);color:#fff;border:none;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap";
 
       btnDesfazer.addEventListener("click", () => {
         clearTimeout(_undoTimer);
@@ -1997,7 +2362,7 @@
             if ((t.tipo_evento || "") === "google") {
               const marcador = document.createElement("div");
               marcador.className = "agenda-status-btn pendente";
-              marcador.innerHTML = `<svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="#2563eb"><rect x="48" y="48" width="160" height="160" rx="24" fill="currentColor" opacity="0.18"/><rect x="48" y="48" width="160" height="160" rx="24" stroke="currentColor" stroke-width="20"/></svg>`;
+              marcador.innerHTML = `<svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="var(--cor-tema)"><rect x="48" y="48" width="160" height="160" rx="24" fill="currentColor" opacity="0.18"/><rect x="48" y="48" width="160" height="160" rx="24" stroke="currentColor" stroke-width="20"/></svg>`;
               marcador.title = "Evento do Google Agenda";
               item.appendChild(marcador);
             } else {
@@ -2091,7 +2456,7 @@
         }
       } catch(e) {
         console.error("[PRIORIZA] carregarAgendaHoje:", e);
-        agendaDiv.innerHTML = `<small style="color:#ef4444">⚠️ Erro ao carregar agenda. <button onclick="carregarAgendaHoje()" style="color:#2563eb;background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline">Tentar novamente</button></small>`;
+        agendaDiv.innerHTML = `<small style="color:#ef4444">⚠️ Erro ao carregar agenda. <button onclick="carregarAgendaHoje()" style="color:var(--cor-tema);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline">Tentar novamente</button></small>`;
       }
     }
 
@@ -2247,7 +2612,7 @@
         });
       } catch(e) {
         console.error("[PRIORIZA] carregarChecklistHoje:", e);
-        container.innerHTML="<small style='color:#ef4444'>⚠️ Erro ao carregar checklist. <button onclick='carregarChecklistHoje()' style='color:#2563eb;background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline'>Tentar novamente</button></small>";
+        container.innerHTML="<small style='color:#ef4444'>⚠️ Erro ao carregar checklist. <button onclick='carregarChecklistHoje()' style='color:var(--cor-tema);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline'>Tentar novamente</button></small>";
       }
     }
 
@@ -2486,7 +2851,7 @@
         renderChecklistSecao(container, "Feitas", "feito", grupos.feito);
       } catch (e) {
         console.error("[PRIORIZA] carregarChecklistGeral:", e);
-        container.innerHTML = "<small style='color:#ef4444'>⚠️ Erro ao carregar checklist. <button onclick='carregarChecklistGeral()' style='color:#2563eb;background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline'>Tentar novamente</button></small>";
+        container.innerHTML = "<small style='color:#ef4444'>⚠️ Erro ao carregar checklist. <button onclick='carregarChecklistGeral()' style='color:var(--cor-tema);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline'>Tentar novamente</button></small>";
       }
     }
 
@@ -3065,6 +3430,15 @@
 
     // ── INIT ──────────────────────────────────────────────────────
     document.addEventListener("DOMContentLoaded", () => {
+      const temaSalvo = (() => {
+        try {
+          return localStorage.getItem(TEMA_STORAGE_KEY) || "azul";
+        } catch {
+          return "azul";
+        }
+      })();
+
+      aplicarTema(temaSalvo);
 
       atualizarRelogio();
       setInterval(atualizarRelogio, 60000);
@@ -3092,6 +3466,9 @@
       
       document.getElementById("btn-ativar-notificacoes")?.addEventListener("click", ativarNotificacoesManual);
       document.getElementById("btn-testar-notificacao")?.addEventListener("click", testarNotificacaoManual);
+      document.querySelectorAll("[data-theme-option]").forEach((botao) => {
+        botao.addEventListener("click", () => aplicarTema(botao.dataset.themeOption));
+      });
 
       document.getElementById("btn-cal-prev")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()-1); montarCalendarioMes(); });
       document.getElementById("btn-cal-next")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()+1); montarCalendarioMes(); });
