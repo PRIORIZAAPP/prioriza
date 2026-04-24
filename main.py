@@ -395,6 +395,39 @@ def normalizar_status(status: Optional[str]) -> str:
         return "pendente"
     return s
 
+def status_nao_concluido(status: Optional[str]) -> bool:
+    return normalizar_status(status) in {"pendente", "em_andamento", "atrasado", "reagendamento_sugerido", "pendente_ajuste"}
+
+
+def _agora_minutos() -> int:
+    agora = _agora_local()
+    return agora.hour * 60 + agora.minute
+
+
+def _duracao_tarefa_minutos(tarefa: Tarefa) -> int:
+    try:
+        return max(1, int(tarefa.duracao_min or 30))
+    except Exception:
+        return 30
+
+
+def _faixa_tarefa_minutos(tarefa: Tarefa) -> tuple[Optional[int], Optional[int]]:
+    hora_inicio = (tarefa.hora_inicio or "").strip()
+    if not hora_inicio or not validar_hora(hora_inicio):
+        return None, None
+    inicio = hora_para_minutos(hora_inicio)
+    fim = inicio + _duracao_tarefa_minutos(tarefa)
+    return inicio, fim
+
+
+def _resumo_texto_inteligencia(total_tarefas: int, pendentes: int, atrasadas: list[dict[str, Any]], conflitos: list[dict[str, Any]]) -> str:
+    peso = total_tarefas + pendentes + (len(atrasadas) * 2) + (len(conflitos) * 2)
+    if peso >= 10:
+        return "Dia pesado"
+    if peso >= 5:
+        return "Dia moderado"
+    return "Dia tranquilo"
+
 
 def frequencia_interna_efetiva(freq_label: Optional[str], freq_interna: Optional[str]) -> str:
     """
@@ -1187,6 +1220,87 @@ def tarefas_hoje(db: Session = Depends(get_db)):
     hoje = date.today().isoformat()
     tarefas = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.data == hoje).order_by(Tarefa.hora_inicio, Tarefa.id).all()
     return [t.to_dict() for t in tarefas]
+
+
+@app.get("/agenda/inteligencia")
+def agenda_inteligencia(data_ref: str = Query(None, description="Data de referência YYYY-MM-DD"), db: Session = Depends(get_db)):
+    hoje = data_ref.strip() if data_ref and validar_data_iso(data_ref) else _agora_local().date().isoformat()
+    agora_min = _agora_minutos()
+
+    tarefas = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.data == hoje).order_by(Tarefa.hora_inicio, Tarefa.id).all()
+
+    total_tarefas = len(tarefas)
+    pendentes = sum(1 for t in tarefas if normalizar_status(t.status) == "pendente")
+    em_andamento = sum(1 for t in tarefas if normalizar_status(t.status) == "em_andamento")
+    concluidas = sum(1 for t in tarefas if normalizar_status(t.status) == "feito")
+
+    atrasadas: list[dict[str, Any]] = []
+    alta_prioridade_pendente: list[dict[str, Any]] = []
+    conflitos: list[dict[str, Any]] = []
+
+    tarefas_com_horario: list[tuple[Tarefa, int, int]] = []
+    for tarefa in tarefas:
+        status = normalizar_status(tarefa.status)
+        inicio_min, fim_min = _faixa_tarefa_minutos(tarefa)
+
+        if status_nao_concluido(tarefa.status) and inicio_min is not None and inicio_min < agora_min:
+            atrasadas.append(
+                {
+                    "id": tarefa.id,
+                    "titulo": tarefa.titulo,
+                    "hora_inicio": tarefa.hora_inicio or "",
+                }
+            )
+
+        if status_nao_concluido(tarefa.status) and int(tarefa.prioridade or 2) == 1:
+            alta_prioridade_pendente.append(
+                {
+                    "id": tarefa.id,
+                    "titulo": tarefa.titulo,
+                    "hora_inicio": tarefa.hora_inicio or "",
+                }
+            )
+
+        if inicio_min is not None and fim_min is not None:
+            tarefas_com_horario.append((tarefa, inicio_min, fim_min))
+
+    for i, (tarefa_atual, inicio_atual, fim_atual) in enumerate(tarefas_com_horario):
+        for tarefa_proxima, inicio_proximo, fim_proximo in tarefas_com_horario[i + 1:]:
+            if inicio_proximo >= fim_atual:
+                break
+            if inicio_atual < fim_proximo and inicio_proximo < fim_atual:
+                conflitos.append(
+                    {
+                        "inicio": minutos_para_hora(max(inicio_atual, inicio_proximo)),
+                        "fim": minutos_para_hora(min(fim_atual, fim_proximo)),
+                        "tarefas": [tarefa_atual.titulo, tarefa_proxima.titulo],
+                    }
+                )
+
+    sugestoes: list[str] = []
+    if conflitos:
+        primeiro = conflitos[0]
+        sugestoes.append(f"Revisar conflito entre {primeiro['inicio']} e {primeiro['fim']}")
+    if atrasadas:
+        sugestoes.append(f"Reagendar ou concluir \"{atrasadas[0]['titulo']}\"")
+    if alta_prioridade_pendente:
+        sugestoes.append(f"Priorizar \"{alta_prioridade_pendente[0]['titulo']}\"")
+    if not sugestoes:
+        sugestoes.append("Agenda equilibrada. Siga no foco principal do dia.")
+
+    return {
+        "status": "ok",
+        "data": hoje,
+        "resumo_texto": _resumo_texto_inteligencia(total_tarefas, pendentes + em_andamento, atrasadas, conflitos),
+        "total_tarefas": total_tarefas,
+        "pendentes": pendentes,
+        "em_andamento": em_andamento,
+        "concluidas": concluidas,
+        "atrasadas": atrasadas,
+        "alta_prioridade_pendente": alta_prioridade_pendente,
+        "conflitos": conflitos,
+        "sugestoes": sugestoes,
+    }
 
 
 @app.post("/tarefas")
