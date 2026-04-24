@@ -185,6 +185,80 @@
       .app-main-column { min-width: 0; width: 100%; }
       .desktop-sidebar,
       .desktop-rail { display: none; }
+      .inteligencia-card {
+        border: 1px solid rgba(var(--cor-tema-rgb), 0.16);
+        background: linear-gradient(180deg, #ffffff 0%, var(--cor-tema-suave) 100%);
+      }
+      .inteligencia-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+      .inteligencia-titulo {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .inteligencia-frase {
+        margin: 4px 0 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--cor-tema-escura);
+      }
+      .inteligencia-badge {
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--cor-tema-escura);
+        background: rgba(var(--cor-tema-rgb), 0.12);
+        white-space: nowrap;
+      }
+      .inteligencia-metricas {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .inteligencia-metrica {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #334155;
+        background: rgba(255,255,255,0.78);
+        border: 1px solid rgba(148,163,184,0.16);
+      }
+      .inteligencia-metrica strong {
+        font-size: 12px;
+        color: #0f172a;
+      }
+      .inteligencia-sugestoes-titulo {
+        font-size: 12px;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 8px;
+      }
+      .inteligencia-lista {
+        margin: 0;
+        padding-left: 18px;
+        color: #334155;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .inteligencia-lista li + li {
+        margin-top: 4px;
+      }
+      .inteligencia-erro {
+        font-size: 12px;
+        color: #64748b;
+      }
 
       @media (max-width: 1099px) {
         body { padding: 0; }
@@ -1324,6 +1398,26 @@
 
         <!-- ══ ABA HOJE ══ -->
         <div class="screen active" id="screen-hoje">
+          <div class="card inteligencia-card" id="card-inteligencia-dia">
+            <div class="inteligencia-head">
+              <div>
+                <h2 class="inteligencia-titulo">Inteligência do dia</h2>
+                <div class="inteligencia-frase" id="inteligencia-frase">Carregando análise do dia...</div>
+              </div>
+              <div class="inteligencia-badge" id="inteligencia-data">Hoje</div>
+            </div>
+            <div class="inteligencia-metricas">
+              <div class="inteligencia-metrica"><strong id="inteligencia-total-conflitos">0</strong> conflito(s)</div>
+              <div class="inteligencia-metrica"><strong id="inteligencia-total-atrasadas">0</strong> atrasada(s)</div>
+              <div class="inteligencia-metrica"><strong id="inteligencia-total-alta">0</strong> prioridade(s) alta(s)</div>
+            </div>
+            <div class="inteligencia-sugestoes-titulo">Sugestões</div>
+            <ul class="inteligencia-lista" id="inteligencia-sugestoes">
+              <li>Carregando sugestões...</li>
+            </ul>
+            <div class="inteligencia-erro" id="inteligencia-erro" style="display:none"></div>
+          </div>
+
           <div class="card">
             <div class="card-header">
               <!-- icon: calendar-dots duotone -->
@@ -2279,8 +2373,193 @@
     function ehStatusAndamento(s) {
       if (!s) return false; return ["em_andamento","andamento"].includes(s.toLowerCase());
     }
+    function ehStatusPendenteOuAndamento(s) {
+      return !ehStatusFeito(s);
+    }
     function proximoStatus(s) {
       if (s==="pendente") return "em_andamento"; if (s==="em_andamento") return "feito"; return "pendente";
+    }
+
+    function horaParaMinutos(hora) {
+      if (!hora) return null;
+      const match = String(hora).match(/^(\d{1,2}):(\d{2})/);
+      if (!match) return null;
+      return Number(match[1]) * 60 + Number(match[2]);
+    }
+
+    function minutosParaHora(minutos) {
+      const total = Math.max(0, Number(minutos) || 0);
+      const h = String(Math.floor(total / 60)).padStart(2, "0");
+      const m = String(total % 60).padStart(2, "0");
+      return `${h}:${m}`;
+    }
+
+    function normalizarTarefaInteligencia(tarefa) {
+      const inicio = horaParaMinutos(tarefa?.hora_inicio);
+      const duracao = Math.max(1, Number(tarefa?.duracao_min || 30));
+      const fim = inicio === null ? null : inicio + duracao;
+      return {
+        ...tarefa,
+        inicio_min: inicio,
+        fim_min: fim,
+      };
+    }
+
+    function calcularResumoTextoInteligencia({ total_tarefas, pendentes, atrasadas, conflitos }) {
+      const peso = (conflitos?.length || 0) * 2 + (atrasadas?.length || 0) * 2 + pendentes + total_tarefas;
+      if (peso >= 10) return "Dia pesado";
+      if (peso >= 5) return "Dia moderado";
+      return "Dia tranquilo";
+    }
+
+    function calcularInteligenciaLocal(tarefas) {
+      const agora = new Date();
+      const agoraMin = agora.getHours() * 60 + agora.getMinutes();
+      const hoje = tarefas
+        .filter((t) => t.ativo !== false && dataEhHoje(t.data || ""))
+        .map(normalizarTarefaInteligencia)
+        .sort((a, b) => (a.inicio_min ?? 9999) - (b.inicio_min ?? 9999));
+
+      const concluidas = hoje.filter((t) => ehStatusFeito(t.status)).length;
+      const emAndamento = hoje.filter((t) => ehStatusAndamento(t.status)).length;
+      const pendentes = hoje.filter((t) => ehStatusPendenteOuAndamento(t.status)).length;
+
+      const atrasadas = hoje
+        .filter((t) => ehStatusPendenteOuAndamento(t.status) && t.inicio_min !== null && t.inicio_min < agoraMin)
+        .map((t) => ({
+          id: t.id,
+          titulo: t.titulo || "Tarefa sem título",
+          hora_inicio: t.hora_inicio || "--:--",
+        }));
+
+      const alta_prioridade_pendente = hoje
+        .filter((t) => ehStatusPendenteOuAndamento(t.status) && String(t.prioridade || "") === "1")
+        .map((t) => ({
+          id: t.id,
+          titulo: t.titulo || "Tarefa sem título",
+          hora_inicio: t.hora_inicio || "--:--",
+        }));
+
+      const conflitos = [];
+      for (let i = 0; i < hoje.length; i += 1) {
+        const atual = hoje[i];
+        if (atual.inicio_min === null || atual.fim_min === null) continue;
+        for (let j = i + 1; j < hoje.length; j += 1) {
+          const proxima = hoje[j];
+          if (proxima.inicio_min === null || proxima.fim_min === null) continue;
+          if (proxima.inicio_min >= atual.fim_min) break;
+          if (atual.inicio_min < proxima.fim_min && proxima.inicio_min < atual.fim_min) {
+            conflitos.push({
+              inicio: minutosParaHora(Math.max(atual.inicio_min, proxima.inicio_min)),
+              fim: minutosParaHora(Math.min(atual.fim_min, proxima.fim_min)),
+              tarefas: [atual.titulo || "Tarefa sem título", proxima.titulo || "Tarefa sem título"],
+            });
+          }
+        }
+      }
+
+      const sugestoes = [];
+      if (conflitos.length) {
+        sugestoes.push(`Revisar conflito entre ${conflitos[0].inicio} e ${conflitos[0].fim}`);
+      }
+      if (atrasadas.length) {
+        sugestoes.push(`Reagendar ou concluir "${atrasadas[0].titulo}"`);
+      }
+      if (alta_prioridade_pendente.length) {
+        sugestoes.push(`Priorizar "${alta_prioridade_pendente[0].titulo}"`);
+      }
+      if (!sugestoes.length) {
+        sugestoes.push("Agenda equilibrada. Siga no foco do dia.");
+      }
+
+      return {
+        status: "ok",
+        data: dataHojeISO(),
+        resumo_texto: calcularResumoTextoInteligencia({ total_tarefas: hoje.length, pendentes, atrasadas, conflitos }),
+        total_tarefas: hoje.length,
+        pendentes,
+        em_andamento: emAndamento,
+        concluidas,
+        atrasadas,
+        alta_prioridade_pendente,
+        conflitos,
+        sugestoes,
+      };
+    }
+
+    async function obterInteligenciaDia() {
+      try {
+        const resposta = await fetch(API + "/agenda/inteligencia", { headers: authHeaders() });
+        if (!resposta.ok) throw new Error("HTTP " + resposta.status);
+        const payload = await resposta.json();
+        if (payload?.status !== "ok") throw new Error("Payload inválido");
+        return payload;
+      } catch (erro) {
+        const tarefas = tarefasAgendaCache.length
+          ? tarefasAgendaCache
+          : await (async () => {
+              const res = await fetch(API + "/tarefas", { headers: authHeaders() });
+              if (!res.ok) throw new Error("HTTP " + res.status);
+              const lista = await res.json();
+              tarefasAgendaCache = Array.isArray(lista) ? lista : [];
+              return tarefasAgendaCache;
+            })();
+        return calcularInteligenciaLocal(tarefas);
+      }
+    }
+
+    function renderizarInteligenciaDia(payload) {
+      const card = document.getElementById("card-inteligencia-dia");
+      const frase = document.getElementById("inteligencia-frase");
+      const dataEl = document.getElementById("inteligencia-data");
+      const conflitosEl = document.getElementById("inteligencia-total-conflitos");
+      const atrasadasEl = document.getElementById("inteligencia-total-atrasadas");
+      const altaEl = document.getElementById("inteligencia-total-alta");
+      const sugestoesEl = document.getElementById("inteligencia-sugestoes");
+      const erroEl = document.getElementById("inteligencia-erro");
+      if (!card || !frase || !dataEl || !conflitosEl || !atrasadasEl || !altaEl || !sugestoesEl || !erroEl) return;
+
+      card.style.display = "";
+      erroEl.style.display = "none";
+      erroEl.textContent = "";
+
+      frase.textContent = payload?.resumo_texto || "Sem leitura disponível";
+      dataEl.textContent = payload?.data ? formatarDataCurtaBR(payload.data) : "Hoje";
+      conflitosEl.textContent = String(payload?.conflitos?.length || 0);
+      atrasadasEl.textContent = String(payload?.atrasadas?.length || 0);
+      altaEl.textContent = String(payload?.alta_prioridade_pendente?.length || 0);
+
+      sugestoesEl.innerHTML = "";
+      const sugestoes = Array.isArray(payload?.sugestoes) && payload.sugestoes.length
+        ? payload.sugestoes
+        : ["Agenda sem alertas importantes para hoje."];
+      sugestoes.slice(0, 3).forEach((texto) => {
+        const item = document.createElement("li");
+        item.textContent = texto;
+        sugestoesEl.appendChild(item);
+      });
+    }
+
+    async function carregarInteligenciaDia() {
+      const card = document.getElementById("card-inteligencia-dia");
+      const frase = document.getElementById("inteligencia-frase");
+      const sugestoesEl = document.getElementById("inteligencia-sugestoes");
+      const erroEl = document.getElementById("inteligencia-erro");
+      if (!card || !frase || !sugestoesEl || !erroEl) return;
+
+      frase.textContent = "Carregando análise do dia...";
+      sugestoesEl.innerHTML = "<li>Buscando sinais da sua agenda...</li>";
+      erroEl.style.display = "none";
+      try {
+        const payload = await obterInteligenciaDia();
+        renderizarInteligenciaDia(payload);
+      } catch (erro) {
+        console.error("[PRIORIZA] carregarInteligenciaDia:", erro);
+        frase.textContent = "Inteligência do dia indisponível";
+        sugestoesEl.innerHTML = "";
+        erroEl.style.display = "block";
+        erroEl.textContent = "Não foi possível carregar a inteligência do dia.";
+      }
     }
 
     // ── LOCAIS ───────────────────────────────────────────────────
@@ -2765,6 +3044,7 @@
                 const ok = await atualizarStatusTarefa(t.id, novo);
                 if (!ok) console.warn("[PRIORIZA] PUT falhou para tarefa", t.id);
                 await recalcularResumoBar();
+                await carregarInteligenciaDia();
               });
               item.appendChild(bolinha);
             }
@@ -2838,6 +3118,7 @@
             agendaDiv.appendChild(item);
           });
         }
+        await carregarInteligenciaDia();
       } catch(e) {
         console.error("[PRIORIZA] carregarAgendaHoje:", e);
         agendaDiv.innerHTML = `<small style="color:#ef4444">⚠️ Erro ao carregar agenda. <button onclick="carregarAgendaHoje()" style="color:var(--cor-tema);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline">Tentar novamente</button></small>`;
@@ -2872,6 +3153,7 @@
     async function atualizarResumoBar() {
       // Usa cache para tarefas + servidor para checklist
       await recalcularResumoBar();
+      await carregarInteligenciaDia();
     }
 
     // ── NOVA TAREFA RÁPIDA ────────────────────────────────────────
@@ -2992,6 +3274,7 @@
           );
           container.appendChild(div);
         });
+        await carregarInteligenciaDia();
       } catch(e) {
         console.error("[PRIORIZA] carregarChecklistHoje:", e);
         container.innerHTML="<small style='color:#ef4444'>⚠️ Erro ao carregar checklist. <button onclick='carregarChecklistHoje()' style='color:var(--cor-tema);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline'>Tentar novamente</button></small>";
@@ -4048,6 +4331,7 @@
 
       // Carregamento inicial
       carregarAgendaHoje();
+      carregarInteligenciaDia();
       atualizarAgendaMesEDia();
       carregarStatusGoogleAgenda();
       if (new URLSearchParams(window.location.search).get("google") === "conectado") {
