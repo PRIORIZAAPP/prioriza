@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pt-BR">
   <head>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -186,78 +186,68 @@
       .desktop-sidebar,
       .desktop-rail { display: none; }
       .inteligencia-card {
-        border: 1px solid rgba(var(--cor-tema-rgb), 0.16);
-        background: linear-gradient(180deg, #ffffff 0%, var(--cor-tema-suave) 100%);
+        padding: 14px 16px;
+        border: 1px solid rgba(var(--cor-tema-rgb), 0.12);
+        background: linear-gradient(180deg, #ffffff 0%, rgba(var(--cor-tema-rgb), 0.04) 100%);
       }
-      .inteligencia-head {
+      .inteligencia-topo {
         display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 10px;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .inteligencia-icone {
+        width: 16px;
+        height: 16px;
+        color: var(--cor-tema);
+        flex-shrink: 0;
       }
       .inteligencia-titulo {
         margin: 0;
-        font-size: 16px;
+        font-size: 12px;
         font-weight: 700;
-        color: #0f172a;
+        letter-spacing: 0.02em;
+        color: var(--cor-tema-escura);
       }
       .inteligencia-frase {
-        margin: 4px 0 0;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--cor-tema-escura);
-      }
-      .inteligencia-badge {
-        border-radius: 999px;
-        padding: 6px 10px;
-        font-size: 11px;
+        margin: 0;
+        font-size: 17px;
+        line-height: 1.3;
         font-weight: 700;
-        color: var(--cor-tema-escura);
-        background: rgba(var(--cor-tema-rgb), 0.12);
-        white-space: nowrap;
-      }
-      .inteligencia-metricas {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 12px;
-      }
-      .inteligencia-metrica {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 7px 10px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 600;
-        color: #334155;
-        background: rgba(255,255,255,0.78);
-        border: 1px solid rgba(148,163,184,0.16);
-      }
-      .inteligencia-metrica strong {
-        font-size: 12px;
         color: #0f172a;
       }
-      .inteligencia-sugestoes-titulo {
+      .inteligencia-sugestao {
+        margin-top: 10px;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        min-height: 18px;
+      }
+      .inteligencia-sugestao-label {
+        flex-shrink: 0;
         font-size: 12px;
         font-weight: 700;
+        color: var(--cor-tema-escura);
+      }
+      .inteligencia-sugestao-texto {
+        font-size: 13px;
+        line-height: 1.45;
         color: #475569;
-        margin-bottom: 8px;
       }
-      .inteligencia-lista {
-        margin: 0;
-        padding-left: 18px;
-        color: #334155;
-        font-size: 12px;
-        line-height: 1.5;
-      }
-      .inteligencia-lista li + li {
-        margin-top: 4px;
+      .inteligencia-sugestao.vazia .inteligencia-sugestao-texto {
+        color: #64748b;
       }
       .inteligencia-erro {
+        margin-top: 8px;
         font-size: 12px;
         color: #64748b;
+      }
+      .inteligencia-head,
+      .inteligencia-metricas,
+      .inteligencia-sugestoes-titulo,
+      .inteligencia-lista,
+      .inteligencia-badge {
+        display: none;
       }
 
       @media (max-width: 1099px) {
@@ -1399,22 +1389,17 @@
         <!-- ══ ABA HOJE ══ -->
         <div class="screen active" id="screen-hoje">
           <div class="card inteligencia-card" id="card-inteligencia-dia">
-            <div class="inteligencia-head">
-              <div>
-                <h2 class="inteligencia-titulo">Inteligência do dia</h2>
-                <div class="inteligencia-frase" id="inteligencia-frase">Carregando análise do dia...</div>
-              </div>
-              <div class="inteligencia-badge" id="inteligencia-data">Hoje</div>
+            <div class="inteligencia-topo">
+              <svg class="inteligencia-icone" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 3L13.9 8.1L19 10L13.9 11.9L12 17L10.1 11.9L5 10L10.1 8.1L12 3Z" fill="currentColor"/>
+              </svg>
+              <h2 class="inteligencia-titulo">Visão do dia</h2>
             </div>
-            <div class="inteligencia-metricas">
-              <div class="inteligencia-metrica"><strong id="inteligencia-total-conflitos">0</strong> conflito(s)</div>
-              <div class="inteligencia-metrica"><strong id="inteligencia-total-atrasadas">0</strong> atrasada(s)</div>
-              <div class="inteligencia-metrica"><strong id="inteligencia-total-alta">0</strong> prioridade(s) alta(s)</div>
+            <div class="inteligencia-frase" id="inteligencia-frase">Carregando visão do dia...</div>
+            <div class="inteligencia-sugestao vazia" id="inteligencia-sugestao-wrap">
+              <div class="inteligencia-sugestao-label" id="inteligencia-sugestao-label">💡 Sugestão</div>
+              <div class="inteligencia-sugestao-texto" id="inteligencia-sugestoes">Buscando o melhor próximo passo...</div>
             </div>
-            <div class="inteligencia-sugestoes-titulo">Sugestões</div>
-            <ul class="inteligencia-lista" id="inteligencia-sugestoes">
-              <li>Carregando sugestões...</li>
-            </ul>
             <div class="inteligencia-erro" id="inteligencia-erro" style="display:none"></div>
           </div>
 
@@ -2508,57 +2493,112 @@
       }
     }
 
-    function renderizarInteligenciaDia(payload) {
+    function garantirEstruturaInteligenciaDia() {
       const card = document.getElementById("card-inteligencia-dia");
+      if (!card) return null;
+      if (card.dataset.cleanUi === "true") return card;
+
+      card.innerHTML = `
+        <div class="inteligencia-topo">
+          <svg class="inteligencia-icone" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3L13.9 8.1L19 10L13.9 11.9L12 17L10.1 11.9L5 10L10.1 8.1L12 3Z" fill="currentColor"/>
+          </svg>
+          <h2 class="inteligencia-titulo">Visão do dia</h2>
+        </div>
+        <div class="inteligencia-frase" id="inteligencia-frase">Carregando visão do dia...</div>
+        <div class="inteligencia-sugestao vazia" id="inteligencia-sugestao-wrap">
+          <div class="inteligencia-sugestao-label" id="inteligencia-sugestao-label">💡 Sugestão</div>
+          <div class="inteligencia-sugestao-texto" id="inteligencia-sugestoes">Buscando o melhor próximo passo...</div>
+        </div>
+        <div class="inteligencia-erro" id="inteligencia-erro" style="display:none"></div>
+      `;
+      card.dataset.cleanUi = "true";
+      return card;
+    }
+
+    function renderizarInteligenciaDia(payload) {
+      const card = garantirEstruturaInteligenciaDia();
       const frase = document.getElementById("inteligencia-frase");
-      const dataEl = document.getElementById("inteligencia-data");
-      const conflitosEl = document.getElementById("inteligencia-total-conflitos");
-      const atrasadasEl = document.getElementById("inteligencia-total-atrasadas");
-      const altaEl = document.getElementById("inteligencia-total-alta");
+      const sugestaoWrap = document.getElementById("inteligencia-sugestao-wrap");
+      const sugestaoLabel = document.getElementById("inteligencia-sugestao-label");
       const sugestoesEl = document.getElementById("inteligencia-sugestoes");
       const erroEl = document.getElementById("inteligencia-erro");
-      if (!card || !frase || !dataEl || !conflitosEl || !atrasadasEl || !altaEl || !sugestoesEl || !erroEl) return;
+      if (!card || !frase || !sugestaoWrap || !sugestaoLabel || !sugestoesEl || !erroEl) return;
 
       card.style.display = "";
       erroEl.style.display = "none";
       erroEl.textContent = "";
 
-      frase.textContent = payload?.resumo_texto || "Sem leitura disponível";
-      dataEl.textContent = payload?.data ? formatarDataCurtaBR(payload.data) : "Hoje";
-      conflitosEl.textContent = String(payload?.conflitos?.length || 0);
-      atrasadasEl.textContent = String(payload?.atrasadas?.length || 0);
-      altaEl.textContent = String(payload?.alta_prioridade_pendente?.length || 0);
+      const atrasadas = Array.isArray(payload?.atrasadas) ? payload.atrasadas : [];
+      const conflitos = Array.isArray(payload?.conflitos) ? payload.conflitos : [];
+      const prioridadesAltas = Array.isArray(payload?.alta_prioridade_pendente) ? payload.alta_prioridade_pendente : [];
+      const sugestoes = Array.isArray(payload?.sugestoes) ? payload.sugestoes.filter(Boolean) : [];
 
-      sugestoesEl.innerHTML = "";
-      const sugestoes = Array.isArray(payload?.sugestoes) && payload.sugestoes.length
-        ? payload.sugestoes
-        : ["Agenda sem alertas importantes para hoje."];
-      sugestoes.slice(0, 3).forEach((texto) => {
-        const item = document.createElement("li");
-        item.textContent = texto;
-        sugestoesEl.appendChild(item);
-      });
+      let frasePrincipal = "Tudo sob controle hoje";
+      if (atrasadas.length) {
+        frasePrincipal = "Você tem tarefa atrasada";
+      } else if (conflitos.length) {
+        frasePrincipal = "Agenda sobrecarregada";
+      } else if (prioridadesAltas.length) {
+        frasePrincipal = "Alta prioridade pendente";
+      } else if (typeof payload?.resumo_texto === "string" && payload.resumo_texto.trim()) {
+        const resumo = payload.resumo_texto.trim();
+        frasePrincipal = /^dia tranquilo$/i.test(resumo) ? "Tudo sob controle hoje" : resumo;
+      }
+
+      const tarefaAtrasada = atrasadas[0];
+      const tarefaPrioritaria = prioridadesAltas[0];
+      const conflito = conflitos[0];
+
+      let sugestaoLabelTexto = "💡 Sugestão";
+      let sugestaoTexto = "Continue no ritmo";
+
+      if (tarefaAtrasada?.titulo) {
+        sugestaoTexto = `Reagende ou finalize "${tarefaAtrasada.titulo}"`;
+      } else if (tarefaPrioritaria?.titulo) {
+        sugestaoLabelTexto = "💡 Foque em";
+        sugestaoTexto = `"${tarefaPrioritaria.titulo}"`;
+      } else if (conflito) {
+        const inicio = conflito?.inicio || conflito?.hora_inicio || conflito?.horaInicio || conflito?.de;
+        const fim = conflito?.fim || conflito?.hora_fim || conflito?.horaFim || conflito?.ate;
+        sugestaoTexto = inicio && fim
+          ? `Revise o conflito entre ${inicio} e ${fim}`
+          : "Revise os horários da agenda";
+      } else if (sugestoes.length) {
+        sugestaoTexto = String(sugestoes[0]).trim();
+      }
+
+      frase.textContent = frasePrincipal;
+      sugestaoLabel.textContent = sugestaoLabelTexto;
+      sugestoesEl.textContent = sugestaoTexto;
+      sugestaoWrap.classList.toggle("vazia", sugestaoTexto === "Continue no ritmo");
     }
 
     async function carregarInteligenciaDia() {
-      const card = document.getElementById("card-inteligencia-dia");
+      const card = garantirEstruturaInteligenciaDia();
       const frase = document.getElementById("inteligencia-frase");
+      const sugestaoWrap = document.getElementById("inteligencia-sugestao-wrap");
+      const sugestaoLabel = document.getElementById("inteligencia-sugestao-label");
       const sugestoesEl = document.getElementById("inteligencia-sugestoes");
       const erroEl = document.getElementById("inteligencia-erro");
-      if (!card || !frase || !sugestoesEl || !erroEl) return;
+      if (!card || !frase || !sugestaoWrap || !sugestaoLabel || !sugestoesEl || !erroEl) return;
 
-      frase.textContent = "Carregando análise do dia...";
-      sugestoesEl.innerHTML = "<li>Buscando sinais da sua agenda...</li>";
+      frase.textContent = "Carregando visão do dia...";
+      sugestaoLabel.textContent = "💡 Sugestão";
+      sugestoesEl.textContent = "Buscando o melhor próximo passo...";
+      sugestaoWrap.classList.add("vazia");
       erroEl.style.display = "none";
       try {
         const payload = await obterInteligenciaDia();
         renderizarInteligenciaDia(payload);
       } catch (erro) {
         console.error("[PRIORIZA] carregarInteligenciaDia:", erro);
-        frase.textContent = "Inteligência do dia indisponível";
-        sugestoesEl.innerHTML = "";
+        frase.textContent = "Tudo sob controle hoje";
+        sugestaoLabel.textContent = "💡 Sugestão";
+        sugestoesEl.textContent = "Continue no ritmo";
+        sugestaoWrap.classList.add("vazia");
         erroEl.style.display = "block";
-        erroEl.textContent = "Não foi possível carregar a inteligência do dia.";
+        erroEl.textContent = "Não foi possível carregar a visão do dia.";
       }
     }
 
