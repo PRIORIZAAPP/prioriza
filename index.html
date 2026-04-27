@@ -1008,6 +1008,261 @@
         font-weight: 700;
       }
 
+      .settings-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      .settings-hero {
+        padding: 6px 2px 2px;
+      }
+      .settings-hero h1 {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.05;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.03em;
+      }
+      .settings-hero p {
+        margin: 10px 0 0;
+        max-width: 520px;
+        font-size: 13px;
+        line-height: 1.55;
+        color: #64748b;
+      }
+      .settings-section {
+        padding-top: 20px;
+        border-top: 1px solid rgba(148, 163, 184, 0.18);
+      }
+      .settings-section:first-of-type {
+        padding-top: 0;
+        border-top: none;
+      }
+      .settings-section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .settings-section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+      .settings-section-title h2 {
+        margin: 0;
+        font-size: 19px;
+        line-height: 1.2;
+        font-weight: 750;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+      }
+      .settings-section-title .icon-tema {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+      }
+      .settings-subtext {
+        margin: 0;
+        font-size: 12px;
+        color: #64748b;
+        line-height: 1.45;
+      }
+      .settings-panel {
+        background: rgba(255,255,255,0.52);
+        border: 1px solid rgba(255,255,255,0.7);
+        border-radius: 22px;
+        padding: 18px;
+        box-shadow: 0 12px 30px rgba(15,23,42,0.05);
+        backdrop-filter: blur(6px);
+      }
+      .settings-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+      }
+      .settings-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
+      .settings-label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        color: #94a3b8;
+      }
+      .settings-value {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.25;
+      }
+      .settings-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .settings-actions.compact {
+        margin-top: 0;
+      }
+      .settings-note {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #64748b;
+        min-height: 16px;
+      }
+      .settings-status-inline {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.82);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+      }
+      .settings-status-inline strong {
+        color: #0f172a;
+        font-weight: 700;
+      }
+      .settings-backup-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .settings-backup-grid .btn-outline,
+      .settings-backup-grid .backup-label {
+        justify-content: center;
+        min-height: 44px;
+      }
+      .backup-label {
+        border: 1px solid rgba(var(--cor-tema-rgb), 0.18);
+        background: #ffffff;
+        color: #0f172a;
+        border-radius: 999px;
+        padding: 10px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+      }
+      .backup-label:hover {
+        background: var(--cor-tema-suave);
+        border-color: rgba(var(--cor-tema-rgb), 0.34);
+        color: var(--cor-tema);
+      }
+
+      #screen-ajustes {
+        display: block;
+      }
+      #screen-ajustes .card {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+      }
+      #screen-ajustes .card-header {
+        margin-bottom: 0;
+      }
+      #screen-ajustes .secao-subtitulo {
+        margin-top: 0;
+      }
+      #screen-ajustes .appearance-options {
+        grid-template-columns: repeat(4, minmax(0, 88px));
+        justify-content: flex-start;
+        gap: 14px;
+      }
+      #screen-ajustes .theme-option {
+        min-height: auto;
+        padding: 10px 6px 8px;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        gap: 8px;
+      }
+      #screen-ajustes .theme-option:hover {
+        transform: translateY(-1px);
+        box-shadow: none;
+      }
+      #screen-ajustes .theme-option.active {
+        background: transparent;
+        box-shadow: none;
+      }
+      #screen-ajustes .theme-option::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 20px;
+        border: 1px solid transparent;
+        transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      }
+      #screen-ajustes .theme-option {
+        position: relative;
+        border-radius: 20px;
+      }
+      #screen-ajustes .theme-option.active::before {
+        border-color: rgba(var(--cor-tema-rgb), 0.28);
+        box-shadow: 0 10px 20px rgba(var(--cor-tema-rgb), 0.09);
+        background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(var(--cor-tema-rgb), 0.06) 100%);
+      }
+      #screen-ajustes .theme-swatch {
+        width: 42px;
+        height: 42px;
+        border-radius: 999px;
+        position: relative;
+        z-index: 1;
+      }
+      #screen-ajustes .theme-option strong {
+        position: relative;
+        z-index: 1;
+        font-size: 12px;
+      }
+      #screen-ajustes .agenda-integracao-card {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        margin: 0;
+      }
+      #screen-ajustes .agenda-integracao-topo {
+        margin: 0;
+      }
+      #screen-ajustes .agenda-integracao-subtitulo {
+        margin-top: 6px;
+        font-size: 14px;
+        color: #0f172a;
+        font-weight: 700;
+      }
+      #screen-ajustes #notif-status-detalhe {
+        display: none;
+      }
+
+      @media (max-width: 720px) {
+        .settings-shell {
+          gap: 22px;
+        }
+        .settings-backup-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        #screen-ajustes .appearance-options {
+          grid-template-columns: repeat(2, minmax(0, 88px));
+          gap: 12px;
+        }
+      }
+
       @media (max-width: 420px) {
         .appearance-options {
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1232,7 +1487,7 @@
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
-        #screen-ajustes.screen.active > .card:first-child {
+        #screen-ajustes.screen.active > .settings-shell {
           grid-column: 1 / -1;
         }
 
@@ -1720,161 +1975,174 @@
 
         <!-- ══ ABA NOTAS ══ -->
         <div class="screen" id="screen-ajustes">
-          <div class="card">
-            <div class="card-header">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" class="icon-tema" color="currentColor">
-                <path d="M19.14,12.94a7.43,7.43,0,0,0,.05-1,7.43,7.43,0,0,0-.05-1l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.28,7.28,0,0,0-1.73-1l-.38-2.65A.5.5,0,0,0,13.67,2H10.33a.5.5,0,0,0-.5.42L9.45,5.07a7.28,7.28,0,0,0-1.73,1l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L4.86,10a7.43,7.43,0,0,0-.05,1,7.43,7.43,0,0,0,.05,1L2.75,13.65a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.28,7.28,0,0,0,1.73,1l.38,2.65a.5.5,0,0,0,.5.42h3.34a.5.5,0,0,0,.5-.42l.38-2.65a7.28,7.28,0,0,0,1.73-1l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64ZM12,15.5A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/>
-              </svg>
-              <h2>Ajustes</h2>
+          <div class="settings-shell">
+            <div class="settings-hero">
+              <h1>Ajustes</h1>
+              <p>Central de controle do PRIORIZA com aparência, alertas, integrações e segurança dos seus dados em um só lugar.</p>
             </div>
-            <div class="secao-subtitulo">Organize recursos do app em um só lugar. Vamos evoluindo por partes.</div>
-          </div>
 
-          <div class="card" id="card-aparencia">
-            <div class="card-header">
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
-                <circle cx="76" cy="96" r="36" fill="currentColor" opacity="0.22"/>
-                <circle cx="180" cy="96" r="36" fill="currentColor" opacity="0.4"/>
-                <circle cx="128" cy="168" r="36" fill="currentColor"/>
-              </svg>
-              <h2>Aparência</h2>
-            </div>
-            <div class="appearance-options">
-              <button class="theme-option" type="button" data-theme-option="azul">
-                <span class="theme-swatch" style="background:#2563eb"></span>
-                <strong>Azul</strong>
-              </button>
-              <button class="theme-option" type="button" data-theme-option="verde">
-                <span class="theme-swatch" style="background:#3b8f6a"></span>
-                <strong>Verde</strong>
-              </button>
-              <button class="theme-option" type="button" data-theme-option="roxo">
-                <span class="theme-swatch" style="background:#6f5aa8"></span>
-                <strong>Roxo</strong>
-              </button>
-              <button class="theme-option" type="button" data-theme-option="grafite">
-                <span class="theme-swatch" style="background:#5a6878"></span>
-                <strong>Grafite</strong>
-              </button>
-            </div>
-          </div>
+            <section class="settings-section" id="card-aparencia">
+              <div class="settings-section-head">
+                <div class="settings-section-title">
+                  <svg viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
+                    <circle cx="76" cy="96" r="36" fill="currentColor" opacity="0.22"/>
+                    <circle cx="180" cy="96" r="36" fill="currentColor" opacity="0.4"/>
+                    <circle cx="128" cy="168" r="36" fill="currentColor"/>
+                  </svg>
+                  <h2>Aparência</h2>
+                </div>
+              </div>
+              <div class="settings-panel">
+                <div class="appearance-options">
+                  <button class="theme-option" type="button" data-theme-option="azul">
+                    <span class="theme-swatch" style="background:#2563eb"></span>
+                    <strong>Azul</strong>
+                  </button>
+                  <button class="theme-option" type="button" data-theme-option="verde">
+                    <span class="theme-swatch" style="background:#3b8f6a"></span>
+                    <strong>Verde</strong>
+                  </button>
+                  <button class="theme-option" type="button" data-theme-option="roxo">
+                    <span class="theme-swatch" style="background:#6f5aa8"></span>
+                    <strong>Roxo</strong>
+                  </button>
+                  <button class="theme-option" type="button" data-theme-option="grafite">
+                    <span class="theme-swatch" style="background:#5a6878"></span>
+                    <strong>Grafite</strong>
+                  </button>
+                </div>
+              </div>
+            </section>
 
-          <!-- NOTIFICAÇÕES -->
-          <div class="card" id="card-notificacoes">
-            <div class="card-header">
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
-                <path d="M128 232a24 24 0 0 0 24-24H104a24 24 0 0 0 24 24Z" fill="currentColor" opacity="0.22"/>
-                <path d="M128 232a24 24 0 0 0 24-24H104a24 24 0 0 0 24 24Z" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
-                <path d="M56 200h144" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                <path d="M80 200v-64a48 48 0 1 1 96 0v64" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <h2>Notificações</h2>
-            </div>
-            <p style="font-size:12px;color:#6b7280;margin:0 0 12px">Ative alertas do PRIORIZA para receber lembretes das suas tarefas e compromissos.</p>
-            <div id="notif-status" style="font-size:12px;color:#374151;margin-bottom:8px">Verificando status...</div>
-            <div id="notif-status-detalhe" style="font-size:11px;color:#6b7280;margin-bottom:12px;line-height:1.45">As notificações dependem da permissão do navegador e podem variar conforme o dispositivo.</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button id="btn-ativar-notificacoes" class="btn-outline" type="button">
-                <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                  <path d="M128 40v176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                  <path d="M40 128h176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                </svg>
-                Ativar notificações
-              </button>
-              <button id="btn-testar-notificacao" class="btn-outline" type="button">
-                <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                  <path d="M48 128h160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                  <path d="M160 80l48 48-48 48" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Testar
-              </button>
-            </div>
-          </div>
-
-          <!-- INTEGRAÇÕES -->
-          <div class="card" id="card-integracoes">
-            <div class="card-header">
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
-                <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.2"/>
-                <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
-                <path d="M80 128h96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                <path d="M128 80v96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-              </svg>
-              <h2>Integrações</h2>
-            </div>
-            <p style="font-size:12px;color:#6b7280;margin:0 0 12px">Conecte serviços externos para manter sua agenda unificada dentro do PRIORIZA.</p>
-            <div id="agenda-google-card" class="agenda-integracao-card" style="margin-bottom:0">
-              <div class="agenda-integracao-topo">
-                <div>
-                  <div class="agenda-integracao-titulo">
-                    <svg width="18" height="18" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor" aria-hidden="true">
-                      <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.14"/>
-                      <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
-                      <line x1="40" y1="96" x2="216" y2="96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                      <line x1="80" y1="16" x2="80" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                      <line x1="176" y1="16" x2="176" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                    </svg>
-                    Google Agenda
+            <section class="settings-section" id="card-notificacoes">
+              <div class="settings-section-head">
+                <div class="settings-section-title">
+                  <svg viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
+                    <path d="M128 232a24 24 0 0 0 24-24H104a24 24 0 0 0 24 24Z" fill="currentColor" opacity="0.22"/>
+                    <path d="M128 232a24 24 0 0 0 24-24H104a24 24 0 0 0 24 24Z" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
+                    <path d="M56 200h144" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                    <path d="M80 200v-64a48 48 0 1 1 96 0v64" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <h2>Notificações</h2>
+                </div>
+              </div>
+              <div class="settings-panel">
+                <div class="settings-row">
+                  <div class="settings-stack">
+                    <span class="settings-label">Status</span>
+                    <div id="notif-status" class="settings-value">Verificando status...</div>
                   </div>
-                  <div id="agenda-google-subtitulo" class="agenda-integracao-subtitulo">Verificando status da integração...</div>
                 </div>
-                <div id="agenda-google-status" class="agenda-status-badge desconectado">
-                  <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                    <circle cx="128" cy="128" r="84" stroke="currentColor" stroke-width="20"/>
-                  </svg>
-                  Desconectado
+                <div id="notif-status-detalhe" class="settings-note">As notificações dependem da permissão do navegador e podem variar conforme o dispositivo.</div>
+                <div class="settings-actions">
+                  <button id="btn-ativar-notificacoes" class="btn-outline" type="button">
+                    <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                      <path d="M128 40v176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                      <path d="M40 128h176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                    </svg>
+                    Ativar notificações
+                  </button>
+                  <button id="btn-testar-notificacao" class="btn-outline" type="button">
+                    <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                      <path d="M48 128h160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                      <path d="M160 80l48 48-48 48" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Testar
+                  </button>
                 </div>
               </div>
-              <div class="agenda-integracao-acoes">
-                <button id="btn-google-conectar" class="btn-outline" type="button">
-                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                    <path d="M128 48v160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                    <path d="M48 128h160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+            </section>
+
+            <section class="settings-section" id="card-integracoes">
+              <div class="settings-section-head">
+                <div class="settings-section-title">
+                  <svg viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
+                    <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.2"/>
+                    <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
+                    <path d="M80 128h96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                    <path d="M128 80v96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
                   </svg>
-                  Conectar Google
-                </button>
-                <button id="btn-google-atualizar" class="btn-outline" type="button">
-                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                    <path d="M216 128a88 88 0 1 1-26-62" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M216 56v56h-56" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  Atualizar eventos
-                </button>
-                <button id="btn-google-desconectar" class="btn-outline danger" type="button" style="display:none">
-                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                    <path d="M200 56L56 200" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                    <path d="M56 56l144 144" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                  </svg>
-                  Desconectar
-                </button>
+                  <h2>Integrações</h2>
+                </div>
               </div>
-            </div>
-          </div>
+              <div class="settings-panel">
+                <div id="agenda-google-card" class="agenda-integracao-card">
+                  <div class="agenda-integracao-topo">
+                    <div class="settings-stack">
+                      <div class="agenda-integracao-titulo">
+                        <svg width="18" height="18" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor" aria-hidden="true">
+                          <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.14"/>
+                          <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
+                          <line x1="40" y1="96" x2="216" y2="96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                          <line x1="80" y1="16" x2="80" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                          <line x1="176" y1="16" x2="176" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                        </svg>
+                        Google Agenda
+                      </div>
+                      <div id="agenda-google-subtitulo" class="agenda-integracao-subtitulo">Verificando status da integração...</div>
+                    </div>
+                    <div id="agenda-google-status" class="agenda-status-badge desconectado">
+                      <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                        <circle cx="128" cy="128" r="84" stroke="currentColor" stroke-width="20"/>
+                      </svg>
+                      Desconectado
+                    </div>
+                  </div>
+                  <div class="agenda-integracao-acoes">
+                    <button id="btn-google-conectar" class="btn-outline" type="button">
+                      <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                        <path d="M128 48v160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                        <path d="M48 128h160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                      </svg>
+                      Conectar Google
+                    </button>
+                    <button id="btn-google-atualizar" class="btn-outline" type="button">
+                      <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                        <path d="M216 128a88 88 0 1 1-26-62" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M216 56v56h-56" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      Atualizar eventos
+                    </button>
+                    <button id="btn-google-desconectar" class="btn-outline danger" type="button" style="display:none">
+                      <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                        <path d="M200 56L56 200" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                        <path d="M56 56l144 144" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                      </svg>
+                      Desconectar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
 
-          <!-- BACKUP E RESTAURAÇÃO -->
-          <div class="card" id="card-backup">
-            <div class="card-header">
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
-                <rect x="48" y="32" width="160" height="192" rx="8" fill="currentColor" opacity="0.2"/>
-                <rect x="48" y="32" width="160" height="192" rx="8" stroke="currentColor" stroke-width="16"/>
-                <path d="M128 88 L128 168" stroke="currentColor" stroke-width="18" stroke-linecap="round"/>
-                <path d="M96 140 L128 168 L160 140" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <h2>Backup e Restauração</h2>
-            </div>
-            <p style="font-size:12px;color:#6b7280;margin:0 0 12px">Faça backup dos seus dados regularmente para não perder suas tarefas, rotinas e notas em caso de troca de banco ou servidor.</p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-              <button id="btn-exportar-backup" class="btn-add-tarefa" style="font-size:12px;padding:8px 14px">
-                📥 Baixar Backup (JSON)
-              </button>
-              <label id="label-importar-backup" class="btn-add-tarefa" style="background:#10b981;font-size:12px;padding:8px 14px;cursor:pointer">
-                📤 Restaurar Backup
-                <input id="input-importar-backup" type="file" accept=".json" style="display:none">
-              </label>
-            </div>
-            <div id="backup-status" style="font-size:12px;color:#6b7280;min-height:16px"></div>
+            <section class="settings-section" id="card-backup">
+              <div class="settings-section-head">
+                <div class="settings-section-title">
+                  <svg viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
+                    <rect x="48" y="32" width="160" height="192" rx="8" fill="currentColor" opacity="0.2"/>
+                    <rect x="48" y="32" width="160" height="192" rx="8" stroke="currentColor" stroke-width="16"/>
+                    <path d="M128 88 L128 168" stroke="currentColor" stroke-width="18" stroke-linecap="round"/>
+                    <path d="M96 140 L128 168 L160 140" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <h2>Backup e restauração</h2>
+                </div>
+              </div>
+              <div class="settings-panel">
+                <div class="settings-backup-grid">
+                  <button id="btn-exportar-backup" class="btn-outline" type="button">
+                    <span aria-hidden="true">↓</span>
+                    Baixar backup
+                  </button>
+                  <label id="label-importar-backup" class="backup-label">
+                    <span aria-hidden="true">↑</span>
+                    Restaurar backup
+                    <input id="input-importar-backup" type="file" accept=".json" style="display:none">
+                  </label>
+                </div>
+                <div id="backup-status" class="settings-note"></div>
+              </div>
+            </section>
           </div>
-
         </div>
 
         <div class="screen" id="screen-notas">
