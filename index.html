@@ -1166,6 +1166,9 @@
       }
 
       #screen-ajustes {
+        display: none;
+      }
+      #screen-ajustes.active {
         display: block;
       }
       #screen-ajustes .card {
@@ -1723,7 +1726,6 @@
         <div class="screen" id="screen-agenda">
           <div class="card">
             <div class="card-header">
-              <!-- icon: calendar blank duotone -->
               <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
                 <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.2"/>
                 <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
@@ -1734,7 +1736,6 @@
               <h2>Agenda geral</h2>
             </div>
             <div class="secao-subtitulo">Calendário mensal com compromissos do PRIORIZA e eventos do Google Agenda no mesmo layout.</div>
-
 
             <div class="checklist-toolbar">
               <div class="checklist-toolbar-info">Defina data, horário, local/contexto e prioridade apenas quando for adicionar algo novo.</div>
@@ -1802,42 +1803,36 @@
             </div>
           </div>
 
-
-            <div id="calendar-container" class="calendar-wrapper">
-              <div class="calendar-header">
-                <button id="btn-cal-prev" class="calendar-nav-btn" aria-label="Mês anterior">
-                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                    <path d="M160 48L80 128l80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
-                <div class="calendar-header-title" id="calendar-title">Mês Ano</div>
-                <button id="btn-cal-next" class="calendar-nav-btn" aria-label="Próximo mês">
-                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                    <path d="M96 48l80 80-80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
-              </div>
-              <div class="calendar-grid" id="calendar-grid"></div>
+          <div id="calendar-container" class="calendar-wrapper">
+            <div class="calendar-header">
+              <button id="btn-cal-prev" class="calendar-nav-btn" aria-label="Mês anterior">
+                <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                  <path d="M160 48L80 128l80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <div class="calendar-header-title" id="calendar-title">Mês Ano</div>
+              <button id="btn-cal-next" class="calendar-nav-btn" aria-label="Próximo mês">
+                <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                  <path d="M96 48l80 80-80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
             </div>
-
-            <div id="agenda-dia-container" style="display:none; margin-top:8px">
-              <div class="agenda-dia-header">
-                <span id="agenda-dia-label"><strong>Agenda do dia</strong></span>
-                <button id="btn-voltar-calendario" class="btn-secondary">Ver calendário</button>
-              </div>
-              <div id="agenda-geral-lista"><small>Nenhum compromisso.</small></div>
-            </div>
+            <div class="calendar-grid" id="calendar-grid"></div>
           </div>
 
+          <div id="agenda-dia-container" style="display:none; margin-top:8px">
+            <div class="agenda-dia-header">
+              <span id="agenda-dia-label"><strong>Agenda do dia</strong></span>
+              <button id="btn-voltar-calendario" class="btn-secondary">Ver calendário</button>
+            </div>
+            <div id="agenda-geral-lista"><small>Nenhum compromisso.</small></div>
+          </div>
         </div>
-
-          
 
         <!-- ══ ABA CHECKLIST ══ -->
         <div class="screen" id="screen-checklist">
           <div class="card">
             <div class="card-header">
-              <!-- check-square duotone -->
               <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
                 <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.2"/>
                 <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
@@ -1921,61 +1916,54 @@
         </div>
 
         <!-- ══ ABA PESSOAL ══ -->
-        <!-- ══ ABA PESSOAL ══ -->
-<div class="screen" id="screen-pessoal">
-  <div class="card">
-    <div class="card-header">
-      <!-- user-circle duotone -->
-      <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
-        <circle cx="128" cy="128" r="96" fill="currentColor" opacity="0.2"/>
-        <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
-        <circle cx="128" cy="104" r="36" fill="currentColor" opacity="0.4"/>
-        <circle cx="128" cy="104" r="36" stroke="currentColor" stroke-width="14"/>
-        <path d="M63,212 Q64,168 128,168 Q192,168 193,212" stroke="currentColor" stroke-width="16" stroke-linecap="round" fill="none"/>
-      </svg>
-      <h2>Pessoal</h2>
-    </div>
+        <div class="screen" id="screen-pessoal">
+          <div class="card">
+            <div class="card-header">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
+                <circle cx="128" cy="128" r="96" fill="currentColor" opacity="0.2"/>
+                <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
+                <circle cx="128" cy="104" r="36" fill="currentColor" opacity="0.4"/>
+                <circle cx="128" cy="104" r="36" stroke="currentColor" stroke-width="14"/>
+                <path d="M63,212 Q64,168 128,168 Q192,168 193,212" stroke="currentColor" stroke-width="16" stroke-linecap="round" fill="none"/>
+              </svg>
+              <h2>Pessoal</h2>
+            </div>
+            <div class="secao-subtitulo">Compromissos e rotinas pessoais organizados por momento.</div>
 
-    <div class="secao-subtitulo">
-      Compromissos e rotinas pessoais organizados por momento.
-    </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px; flex-wrap:wrap;">
+              <h3 style="margin:0; font-size:14px; color:#111827;">Agenda pessoal</h3>
+              <button id="btn-toggle-passados-pessoal" class="btn-secondary" type="button">Mostrar passados</button>
+            </div>
 
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px; flex-wrap:wrap;">
-      <h3 style="margin:0; font-size:14px; color:#111827;">Agenda pessoal</h3>
-      <button id="btn-toggle-passados-pessoal" class="btn-secondary" type="button">
-        Mostrar passados
-      </button>
-    </div>
+            <div id="pessoal-hoje-box" style="margin-bottom:12px;">
+              <h4 style="margin:0 0 8px 0; font-size:13px; color:#111827;">Hoje</h4>
+              <div id="pessoal-agenda-hoje"><small>Carregando...</small></div>
+            </div>
 
-    <div id="pessoal-hoje-box" style="margin-bottom:12px;">
-      <h4 style="margin:0 0 8px 0; font-size:13px; color:#111827;">Hoje</h4>
-      <div id="pessoal-agenda-hoje"><small>Carregando...</small></div>
-    </div>
+            <hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"/>
 
-    <hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"/>
+            <div id="pessoal-proximos-box" style="margin-bottom:12px;">
+              <h4 style="margin:0 0 8px 0; font-size:13px; color:#111827;">Próximos</h4>
+              <div id="pessoal-agenda-proximos"><small>Carregando...</small></div>
+            </div>
 
-    <div id="pessoal-proximos-box" style="margin-bottom:12px;">
-      <h4 style="margin:0 0 8px 0; font-size:13px; color:#111827;">Próximos</h4>
-      <div id="pessoal-agenda-proximos"><small>Carregando...</small></div>
-    </div>
+            <hr id="hr-passados-pessoal" style="border:none;border-top:1px solid #e5e7eb;margin:8px 0; display:none;"/>
 
-    <hr id="hr-passados-pessoal" style="border:none;border-top:1px solid #e5e7eb;margin:8px 0; display:none;"/>
+            <div id="pessoal-passados-box" style="display:none; margin-bottom:12px;">
+              <h4 style="margin:0 0 8px 0; font-size:13px; color:#111827;">Passados</h4>
+              <div id="pessoal-agenda-passados"><small>Nenhum compromisso passado.</small></div>
+            </div>
 
-    <div id="pessoal-passados-box" style="display:none; margin-bottom:12px;">
-      <h4 style="margin:0 0 8px 0; font-size:13px; color:#111827;">Passados</h4>
-      <div id="pessoal-agenda-passados"><small>Nenhum compromisso passado.</small></div>
-    </div>
+            <hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"/>
 
-    <hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"/>
+            <div>
+              <h3 style="margin:4px 0 8px 0;font-size:14px;color:#111827">Checklist pessoal</h3>
+              <div id="pessoal-checklist"><small>Carregando...</small></div>
+            </div>
+          </div>
+        </div>
 
-    <div>
-      <h3 style="margin:4px 0 8px 0;font-size:14px;color:#111827">Checklist pessoal</h3>
-      <div id="pessoal-checklist"><small>Carregando...</small></div>
-    </div>
-  </div>
-</div>
-
-        <!-- ══ ABA NOTAS ══ -->
+        <!-- ══ ABA AJUSTES ══ -->
         <div class="screen" id="screen-ajustes">
           <div class="settings-shell">
             <div class="settings-hero">
@@ -2147,17 +2135,16 @@
           </div>
         </div>
 
+        <!-- ══ ABA NOTAS ══ -->
         <div class="screen" id="screen-notas">
           <div class="card">
             <div class="card-header">
-              <!-- note-pencil duotone -->
               <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
                 <path d="M 208,32 L 48,32 A 16,16 0 0 0 32,48 L 32,208 A 16,16 0 0 0 48,224 L 208,224 A 16,16 0 0 0 224,208 L 224,48 A 16,16 0 0 0 208,32 Z" fill="currentColor" opacity="0.2"/>
                 <path d="M 208,32 L 48,32 A 16,16 0 0 0 32,48 L 32,208 A 16,16 0 0 0 48,224 L 208,224 A 16,16 0 0 0 224,208 L 224,48 A 16,16 0 0 0 208,32 Z" stroke="currentColor" stroke-width="16" fill="none"/>
                 <line x1="80" y1="116" x2="124" y2="116" stroke="currentColor" stroke-width="15" stroke-linecap="round"/>
                 <line x1="80" y1="148" x2="176" y2="148" stroke="currentColor" stroke-width="15" stroke-linecap="round"/>
                 <line x1="80" y1="180" x2="152" y2="180" stroke="currentColor" stroke-width="15" stroke-linecap="round"/>
-                <!-- pencil -->
                 <path d="M 148,60 L 196,108 L 160,144 L 112,96 Z" fill="currentColor" stroke="currentColor" stroke-width="12" stroke-linejoin="round"/>
                 <path d="M 196,108 L 216,88 A 16,16 0 0 0 192,64 L 172,84 Z" fill="currentColor" stroke="currentColor" stroke-width="12" stroke-linejoin="round"/>
               </svg>
@@ -2184,7 +2171,6 @@
 
           <div class="card">
             <div class="card-header">
-              <!-- folder-open duotone -->
               <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
                 <path d="M 32,80 L 32,200 A 8,8 0 0 0 40,208 L 216,208 A 8,8 0 0 0 224,200 L 224,104 A 8,8 0 0 0 216,96 L 120,96 L 96,72 A 8,8 0 0 0 90,70 L 40,70 A 8,8 0 0 0 32,80 Z" fill="currentColor" opacity="0.25"/>
                 <path d="M 32,80 L 32,200 A 8,8 0 0 0 40,208 L 216,208 A 8,8 0 0 0 224,200 L 224,104 A 8,8 0 0 0 216,96 L 120,96 L 96,72 A 8,8 0 0 0 90,70 L 40,70 A 8,8 0 0 0 32,80 Z" stroke="currentColor" stroke-width="16" fill="none" stroke-linejoin="round"/>
@@ -2194,9 +2180,6 @@
             </div>
             <div id="lista-notas"><small>Carregando notas...</small></div>
           </div>
-
-
-
         </div>
 
       </div><!-- /content -->
