@@ -454,6 +454,164 @@ def _texto_sem_acentos(valor: str) -> str:
     )
 
 
+def _texto_sync_chave(valor: Optional[str]) -> str:
+    base = _texto_sem_acentos(valor or "")
+    return " ".join(base.split())
+
+
+def _bool_from_value(valor: Any) -> bool:
+    return str(valor).strip().lower() in {"1", "true", "sim", "yes", "on"}
+
+
+def _parse_datetime_sync(valor: Any) -> Optional[datetime]:
+    if not valor:
+        return None
+    if isinstance(valor, datetime):
+        return valor if valor.tzinfo else valor.replace(tzinfo=UTC)
+    try:
+        texto = str(valor).strip().replace("Z", "+00:00")
+        parsed = datetime.fromisoformat(texto)
+        return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+    except Exception:
+        return None
+
+
+def _hora_sync_normalizada(valor: Optional[str], all_day: bool = False) -> str:
+    if all_day:
+        return ""
+    hora = (valor or "").strip()
+    if hora.lower() == "dia todo":
+        return ""
+    return hora
+
+
+def _contexto_match_tarefa(tarefa: Tarefa) -> str:
+    return _texto_sync_chave(tarefa.local or tarefa.origem or "")
+
+
+def _buscar_tarefa_por_google_event_id(db: Session, google_event_id: Optional[str]) -> Optional[Tarefa]:
+    event_id = (google_event_id or "").strip()
+    if not event_id:
+        return None
+    return db.query(Tarefa).filter(
+        Tarefa.ativo == True,
+        Tarefa.google_event_id == event_id,
+    ).order_by(Tarefa.id.asc()).first()
+
+
+def _buscar_tarefa_aproximada_google(
+    db: Session,
+    titulo: str,
+    data_ref: str,
+    hora_inicio: str,
+    origem: str = "",
+    local: str = "",
+) -> Optional[Tarefa]:
+    titulo_ref = _texto_sync_chave(titulo)
+    hora_ref = _hora_sync_normalizada(hora_inicio)
+    contexto_ref = _texto_sync_chave(local or origem)
+    candidatas = db.query(Tarefa).filter(
+        Tarefa.ativo == True,
+        Tarefa.data == data_ref,
+    ).all()
+
+    for tarefa in candidatas:
+        if _texto_sync_chave(tarefa.titulo) != titulo_ref:
+            continue
+        if _hora_sync_normalizada(tarefa.hora_inicio, bool(tarefa.all_day)) != hora_ref:
+            continue
+        if contexto_ref and _contexto_match_tarefa(tarefa) != contexto_ref:
+            continue
+        return tarefa
+    return None
+
+
+def _aplicar_payload_google_em_tarefa(tarefa: Tarefa, payload: dict[str, Any]) -> Tarefa:
+    preservar_origem_prioriza = (tarefa.origem_evento or "").strip().lower() == "prioriza" or (tarefa.tipo_evento or "").strip().lower() == "prioriza"
+    titulo = (payload.get("titulo") or tarefa.titulo or "").strip()
+    descricao = payload.get("descricao")
+    origem = payload.get("origem")
+    local = payload.get("local")
+    data_ref = (payload.get("data") or tarefa.data or "").strip()
+    all_day = _bool_from_value(payload.get("all_day"))
+    hora_inicio = _hora_sync_normalizada(payload.get("hora_inicio"), all_day)
+    hora_fim = _hora_sync_normalizada(payload.get("hora_fim"), all_day)
+
+    tarefa.titulo = titulo or tarefa.titulo
+    if descricao is not None:
+        descricao_limpa = str(descricao).strip()
+        if descricao_limpa or not preservar_origem_prioriza:
+            tarefa.descricao = descricao_limpa
+    origem_limpa = str(origem or "").strip()
+    local_limpo = str(local or "").strip()
+    if preservar_origem_prioriza:
+        if local_limpo and not (tarefa.local or "").strip():
+            tarefa.local = local_limpo
+    else:
+        tarefa.origem = origem_limpa
+        tarefa.local = local_limpo
+    if data_ref:
+        tarefa.data = data_ref
+    tarefa.all_day = all_day
+    tarefa.hora_inicio = "" if all_day else hora_inicio
+    tarefa.hora_fim = "" if all_day else hora_fim
+
+    try:
+        tarefa.duracao_min = int(payload.get("duracao_min") or tarefa.duracao_min or 30)
+    except Exception:
+        tarefa.duracao_min = tarefa.duracao_min or 30
+
+    try:
+        prioridade = int(payload.get("prioridade") or tarefa.prioridade or 2)
+        tarefa.prioridade = prioridade if prioridade in (1, 2, 3) else 2
+    except Exception:
+        tarefa.prioridade = tarefa.prioridade or 2
+
+    tarefa.status = normalizar_status(payload.get("status") or tarefa.status or "pendente")
+    tarefa.tipo_evento = "prioriza" if preservar_origem_prioriza else "google"
+    tarefa.origem_evento = "prioriza" if preservar_origem_prioriza else "google"
+    tarefa.google_event_id = (payload.get("google_event_id") or tarefa.google_event_id or "").strip() or None
+    tarefa.google_html_link = (payload.get("google_html_link") or payload.get("link") or tarefa.google_html_link or "").strip() or None
+    tarefa.sincronizado_google = True
+    tarefa.ultima_sync_google = _parse_datetime_sync(payload.get("ultima_sync_google")) or datetime.now(UTC)
+    tarefa.ativo = bool(payload.get("ativo", True))
+
+    if not tarefa.all_day and tarefa.hora_inicio and not tarefa.hora_fim:
+        tarefa.hora_fim = calcular_hora_fim(tarefa.hora_inicio, tarefa.duracao_min)
+    return tarefa
+
+
+def criar_ou_atualizar_tarefa_importada_google(db: Session, payload: dict[str, Any]) -> Tarefa:
+    google_event_id = (payload.get("google_event_id") or "").strip()
+    existente = _buscar_tarefa_por_google_event_id(db, google_event_id)
+    if not existente:
+        existente = _buscar_tarefa_aproximada_google(
+            db,
+            titulo=(payload.get("titulo") or "").strip(),
+            data_ref=(payload.get("data") or "").strip(),
+            hora_inicio=(payload.get("hora_inicio") or "").strip(),
+            origem=(payload.get("origem") or "").strip(),
+            local=(payload.get("local") or "").strip(),
+        )
+
+    if existente:
+        tarefa = _aplicar_payload_google_em_tarefa(existente, payload)
+    else:
+        tarefa = _aplicar_payload_google_em_tarefa(
+            Tarefa(
+                titulo=(payload.get("titulo") or "").strip() or "(Sem título)",
+                data=(payload.get("data") or "").strip(),
+                ativo=True,
+            ),
+            payload,
+        )
+        db.add(tarefa)
+
+    db.commit()
+    db.refresh(tarefa)
+    return tarefa
+
+
 def normalizar_frequencia_interna(freq: str) -> str:
     if not freq:
         return "SEMANAL"
@@ -837,7 +995,7 @@ def sincronizar_tarefa_no_google(db: Session, tarefa: Tarefa):
         hora_inicio=tarefa.hora_inicio or "00:00",
         hora_fim=hora_fim or "23:59",
         descricao=tarefa.descricao or "",
-        local=tarefa.local or "",
+        local=tarefa.local or tarefa.origem or "",
         all_day=all_day,
     )
 
@@ -853,7 +1011,7 @@ def sincronizar_tarefa_no_google(db: Session, tarefa: Tarefa):
     tarefa.google_event_id = evento.get("id")
     tarefa.google_html_link = evento.get("htmlLink")
     tarefa.sincronizado_google = True
-    tarefa.origem_evento = "prioriza_google"
+    tarefa.origem_evento = "prioriza"
     tarefa.tipo_evento = "prioriza"
     tarefa.ultima_sync_google = datetime.now(UTC)
     db.commit()
@@ -1066,6 +1224,13 @@ def listar_eventos_google(
     db: Session = Depends(get_db),
 ):
     service = google_service(db)
+    tarefas_vinculadas = {
+        (row[0] or "").strip()
+        for row in db.query(Tarefa.google_event_id)
+        .filter(Tarefa.ativo == True, Tarefa.google_event_id.isnot(None))
+        .all()
+        if (row[0] or "").strip()
+    }
 
     if date_from and not validar_data_iso(date_from):
         raise HTTPException(status_code=400, detail="date_from inválida. Use YYYY-MM-DD.")
@@ -1088,7 +1253,56 @@ def listar_eventos_google(
         orderBy="startTime",
     ).execute()
 
-    return [normalizar_evento_google(event) for event in eventos.get("items", [])]
+    eventos_filtrados = []
+    for event in eventos.get("items", []):
+        event_id = (event.get("id") or "").strip()
+        if event_id and event_id in tarefas_vinculadas:
+            continue
+        eventos_filtrados.append(normalizar_evento_google(event))
+
+    return eventos_filtrados
+
+
+@app.post("/google/calendar/sync")
+def sincronizar_eventos_google_para_prioriza(
+    date_from: str = Query(None, description="Data inicial YYYY-MM-DD"),
+    date_to: str = Query(None, description="Data final YYYY-MM-DD"),
+    max_results: int = Query(100, ge=1, le=500),
+    db: Session = Depends(get_db),
+):
+    service = google_service(db)
+
+    if date_from and not validar_data_iso(date_from):
+        raise HTTPException(status_code=400, detail="date_from inválida. Use YYYY-MM-DD.")
+    if date_to and not validar_data_iso(date_to):
+        raise HTTPException(status_code=400, detail="date_to inválida. Use YYYY-MM-DD.")
+
+    if date_from:
+        time_min = f"{date_from}T00:00:00Z"
+    else:
+        time_min = datetime.now(UTC).date().isoformat() + "T00:00:00Z"
+
+    time_max = f"{date_to}T23:59:59Z" if date_to else None
+    eventos = service.events().list(
+        calendarId="primary",
+        timeMin=time_min,
+        timeMax=time_max,
+        maxResults=max_results,
+        singleEvents=True,
+        orderBy="startTime",
+    ).execute()
+
+    sincronizados: list[dict[str, Any]] = []
+    for event in eventos.get("items", []):
+        payload = normalizar_evento_google(event)
+        tarefa = criar_ou_atualizar_tarefa_importada_google(db, payload)
+        sincronizados.append(tarefa.to_dict())
+
+    return {
+        "ok": True,
+        "total": len(sincronizados),
+        "tarefas": sincronizados,
+    }
 
 
 @app.post("/google/calendar/events")
@@ -1319,6 +1533,12 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db)):
     status = q.get("status")
     sincronizar_google = q.get("sincronizar_google")
     all_day = q.get("all_day")
+    tipo_evento = q.get("tipo_evento")
+    origem_evento = q.get("origem_evento")
+    google_event_id = q.get("google_event_id")
+    google_html_link = q.get("google_html_link") or q.get("link")
+    sincronizado_google = q.get("sincronizado_google")
+    ultima_sync_google = q.get("ultima_sync_google")
 
     if not titulo:
         try:
@@ -1335,6 +1555,12 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db)):
             status = form.get("status")
             sincronizar_google = form.get("sincronizar_google")
             all_day = form.get("all_day")
+            tipo_evento = form.get("tipo_evento")
+            origem_evento = form.get("origem_evento")
+            google_event_id = form.get("google_event_id")
+            google_html_link = form.get("google_html_link") or form.get("link")
+            sincronizado_google = form.get("sincronizado_google")
+            ultima_sync_google = form.get("ultima_sync_google")
         except Exception:
             pass
 
@@ -1368,6 +1594,40 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db)):
             prioridade_val = 2
     except ValueError:
         prioridade_val = 2
+
+    origem_evento_val = (origem_evento or "").strip().lower()
+    tipo_evento_val = (tipo_evento or "").strip().lower()
+    google_event_id_val = (google_event_id or "").strip()
+    eh_importacao_google = bool(
+        google_event_id_val
+        or origem_evento_val == "google"
+        or tipo_evento_val == "google"
+        or _bool_from_value(sincronizado_google)
+    )
+
+    if eh_importacao_google:
+        payload_google = {
+            "titulo": titulo.strip(),
+            "descricao": (descricao or "").strip(),
+            "origem": (origem or "").strip(),
+            "local": (local or "").strip(),
+            "data": data_str.strip(),
+            "hora_inicio": "" if eh_all_day else hora_inicio,
+            "hora_fim": "" if eh_all_day else hora_fim,
+            "duracao_min": duracao_val,
+            "prioridade": prioridade_val,
+            "status": status or "pendente",
+            "tipo_evento": "google",
+            "origem_evento": "google",
+            "google_event_id": google_event_id_val,
+            "google_html_link": (google_html_link or "").strip(),
+            "sincronizado_google": True,
+            "ultima_sync_google": ultima_sync_google,
+            "all_day": eh_all_day,
+            "ativo": True,
+        }
+        tarefa_google = criar_ou_atualizar_tarefa_importada_google(db, payload_google)
+        return tarefa_google.to_dict()
 
     tarefa = Tarefa(
         titulo=titulo.strip(),
