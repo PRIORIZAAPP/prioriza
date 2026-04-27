@@ -1008,15 +1008,15 @@
         font-weight: 700;
       }
 
-      .settings-shell {
+      #screen-ajustes .settings-shell {
         display: flex;
         flex-direction: column;
         gap: 24px;
       }
-      .settings-hero {
+      #screen-ajustes .settings-hero {
         padding: 6px 2px 2px;
       }
-      .settings-hero h1 {
+      #screen-ajustes .settings-hero h1 {
         margin: 0;
         font-size: 28px;
         line-height: 1.05;
@@ -1024,35 +1024,35 @@
         color: #0f172a;
         letter-spacing: -0.03em;
       }
-      .settings-hero p {
+      #screen-ajustes .settings-hero p {
         margin: 10px 0 0;
         max-width: 520px;
         font-size: 13px;
         line-height: 1.55;
         color: #64748b;
       }
-      .settings-section {
+      #screen-ajustes .settings-section {
         padding-top: 20px;
         border-top: 1px solid rgba(148, 163, 184, 0.18);
       }
-      .settings-section:first-of-type {
+      #screen-ajustes .settings-section:first-of-type {
         padding-top: 0;
         border-top: none;
       }
-      .settings-section-head {
+      #screen-ajustes .settings-section-head {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 12px;
         margin-bottom: 14px;
       }
-      .settings-section-title {
+      #screen-ajustes .settings-section-title {
         display: flex;
         align-items: center;
         gap: 10px;
         min-width: 0;
       }
-      .settings-section-title h2 {
+      #screen-ajustes .settings-section-title h2 {
         margin: 0;
         font-size: 19px;
         line-height: 1.2;
@@ -1060,18 +1060,18 @@
         color: #0f172a;
         letter-spacing: -0.02em;
       }
-      .settings-section-title .icon-tema {
+      #screen-ajustes .settings-section-title .icon-tema {
         width: 20px;
         height: 20px;
         flex-shrink: 0;
       }
-      .settings-subtext {
+      #screen-ajustes .settings-subtext {
         margin: 0;
         font-size: 12px;
         color: #64748b;
         line-height: 1.45;
       }
-      .settings-panel {
+      #screen-ajustes .settings-panel {
         background: rgba(255,255,255,0.52);
         border: 1px solid rgba(255,255,255,0.7);
         border-radius: 22px;
@@ -1079,47 +1079,47 @@
         box-shadow: 0 12px 30px rgba(15,23,42,0.05);
         backdrop-filter: blur(6px);
       }
-      .settings-row {
+      #screen-ajustes .settings-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 14px;
       }
-      .settings-stack {
+      #screen-ajustes .settings-stack {
         display: flex;
         flex-direction: column;
         gap: 4px;
         min-width: 0;
       }
-      .settings-label {
+      #screen-ajustes .settings-label {
         font-size: 12px;
         font-weight: 700;
         letter-spacing: 0.03em;
         text-transform: uppercase;
         color: #94a3b8;
       }
-      .settings-value {
+      #screen-ajustes .settings-value {
         font-size: 16px;
         font-weight: 700;
         color: #0f172a;
         line-height: 1.25;
       }
-      .settings-actions {
+      #screen-ajustes .settings-actions {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
         margin-top: 14px;
       }
-      .settings-actions.compact {
+      #screen-ajustes .settings-actions.compact {
         margin-top: 0;
       }
-      .settings-note {
+      #screen-ajustes .settings-note {
         margin-top: 10px;
         font-size: 12px;
         color: #64748b;
         min-height: 16px;
       }
-      .settings-status-inline {
+      #screen-ajustes .settings-status-inline {
         display: inline-flex;
         align-items: center;
         gap: 6px;
@@ -1131,21 +1131,21 @@
         background: rgba(255,255,255,0.82);
         border: 1px solid rgba(148, 163, 184, 0.18);
       }
-      .settings-status-inline strong {
+      #screen-ajustes .settings-status-inline strong {
         color: #0f172a;
         font-weight: 700;
       }
-      .settings-backup-grid {
+      #screen-ajustes .settings-backup-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
       }
-      .settings-backup-grid .btn-outline,
-      .settings-backup-grid .backup-label {
+      #screen-ajustes .settings-backup-grid .btn-outline,
+      #screen-ajustes .settings-backup-grid .backup-label {
         justify-content: center;
         min-height: 44px;
       }
-      .backup-label {
+      #screen-ajustes .backup-label {
         border: 1px solid rgba(var(--cor-tema-rgb), 0.18);
         background: #ffffff;
         color: #0f172a;
@@ -1159,7 +1159,7 @@
         gap: 6px;
         transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
       }
-      .backup-label:hover {
+      #screen-ajustes .backup-label:hover {
         background: var(--cor-tema-suave);
         border-color: rgba(var(--cor-tema-rgb), 0.34);
         color: var(--cor-tema);
@@ -1251,10 +1251,10 @@
       }
 
       @media (max-width: 720px) {
-        .settings-shell {
+        #screen-ajustes .settings-shell {
           gap: 22px;
         }
-        .settings-backup-grid {
+        #screen-ajustes .settings-backup-grid {
           grid-template-columns: minmax(0, 1fr);
         }
         #screen-ajustes .appearance-options {
@@ -1264,7 +1264,7 @@
       }
 
       @media (max-width: 420px) {
-        .appearance-options {
+        #screen-ajustes .appearance-options {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
       }
