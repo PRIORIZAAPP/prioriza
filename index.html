@@ -4237,16 +4237,23 @@
         if(!titulo||!data){await modal.alerta("Preencha pelo menos Título e Data.","Atenção");return;}
         const btn=document.getElementById("btn-salvar-compromisso"); btn.disabled=true;
         try {
-          const res=await fetch(API+"/tarefas?"+new URLSearchParams({titulo,origem,data,hora_inicio:hora,duracao_min:duracao,prioridade}),{method:"POST",headers:authHeaders()});
+          const res=await fetch(API+"/tarefas?"+new URLSearchParams({
+            titulo,
+            origem,
+            data,
+            hora_inicio:hora,
+            duracao_min:duracao,
+            prioridade,
+            sincronizar_google: syncGoogle ? "true" : "false"
+          }),{method:"POST",headers:authHeaders()});
           if(!res.ok){await modal.alerta("Não foi possível salvar o compromisso.","Erro");return;}
+          const tarefaCriada = await res.json();
 
           let mensagemSucesso = "Compromisso salvo no PRIORIZA.";
           if(syncGoogle){
-            try {
-              await criarEventoGooglePeloFormulario({ titulo, data, hora, duracao, local: origem });
+            if (tarefaCriada?.google_event_id) {
               mensagemSucesso = "Compromisso salvo no PRIORIZA e enviado ao Google Agenda.";
-            } catch(e) {
-              console.error(e);
+            } else {
               mensagemSucesso = "Compromisso salvo no PRIORIZA, mas não foi possível enviar ao Google Agenda.";
             }
           }
