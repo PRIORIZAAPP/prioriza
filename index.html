@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
   <head>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -391,6 +391,7 @@
       .agenda-tag.pessoal   { background: #e0f2fe; color: #075985; }
       .agenda-tag.extra     { background: #fef3c7; color: #92400e; }
       .agenda-tag.concluida { background: #dcfce7; color: #166534; }
+      .agenda-tag.cancelada { background: #e5e7eb; color: #4b5563; }
       .agenda-tag.prio1     { background: #fee2e2; color: #b91c1c; }
       .agenda-tag.prio2     { background: #fef3c7; color: #92400e; }
       .agenda-tag.prio3     { background: #dcfce7; color: #166534; }
@@ -407,9 +408,23 @@
       .agenda-status-btn.pendente     { border-color: #9ca3af; background: #f9fafb; }
       .agenda-status-btn.em_andamento { border-color: #f97316; background: #fff7ed; }
       .agenda-status-btn.feito        { border-color: #22c55e; background: #22c55e; }
+      .agenda-status-btn.cancelada    { border-color: #9ca3af; background: #e5e7eb; }
       .agenda-status-btn .status-icon { display: none; }
       .agenda-status-btn.em_andamento .status-icon,
-      .agenda-status-btn.feito .status-icon { display: flex; }
+      .agenda-status-btn.feito .status-icon,
+      .agenda-status-btn.cancelada .status-icon { display: flex; }
+
+      .agenda-item.cancelada .agenda-titulo {
+        color: #6b7280;
+        text-decoration: line-through;
+      }
+      .agenda-item.cancelada .agenda-horario,
+      .agenda-item.cancelada .agenda-meta {
+        color: #9ca3af;
+      }
+      .agenda-item.cancelada {
+        opacity: 0.9;
+      }
 
       /* ── BOTTOM NAV ── */
       .bottom-nav-wrapper { position: sticky; bottom: 0; background: #0f172a; z-index: 20; }
@@ -2621,11 +2636,17 @@
       if (!s) return false;
       return ["concluida","concluído","reagendada_confirmada","reagendada_manual","feito"].includes(s.toLowerCase());
     }
+    function ehStatusCancelada(s) {
+      if (!s) return false;
+      return ["cancelada", "cancelado"].includes(s.toLowerCase());
+    }
     function ehStatusAndamento(s) {
       if (!s) return false; return ["em_andamento","andamento"].includes(s.toLowerCase());
     }
     function ehStatusPendenteOuAndamento(s) {
-      return !ehStatusFeito(s);
+      if (!s) return true;
+      const status = String(s).toLowerCase();
+      return status === "pendente" || status === "em_andamento" || status === "andamento";
     }
     function proximoStatus(s) {
       if (s==="pendente") return "em_andamento"; if (s==="em_andamento") return "feito"; return "pendente";
@@ -2667,7 +2688,7 @@
       const agora = new Date();
       const agoraMin = agora.getHours() * 60 + agora.getMinutes();
       const hoje = tarefas
-        .filter((t) => t.ativo !== false && dataEhHoje(t.data || ""))
+        .filter((t) => t.ativo !== false && !ehStatusCancelada(t.status) && dataEhHoje(t.data || ""))
         .map(normalizarTarefaInteligencia)
         .sort((a, b) => (a.inicio_min ?? 9999) - (b.inicio_min ?? 9999));
 
@@ -3028,6 +3049,7 @@
       if(sincronizado)                                 return `<span class="agenda-tag local-google">PRIORIZA + Google</span>`;
       if(origem==="PESSOAL")                          return `<span class="agenda-tag pessoal">Pessoal</span>`;
       if(status==="extra"||status==="imprevisto")    return `<span class="agenda-tag extra">Extra</span>`;
+      if(ehStatusCancelada(status))                    return `<span class="agenda-tag cancelada">Cancelada</span>`;
       if(ehStatusFeito(status))                        return `<span class="agenda-tag concluida">Concluída</span>`;
       if(prio==="1") return `<span class="agenda-tag prio1">Prio 1</span>`;
       if(prio==="2") return `<span class="agenda-tag prio2">Prio 2</span>`;
@@ -3040,6 +3062,7 @@
     function iconStatusInline(status) {
       if (status === "em_andamento") return `<svg class="status-icon" width="12" height="12" viewBox="0 0 256 256" fill="none" color="#f97316"><circle cx="128" cy="128" r="80" stroke="currentColor" stroke-width="24"/><line x1="128" y1="80" x2="128" y2="128" stroke="currentColor" stroke-width="24" stroke-linecap="round"/><line x1="128" y1="128" x2="164" y2="156" stroke="currentColor" stroke-width="24" stroke-linecap="round"/></svg>`;
       if (status === "feito")        return `<svg class="status-icon" width="12" height="12" viewBox="0 0 256 256" fill="none" color="white"><polyline points="48,128 104,184 208,72" stroke="currentColor" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      if (status === "cancelada")    return `<svg class="status-icon" width="12" height="12" viewBox="0 0 256 256" fill="none" color="#6b7280"><path d="M84 84l88 88M172 84l-88 88" stroke="currentColor" stroke-width="24" stroke-linecap="round"/></svg>`;
       return "";
     }
 
@@ -3055,6 +3078,24 @@
         if (idx !== -1) tarefasAgendaCache[idx].status = novoStatus;
         return true;
       } catch(e) { console.error("[PRIORIZA] atualizarStatusTarefa:", e); return false; }
+    }
+
+    async function cancelarTarefaAgenda(tarefa) {
+      const okCancelar = await modal.confirmar(
+        `Cancelar "${tarefa?.titulo || "este compromisso"}"?`,
+        "Cancelar compromisso"
+      );
+      if (!okCancelar) return false;
+      const ok = await atualizarStatusTarefa(tarefa.id, "cancelada");
+      if (!ok) {
+        await modal.alerta("Não foi possível cancelar o compromisso.", "Erro");
+        return false;
+      }
+      await carregarAgendaHoje();
+      await atualizarAgendaMesEDia();
+      await carregarPessoalLista();
+      await atualizarResumoBar();
+      return true;
     }
 
     // ── EXCLUIR TAREFA ────────────────────────────────────────────
@@ -3299,7 +3340,7 @@
           googleAgendaCache = [];
         }
 
-        const hojeItens2 = tarefasAgendaCache.filter(t => t.ativo !== false && dataEhHoje(t.data||""));
+        const hojeItens2 = tarefasAgendaCache.filter(t => t.ativo !== false && !ehStatusCancelada(t.status) && dataEhHoje(t.data||""));
         let feitos=0, andamento=0;
         hojeItens2.forEach(t => {
           if (ehStatusFeito(t.status)) feitos++;
@@ -3327,6 +3368,7 @@
           combinadaHoje.forEach(t => {
             const item = document.createElement("div");
             item.className = "agenda-item";
+            if (ehStatusCancelada(t.status)) item.classList.add("cancelada");
 
             if ((t.tipo_evento || "") === "google") {
               const marcador = document.createElement("div");
@@ -3396,6 +3438,17 @@
               link.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M104 152l72-72" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M136 80h40v40" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 136v48a8 8 0 0 1-8 8H72a8 8 0 0 1-8-8V112a8 8 0 0 1 8-8h48" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
               item.appendChild(link);
             } else if ((t.tipo_evento || "") !== "google") {
+              const btnCancelar = document.createElement("button");
+              btnCancelar.className = "agenda-icon-btn";
+              btnCancelar.style.background = "#f3f4f6";
+              btnCancelar.style.color = "#6b7280";
+              btnCancelar.title = "Cancelar compromisso";
+              btnCancelar.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M80 80l96 96M176 80l-96 96" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
+              btnCancelar.addEventListener("click", async () => {
+                await cancelarTarefaAgenda(t);
+              });
+              item.appendChild(btnCancelar);
+
               // Botão editar para tarefas locais na aba Hoje
               const btnEdit = document.createElement("button");
               btnEdit.className = "agenda-icon-btn";
@@ -3434,7 +3487,7 @@
     // ── RECALCULAR RESUMO A PARTIR DO CACHE (sem chamada de servidor) ──
     async function recalcularResumoBar() {
       // Conta a partir do cache local (já atualizado pela bolinha)
-      const hojeItens = tarefasAgendaCache.filter(t => t.ativo !== false && dataEhHoje(t.data || ""));
+      const hojeItens = tarefasAgendaCache.filter(t => t.ativo !== false && !ehStatusCancelada(t.status) && dataEhHoje(t.data || ""));
       let feitos = 0, andamento = 0;
       hojeItens.forEach(t => {
         if (ehStatusFeito(t.status))    feitos++;
@@ -3959,11 +4012,13 @@
       conteudo.className = "pessoal-conteudo";
 
       const titulo = document.createElement("div");
-      titulo.className = "pessoal-titulo" + (ehStatusFeito(t.status) ? " pessoal-status-feito" : "");
+      titulo.className = "pessoal-titulo" + (ehStatusFeito(t.status) || ehStatusCancelada(t.status) ? " pessoal-status-feito" : "");
       titulo.textContent = t.titulo;
 
       const tags = document.createElement("div");
-      tags.innerHTML = `<span class="agenda-tag pessoal">Pessoal</span>`;
+      tags.innerHTML = ehStatusCancelada(t.status)
+        ? `<span class="agenda-tag cancelada">Cancelada</span>`
+        : `<span class="agenda-tag pessoal">Pessoal</span>`;
 
       conteudo.appendChild(titulo);
       conteudo.appendChild(tags);
@@ -4025,6 +4080,15 @@
         }
       });
 
+      const btnCancelar = document.createElement("button");
+      btnCancelar.className = "pessoal-btn";
+      btnCancelar.type = "button";
+      btnCancelar.title = "Cancelar";
+      btnCancelar.textContent = "✕";
+      btnCancelar.addEventListener("click", async () => {
+        await cancelarTarefaAgenda(t);
+      });
+
       const btnExcluir = document.createElement("button");
       btnExcluir.className = "pessoal-btn excluir";
       btnExcluir.type = "button";
@@ -4039,6 +4103,7 @@
       });
 
       acoes.appendChild(btnFeito);
+      acoes.appendChild(btnCancelar);
       acoes.appendChild(btnEditar);
       acoes.appendChild(btnExcluir);
 
@@ -4213,6 +4278,7 @@
       lista.innerHTML="";
       itensDoDia.forEach(t=>{
         const item=document.createElement("div"); item.className="agenda-item";
+        if (ehStatusCancelada(t.status)) item.classList.add("cancelada");
         const hor=document.createElement("div"); hor.className="agenda-horario"; hor.textContent=t.hora_inicio||"--:--";
         const con=document.createElement("div"); con.className="agenda-conteudo"; con.style.flex="1";
         const ti=document.createElement("div"); ti.className="agenda-titulo"; ti.textContent=t.titulo;
@@ -4242,6 +4308,17 @@
             item.appendChild(link);
           }
         } else {
+          const btnCancelCal = document.createElement("button");
+          btnCancelCal.className = "agenda-icon-btn";
+          btnCancelCal.style.background = "#f3f4f6";
+          btnCancelCal.style.color = "#6b7280";
+          btnCancelCal.title = "Cancelar compromisso";
+          btnCancelCal.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M80 80l96 96M176 80l-96 96" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
+          btnCancelCal.addEventListener("click", async()=>{
+            await cancelarTarefaAgenda(t);
+          });
+          item.appendChild(btnCancelCal);
+
           // Botão editar na aba Agenda (calendário)
           const btnEditCal = document.createElement("button");
           btnEditCal.className = "agenda-icon-btn";
@@ -4756,7 +4833,7 @@
       const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
 
       const proximasTarefas = tarefas.filter(t => {
-        if (!t.ativo || t.status === "feito") return false;
+        if (!t.ativo || ehStatusFeito(t.status) || ehStatusCancelada(t.status)) return false;
         if (t.data !== hojeISO) return false;
         if (!t.hora_inicio) return false;
         const [h, m] = t.hora_inicio.split(":").map(Number);
@@ -4789,7 +4866,7 @@
 
       // Aviso 1h antes
       const em1hora = tarefas.filter(t => {
-        if (!t.ativo || t.status === "feito") return false;
+        if (!t.ativo || ehStatusFeito(t.status) || ehStatusCancelada(t.status)) return false;
         if (t.data !== hojeISO) return false;
         if (!t.hora_inicio) return false;
         const [h, m] = t.hora_inicio.split(":").map(Number);
@@ -4817,9 +4894,9 @@
       localStorage.setItem(chave, "1");
 
       const hojeISO = dataHojeISO();
-      const tarefasHoje = tarefas.filter(t => t.ativo && t.data === hojeISO);
+      const tarefasHoje = tarefas.filter(t => t.ativo && t.data === hojeISO && !ehStatusCancelada(t.status));
       const chkHoje = checklist.filter(i => i.ativo && i.pode_mostrar_hoje);
-      const altaPrio = tarefasHoje.filter(t => t.prioridade === 1);
+      const altaPrio = tarefasHoje.filter(t => t.prioridade === 1 && !ehStatusFeito(t.status));
       const diaSemana = diaSemanaTexto(agora.getDay());
 
       // Escolhe mensagem baseada no contexto
@@ -4858,15 +4935,15 @@
       localStorage.setItem(chave, "1");
 
       const hojeISO = dataHojeISO();
-      const tarefasHoje = tarefas.filter(t => t.ativo && t.data === hojeISO);
+      const tarefasHoje = tarefas.filter(t => t.ativo && t.data === hojeISO && !ehStatusCancelada(t.status));
       const feitas = tarefasHoje.filter(t => t.status === "feito").length;
-      const pendentes = tarefasHoje.filter(t => t.status === "pendente").length;
+      const pendentes = tarefasHoje.filter(t => ehStatusPendenteOuAndamento(t.status)).length;
       const total = tarefasHoje.length;
 
       // Amanhã
       const amanha = new Date(); amanha.setDate(amanha.getDate() + 1);
       const amanhaISO = dateToISO(amanha);
-      const tarefasAmanha = tarefas.filter(t => t.ativo && t.data === amanhaISO);
+      const tarefasAmanha = tarefas.filter(t => t.ativo && t.data === amanhaISO && !ehStatusCancelada(t.status));
 
       if (total === 0) {
         enviarNotificacao("🌙 Encerrando o dia", "Nenhum compromisso hoje. Descanse bem!");
@@ -4961,7 +5038,7 @@
       if (localStorage.getItem(chave)) return;
 
       const hojeISO = dataHojeISO();
-      const altaPrio = tarefas.filter(t => t.ativo && t.data === hojeISO && t.prioridade === 1 && t.status !== "feito");
+      const altaPrio = tarefas.filter(t => t.ativo && t.data === hojeISO && t.prioridade === 1 && !ehStatusFeito(t.status) && !ehStatusCancelada(t.status));
       if (altaPrio.length === 0) return;
       localStorage.setItem(chave, "1");
 
@@ -4983,7 +5060,7 @@
       if (localStorage.getItem(chave)) return;
 
       const hojeISO = dataHojeISO();
-      const pendentes = tarefas.filter(t => t.ativo && t.data === hojeISO && t.status !== "feito");
+      const pendentes = tarefas.filter(t => t.ativo && t.data === hojeISO && !ehStatusFeito(t.status) && !ehStatusCancelada(t.status));
       localStorage.setItem(chave, "1");
 
       if (pendentes.length === 0) {
