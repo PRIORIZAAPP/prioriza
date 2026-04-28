@@ -274,11 +274,15 @@
         align-items: center;
         justify-content: center;
         padding: 24px;
-        background: linear-gradient(
-          180deg,
-          #ffffff 0%,
-          color-mix(in srgb, var(--cor-tema-clara) 55%, white 45%) 100%
-        );
+        background:
+          linear-gradient(
+            100deg,
+            #ffffff 0%,
+            #fbfcfe 18%,
+            #eef3fa 36%,
+            color-mix(in srgb, var(--cor-tema-clara) 68%, white 32%) 60%,
+            color-mix(in srgb, var(--cor-tema) 18%, white 82%) 100%
+          );
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
@@ -298,12 +302,12 @@
         align-items: center;
         gap: 14px;
         text-align: center;
-        animation: splashFadeIn 320ms ease both;
       }
       .splash-logo {
         width: min(240px, 62vw);
         height: auto;
         display: block;
+        animation: splashFadeIn 320ms ease both;
       }
       .splash-slogan {
         margin: 0;
@@ -312,6 +316,12 @@
         font-weight: 600;
         color: #475569;
         letter-spacing: 0.01em;
+        opacity: 0;
+        transform: translateY(8px);
+        filter: blur(4px);
+      }
+      .splash-screen.is-visible .splash-slogan {
+        animation: splashSloganIn 520ms ease 220ms forwards;
       }
       @keyframes splashFadeIn {
         from {
@@ -321,6 +331,18 @@
         to {
           opacity: 1;
           transform: translateY(0);
+        }
+      }
+      @keyframes splashSloganIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+          filter: blur(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+          filter: blur(0);
         }
       }
       .agenda-item.destacada {
@@ -2671,7 +2693,7 @@
       splash.classList.remove("is-hiding");
       splash.classList.add("is-visible");
 
-      const duracao = 800 + Math.floor(Math.random() * 401);
+      const duracao = 1800;
       window.setTimeout(() => {
         splash.classList.add("is-hiding");
         splash.classList.remove("is-visible");
