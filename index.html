@@ -185,69 +185,92 @@
       .app-main-column { min-width: 0; width: 100%; }
       .desktop-sidebar,
       .desktop-rail { display: none; }
-      .inteligencia-card {
-        padding: 14px 16px;
+      .agora-card {
+        padding: 12px 14px;
         border: 1px solid rgba(var(--cor-tema-rgb), 0.12);
         background: linear-gradient(180deg, #ffffff 0%, rgba(var(--cor-tema-rgb), 0.04) 100%);
       }
-      .inteligencia-topo {
+      .agora-topo {
         display: flex;
         align-items: center;
         gap: 8px;
         margin-bottom: 8px;
       }
-      .inteligencia-icone {
+      .agora-icone {
         width: 16px;
         height: 16px;
         color: var(--cor-tema);
         flex-shrink: 0;
       }
-      .inteligencia-titulo {
+      .agora-titulo {
         margin: 0;
         font-size: 12px;
         font-weight: 700;
         letter-spacing: 0.02em;
         color: var(--cor-tema-escura);
       }
-      .inteligencia-frase {
-        margin: 0;
-        font-size: 17px;
-        line-height: 1.3;
-        font-weight: 700;
-        color: #0f172a;
-      }
-      .inteligencia-sugestao {
-        margin-top: 10px;
-        display: flex;
-        align-items: flex-start;
-        gap: 8px;
-        min-height: 18px;
-      }
-      .inteligencia-sugestao-label {
-        flex-shrink: 0;
+      .agora-status {
+        margin: 0 0 4px 0;
         font-size: 12px;
         font-weight: 700;
         color: var(--cor-tema-escura);
       }
-      .inteligencia-sugestao-texto {
-        font-size: 13px;
-        line-height: 1.45;
+      .agora-status.atrasado {
+        color: #b45309;
+      }
+      .agora-status.proximo {
         color: #475569;
       }
-      .inteligencia-sugestao.vazia .inteligencia-sugestao-texto {
-        color: #64748b;
+      .agora-item-titulo {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.3;
+        font-weight: 700;
+        color: #0f172a;
       }
-      .inteligencia-erro {
-        margin-top: 8px;
+      .agora-horario {
+        margin-top: 4px;
         font-size: 12px;
         color: #64748b;
+        font-weight: 600;
       }
-      .inteligencia-head,
-      .inteligencia-metricas,
-      .inteligencia-sugestoes-titulo,
-      .inteligencia-lista,
-      .inteligencia-badge {
-        display: none;
+      .agora-acoes {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .agora-btn {
+        border-radius: 999px;
+        border: 1px solid #dbe2eb;
+        background: #ffffff;
+        color: #334155;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 7px 12px;
+        cursor: pointer;
+        transition: all 0.18s ease;
+      }
+      .agora-btn:hover {
+        border-color: rgba(var(--cor-tema-rgb), 0.2);
+        background: #f8fafc;
+      }
+      .agora-btn.primario {
+        border-color: rgba(var(--cor-tema-rgb), 0.18);
+        background: var(--cor-tema-suave);
+        color: var(--cor-tema-escura);
+      }
+      .agora-btn.suave {
+        color: #6b7280;
+      }
+      .agora-card[hidden] {
+        display: none !important;
+      }
+      .agenda-item.destacada {
+        border-radius: 12px;
+        background: rgba(var(--cor-tema-rgb), 0.08);
+        box-shadow: inset 0 0 0 1px rgba(var(--cor-tema-rgb), 0.14);
+        transition: background 0.25s ease, box-shadow 0.25s ease;
       }
 
       @media (max-width: 1099px) {
@@ -1674,19 +1697,18 @@
 
         <!-- ══ ABA HOJE ══ -->
         <div class="screen active" id="screen-hoje">
-          <div class="card inteligencia-card" id="card-inteligencia-dia">
-            <div class="inteligencia-topo">
-              <svg class="inteligencia-icone" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 3L13.9 8.1L19 10L13.9 11.9L12 17L10.1 11.9L5 10L10.1 8.1L12 3Z" fill="currentColor"/>
+          <div class="card agora-card" id="card-agora" hidden>
+            <div class="agora-topo">
+              <svg class="agora-icone" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/>
               </svg>
-              <h2 class="inteligencia-titulo">Visão do dia</h2>
+              <h2 class="agora-titulo">Agora</h2>
             </div>
-            <div class="inteligencia-frase" id="inteligencia-frase">Carregando visão do dia...</div>
-            <div class="inteligencia-sugestao vazia" id="inteligencia-sugestao-wrap">
-              <div class="inteligencia-sugestao-label" id="inteligencia-sugestao-label">💡 Sugestão</div>
-              <div class="inteligencia-sugestao-texto" id="inteligencia-sugestoes">Buscando o melhor próximo passo...</div>
-            </div>
-            <div class="inteligencia-erro" id="inteligencia-erro" style="display:none"></div>
+            <div class="agora-status" id="agora-status"></div>
+            <div class="agora-item-titulo" id="agora-item-titulo"></div>
+            <div class="agora-horario" id="agora-horario"></div>
+            <div class="agora-acoes" id="agora-acoes"></div>
           </div>
 
           <div class="card">
@@ -2217,7 +2239,7 @@
           <div class="desktop-panel">
             <div class="desktop-panel-kicker">Panorama</div>
             <div class="desktop-panel-title" data-current-date>--/-- · --:--h</div>
-            <div class="desktop-panel-text" data-resumo-espelho>Carregando visão do dia...</div>
+            <div class="desktop-panel-text" data-resumo-espelho>Carregando resumo...</div>
           </div>
 
           <div class="desktop-panel">
@@ -2666,7 +2688,7 @@
       return `${h}:${m}`;
     }
 
-    function normalizarTarefaInteligencia(tarefa) {
+    function normalizarTarefaAgenda(tarefa) {
       const inicio = horaParaMinutos(tarefa?.hora_inicio);
       const duracao = Math.max(1, Number(tarefa?.duracao_min || 30));
       const fim = inicio === null ? null : inicio + duracao;
@@ -2677,216 +2699,137 @@
       };
     }
 
-    function calcularResumoTextoInteligencia({ total_tarefas, pendentes, atrasadas, conflitos }) {
-      const peso = (conflitos?.length || 0) * 2 + (atrasadas?.length || 0) * 2 + pendentes + total_tarefas;
-      if (peso >= 10) return "Dia pesado";
-      if (peso >= 5) return "Dia moderado";
-      return "Dia tranquilo";
-    }
-
-    function calcularInteligenciaLocal(tarefas) {
-      const agora = new Date();
-      const agoraMin = agora.getHours() * 60 + agora.getMinutes();
-      const hoje = tarefas
-        .filter((t) => t.ativo !== false && !ehStatusCancelada(t.status) && dataEhHoje(t.data || ""))
-        .map(normalizarTarefaInteligencia)
+    function obterEstadoAgora(tarefas) {
+      const agoraMin = new Date().getHours() * 60 + new Date().getMinutes();
+      const hoje = (Array.isArray(tarefas) ? tarefas : [])
+        .filter((t) => t.ativo !== false && !ehStatusFeito(t.status) && !ehStatusCancelada(t.status) && dataEhHoje(t.data || ""))
+        .map(normalizarTarefaAgenda)
         .sort((a, b) => (a.inicio_min ?? 9999) - (b.inicio_min ?? 9999));
 
-      const concluidas = hoje.filter((t) => ehStatusFeito(t.status)).length;
-      const emAndamento = hoje.filter((t) => ehStatusAndamento(t.status)).length;
-      const pendentes = hoje.filter((t) => ehStatusPendenteOuAndamento(t.status)).length;
+      const emAndamento = hoje.find((t) => t.inicio_min !== null && t.fim_min !== null && t.inicio_min <= agoraMin && agoraMin <= t.fim_min);
+      if (emAndamento) return { tipo: "em_andamento", tarefa: emAndamento };
 
-      const atrasadas = hoje
-        .filter((t) => ehStatusPendenteOuAndamento(t.status) && t.inicio_min !== null && t.inicio_min < agoraMin)
-        .map((t) => ({
-          id: t.id,
-          titulo: t.titulo || "Tarefa sem título",
-          hora_inicio: t.hora_inicio || "--:--",
-        }));
+      const atrasada = hoje.find((t) => t.inicio_min !== null && t.inicio_min < agoraMin);
+      if (atrasada) return { tipo: "atrasada", tarefa: atrasada };
 
-      const alta_prioridade_pendente = hoje
-        .filter((t) => ehStatusPendenteOuAndamento(t.status) && String(t.prioridade || "") === "1")
-        .map((t) => ({
-          id: t.id,
-          titulo: t.titulo || "Tarefa sem título",
-          hora_inicio: t.hora_inicio || "--:--",
-        }));
+      const proxima = hoje.find((t) => t.inicio_min !== null && t.inicio_min > agoraMin);
+      if (proxima) return { tipo: "proxima", tarefa: proxima, faltamMin: proxima.inicio_min - agoraMin };
 
-      const conflitos = [];
-      for (let i = 0; i < hoje.length; i += 1) {
-        const atual = hoje[i];
-        if (atual.inicio_min === null || atual.fim_min === null) continue;
-        for (let j = i + 1; j < hoje.length; j += 1) {
-          const proxima = hoje[j];
-          if (proxima.inicio_min === null || proxima.fim_min === null) continue;
-          if (proxima.inicio_min >= atual.fim_min) break;
-          if (atual.inicio_min < proxima.fim_min && proxima.inicio_min < atual.fim_min) {
-            conflitos.push({
-              inicio: minutosParaHora(Math.max(atual.inicio_min, proxima.inicio_min)),
-              fim: minutosParaHora(Math.min(atual.fim_min, proxima.fim_min)),
-              tarefas: [atual.titulo || "Tarefa sem título", proxima.titulo || "Tarefa sem título"],
-            });
-          }
+      return null;
+    }
+
+    async function reagendarTarefaAgenda(tarefa) {
+      const novaHora = await modal.perguntar("Novo horário (HH:MM):", "Reagendar compromisso", tarefa?.hora_inicio || "08:00");
+      if (novaHora === null || !String(novaHora).trim()) return false;
+      try {
+        const params = new URLSearchParams({
+          titulo: tarefa?.titulo || "",
+          hora_inicio: String(novaHora).trim(),
+          descricao: tarefa?.descricao || "",
+        });
+        const res = await fetch(API + "/tarefas/" + tarefa.id + "?" + params.toString(), {
+          method: "PUT",
+          headers: authHeaders(),
+        });
+        if (!res.ok) {
+          await modal.alerta("Não foi possível reagendar o compromisso.", "Erro");
+          return false;
         }
-      }
-
-      const sugestoes = [];
-      if (conflitos.length) {
-        sugestoes.push(`Revisar conflito entre ${conflitos[0].inicio} e ${conflitos[0].fim}`);
-      }
-      if (atrasadas.length) {
-        sugestoes.push(`Reagendar ou concluir "${atrasadas[0].titulo}"`);
-      }
-      if (alta_prioridade_pendente.length) {
-        sugestoes.push(`Priorizar "${alta_prioridade_pendente[0].titulo}"`);
-      }
-      if (!sugestoes.length) {
-        sugestoes.push("Agenda equilibrada. Siga no foco do dia.");
-      }
-
-      return {
-        status: "ok",
-        data: dataHojeISO(),
-        resumo_texto: calcularResumoTextoInteligencia({ total_tarefas: hoje.length, pendentes, atrasadas, conflitos }),
-        total_tarefas: hoje.length,
-        pendentes,
-        em_andamento: emAndamento,
-        concluidas,
-        atrasadas,
-        alta_prioridade_pendente,
-        conflitos,
-        sugestoes,
-      };
-    }
-
-    async function obterInteligenciaDia() {
-      try {
-        const resposta = await fetch(API + "/agenda/inteligencia", { headers: authHeaders() });
-        if (!resposta.ok) throw new Error("HTTP " + resposta.status);
-        const payload = await resposta.json();
-        if (payload?.status !== "ok") throw new Error("Payload inválido");
-        return payload;
-      } catch (erro) {
-        const tarefas = tarefasAgendaCache.length
-          ? tarefasAgendaCache
-          : await (async () => {
-              const res = await fetch(API + "/tarefas", { headers: authHeaders() });
-              if (!res.ok) throw new Error("HTTP " + res.status);
-              const lista = await res.json();
-              tarefasAgendaCache = Array.isArray(lista) ? lista : [];
-              return tarefasAgendaCache;
-            })();
-        return calcularInteligenciaLocal(tarefas);
+        await carregarAgendaHoje();
+        await atualizarAgendaMesEDia();
+        return true;
+      } catch (e) {
+        console.error(e);
+        await modal.alerta("Erro de conexão.", "Erro");
+        return false;
       }
     }
 
-    function garantirEstruturaInteligenciaDia() {
-      const card = document.getElementById("card-inteligencia-dia");
-      if (!card) return null;
-      if (card.dataset.cleanUi === "true") return card;
-
-      card.innerHTML = `
-        <div class="inteligencia-topo">
-          <svg class="inteligencia-icone" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 3L13.9 8.1L19 10L13.9 11.9L12 17L10.1 11.9L5 10L10.1 8.1L12 3Z" fill="currentColor"/>
-          </svg>
-          <h2 class="inteligencia-titulo">Visão do dia</h2>
-        </div>
-        <div class="inteligencia-frase" id="inteligencia-frase">Carregando visão do dia...</div>
-        <div class="inteligencia-sugestao vazia" id="inteligencia-sugestao-wrap">
-          <div class="inteligencia-sugestao-label" id="inteligencia-sugestao-label">💡 Sugestão</div>
-          <div class="inteligencia-sugestao-texto" id="inteligencia-sugestoes">Buscando o melhor próximo passo...</div>
-        </div>
-        <div class="inteligencia-erro" id="inteligencia-erro" style="display:none"></div>
-      `;
-      card.dataset.cleanUi = "true";
-      return card;
+    function destacarTarefaAgora(tarefaId) {
+      const alvo = document.querySelector(`.agenda-item[data-task-id="${String(tarefaId)}"]`);
+      if (!alvo) return;
+      alvo.scrollIntoView({ behavior: "smooth", block: "center" });
+      alvo.classList.add("destacada");
+      setTimeout(() => alvo.classList.remove("destacada"), 1800);
     }
 
-    function renderizarInteligenciaDia(payload) {
-      const card = garantirEstruturaInteligenciaDia();
-      const frase = document.getElementById("inteligencia-frase");
-      const sugestaoWrap = document.getElementById("inteligencia-sugestao-wrap");
-      const sugestaoLabel = document.getElementById("inteligencia-sugestao-label");
-      const sugestoesEl = document.getElementById("inteligencia-sugestoes");
-      const erroEl = document.getElementById("inteligencia-erro");
-      if (!card || !frase || !sugestaoWrap || !sugestaoLabel || !sugestoesEl || !erroEl) return;
-
-      card.style.display = "";
-      erroEl.style.display = "none";
-      erroEl.textContent = "";
-
-      const atrasadas = Array.isArray(payload?.atrasadas) ? payload.atrasadas : [];
-      const conflitos = Array.isArray(payload?.conflitos) ? payload.conflitos : [];
-      const prioridadesAltas = Array.isArray(payload?.alta_prioridade_pendente) ? payload.alta_prioridade_pendente : [];
-      const sugestoes = Array.isArray(payload?.sugestoes) ? payload.sugestoes.filter(Boolean) : [];
-
-      let frasePrincipal = "Tudo sob controle hoje";
-      if (atrasadas.length) {
-        frasePrincipal = "Você tem tarefa atrasada";
-      } else if (conflitos.length) {
-        frasePrincipal = "Agenda sobrecarregada";
-      } else if (prioridadesAltas.length) {
-        frasePrincipal = "Alta prioridade pendente";
-      } else if (typeof payload?.resumo_texto === "string" && payload.resumo_texto.trim()) {
-        const resumo = payload.resumo_texto.trim();
-        frasePrincipal = /^dia tranquilo$/i.test(resumo) ? "Tudo sob controle hoje" : resumo;
-      }
-
-      const tarefaAtrasada = atrasadas[0];
-      const tarefaPrioritaria = prioridadesAltas[0];
-      const conflito = conflitos[0];
-
-      let sugestaoLabelTexto = "💡 Sugestão";
-      let sugestaoTexto = "Continue no ritmo";
-
-      if (tarefaAtrasada?.titulo) {
-        sugestaoTexto = `Reagende ou finalize "${tarefaAtrasada.titulo}"`;
-      } else if (tarefaPrioritaria?.titulo) {
-        sugestaoLabelTexto = "💡 Foque em";
-        sugestaoTexto = `"${tarefaPrioritaria.titulo}"`;
-      } else if (conflito) {
-        const inicio = conflito?.inicio || conflito?.hora_inicio || conflito?.horaInicio || conflito?.de;
-        const fim = conflito?.fim || conflito?.hora_fim || conflito?.horaFim || conflito?.ate;
-        sugestaoTexto = inicio && fim
-          ? `Revise o conflito entre ${inicio} e ${fim}`
-          : "Revise os horários da agenda";
-      } else if (sugestoes.length) {
-        sugestaoTexto = String(sugestoes[0]).trim();
-      }
-
-      frase.textContent = frasePrincipal;
-      sugestaoLabel.textContent = sugestaoLabelTexto;
-      sugestoesEl.textContent = sugestaoTexto;
-      sugestaoWrap.classList.toggle("vazia", sugestaoTexto === "Continue no ritmo");
+    function criarBotaoAgora(texto, classe, onClick) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `agora-btn ${classe || ""}`.trim();
+      btn.textContent = texto;
+      btn.addEventListener("click", onClick);
+      return btn;
     }
 
-    async function carregarInteligenciaDia() {
-      const card = garantirEstruturaInteligenciaDia();
-      const frase = document.getElementById("inteligencia-frase");
-      const sugestaoWrap = document.getElementById("inteligencia-sugestao-wrap");
-      const sugestaoLabel = document.getElementById("inteligencia-sugestao-label");
-      const sugestoesEl = document.getElementById("inteligencia-sugestoes");
-      const erroEl = document.getElementById("inteligencia-erro");
-      if (!card || !frase || !sugestaoWrap || !sugestaoLabel || !sugestoesEl || !erroEl) return;
+    function renderizarAgoraCard() {
+      const card = document.getElementById("card-agora");
+      const statusEl = document.getElementById("agora-status");
+      const tituloEl = document.getElementById("agora-item-titulo");
+      const horarioEl = document.getElementById("agora-horario");
+      const acoesEl = document.getElementById("agora-acoes");
+      if (!card || !statusEl || !tituloEl || !horarioEl || !acoesEl) return;
 
-      frase.textContent = "Carregando visão do dia...";
-      sugestaoLabel.textContent = "💡 Sugestão";
-      sugestoesEl.textContent = "Buscando o melhor próximo passo...";
-      sugestaoWrap.classList.add("vazia");
-      erroEl.style.display = "none";
-      try {
-        const payload = await obterInteligenciaDia();
-        renderizarInteligenciaDia(payload);
-      } catch (erro) {
-        console.error("[PRIORIZA] carregarInteligenciaDia:", erro);
-        frase.textContent = "Tudo sob controle hoje";
-        sugestaoLabel.textContent = "💡 Sugestão";
-        sugestoesEl.textContent = "Continue no ritmo";
-        sugestaoWrap.classList.add("vazia");
-        erroEl.style.display = "block";
-        erroEl.textContent = "Não foi possível carregar a visão do dia.";
+      const estado = obterEstadoAgora(tarefasAgendaCache);
+      if (!estado?.tarefa) {
+        card.hidden = true;
+        return;
       }
+
+      const tarefa = estado.tarefa;
+      card.hidden = false;
+      acoesEl.innerHTML = "";
+      statusEl.className = "agora-status";
+      tituloEl.textContent = tarefa.titulo || "Compromisso sem título";
+      const horaFim = tarefa.hora_fim || (tarefa.fim_min !== null ? minutosParaHora(tarefa.fim_min) : "");
+      horarioEl.textContent = horaFim ? `${tarefa.hora_inicio || "--:--"} às ${horaFim}` : (tarefa.hora_inicio || "--:--");
+
+      if (estado.tipo === "em_andamento") {
+        statusEl.textContent = "Em andamento";
+        acoesEl.appendChild(criarBotaoAgora("Iniciar", "primario", async () => {
+          await atualizarStatusTarefa(tarefa.id, "em_andamento");
+          await carregarAgendaHoje();
+          await atualizarAgendaMesEDia();
+          await carregarPessoalLista();
+          await atualizarResumoBar();
+        }));
+        acoesEl.appendChild(criarBotaoAgora("Concluir", "primario", async () => {
+          await atualizarStatusTarefa(tarefa.id, "feito");
+          await carregarAgendaHoje();
+          await atualizarAgendaMesEDia();
+          await carregarPessoalLista();
+          await atualizarResumoBar();
+        }));
+        acoesEl.appendChild(criarBotaoAgora("Cancelar", "suave", async () => {
+          await cancelarTarefaAgenda(tarefa);
+        }));
+        return;
+      }
+
+      if (estado.tipo === "atrasada") {
+        statusEl.textContent = "Atrasado";
+        statusEl.classList.add("atrasado");
+        acoesEl.appendChild(criarBotaoAgora("Iniciar", "primario", async () => {
+          await atualizarStatusTarefa(tarefa.id, "em_andamento");
+          await carregarAgendaHoje();
+          await atualizarAgendaMesEDia();
+          await carregarPessoalLista();
+          await atualizarResumoBar();
+        }));
+        acoesEl.appendChild(criarBotaoAgora("Reagendar", "", async () => {
+          await reagendarTarefaAgenda(tarefa);
+        }));
+        acoesEl.appendChild(criarBotaoAgora("Cancelar", "suave", async () => {
+          await cancelarTarefaAgenda(tarefa);
+        }));
+        return;
+      }
+
+      statusEl.textContent = `Próximo em ${estado.faltamMin} min`;
+      statusEl.classList.add("proximo");
+      acoesEl.appendChild(criarBotaoAgora("Preparar", "", () => {
+        destacarTarefaAgora(tarefa.id);
+      }));
     }
 
     // ── LOCAIS ───────────────────────────────────────────────────
@@ -3368,6 +3311,7 @@
           combinadaHoje.forEach(t => {
             const item = document.createElement("div");
             item.className = "agenda-item";
+            if (t.id !== undefined && t.id !== null) item.dataset.taskId = String(t.id);
             if (ehStatusCancelada(t.status)) item.classList.add("cancelada");
 
             if ((t.tipo_evento || "") === "google") {
@@ -3392,7 +3336,7 @@
                 const ok = await atualizarStatusTarefa(t.id, novo);
                 if (!ok) console.warn("[PRIORIZA] PUT falhou para tarefa", t.id);
                 await recalcularResumoBar();
-                await carregarInteligenciaDia();
+                renderizarAgoraCard();
               });
               item.appendChild(bolinha);
             }
@@ -3477,7 +3421,7 @@
             agendaDiv.appendChild(item);
           });
         }
-        await carregarInteligenciaDia();
+        renderizarAgoraCard();
       } catch(e) {
         console.error("[PRIORIZA] carregarAgendaHoje:", e);
         agendaDiv.innerHTML = `<small style="color:#ef4444">⚠️ Erro ao carregar agenda. <button onclick="carregarAgendaHoje()" style="color:var(--cor-tema);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline">Tentar novamente</button></small>`;
@@ -3512,7 +3456,7 @@
     async function atualizarResumoBar() {
       // Usa cache para tarefas + servidor para checklist
       await recalcularResumoBar();
-      await carregarInteligenciaDia();
+      renderizarAgoraCard();
     }
 
     // ── NOVA TAREFA RÁPIDA ────────────────────────────────────────
@@ -3633,7 +3577,7 @@
           );
           container.appendChild(div);
         });
-        await carregarInteligenciaDia();
+        renderizarAgoraCard();
       } catch(e) {
         console.error("[PRIORIZA] carregarChecklistHoje:", e);
         container.innerHTML="<small style='color:#ef4444'>⚠️ Erro ao carregar checklist. <button onclick='carregarChecklistHoje()' style='color:var(--cor-tema);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline'>Tentar novamente</button></small>";
@@ -4721,7 +4665,7 @@
 
       // Carregamento inicial
       carregarAgendaHoje();
-      carregarInteligenciaDia();
+      renderizarAgoraCard();
       atualizarAgendaMesEDia();
       carregarStatusGoogleAgenda();
       if (new URLSearchParams(window.location.search).get("google") === "conectado") {
