@@ -391,7 +391,9 @@ def normalizar_status(status: Optional[str]) -> str:
     s = (status or "pendente").strip().lower()
     if s in {"concluida", "concluído", "concluido"}:
         return "feito"
-    if s not in {"pendente", "em_andamento", "feito", "atrasado", "reagendamento_sugerido", "reagendada_confirmada", "reagendada_manual", "pendente_ajuste"}:
+    if s in {"cancelado", "cancelada"}:
+        return "cancelada"
+    if s not in {"pendente", "em_andamento", "feito", "cancelada", "atrasado", "reagendamento_sugerido", "reagendada_confirmada", "reagendada_manual", "pendente_ajuste"}:
         return "pendente"
     return s
 
@@ -1442,18 +1444,19 @@ def agenda_inteligencia(data_ref: str = Query(None, description="Data de referê
     agora_min = _agora_minutos()
 
     tarefas = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.data == hoje).order_by(Tarefa.hora_inicio, Tarefa.id).all()
+    tarefas_ativas = [t for t in tarefas if normalizar_status(t.status) != "cancelada"]
 
-    total_tarefas = len(tarefas)
-    pendentes = sum(1 for t in tarefas if normalizar_status(t.status) == "pendente")
-    em_andamento = sum(1 for t in tarefas if normalizar_status(t.status) == "em_andamento")
-    concluidas = sum(1 for t in tarefas if normalizar_status(t.status) == "feito")
+    total_tarefas = len(tarefas_ativas)
+    pendentes = sum(1 for t in tarefas_ativas if normalizar_status(t.status) == "pendente")
+    em_andamento = sum(1 for t in tarefas_ativas if normalizar_status(t.status) == "em_andamento")
+    concluidas = sum(1 for t in tarefas_ativas if normalizar_status(t.status) == "feito")
 
     atrasadas: list[dict[str, Any]] = []
     alta_prioridade_pendente: list[dict[str, Any]] = []
     conflitos: list[dict[str, Any]] = []
 
     tarefas_com_horario: list[tuple[Tarefa, int, int]] = []
-    for tarefa in tarefas:
+    for tarefa in tarefas_ativas:
         status = normalizar_status(tarefa.status)
         inicio_min, fim_min = _faixa_tarefa_minutos(tarefa)
 
@@ -2279,7 +2282,7 @@ def _loop_notificacoes_push():
 
                 minutos_agora = hora * 60 + minuto
                 for t in tarefas_hoje:
-                    if not t.hora_inicio or normalizar_status(t.status) == "feito":
+                    if not t.hora_inicio or not status_nao_concluido(t.status):
                         continue
                     try:
                         diff = hora_para_minutos(t.hora_inicio) - minutos_agora
@@ -2296,9 +2299,9 @@ def _loop_notificacoes_push():
                         pass
 
                 if hora == 6 and minuto == 0:
-                    total = len(tarefas_hoje)
+                    total = len([t for t in tarefas_hoje if normalizar_status(t.status) != "cancelada"])
                     chk_total = len(chk_hoje)
-                    alta_prio = [t for t in tarefas_hoje if t.prioridade == 1 and normalizar_status(t.status) != "feito"]
+                    alta_prio = [t for t in tarefas_hoje if t.prioridade == 1 and status_nao_concluido(t.status)]
                     if total == 0 and chk_total == 0:
                         _enviar_push_todos("Bom dia", "Agenda livre hoje. Aproveite o dia.")
                     elif alta_prio:
@@ -2307,7 +2310,7 @@ def _loop_notificacoes_push():
                         _enviar_push_todos("Bom dia", f"Hoje: {total} compromisso(s) e {chk_total} rotina(s) no checklist.")
 
                 if hora == 9 and minuto == 0:
-                    alta = [t for t in tarefas_hoje if t.prioridade == 1 and normalizar_status(t.status) != "feito"]
+                    alta = [t for t in tarefas_hoje if t.prioridade == 1 and status_nao_concluido(t.status)]
                     if alta:
                         _enviar_push_todos("Tarefa prioritária", f"{len(alta)} tarefa(s) de alta prioridade hoje.")
 
@@ -2321,7 +2324,7 @@ def _loop_notificacoes_push():
 
                 if hora == 20 and minuto == 0:
                     feitas = len([t for t in tarefas_hoje if normalizar_status(t.status) == "feito"])
-                    total = len(tarefas_hoje)
+                    total = len([t for t in tarefas_hoje if normalizar_status(t.status) != "cancelada"])
                     amanha_count = len(tarefas_amanha)
                     if total == 0:
                         _enviar_push_todos("Encerrando o dia", "Nenhum compromisso hoje. Descanse bem.")
@@ -2340,7 +2343,7 @@ def _loop_notificacoes_push():
                     _enviar_push_todos("Semana começando", f"Você tem {semana_total} compromisso(s) essa semana.")
 
                 if dia_semana == 4 and hora == 17 and minuto == 0:
-                    pendentes_sexta = [t for t in tarefas_hoje if normalizar_status(t.status) != "feito"]
+                    pendentes_sexta = [t for t in tarefas_hoje if status_nao_concluido(t.status)]
                     if not pendentes_sexta:
                         _enviar_push_todos("Sexta-feira", "Você zerou todas as tarefas. Bom descanso.")
                     else:
