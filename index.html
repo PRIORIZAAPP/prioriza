@@ -266,6 +266,63 @@
       .agora-card[hidden] {
         display: none !important;
       }
+      .splash-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: linear-gradient(
+          180deg,
+          #ffffff 0%,
+          color-mix(in srgb, var(--cor-tema-clara) 55%, white 45%) 100%
+        );
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 280ms ease, visibility 0ms linear 280ms;
+      }
+      .splash-screen.is-visible {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 280ms ease;
+      }
+      .splash-screen.is-hiding {
+        opacity: 0;
+      }
+      .splash-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        text-align: center;
+        animation: splashFadeIn 320ms ease both;
+      }
+      .splash-logo {
+        width: min(240px, 62vw);
+        height: auto;
+        display: block;
+      }
+      .splash-slogan {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.4;
+        font-weight: 600;
+        color: #475569;
+        letter-spacing: 0.01em;
+      }
+      @keyframes splashFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
       .agenda-item.destacada {
         border-radius: 12px;
         background: rgba(var(--cor-tema-rgb), 0.08);
@@ -1578,6 +1635,13 @@
       </div>
     </div>
 
+    <div id="splash-screen" class="splash-screen" aria-hidden="true">
+      <div class="splash-inner">
+        <img id="splash-logo" class="splash-logo" alt="Prioriza" />
+        <p id="splash-slogan" class="splash-slogan"></p>
+      </div>
+    </div>
+
     <!-- ── APP ── -->
     <div class="app-shell">
 
@@ -2544,6 +2608,78 @@
 
       atualizarEstadoBotoesTema(temaSeguro);
       await atualizarLogoTema(temaSeguro);
+    }
+
+    const SPLASH_STORAGE_KEY = "prioriza_ultimo_acesso";
+    const SPLASH_SLOGANS = [
+      "Organize. Execute. Evolua.",
+      "Seu dia, sob controle.",
+      "Foco no que importa.",
+      "Menos bagunça, mais ação.",
+      "Planeje melhor. Execute melhor.",
+      "Clareza para o seu dia.",
+      "Produtividade com simplicidade.",
+      "Cada tarefa no seu tempo.",
+      "Priorize o que realmente importa.",
+      "Transforme planos em ação.",
+      "Seu ritmo, sua organização.",
+      "Mais foco, menos distração.",
+      "Organização que vira resultado.",
+      "Comece pelo que importa.",
+      "Controle seu tempo com inteligência."
+    ];
+
+    function dataLocalISOHoje() {
+      const agora = new Date();
+      const ano = agora.getFullYear();
+      const mes = String(agora.getMonth() + 1).padStart(2, "0");
+      const dia = String(agora.getDate()).padStart(2, "0");
+      return `${ano}-${mes}-${dia}`;
+    }
+
+    function escolherSloganSplash() {
+      return SPLASH_SLOGANS[Math.floor(Math.random() * SPLASH_SLOGANS.length)];
+    }
+
+    function mostrarSplashDiaria() {
+      const splash = document.getElementById("splash-screen");
+      const splashLogo = document.getElementById("splash-logo");
+      const splashSlogan = document.getElementById("splash-slogan");
+      const logoBase = document.querySelector(".prioriza-logo");
+      if (!splash || !splashLogo || !splashSlogan || !logoBase) return;
+
+      let ultimoAcesso = "";
+      const hoje = dataLocalISOHoje();
+
+      try {
+        ultimoAcesso = localStorage.getItem(SPLASH_STORAGE_KEY) || "";
+      } catch (e) {
+        console.warn("[PRIORIZA] Não foi possível ler o último acesso:", e);
+      }
+
+      if (ultimoAcesso === hoje) return;
+
+      try {
+        localStorage.setItem(SPLASH_STORAGE_KEY, hoje);
+      } catch (e) {
+        console.warn("[PRIORIZA] Não foi possível salvar o último acesso:", e);
+      }
+
+      splashLogo.src = logoBase.currentSrc || logoBase.src || "";
+      splashSlogan.textContent = escolherSloganSplash();
+      splash.setAttribute("aria-hidden", "false");
+      splash.classList.remove("is-hiding");
+      splash.classList.add("is-visible");
+
+      const duracao = 800 + Math.floor(Math.random() * 401);
+      window.setTimeout(() => {
+        splash.classList.add("is-hiding");
+        splash.classList.remove("is-visible");
+        splash.setAttribute("aria-hidden", "true");
+        window.setTimeout(() => {
+          splash.classList.remove("is-hiding");
+        }, 320);
+      }, duracao);
     }
 
     let tarefasAgendaCache = [];
@@ -4421,7 +4557,7 @@
     }
 
     // ── INIT ──────────────────────────────────────────────────────
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", async () => {
       const temaSalvo = (() => {
         try {
           return localStorage.getItem(TEMA_STORAGE_KEY) || "azul";
@@ -4430,7 +4566,8 @@
         }
       })();
 
-      aplicarTema(temaSalvo);
+      await aplicarTema(temaSalvo);
+      mostrarSplashDiaria();
 
       atualizarRelogio();
       setInterval(atualizarRelogio, 60000);
