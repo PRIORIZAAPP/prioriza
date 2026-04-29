@@ -60,6 +60,101 @@
         margin: 0; padding: 0;
         color: #0f172a;
       }
+      .auth-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 18px;
+        background:
+          linear-gradient(
+            135deg,
+            #f8fbff 0%,
+            #ffffff 20%,
+            #eef4ff 52%,
+            color-mix(in srgb, var(--cor-tema-clara) 64%, white 36%) 100%
+          );
+      }
+      .auth-screen[hidden] {
+        display: none !important;
+      }
+      .auth-card {
+        width: min(100%, 380px);
+        background: rgba(255,255,255,0.94);
+        border: 1px solid rgba(148,163,184,0.22);
+        border-radius: 24px;
+        box-shadow: 0 20px 45px rgba(15,23,42,0.14);
+        padding: 24px 20px 20px;
+        backdrop-filter: blur(10px);
+      }
+      .auth-brand {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+      .auth-logo {
+        width: min(240px, 64vw);
+        height: auto;
+        display: block;
+      }
+      .auth-slogan {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #5b6676;
+        font-weight: 500;
+      }
+      .auth-title {
+        margin: 0;
+        font-size: 22px;
+        line-height: 1.15;
+        color: #0f172a;
+        font-weight: 700;
+      }
+      .auth-subtitle {
+        margin: 6px 0 0 0;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #64748b;
+      }
+      .auth-form {
+        display: grid;
+        gap: 12px;
+        margin-top: 18px;
+      }
+      .auth-form[hidden] {
+        display: none !important;
+      }
+      .auth-error {
+        min-height: 18px;
+        font-size: 12px;
+        color: #b91c1c;
+        margin-top: 8px;
+      }
+      .auth-switch {
+        margin-top: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 13px;
+        color: #64748b;
+      }
+      .auth-link {
+        border: none;
+        background: none;
+        padding: 0;
+        color: var(--cor-tema-escura);
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .auth-link:hover {
+        text-decoration: underline;
+      }
 
       /* ── APP SHELL ── */
       .app-shell {
@@ -1683,8 +1778,59 @@
       </div>
     </div>
 
+    <div id="auth-screen" class="auth-screen" hidden>
+      <div class="auth-card">
+        <div class="auth-brand">
+          <img id="auth-logo" class="auth-logo" src="data:image/png;base64,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"," alt="Prioriza" />
+          <div>
+            <h1 id="auth-title" class="auth-title">Entrar no PRIORIZA</h1>
+            <p id="auth-subtitle" class="auth-subtitle">Seu dia, sob controle.</p>
+            <p class="auth-slogan">Organize sua agenda, checklist e notas com tudo vinculado à sua conta.</p>
+          </div>
+        </div>
+
+        <form id="auth-form-login" class="auth-form">
+          <div>
+            <label for="auth-login-email">E-mail</label>
+            <input id="auth-login-email" type="email" autocomplete="email" placeholder="voce@exemplo.com" required />
+          </div>
+          <div>
+            <label for="auth-login-senha">Senha</label>
+            <input id="auth-login-senha" type="password" autocomplete="current-password" placeholder="Sua senha" required />
+          </div>
+          <button id="btn-auth-login" class="btn-primary" type="submit">Entrar</button>
+        </form>
+
+        <form id="auth-form-register" class="auth-form" hidden>
+          <div>
+            <label for="auth-register-nome">Nome</label>
+            <input id="auth-register-nome" type="text" autocomplete="name" placeholder="Seu nome" required />
+          </div>
+          <div>
+            <label for="auth-register-email">E-mail</label>
+            <input id="auth-register-email" type="email" autocomplete="email" placeholder="voce@exemplo.com" required />
+          </div>
+          <div>
+            <label for="auth-register-senha">Senha</label>
+            <input id="auth-register-senha" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" required />
+          </div>
+          <div>
+            <label for="auth-register-confirmar">Confirmar senha</label>
+            <input id="auth-register-confirmar" type="password" autocomplete="new-password" placeholder="Repita a senha" required />
+          </div>
+          <button id="btn-auth-register" class="btn-primary" type="submit">Criar conta</button>
+        </form>
+
+        <div id="auth-error" class="auth-error" aria-live="polite"></div>
+        <div class="auth-switch">
+          <span id="auth-switch-text">Ainda não tem conta?</span>
+          <button id="btn-auth-toggle" class="auth-link" type="button">Criar conta</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ── APP ── -->
-    <div class="app-shell">
+    <div id="app-shell" class="app-shell" hidden>
 
       <!-- TOPBAR -->
       <div class="topbar">
@@ -2287,6 +2433,31 @@
                 <div id="backup-status" class="settings-note"></div>
               </div>
             </section>
+
+            <section class="settings-section" id="card-conta">
+              <div class="settings-section-head">
+                <div class="settings-section-title">
+                  <svg viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
+                    <circle cx="128" cy="88" r="36" fill="currentColor" opacity="0.22"/>
+                    <circle cx="128" cy="88" r="36" stroke="currentColor" stroke-width="16"/>
+                    <path d="M64 208c4-42 30-64 64-64s60 22 64 64" stroke="currentColor" stroke-width="16" stroke-linecap="round" fill="none"/>
+                  </svg>
+                  <h2>Conta</h2>
+                </div>
+              </div>
+              <div class="settings-panel">
+                <div class="settings-row">
+                  <div class="settings-stack">
+                    <span class="settings-label">Usuário</span>
+                    <div id="auth-user-name" class="settings-value">Sessão ativa</div>
+                  </div>
+                </div>
+                <div class="settings-note" id="auth-user-email"></div>
+                <div class="settings-actions">
+                  <button id="btn-logout" class="btn-outline danger" type="button">Sair</button>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
 
@@ -2443,6 +2614,7 @@
     "use strict";
 
     const API = "";
+    const AUTH_TOKEN_KEY = "prioriza_auth_token";
     const TEMA_STORAGE_KEY = "prioriza_tema";
     const TEMAS_PRIORIZA = {
       azul: {
@@ -2478,7 +2650,106 @@
         logo: "#5a6878",
       },
     };
-    function authHeaders(extra = {}) { return { ...extra }; }
+    const nativeFetch = window.fetch.bind(window);
+    let authMode = "login";
+    let authUser = null;
+
+    function getAuthToken() {
+      try {
+        return localStorage.getItem(AUTH_TOKEN_KEY) || "";
+      } catch {
+        return "";
+      }
+    }
+
+    function setAuthToken(token) {
+      try {
+        localStorage.setItem(AUTH_TOKEN_KEY, token || "");
+      } catch (e) {
+        console.warn("[PRIORIZA] Não foi possível salvar o token:", e);
+      }
+    }
+
+    function clearAuthToken() {
+      try {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+      } catch (e) {
+        console.warn("[PRIORIZA] Não foi possível limpar o token:", e);
+      }
+    }
+
+    function authHeaders(extra = {}) {
+      const headers = { ...extra };
+      const token = getAuthToken();
+      if (token) headers.Authorization = `Bearer ${token}`;
+      return headers;
+    }
+
+    function showAuthScreen(mode = "login") {
+      authMode = mode === "register" ? "register" : "login";
+      const screen = document.getElementById("auth-screen");
+      const appShell = document.getElementById("app-shell");
+      if (screen) screen.hidden = false;
+      if (appShell) appShell.hidden = true;
+      atualizarUIAuth();
+    }
+
+    function showAppShell() {
+      const screen = document.getElementById("auth-screen");
+      const appShell = document.getElementById("app-shell");
+      if (screen) screen.hidden = true;
+      if (appShell) appShell.hidden = false;
+      preencherContaLogada();
+    }
+
+    function definirErroAuth(texto = "") {
+      const el = document.getElementById("auth-error");
+      if (el) el.textContent = texto;
+    }
+
+    function preencherContaLogada() {
+      document.getElementById("auth-user-name").textContent = authUser?.nome || "Sessão ativa";
+      document.getElementById("auth-user-email").textContent = authUser?.email || "";
+    }
+
+    function atualizarUIAuth() {
+      const loginForm = document.getElementById("auth-form-login");
+      const registerForm = document.getElementById("auth-form-register");
+      const toggleText = document.getElementById("auth-switch-text");
+      const toggleBtn = document.getElementById("btn-auth-toggle");
+      const title = document.getElementById("auth-title");
+      const subtitle = document.getElementById("auth-subtitle");
+      const isRegister = authMode === "register";
+      if (loginForm) loginForm.hidden = isRegister;
+      if (registerForm) registerForm.hidden = !isRegister;
+      if (toggleText) toggleText.textContent = isRegister ? "Já tem conta?" : "Ainda não tem conta?";
+      if (toggleBtn) toggleBtn.textContent = isRegister ? "Entrar" : "Criar conta";
+      if (title) title.textContent = isRegister ? "Criar conta no PRIORIZA" : "Entrar no PRIORIZA";
+      if (subtitle) subtitle.textContent = isRegister ? "Seu espaço organizado, agora com login individual." : "Entre para acessar seus dados com segurança.";
+      definirErroAuth("");
+    }
+
+    function handleUnauthorized() {
+      authUser = null;
+      clearAuthToken();
+      showAuthScreen("login");
+    }
+
+    async function apiFetch(url, options = {}) {
+      const headersOriginais = options.headers || {};
+      const opts = { ...options, headers: authHeaders(headersOriginais) };
+      const resposta = await nativeFetch(url, opts);
+      const rota = String(url || "");
+      const ignorar401 = rota.includes("/auth/login") || rota.includes("/auth/register");
+      if (resposta.status === 401 && !ignorar401) {
+        handleUnauthorized();
+      }
+      return resposta;
+    }
+
+    window.fetch = function(url, options = {}) {
+      return apiFetch(url, options);
+    };
 
     const logoTemaCache = new Map();
 
@@ -4626,8 +4897,93 @@
       btn.addEventListener("click",()=>{ if(escutando) recognition.stop(); else recognition.start(); });
     }
 
+    function bindAuthEvents() {
+      document.getElementById("btn-auth-toggle")?.addEventListener("click", () => {
+        showAuthScreen(authMode === "login" ? "register" : "login");
+      });
+
+      document.getElementById("auth-form-login")?.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        definirErroAuth("");
+        const email = document.getElementById("auth-login-email")?.value.trim() || "";
+        const senha = document.getElementById("auth-login-senha")?.value || "";
+        try {
+          const res = await nativeFetch(API + "/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, senha }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data?.detail || "Não foi possível entrar.");
+          authUser = data.user || null;
+          setAuthToken(data.token || "");
+          window.location.reload();
+        } catch (e) {
+          definirErroAuth(e.message || "Não foi possível entrar.");
+        }
+      });
+
+      document.getElementById("auth-form-register")?.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        definirErroAuth("");
+        const nome = document.getElementById("auth-register-nome")?.value.trim() || "";
+        const email = document.getElementById("auth-register-email")?.value.trim() || "";
+        const senha = document.getElementById("auth-register-senha")?.value || "";
+        const confirmar = document.getElementById("auth-register-confirmar")?.value || "";
+        if (senha.length < 6) {
+          definirErroAuth("A senha deve ter pelo menos 6 caracteres.");
+          return;
+        }
+        if (senha !== confirmar) {
+          definirErroAuth("As senhas não coincidem.");
+          return;
+        }
+        try {
+          const res = await nativeFetch(API + "/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nome, email, senha }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data?.detail || "Não foi possível criar a conta.");
+          authUser = data.user || null;
+          setAuthToken(data.token || "");
+          window.location.reload();
+        } catch (e) {
+          definirErroAuth(e.message || "Não foi possível criar a conta.");
+        }
+      });
+    }
+
+    async function validarSessaoAtual() {
+      const token = getAuthToken();
+      if (!token) return false;
+      try {
+        const res = await nativeFetch(API + "/auth/me", { headers: authHeaders() });
+        if (!res.ok) throw new Error("Sessão inválida");
+        const data = await res.json();
+        authUser = data.user || null;
+        return true;
+      } catch {
+        clearAuthToken();
+        authUser = null;
+        return false;
+      }
+    }
+
+    async function fazerLogout() {
+      try {
+        await nativeFetch(API + "/auth/logout", { method: "POST", headers: authHeaders() });
+      } catch (e) {
+        console.warn("[PRIORIZA] Logout simbólico falhou:", e);
+      }
+      authUser = null;
+      clearAuthToken();
+      window.location.reload();
+    }
+
     // ── INIT ──────────────────────────────────────────────────────
-    document.addEventListener("DOMContentLoaded", async () => {
+    async function inicializarAppAutenticado() {
       const temaSalvo = (() => {
         try {
           return localStorage.getItem(TEMA_STORAGE_KEY) || "azul";
@@ -4637,7 +4993,6 @@
       })();
 
       await aplicarTema(temaSalvo);
-      mostrarSplashDiaria();
 
       atualizarRelogio();
       setInterval(atualizarRelogio, 60000);
@@ -4708,7 +5063,7 @@
           await modal.alerta("O backend ainda não está com as credenciais do Google configuradas.", "Google Agenda");
           return;
         }
-        window.location.href = API + "/auth/google";
+        window.location.href = API + "/auth/google?token=" + encodeURIComponent(getAuthToken());
       });
       document.getElementById("btn-google-atualizar")?.addEventListener("click", async () => {
         await sincronizarAgendaGoogleCompleta();
@@ -4888,6 +5243,30 @@
       // ── NOTIFICAÇÕES ─────────────────────────────────────────────
       iniciarSistemaNotificacoes();
       atualizarStatusNotificacoesUI();
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const temaSalvo = (() => {
+        try {
+          return localStorage.getItem(TEMA_STORAGE_KEY) || "azul";
+        } catch {
+          return "azul";
+        }
+      })();
+
+      await aplicarTema(temaSalvo);
+      bindAuthEvents();
+
+      const autenticado = await validarSessaoAtual();
+      if (!autenticado) {
+        showAuthScreen("login");
+        return;
+      }
+
+      showAppShell();
+      mostrarSplashDiaria();
+      await inicializarAppAutenticado();
+      document.getElementById("btn-logout")?.addEventListener("click", fazerLogout);
     });
 
     // ═══════════════════════════════════════════════════════════════
