@@ -69,71 +69,171 @@
         justify-content: center;
         padding: 24px 18px;
         background:
+          radial-gradient(circle at 18% 16%, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.96) 16%, rgba(255,255,255,0) 34%),
+          radial-gradient(circle at 84% 12%, color-mix(in srgb, var(--cor-tema-clara) 58%, white 42%) 0%, rgba(255,255,255,0) 36%),
           linear-gradient(
-            135deg,
-            #f8fbff 0%,
-            #ffffff 20%,
-            #eef4ff 52%,
-            color-mix(in srgb, var(--cor-tema-clara) 64%, white 36%) 100%
+            128deg,
+            #fcfdff 0%,
+            #ffffff 18%,
+            #edf3ff 42%,
+            color-mix(in srgb, var(--cor-tema-clara) 60%, white 40%) 68%,
+            color-mix(in srgb, var(--cor-tema) 18%, white 82%) 100%
           );
+        overflow: hidden;
+        opacity: 1;
+        transition: opacity 200ms ease;
       }
       .auth-screen[hidden] {
         display: none !important;
       }
+      .auth-screen.is-leaving {
+        opacity: 0;
+      }
+      .auth-screen::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.24) 100%);
+        pointer-events: none;
+      }
       .auth-card {
-        width: min(100%, 380px);
-        background: rgba(255,255,255,0.94);
-        border: 1px solid rgba(148,163,184,0.22);
-        border-radius: 24px;
-        box-shadow: 0 20px 45px rgba(15,23,42,0.14);
-        padding: 24px 20px 20px;
-        backdrop-filter: blur(10px);
+        position: relative;
+        z-index: 1;
+        width: min(100%, 410px);
+        background: rgba(255,255,255,0.84);
+        border: 1px solid rgba(148,163,184,0.18);
+        border-radius: 28px;
+        box-shadow: 0 24px 60px rgba(15,23,42,0.12);
+        padding: 26px 22px 20px;
+        backdrop-filter: blur(18px);
+        transition: transform 240ms ease, box-shadow 240ms ease, opacity 220ms ease;
+      }
+      .auth-screen.is-transitioning .auth-card {
+        box-shadow: none;
+        background: transparent;
+        border-color: transparent;
+        backdrop-filter: none;
+        transform: translateY(-4px);
       }
       .auth-brand {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
-        margin-bottom: 18px;
+        gap: 12px;
+        margin-bottom: 10px;
       }
       .auth-logo {
-        width: min(240px, 64vw);
+        width: min(248px, 66vw);
         height: auto;
         display: block;
+        filter: drop-shadow(0 14px 30px rgba(37,99,235,0.08));
+        transition: transform 220ms ease, opacity 220ms ease;
       }
       .auth-slogan {
         margin: 0;
         font-size: 13px;
-        line-height: 1.45;
-        color: #5b6676;
+        line-height: 1.5;
+        color: #556274;
         font-weight: 500;
+        letter-spacing: 0.01em;
       }
       .auth-title {
         margin: 0;
-        font-size: 22px;
+        font-size: 27px;
         line-height: 1.15;
         color: #0f172a;
-        font-weight: 700;
+        font-weight: 750;
+        letter-spacing: -0.03em;
       }
       .auth-subtitle {
-        margin: 6px 0 0 0;
-        font-size: 13px;
-        line-height: 1.45;
+        margin: 8px 0 0 0;
+        font-size: 14px;
+        line-height: 1.55;
         color: #64748b;
+        max-width: 30ch;
+      }
+      .auth-panel {
+        margin-top: 18px;
+        padding: 18px 16px 14px;
+        border-radius: 22px;
+        background: rgba(255,255,255,0.7);
+        border: 1px solid rgba(148,163,184,0.14);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+        transition: opacity 180ms ease, transform 180ms ease, visibility 0ms linear 180ms;
+      }
+      .auth-screen.is-transitioning .auth-panel {
+        opacity: 0;
+        transform: translateY(12px);
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .auth-transition-copy {
+        min-height: 0;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: opacity 200ms ease, transform 200ms ease, visibility 0ms linear 200ms;
+      }
+      .auth-screen.is-transitioning .auth-transition-copy {
+        min-height: 52px;
+        margin-top: 14px;
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        transition: opacity 200ms ease 120ms, transform 200ms ease 120ms, visibility 0ms linear 120ms;
+      }
+      .auth-transition-label {
+        margin: 0 0 6px 0;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: color-mix(in srgb, var(--cor-tema-escura) 72%, #475569 28%);
+      }
+      .auth-transition-slogan {
+        margin: 0;
+        font-size: 17px;
+        line-height: 1.45;
+        font-weight: 600;
+        color: #20324a;
+        max-width: 24ch;
+        opacity: 0;
+        transform: translateY(6px);
+        filter: blur(4px);
+      }
+      .auth-screen.is-transitioning .auth-transition-slogan {
+        animation: authSloganIn 200ms ease 120ms forwards;
       }
       .auth-form {
         display: grid;
         gap: 12px;
-        margin-top: 18px;
+        margin-top: 0;
       }
       .auth-form[hidden] {
         display: none !important;
+      }
+      .auth-form label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: #475569;
+      }
+      .auth-form input {
+        background: rgba(255,255,255,0.88);
+      }
+      .auth-form .btn-primary {
+        margin-top: 4px;
+        min-height: 46px;
+        font-weight: 700;
       }
       .auth-error {
         min-height: 18px;
         font-size: 12px;
         color: #b91c1c;
-        margin-top: 8px;
+        margin-top: 10px;
       }
       .auth-switch {
         margin-top: 14px;
@@ -154,6 +254,18 @@
       }
       .auth-link:hover {
         text-decoration: underline;
+      }
+      @keyframes authSloganIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+          filter: blur(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+          filter: blur(0);
+        }
       }
 
       /* ── APP SHELL ── */
@@ -381,12 +493,12 @@
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
-        transition: opacity 280ms ease, visibility 0ms linear 280ms;
+        transition: opacity 200ms ease, visibility 0ms linear 200ms;
       }
       .splash-screen.is-visible {
         opacity: 1;
         visibility: visible;
-        transition: opacity 280ms ease;
+        transition: opacity 200ms ease;
       }
       .splash-screen.is-hiding {
         opacity: 0;
@@ -416,7 +528,7 @@
         filter: blur(4px);
       }
       .splash-screen.is-visible .splash-slogan {
-        animation: splashSloganIn 520ms ease 220ms forwards;
+        animation: splashSloganIn 200ms ease 120ms forwards;
       }
       @keyframes splashFadeIn {
         from {
@@ -1784,47 +1896,54 @@
           <img id="auth-logo" class="auth-logo" src="data:image/png;base64,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"," alt="Prioriza" />
           <div>
             <h1 id="auth-title" class="auth-title">Entrar no PRIORIZA</h1>
-            <p id="auth-subtitle" class="auth-subtitle">Seu dia, sob controle.</p>
-            <p class="auth-slogan">Organize sua agenda, checklist e notas com tudo vinculado à sua conta.</p>
+            <p id="auth-subtitle" class="auth-subtitle">Acesse sua rotina e continue de onde parou.</p>
+            <p class="auth-slogan">Rotina, agenda e notas em um fluxo simples, claro e seu.</p>
           </div>
         </div>
 
-        <form id="auth-form-login" class="auth-form">
-          <div>
-            <label for="auth-login-email">E-mail</label>
-            <input id="auth-login-email" type="email" autocomplete="email" placeholder="voce@exemplo.com" required />
-          </div>
-          <div>
-            <label for="auth-login-senha">Senha</label>
-            <input id="auth-login-senha" type="password" autocomplete="current-password" placeholder="Sua senha" required />
-          </div>
-          <button id="btn-auth-login" class="btn-primary" type="submit">Entrar</button>
-        </form>
+        <div id="auth-transition-copy" class="auth-transition-copy" aria-live="polite">
+          <p class="auth-transition-label">PRIORIZA</p>
+          <p id="auth-transition-slogan" class="auth-transition-slogan"></p>
+        </div>
 
-        <form id="auth-form-register" class="auth-form" hidden>
-          <div>
-            <label for="auth-register-nome">Nome</label>
-            <input id="auth-register-nome" type="text" autocomplete="name" placeholder="Seu nome" required />
-          </div>
-          <div>
-            <label for="auth-register-email">E-mail</label>
-            <input id="auth-register-email" type="email" autocomplete="email" placeholder="voce@exemplo.com" required />
-          </div>
-          <div>
-            <label for="auth-register-senha">Senha</label>
-            <input id="auth-register-senha" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" required />
-          </div>
-          <div>
-            <label for="auth-register-confirmar">Confirmar senha</label>
-            <input id="auth-register-confirmar" type="password" autocomplete="new-password" placeholder="Repita a senha" required />
-          </div>
-          <button id="btn-auth-register" class="btn-primary" type="submit">Criar conta</button>
-        </form>
+        <div id="auth-panel" class="auth-panel">
+          <form id="auth-form-login" class="auth-form">
+            <div>
+              <label for="auth-login-email">E-mail</label>
+              <input id="auth-login-email" type="email" autocomplete="email" placeholder="voce@exemplo.com" required />
+            </div>
+            <div>
+              <label for="auth-login-senha">Senha</label>
+              <input id="auth-login-senha" type="password" autocomplete="current-password" placeholder="Sua senha" required />
+            </div>
+            <button id="btn-auth-login" class="btn-primary" type="submit">Entrar</button>
+          </form>
 
-        <div id="auth-error" class="auth-error" aria-live="polite"></div>
-        <div class="auth-switch">
-          <span id="auth-switch-text">Ainda não tem conta?</span>
-          <button id="btn-auth-toggle" class="auth-link" type="button">Criar conta</button>
+          <form id="auth-form-register" class="auth-form" hidden>
+            <div>
+              <label for="auth-register-nome">Nome</label>
+              <input id="auth-register-nome" type="text" autocomplete="name" placeholder="Seu nome" required />
+            </div>
+            <div>
+              <label for="auth-register-email">E-mail</label>
+              <input id="auth-register-email" type="email" autocomplete="email" placeholder="voce@exemplo.com" required />
+            </div>
+            <div>
+              <label for="auth-register-senha">Senha</label>
+              <input id="auth-register-senha" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" required />
+            </div>
+            <div>
+              <label for="auth-register-confirmar">Confirmar senha</label>
+              <input id="auth-register-confirmar" type="password" autocomplete="new-password" placeholder="Repita a senha" required />
+            </div>
+            <button id="btn-auth-register" class="btn-primary" type="submit">Criar conta</button>
+          </form>
+
+          <div id="auth-error" class="auth-error" aria-live="polite"></div>
+          <div class="auth-switch">
+            <span id="auth-switch-text">Ainda não tem conta?</span>
+            <button id="btn-auth-toggle" class="auth-link" type="button">Criar conta</button>
+          </div>
         </div>
       </div>
     </div>
@@ -2685,10 +2804,26 @@
       return headers;
     }
 
+    function aguardar(ms) {
+      return new Promise((resolve) => window.setTimeout(resolve, ms));
+    }
+
+    function resetAuthTransitionState() {
+      const screen = document.getElementById("auth-screen");
+      const slogan = document.getElementById("auth-transition-slogan");
+      if (screen) {
+        screen.classList.remove("is-transitioning");
+        screen.classList.remove("is-leaving");
+        screen.removeAttribute("aria-busy");
+      }
+      if (slogan) slogan.textContent = "";
+    }
+
     function showAuthScreen(mode = "login") {
       authMode = mode === "register" ? "register" : "login";
       const screen = document.getElementById("auth-screen");
       const appShell = document.getElementById("app-shell");
+      resetAuthTransitionState();
       if (screen) screen.hidden = false;
       if (appShell) appShell.hidden = true;
       atualizarUIAuth();
@@ -2724,8 +2859,10 @@
       if (registerForm) registerForm.hidden = !isRegister;
       if (toggleText) toggleText.textContent = isRegister ? "Já tem conta?" : "Ainda não tem conta?";
       if (toggleBtn) toggleBtn.textContent = isRegister ? "Entrar" : "Criar conta";
-      if (title) title.textContent = isRegister ? "Criar conta no PRIORIZA" : "Entrar no PRIORIZA";
-      if (subtitle) subtitle.textContent = isRegister ? "Seu espaço organizado, agora com login individual." : "Entre para acessar seus dados com segurança.";
+      if (title) title.textContent = isRegister ? "Criar conta" : "Entrar no PRIORIZA";
+      if (subtitle) subtitle.textContent = isRegister
+        ? "Comece a organizar sua rotina com mais clareza."
+        : "Acesse sua rotina e continue de onde parou.";
       definirErroAuth("");
     }
 
@@ -2875,20 +3012,25 @@
 
     async function atualizarLogoTema(temaAtual) {
       const logo = document.querySelector(".prioriza-logo");
-      if (!logo) return;
+      const authLogo = document.getElementById("auth-logo");
+      if (!logo && !authLogo) return;
 
-      if (!logo.dataset.logoOriginal) {
+      if (logo && !logo.dataset.logoOriginal) {
         logo.dataset.logoOriginal = logo.getAttribute("src") || "";
       }
+      if (authLogo && !authLogo.dataset.logoOriginal) {
+        authLogo.dataset.logoOriginal = authLogo.getAttribute("src") || "";
+      }
 
-      const srcOriginal = logo.dataset.logoOriginal;
+      const srcOriginal = logo?.dataset.logoOriginal || authLogo?.dataset.logoOriginal || "";
       const config = TEMAS_PRIORIZA[temaAtual] || TEMAS_PRIORIZA.azul;
       if (!srcOriginal || !config.logo) return;
 
       const srcTema = await recolorirLogoTema(srcOriginal, config.logo);
-      if ((document.documentElement.dataset.tema || "azul") === temaAtual) {
+      if ((document.documentElement.dataset.tema || "azul") === temaAtual && logo) {
         logo.src = srcTema;
       }
+      if (authLogo) authLogo.src = srcTema;
     }
 
     function atualizarEstadoBotoesTema(temaAtual) {
@@ -2983,15 +3125,53 @@
       splash.classList.remove("is-hiding");
       splash.classList.add("is-visible");
 
-      const duracao = 1800;
+      const duracao = 1100;
       window.setTimeout(() => {
         splash.classList.add("is-hiding");
         splash.classList.remove("is-visible");
         splash.setAttribute("aria-hidden", "true");
         window.setTimeout(() => {
           splash.classList.remove("is-hiding");
-        }, 320);
+        }, 220);
       }, duracao);
+    }
+
+    let appAutenticadoInicializado = false;
+    let logoutJaVinculado = false;
+
+    async function garantirAppAutenticadoInicializado() {
+      if (!appAutenticadoInicializado) {
+        await inicializarAppAutenticado();
+        appAutenticadoInicializado = true;
+      } else {
+        preencherContaLogada();
+      }
+
+      if (!logoutJaVinculado) {
+        document.getElementById("btn-logout")?.addEventListener("click", fazerLogout);
+        logoutJaVinculado = true;
+      }
+    }
+
+    async function executarTransicaoPosLogin() {
+      const screen = document.getElementById("auth-screen");
+      const slogan = document.getElementById("auth-transition-slogan");
+      if (!screen || !slogan) return;
+
+      slogan.textContent = escolherSloganSplash();
+      screen.setAttribute("aria-busy", "true");
+      screen.classList.add("is-transitioning");
+      await aguardar(1100);
+      screen.classList.add("is-leaving");
+      await aguardar(200);
+    }
+
+    async function entrarNoAppComTransicao() {
+      const initPromise = garantirAppAutenticadoInicializado();
+      await executarTransicaoPosLogin();
+      showAppShell();
+      await initPromise;
+      resetAuthTransitionState();
     }
 
     let tarefasAgendaCache = [];
@@ -4917,7 +5097,7 @@
           if (!res.ok) throw new Error(data?.detail || "Não foi possível entrar.");
           authUser = data.user || null;
           setAuthToken(data.token || "");
-          window.location.reload();
+          await entrarNoAppComTransicao();
         } catch (e) {
           definirErroAuth(e.message || "Não foi possível entrar.");
         }
@@ -4948,7 +5128,7 @@
           if (!res.ok) throw new Error(data?.detail || "Não foi possível criar a conta.");
           authUser = data.user || null;
           setAuthToken(data.token || "");
-          window.location.reload();
+          await entrarNoAppComTransicao();
         } catch (e) {
           definirErroAuth(e.message || "Não foi possível criar a conta.");
         }
@@ -5265,8 +5445,7 @@
 
       showAppShell();
       mostrarSplashDiaria();
-      await inicializarAppAutenticado();
-      document.getElementById("btn-logout")?.addEventListener("click", fazerLogout);
+      await garantirAppAutenticadoInicializado();
     });
 
     // ═══════════════════════════════════════════════════════════════
