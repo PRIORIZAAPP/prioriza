@@ -1,7 +1,12 @@
-import json
+﻿import json
 import os
 import threading
 import unicodedata
+import base64
+import hashlib
+import hmac
+import re
+import secrets
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
@@ -18,6 +23,11 @@ from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, create_
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
 
+try:
+    from passlib.context import CryptContext
+except Exception:
+    CryptContext = None
+
 # ============================================================
 # CONFIG GERAL
 # ============================================================
@@ -26,6 +36,9 @@ BASE_DIR = Path(__file__).resolve().parent
 TIMEZONE_PADRAO = "America/Sao_Paulo"
 UTC = timezone.utc
 CHECKLIST_HORA_LIBERACAO = int(os.environ.get("CHECKLIST_HORA_LIBERACAO", "5"))
+JWT_SECRET = os.environ.get("JWT_SECRET", "prioriza_jwt_dev_only_change_me").strip()
+JWT_EXP_HOURS = int(os.environ.get("JWT_EXP_HOURS", "168"))
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 if not DATABASE_URL:
@@ -82,10 +95,31 @@ app.add_middleware(
 # MODELOS
 # ============================================================
 
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String, nullable=False)
+    email = Column(String, nullable=False, unique=True, index=True)
+    senha_hash = Column(Text, nullable=False)
+    ativo = Column(Boolean, default=True)
+    criado_em = Column(DateTime, default=lambda: datetime.now(UTC))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "nome": self.nome,
+            "email": self.email,
+            "ativo": self.ativo,
+            "criado_em": self.criado_em.isoformat() if self.criado_em else None,
+        }
+
+
 class Tarefa(Base):
     __tablename__ = "tarefas"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
     titulo = Column(String, nullable=False)
     descricao = Column(String, default="")
     origem = Column(String, default="")
@@ -137,6 +171,7 @@ class ChecklistItem(Base):
     __tablename__ = "checklist"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
     titulo = Column(String, nullable=False)
     origem = Column(String, default="")
     frequencia = Column(String, default="Semanal")
@@ -180,6 +215,7 @@ class Note(Base):
     __tablename__ = "notes"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
     texto = Column(String, nullable=False)
     data = Column(String, default="")
     tipo = Column(String, default="GERAL")
@@ -203,6 +239,7 @@ class PushSubscription(Base):
     __tablename__ = "push_subscriptions"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
     endpoint = Column(Text, nullable=False, unique=True)
     p256dh = Column(Text, nullable=False)
     auth = Column(Text, nullable=False)
@@ -221,6 +258,7 @@ class GoogleCalendarToken(Base):
     __tablename__ = "google_calendar_tokens"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
     provider = Column(String, default="google", nullable=False)
     access_token = Column(Text, nullable=False)
     refresh_token = Column(Text, nullable=True)
@@ -252,6 +290,104 @@ class GoogleCalendarToken(Base):
 # DB / MIGRAÇÕES
 # ============================================================
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto") if CryptContext else None
+
+
+def _b64url_encode(valor: bytes) -> str:
+    return base64.urlsafe_b64encode(valor).rstrip(b"=").decode("utf-8")
+
+
+def _b64url_decode(valor: str) -> bytes:
+    padding = "=" * (-len(valor) % 4)
+    return base64.urlsafe_b64decode((valor + padding).encode("utf-8"))
+
+
+def hash_senha(senha: str) -> str:
+    senha = (senha or "").strip()
+    if pwd_context:
+        return pwd_context.hash(senha)
+    salt = secrets.token_bytes(16)
+    iteracoes = 200_000
+    derivado = hashlib.pbkdf2_hmac("sha256", senha.encode("utf-8"), salt, iteracoes)
+    return f"pbkdf2_sha256${iteracoes}${_b64url_encode(salt)}${_b64url_encode(derivado)}"
+
+
+def verificar_senha(senha: str, senha_hash: str) -> bool:
+    senha = senha or ""
+    senha_hash = senha_hash or ""
+    if pwd_context and not senha_hash.startswith("pbkdf2_sha256$"):
+        try:
+            return pwd_context.verify(senha, senha_hash)
+        except Exception:
+            return False
+    try:
+        algoritmo, iteracoes, salt_b64, hash_b64 = senha_hash.split("$", 3)
+        if algoritmo != "pbkdf2_sha256":
+            return False
+        salt = _b64url_decode(salt_b64)
+        esperado = _b64url_decode(hash_b64)
+        derivado = hashlib.pbkdf2_hmac("sha256", senha.encode("utf-8"), salt, int(iteracoes))
+        return hmac.compare_digest(esperado, derivado)
+    except Exception:
+        return False
+
+
+def criar_token_acesso(user: User) -> str:
+    agora = datetime.now(UTC)
+    payload = {
+        "sub": str(user.id),
+        "email": user.email,
+        "nome": user.nome,
+        "iat": int(agora.timestamp()),
+        "exp": int((agora + timedelta(hours=JWT_EXP_HOURS)).timestamp()),
+    }
+    header = {"alg": "HS256", "typ": "JWT"}
+    header_b64 = _b64url_encode(json.dumps(header, separators=(",", ":"), ensure_ascii=False).encode("utf-8"))
+    payload_b64 = _b64url_encode(json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8"))
+    assinatura = hmac.new(
+        JWT_SECRET.encode("utf-8"),
+        f"{header_b64}.{payload_b64}".encode("utf-8"),
+        hashlib.sha256,
+    ).digest()
+    return f"{header_b64}.{payload_b64}.{_b64url_encode(assinatura)}"
+
+
+def decodificar_token(token: str) -> dict[str, Any]:
+    try:
+        header_b64, payload_b64, assinatura_b64 = token.split(".")
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail="Token inválido.") from e
+
+    assinatura_esperada = hmac.new(
+        JWT_SECRET.encode("utf-8"),
+        f"{header_b64}.{payload_b64}".encode("utf-8"),
+        hashlib.sha256,
+    ).digest()
+    if not hmac.compare_digest(_b64url_encode(assinatura_esperada), assinatura_b64):
+        raise HTTPException(status_code=401, detail="Token inválido.")
+
+    try:
+        payload = json.loads(_b64url_decode(payload_b64).decode("utf-8"))
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Token inválido.") from e
+
+    if int(payload.get("exp", 0)) < int(datetime.now(UTC).timestamp()):
+        raise HTTPException(status_code=401, detail="Sessão expirada.")
+    return payload
+
+
+def normalizar_email(email: str) -> str:
+    return (email or "").strip().lower()
+
+
+def validar_email(email: str) -> bool:
+    return bool(EMAIL_RE.match(normalizar_email(email)))
+
+
+def buscar_usuario_por_email(db: Session, email: str) -> Optional[User]:
+    return db.query(User).filter(User.email == normalizar_email(email)).first()
+
+
 def init_db():
     Base.metadata.create_all(bind=engine)
     print("[DB] Tabelas criadas/verificadas com sucesso.")
@@ -265,6 +401,38 @@ def get_db():
         db.close()
 
 
+def get_token_from_request(request: Request) -> str:
+    auth = (request.headers.get("Authorization") or "").strip()
+    if auth.lower().startswith("bearer "):
+        return auth.split(" ", 1)[1].strip()
+    return (request.query_params.get("token") or request.query_params.get("access_token") or "").strip()
+
+
+def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
+    token = get_token_from_request(request)
+    if not token:
+        raise HTTPException(status_code=401, detail="Não autenticado.")
+    payload = decodificar_token(token)
+    try:
+        user_id = int(payload.get("sub"))
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Token inválido.") from e
+    user = db.query(User).filter(User.id == user_id, User.ativo == True).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="Usuário não encontrado.")
+    return user
+
+
+def garantir_user_id(user_id: Optional[int], entidade: str = "registro") -> int:
+    try:
+        valor = int(user_id or 0)
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Usuário inválido para {entidade}.") from e
+    if valor <= 0:
+        raise HTTPException(status_code=401, detail=f"Usuário inválido para {entidade}.")
+    return valor
+
+
 def executar_sql_seguro(sql: str):
     try:
         with engine.connect() as conn:
@@ -276,6 +444,8 @@ def executar_sql_seguro(sql: str):
 
 
 def _sql_tipo_coluna(nome_coluna: str) -> str:
+    if nome_coluna == "user_id":
+        return "INTEGER"
     if nome_coluna in ("descricao", "local", "hora_fim", "tipo_evento", "origem_evento", "google_event_id"):
         return "VARCHAR"
     if nome_coluna == "google_html_link":
@@ -288,6 +458,8 @@ def _sql_tipo_coluna(nome_coluna: str) -> str:
 
 
 def _sql_default_coluna(nome_coluna: str) -> str:
+    if nome_coluna == "user_id":
+        return ""
     if nome_coluna in ("descricao", "local", "hora_fim"):
         return " DEFAULT ''"
     if nome_coluna in ("tipo_evento", "origem_evento"):
@@ -323,6 +495,7 @@ def rodar_migracoes_automaticas():
     init_db()
 
     colunas_tarefas = [
+        "user_id",
         "descricao",
         "local",
         "hora_fim",
@@ -337,10 +510,22 @@ def rodar_migracoes_automaticas():
     for coluna in colunas_tarefas:
         garantir_coluna_tabela("tarefas", coluna)
 
+    for tabela in ("checklist", "notes", "push_subscriptions", "google_calendar_tokens"):
+        garantir_coluna_tabela(tabela, "user_id")
+
     try:
         PushSubscription.__table__.create(bind=engine, checkfirst=True)
     except Exception as e:
         print(f"[MIGRAÇÃO] Aviso ao criar push_subscriptions: {e}")
+
+    for tabela in ("tarefas", "checklist", "notes", "push_subscriptions", "google_calendar_tokens"):
+        try:
+            with engine.connect() as conn:
+                total_orfaos = conn.execute(text(f"SELECT COUNT(*) FROM {tabela} WHERE user_id IS NULL")).scalar() or 0
+            if total_orfaos:
+                print(f"[MIGRAÇÃO] Aviso: {tabela} possui {int(total_orfaos)} registro(s) antigo(s) sem user_id. Eles não serão vinculados automaticamente.")
+        except Exception as e:
+            print(f"[MIGRAÇÃO] Aviso ao verificar órfãos em {tabela}: {e}")
 
 
 rodar_migracoes_automaticas()
@@ -491,18 +676,20 @@ def _contexto_match_tarefa(tarefa: Tarefa) -> str:
     return _texto_sync_chave(tarefa.local or tarefa.origem or "")
 
 
-def _buscar_tarefa_por_google_event_id(db: Session, google_event_id: Optional[str]) -> Optional[Tarefa]:
+def _buscar_tarefa_por_google_event_id(db: Session, user_id: int, google_event_id: Optional[str]) -> Optional[Tarefa]:
     event_id = (google_event_id or "").strip()
     if not event_id:
         return None
     return db.query(Tarefa).filter(
         Tarefa.ativo == True,
+        Tarefa.user_id == user_id,
         Tarefa.google_event_id == event_id,
     ).order_by(Tarefa.id.asc()).first()
 
 
 def _buscar_tarefa_aproximada_google(
     db: Session,
+    user_id: int,
     titulo: str,
     data_ref: str,
     hora_inicio: str,
@@ -514,6 +701,7 @@ def _buscar_tarefa_aproximada_google(
     contexto_ref = _texto_sync_chave(local or origem)
     candidatas = db.query(Tarefa).filter(
         Tarefa.ativo == True,
+        Tarefa.user_id == user_id,
         Tarefa.data == data_ref,
     ).all()
 
@@ -583,12 +771,13 @@ def _aplicar_payload_google_em_tarefa(tarefa: Tarefa, payload: dict[str, Any]) -
     return tarefa
 
 
-def criar_ou_atualizar_tarefa_importada_google(db: Session, payload: dict[str, Any]) -> Tarefa:
+def criar_ou_atualizar_tarefa_importada_google(db: Session, user_id: int, payload: dict[str, Any]) -> Tarefa:
     google_event_id = (payload.get("google_event_id") or "").strip()
-    existente = _buscar_tarefa_por_google_event_id(db, google_event_id)
+    existente = _buscar_tarefa_por_google_event_id(db, user_id, google_event_id)
     if not existente:
         existente = _buscar_tarefa_aproximada_google(
             db,
+            user_id,
             titulo=(payload.get("titulo") or "").strip(),
             data_ref=(payload.get("data") or "").strip(),
             hora_inicio=(payload.get("hora_inicio") or "").strip(),
@@ -601,6 +790,7 @@ def criar_ou_atualizar_tarefa_importada_google(db: Session, payload: dict[str, A
     else:
         tarefa = _aplicar_payload_google_em_tarefa(
             Tarefa(
+                user_id=user_id,
                 titulo=(payload.get("titulo") or "").strip() or "(Sem título)",
                 data=(payload.get("data") or "").strip(),
                 ativo=True,
@@ -765,8 +955,11 @@ def _ultima_execucao_ajustada(item: ChecklistItem) -> Optional[date]:
     return ultimo_date
 
 
-def sincronizar_frequencia_checklist_existente(db: Session):
-    itens = db.query(ChecklistItem).filter(ChecklistItem.ativo == True).all()
+def sincronizar_frequencia_checklist_existente(db: Session, user_id: Optional[int] = None):
+    query = db.query(ChecklistItem).filter(ChecklistItem.ativo == True)
+    if user_id is not None:
+        query = query.filter(ChecklistItem.user_id == user_id)
+    itens = query.all()
     alterou = False
 
     for item in itens:
@@ -820,8 +1013,12 @@ def google_configurado() -> bool:
     return bool(GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET and GOOGLE_REDIRECT_URI)
 
 
-def salvar_google_credentials(db: Session, credentials: Credentials):
-    token_row = db.query(GoogleCalendarToken).filter(GoogleCalendarToken.provider == "google").first()
+def salvar_google_credentials(db: Session, user: User, credentials: Credentials):
+    user_id = garantir_user_id(user.id, "token Google")
+    token_row = db.query(GoogleCalendarToken).filter(
+        GoogleCalendarToken.provider == "google",
+        GoogleCalendarToken.user_id == user_id,
+    ).first()
     scopes_str = ",".join(credentials.scopes or GOOGLE_SCOPES)
     expiry = credentials.expiry
     if expiry and expiry.tzinfo is None:
@@ -829,6 +1026,7 @@ def salvar_google_credentials(db: Session, credentials: Credentials):
 
     if not token_row:
         token_row = GoogleCalendarToken(
+            user_id=user_id,
             provider="google",
             access_token=credentials.token,
             refresh_token=credentials.refresh_token,
@@ -857,9 +1055,11 @@ def salvar_google_credentials(db: Session, credentials: Credentials):
     return token_row
 
 
-def get_google_credentials(db: Session) -> Credentials:
+def get_google_credentials(db: Session, user: User) -> Credentials:
+    user_id = garantir_user_id(user.id, "token Google")
     token_row = db.query(GoogleCalendarToken).filter(
         GoogleCalendarToken.provider == "google",
+        GoogleCalendarToken.user_id == user_id,
         GoogleCalendarToken.ativo == True,
     ).first()
     if not token_row:
@@ -877,14 +1077,14 @@ def get_google_credentials(db: Session) -> Credentials:
 
     if credentials.expired and credentials.refresh_token:
         credentials.refresh(GoogleAuthRequest())
-        salvar_google_credentials(db, credentials)
+        salvar_google_credentials(db, user, credentials)
         return credentials
 
     return credentials
 
 
-def google_service(db: Session):
-    credentials = get_google_credentials(db)
+def google_service(db: Session, user: User):
+    credentials = get_google_credentials(db, user)
     return build("calendar", "v3", credentials=credentials)
 
 
@@ -975,7 +1175,7 @@ def montar_evento_google_body(
     }
 
 
-def sincronizar_tarefa_no_google(db: Session, tarefa: Tarefa):
+def sincronizar_tarefa_no_google(db: Session, tarefa: Tarefa, user: User):
     if not google_configurado():
         raise HTTPException(status_code=500, detail="Google não configurado no backend.")
 
@@ -990,7 +1190,7 @@ def sincronizar_tarefa_no_google(db: Session, tarefa: Tarefa):
     if not all_day and not hora_fim:
         raise HTTPException(status_code=400, detail="Não foi possível calcular a hora final para sincronizar no Google.")
 
-    service = google_service(db)
+    service = google_service(db, user)
     body = montar_evento_google_body(
         titulo=tarefa.titulo,
         data_iso=tarefa.data,
@@ -1021,11 +1221,11 @@ def sincronizar_tarefa_no_google(db: Session, tarefa: Tarefa):
     return tarefa
 
 
-def excluir_tarefa_no_google(db: Session, tarefa: Tarefa):
+def excluir_tarefa_no_google(db: Session, tarefa: Tarefa, user: User):
     if not tarefa.google_event_id:
         return
     try:
-        service = google_service(db)
+        service = google_service(db, user)
         service.events().delete(calendarId="primary", eventId=tarefa.google_event_id).execute()
     except Exception as e:
         print(f"[GOOGLE] Aviso ao excluir evento {tarefa.google_event_id}: {e}")
@@ -1085,7 +1285,7 @@ def health():
 
 
 @app.get("/debug")
-def debug_info(db: Session = Depends(get_db)):
+def debug_info(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     info = {
         "database_url_tipo": "postgresql" if DATABASE_URL.startswith("postgresql") else "sqlite",
         "database_url_prefixo": DATABASE_URL[:50] + "..." if len(DATABASE_URL) > 50 else DATABASE_URL,
@@ -1101,11 +1301,12 @@ def debug_info(db: Session = Depends(get_db)):
         "erro": None,
     }
     try:
-        info["tabelas"]["tarefas"] = db.query(Tarefa).count()
-        info["tabelas"]["checklist"] = db.query(ChecklistItem).count()
-        info["tabelas"]["notas"] = db.query(Note).count()
-        info["tabelas"]["push_subscriptions"] = db.query(PushSubscription).count()
-        info["tabelas"]["google_calendar_tokens"] = db.query(GoogleCalendarToken).count()
+        info["usuario"] = current_user.to_dict()
+        info["tabelas"]["tarefas"] = db.query(Tarefa).filter(Tarefa.user_id == current_user.id).count()
+        info["tabelas"]["checklist"] = db.query(ChecklistItem).filter(ChecklistItem.user_id == current_user.id).count()
+        info["tabelas"]["notas"] = db.query(Note).filter(Note.user_id == current_user.id).count()
+        info["tabelas"]["push_subscriptions"] = db.query(PushSubscription).filter(PushSubscription.user_id == current_user.id).count()
+        info["tabelas"]["google_calendar_tokens"] = db.query(GoogleCalendarToken).filter(GoogleCalendarToken.user_id == current_user.id).count()
         info["banco_ok"] = True
     except Exception as e:
         info["banco_ok"] = False
@@ -1124,13 +1325,72 @@ def serve_app():
 
 
 # ============================================================
+# AUTH
+# ============================================================
+
+@app.post("/auth/register")
+async def auth_register(request: Request, db: Session = Depends(get_db)):
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="JSON inválido.")
+
+    nome = (payload.get("nome") or "").strip()
+    email = normalizar_email(payload.get("email") or "")
+    senha = str(payload.get("senha") or "")
+
+    if not nome:
+        raise HTTPException(status_code=400, detail="Informe seu nome.")
+    if not validar_email(email):
+        raise HTTPException(status_code=400, detail="E-mail inválido.")
+    if len(senha) < 6:
+        raise HTTPException(status_code=400, detail="A senha deve ter pelo menos 6 caracteres.")
+    if buscar_usuario_por_email(db, email):
+        raise HTTPException(status_code=400, detail="Já existe uma conta com esse e-mail.")
+
+    usuario = User(nome=nome, email=email, senha_hash=hash_senha(senha), ativo=True)
+    db.add(usuario)
+    db.commit()
+    db.refresh(usuario)
+    return {"ok": True, "token": criar_token_acesso(usuario), "user": usuario.to_dict()}
+
+
+@app.post("/auth/login")
+async def auth_login(request: Request, db: Session = Depends(get_db)):
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="JSON inválido.")
+
+    email = normalizar_email(payload.get("email") or "")
+    senha = str(payload.get("senha") or "")
+    usuario = buscar_usuario_por_email(db, email)
+
+    if not usuario or not usuario.ativo or not verificar_senha(senha, usuario.senha_hash):
+        raise HTTPException(status_code=401, detail="E-mail ou senha inválidos.")
+
+    return {"ok": True, "token": criar_token_acesso(usuario), "user": usuario.to_dict()}
+
+
+@app.get("/auth/me")
+def auth_me(current_user: User = Depends(get_current_user)):
+    return {"ok": True, "user": current_user.to_dict()}
+
+
+@app.post("/auth/logout")
+def auth_logout():
+    return {"ok": True}
+
+
+# ============================================================
 # GOOGLE AGENDA
 # ============================================================
 
 @app.get("/google/status")
-def google_status(db: Session = Depends(get_db)):
+def google_status(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     token_row = db.query(GoogleCalendarToken).filter(
         GoogleCalendarToken.provider == "google",
+        GoogleCalendarToken.user_id == current_user.id,
         GoogleCalendarToken.ativo == True,
     ).first()
     return {
@@ -1142,7 +1402,8 @@ def google_status(db: Session = Depends(get_db)):
 
 
 @app.get("/auth/google")
-def auth_google(request: Request):
+def auth_google(request: Request, db: Session = Depends(get_db)):
+    current_user = get_current_user(request, db)
     if not google_configurado():
         raise HTTPException(
             status_code=500,
@@ -1168,6 +1429,7 @@ def auth_google(request: Request):
     )
     request.session["google_oauth_state"] = state
     request.session["google_code_verifier"] = flow.code_verifier
+    request.session["google_auth_user_id"] = current_user.id
     return RedirectResponse(auth_url)
 
 
@@ -1186,14 +1448,18 @@ def auth_google_callback(request: Request, db: Session = Depends(get_db)):
 
     saved_state = request.session.get("google_oauth_state")
     saved_code_verifier = request.session.get("google_code_verifier")
+    saved_user_id = request.session.get("google_auth_user_id")
     returned_state = request.query_params.get("state")
 
-    if not saved_state or not saved_code_verifier:
+    if not saved_state or not saved_code_verifier or not saved_user_id:
         raise HTTPException(status_code=400, detail="Sessão OAuth do Google não encontrada. Conecte novamente.")
     if returned_state != saved_state:
         raise HTTPException(status_code=400, detail="State OAuth inválido. Conecte novamente.")
 
     try:
+        usuario = db.query(User).filter(User.id == int(saved_user_id), User.ativo == True).first()
+        if not usuario:
+            raise HTTPException(status_code=401, detail="Usuário da sessão Google não encontrado.")
         flow = Flow.from_client_config(
             {
                 "web": {
@@ -1209,9 +1475,10 @@ def auth_google_callback(request: Request, db: Session = Depends(get_db)):
         flow.redirect_uri = GOOGLE_REDIRECT_URI
         flow.code_verifier = saved_code_verifier
         flow.fetch_token(code=code)
-        salvar_google_credentials(db, flow.credentials)
+        salvar_google_credentials(db, usuario, flow.credentials)
         request.session.pop("google_oauth_state", None)
         request.session.pop("google_code_verifier", None)
+        request.session.pop("google_auth_user_id", None)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao concluir login Google: {str(e)}")
 
@@ -1224,12 +1491,13 @@ def listar_eventos_google(
     date_to: str = Query(None, description="Data final YYYY-MM-DD"),
     max_results: int = Query(100, ge=1, le=500),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    service = google_service(db)
+    service = google_service(db, current_user)
     tarefas_vinculadas = {
         (row[0] or "").strip()
         for row in db.query(Tarefa.google_event_id)
-        .filter(Tarefa.ativo == True, Tarefa.google_event_id.isnot(None))
+        .filter(Tarefa.ativo == True, Tarefa.user_id == current_user.id, Tarefa.google_event_id.isnot(None))
         .all()
         if (row[0] or "").strip()
     }
@@ -1271,8 +1539,9 @@ def sincronizar_eventos_google_para_prioriza(
     date_to: str = Query(None, description="Data final YYYY-MM-DD"),
     max_results: int = Query(100, ge=1, le=500),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    service = google_service(db)
+    service = google_service(db, current_user)
 
     if date_from and not validar_data_iso(date_from):
         raise HTTPException(status_code=400, detail="date_from inválida. Use YYYY-MM-DD.")
@@ -1297,7 +1566,7 @@ def sincronizar_eventos_google_para_prioriza(
     sincronizados: list[dict[str, Any]] = []
     for event in eventos.get("items", []):
         payload = normalizar_evento_google(event)
-        tarefa = criar_ou_atualizar_tarefa_importada_google(db, payload)
+        tarefa = criar_ou_atualizar_tarefa_importada_google(db, current_user.id, payload)
         sincronizados.append(tarefa.to_dict())
 
     return {
@@ -1317,6 +1586,7 @@ def criar_evento_google(
     local: str = Query(""),
     all_day: bool = Query(False),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     if not validar_data_iso(data):
         raise HTTPException(status_code=400, detail="Data inválida. Use YYYY-MM-DD.")
@@ -1325,7 +1595,7 @@ def criar_evento_google(
     if not all_day and hora_para_minutos(hora_fim) <= hora_para_minutos(hora_inicio):
         raise HTTPException(status_code=400, detail="Hora final deve ser maior que a inicial.")
 
-    service = google_service(db)
+    service = google_service(db, current_user)
     body = montar_evento_google_body(
         titulo=titulo.strip(),
         data_iso=data,
@@ -1359,28 +1629,32 @@ def editar_evento_google(
     local: str = Query(""),
     all_day: bool = Query(False),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     if not validar_data_iso(data):
         raise HTTPException(status_code=400, detail="Data inválida. Use YYYY-MM-DD.")
     if not all_day and (not validar_hora(hora_inicio) or not validar_hora(hora_fim)):
         raise HTTPException(status_code=400, detail="Hora inválida. Use HH:MM.")
 
-    service = google_service(db)
+    service = google_service(db, current_user)
     body = montar_evento_google_body(titulo, data, hora_inicio, hora_fim, descricao, local, all_day)
     evento = service.events().update(calendarId="primary", eventId=event_id, body=body).execute()
     return {"ok": True, "evento": normalizar_evento_google(evento)}
 
 
 @app.delete("/google/calendar/events/{event_id}")
-def excluir_evento_google(event_id: str, db: Session = Depends(get_db)):
-    service = google_service(db)
+def excluir_evento_google(event_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    service = google_service(db, current_user)
     service.events().delete(calendarId="primary", eventId=event_id).execute()
     return {"ok": True}
 
 
 @app.post("/google/disconnect")
-def desconectar_google(db: Session = Depends(get_db)):
-    token_row = db.query(GoogleCalendarToken).filter(GoogleCalendarToken.provider == "google").first()
+def desconectar_google(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    token_row = db.query(GoogleCalendarToken).filter(
+        GoogleCalendarToken.provider == "google",
+        GoogleCalendarToken.user_id == current_user.id,
+    ).first()
     if not token_row:
         return {"ok": True, "mensagem": "Google já estava desconectado."}
     token_row.ativo = False
@@ -1394,21 +1668,21 @@ def desconectar_google(db: Session = Depends(get_db)):
 # ============================================================
 
 @app.get("/resumo")
-def resumo(data_ref: str = Query(None, description="Data de referência YYYY-MM-DD"), db: Session = Depends(get_db)):
-    sincronizar_frequencia_checklist_existente(db)
+def resumo(data_ref: str = Query(None, description="Data de referência YYYY-MM-DD"), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    sincronizar_frequencia_checklist_existente(db, current_user.id)
     hoje = data_ref.strip() if data_ref and validar_data_iso(data_ref) else date.today().isoformat()
 
-    tarefas_hoje = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.data == hoje).all()
+    tarefas_hoje = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.user_id == current_user.id, Tarefa.data == hoje).all()
     total_hoje = len(tarefas_hoje)
     feitas_hoje = sum(1 for t in tarefas_hoje if normalizar_status(t.status) == "feito")
     andamento_hoje = sum(1 for t in tarefas_hoje if normalizar_status(t.status) == "em_andamento")
     pendentes_hoje = total_hoje - feitas_hoje - andamento_hoje
 
-    checklist_itens = db.query(ChecklistItem).filter(ChecklistItem.ativo == True).all()
+    checklist_itens = db.query(ChecklistItem).filter(ChecklistItem.ativo == True, ChecklistItem.user_id == current_user.id).all()
     chk_disponiveis = [i for i in checklist_itens if calcular_pode_mostrar_hoje(i)]
     chk_feitos = [i for i in chk_disponiveis if i.status == "feito"]
 
-    notas_pendentes = db.query(Note).filter(Note.ativo == True, Note.status == "pendente").count()
+    notas_pendentes = db.query(Note).filter(Note.ativo == True, Note.user_id == current_user.id, Note.status == "pendente").count()
 
     return {
         "tarefas_hoje": total_hoje,
@@ -1426,24 +1700,24 @@ def resumo(data_ref: str = Query(None, description="Data de referência YYYY-MM-
 # ============================================================
 
 @app.get("/tarefas")
-def listar_tarefas(db: Session = Depends(get_db)):
-    tarefas = db.query(Tarefa).filter(Tarefa.ativo == True).order_by(Tarefa.data, Tarefa.hora_inicio, Tarefa.id).all()
+def listar_tarefas(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    tarefas = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.user_id == current_user.id).order_by(Tarefa.data, Tarefa.hora_inicio, Tarefa.id).all()
     return [t.to_dict() for t in tarefas]
 
 
 @app.get("/agenda/hoje")
-def tarefas_hoje(db: Session = Depends(get_db)):
+def tarefas_hoje(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     hoje = date.today().isoformat()
-    tarefas = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.data == hoje).order_by(Tarefa.hora_inicio, Tarefa.id).all()
+    tarefas = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.user_id == current_user.id, Tarefa.data == hoje).order_by(Tarefa.hora_inicio, Tarefa.id).all()
     return [t.to_dict() for t in tarefas]
 
 
 @app.get("/agenda/inteligencia")
-def agenda_inteligencia(data_ref: str = Query(None, description="Data de referência YYYY-MM-DD"), db: Session = Depends(get_db)):
+def agenda_inteligencia(data_ref: str = Query(None, description="Data de referência YYYY-MM-DD"), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     hoje = data_ref.strip() if data_ref and validar_data_iso(data_ref) else _agora_local().date().isoformat()
     agora_min = _agora_minutos()
 
-    tarefas = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.data == hoje).order_by(Tarefa.hora_inicio, Tarefa.id).all()
+    tarefas = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.user_id == current_user.id, Tarefa.data == hoje).order_by(Tarefa.hora_inicio, Tarefa.id).all()
     tarefas_ativas = [t for t in tarefas if normalizar_status(t.status) != "cancelada"]
 
     total_tarefas = len(tarefas_ativas)
@@ -1521,7 +1795,8 @@ def agenda_inteligencia(data_ref: str = Query(None, description="Data de referê
 
 
 @app.post("/tarefas")
-async def criar_tarefa(request: Request, db: Session = Depends(get_db)):
+async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    user_id = garantir_user_id(current_user.id, "tarefa")
     q = request.query_params
 
     titulo = q.get("titulo")
@@ -1629,10 +1904,11 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db)):
             "all_day": eh_all_day,
             "ativo": True,
         }
-        tarefa_google = criar_ou_atualizar_tarefa_importada_google(db, payload_google)
+        tarefa_google = criar_ou_atualizar_tarefa_importada_google(db, user_id, payload_google)
         return tarefa_google.to_dict()
 
     tarefa = Tarefa(
+        user_id=user_id,
         titulo=titulo.strip(),
         descricao=(descricao or "").strip(),
         origem=(origem or "").strip(),
@@ -1655,7 +1931,7 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db)):
 
     if str(sincronizar_google).lower() in {"1", "true", "sim", "yes"}:
         try:
-            tarefa = sincronizar_tarefa_no_google(db, tarefa)
+            tarefa = sincronizar_tarefa_no_google(db, tarefa, current_user)
         except Exception as e:
             print(f"[GOOGLE] Falha ao sincronizar tarefa recém-criada: {e}")
 
@@ -1663,8 +1939,8 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db)):
 
 
 @app.put("/tarefas/{tarefa_id}")
-async def editar_tarefa(tarefa_id: int, request: Request, db: Session = Depends(get_db)):
-    tarefa = db.query(Tarefa).filter(Tarefa.id == tarefa_id, Tarefa.ativo == True).first()
+async def editar_tarefa(tarefa_id: int, request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    tarefa = db.query(Tarefa).filter(Tarefa.id == tarefa_id, Tarefa.user_id == current_user.id, Tarefa.ativo == True).first()
     if not tarefa:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada.")
 
@@ -1744,7 +2020,7 @@ async def editar_tarefa(tarefa_id: int, request: Request, db: Session = Depends(
     precisa_sync = str(sincronizar_google).lower() in {"1", "true", "sim", "yes"} or bool(tarefa.google_event_id)
     if precisa_sync:
         try:
-            tarefa = sincronizar_tarefa_no_google(db, tarefa)
+            tarefa = sincronizar_tarefa_no_google(db, tarefa, current_user)
         except Exception as e:
             print(f"[GOOGLE] Falha ao sincronizar edição da tarefa {tarefa.id}: {e}")
 
@@ -1761,8 +2037,9 @@ def editar_tarefa_legado(
     duracao_min: int = 60,
     prioridade: int = 2,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    tarefa = db.query(Tarefa).filter(Tarefa.id == tarefa_id, Tarefa.ativo == True).first()
+    tarefa = db.query(Tarefa).filter(Tarefa.id == tarefa_id, Tarefa.user_id == current_user.id, Tarefa.ativo == True).first()
     if not tarefa:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
 
@@ -1786,13 +2063,13 @@ def editar_tarefa_legado(
 
 
 @app.post("/tarefas_excluir")
-def excluir_tarefa(tarefa_id: int = Query(..., alias="tarefa_id"), db: Session = Depends(get_db)):
-    tarefa = db.query(Tarefa).filter(Tarefa.id == tarefa_id, Tarefa.ativo == True).first()
+def excluir_tarefa(tarefa_id: int = Query(..., alias="tarefa_id"), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    tarefa = db.query(Tarefa).filter(Tarefa.id == tarefa_id, Tarefa.user_id == current_user.id, Tarefa.ativo == True).first()
     if not tarefa:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada.")
 
     if tarefa.google_event_id:
-        excluir_tarefa_no_google(db, tarefa)
+        excluir_tarefa_no_google(db, tarefa, current_user)
 
     tarefa.ativo = False
     tarefa.status = normalizar_status(tarefa.status)
@@ -1805,9 +2082,9 @@ def excluir_tarefa(tarefa_id: int = Query(..., alias="tarefa_id"), db: Session =
 # ============================================================
 
 @app.get("/checklist")
-def listar_checklist(db: Session = Depends(get_db)):
-    sincronizar_frequencia_checklist_existente(db)
-    itens = db.query(ChecklistItem).filter(ChecklistItem.ativo == True).order_by(ChecklistItem.criado_em, ChecklistItem.id).all()
+def listar_checklist(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    sincronizar_frequencia_checklist_existente(db, current_user.id)
+    itens = db.query(ChecklistItem).filter(ChecklistItem.user_id == current_user.id, ChecklistItem.ativo == True).order_by(ChecklistItem.criado_em, ChecklistItem.id).all()
     return [i.to_dict(incluir_pode_hoje=True) for i in itens]
 
 
@@ -1817,9 +2094,12 @@ def criar_checklist_item(
     origem: str = Query(""),
     frequencia: str = Query("Semanal"),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
+    user_id = garantir_user_id(current_user.id, "checklist")
     titulo = titulo.strip()
     item = ChecklistItem(
+        user_id=user_id,
         titulo=titulo,
         origem=(origem or "").strip(),
         frequencia=(frequencia or "Semanal").strip(),
@@ -1841,8 +2121,9 @@ def editar_checklist_item(
     origem: str = Query(None),
     frequencia: str = Query(None),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    item = db.query(ChecklistItem).filter(ChecklistItem.id == item_id, ChecklistItem.ativo == True).first()
+    item = db.query(ChecklistItem).filter(ChecklistItem.id == item_id, ChecklistItem.user_id == current_user.id, ChecklistItem.ativo == True).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item não encontrado.")
 
@@ -1860,9 +2141,9 @@ def editar_checklist_item(
 
 
 @app.post("/checklist_status")
-def alterar_status_checklist(item_id: int = Query(...), status: str = Query(...), db: Session = Depends(get_db)):
-    sincronizar_frequencia_checklist_existente(db)
-    item = db.query(ChecklistItem).filter(ChecklistItem.id == item_id, ChecklistItem.ativo == True).first()
+def alterar_status_checklist(item_id: int = Query(...), status: str = Query(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    sincronizar_frequencia_checklist_existente(db, current_user.id)
+    item = db.query(ChecklistItem).filter(ChecklistItem.id == item_id, ChecklistItem.user_id == current_user.id, ChecklistItem.ativo == True).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item não encontrado.")
 
@@ -1887,8 +2168,8 @@ def alterar_status_checklist(item_id: int = Query(...), status: str = Query(...)
 
 
 @app.post("/checklist_reset")
-def resetar_status_checklist(item_id: int = Query(...), db: Session = Depends(get_db)):
-    item = db.query(ChecklistItem).filter(ChecklistItem.id == item_id, ChecklistItem.ativo == True).first()
+def resetar_status_checklist(item_id: int = Query(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    item = db.query(ChecklistItem).filter(ChecklistItem.id == item_id, ChecklistItem.user_id == current_user.id, ChecklistItem.ativo == True).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item não encontrado.")
     item.status = "pendente"
@@ -1898,8 +2179,8 @@ def resetar_status_checklist(item_id: int = Query(...), db: Session = Depends(ge
 
 
 @app.post("/checklist_excluir")
-def excluir_checklist_item(item_id: int = Query(...), db: Session = Depends(get_db)):
-    item = db.query(ChecklistItem).filter(ChecklistItem.id == item_id, ChecklistItem.ativo == True).first()
+def excluir_checklist_item(item_id: int = Query(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    item = db.query(ChecklistItem).filter(ChecklistItem.id == item_id, ChecklistItem.user_id == current_user.id, ChecklistItem.ativo == True).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item não encontrado.")
     item.ativo = False
@@ -1912,8 +2193,8 @@ def excluir_checklist_item(item_id: int = Query(...), db: Session = Depends(get_
 # ============================================================
 
 @app.get("/notes")
-def listar_notas(db: Session = Depends(get_db)):
-    notas = db.query(Note).filter(Note.ativo == True).order_by(Note.created_at, Note.id).all()
+def listar_notas(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    notas = db.query(Note).filter(Note.user_id == current_user.id, Note.ativo == True).order_by(Note.created_at, Note.id).all()
     return [n.to_dict() for n in notas]
 
 
@@ -1923,12 +2204,15 @@ def criar_nota(
     data: str = Form(""),
     tipo: str = Form("GERAL"),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
+    user_id = garantir_user_id(current_user.id, "nota")
     data_str = (data or "").strip()
     if data_str and not validar_data_iso(data_str):
         raise HTTPException(status_code=400, detail="Formato de data inválido. Use YYYY-MM-DD.")
 
     nota = Note(
+        user_id=user_id,
         texto=texto.strip(),
         data=data_str,
         tipo=(tipo or "GERAL").strip().upper(),
@@ -1948,8 +2232,9 @@ def editar_nota(
     data: str = Query(None),
     tipo: str = Query(None),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    nota = db.query(Note).filter(Note.id == note_id, Note.ativo == True).first()
+    nota = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id, Note.ativo == True).first()
     if not nota:
         raise HTTPException(status_code=404, detail="Nota não encontrada.")
 
@@ -1969,8 +2254,8 @@ def editar_nota(
 
 
 @app.post("/notes_status")
-def alterar_status_nota(note_id: int = Query(...), status: str = Query(...), db: Session = Depends(get_db)):
-    nota = db.query(Note).filter(Note.id == note_id, Note.ativo == True).first()
+def alterar_status_nota(note_id: int = Query(...), status: str = Query(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    nota = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id, Note.ativo == True).first()
     if not nota:
         raise HTTPException(status_code=404, detail="Nota não encontrada.")
 
@@ -1984,8 +2269,8 @@ def alterar_status_nota(note_id: int = Query(...), status: str = Query(...), db:
 
 
 @app.post("/notes_delete")
-def excluir_nota(note_id: int = Query(...), db: Session = Depends(get_db)):
-    nota = db.query(Note).filter(Note.id == note_id, Note.ativo == True).first()
+def excluir_nota(note_id: int = Query(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    nota = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id, Note.ativo == True).first()
     if not nota:
         raise HTTPException(status_code=404, detail="Nota não encontrada.")
     nota.ativo = False
@@ -1998,10 +2283,10 @@ def excluir_nota(note_id: int = Query(...), db: Session = Depends(get_db)):
 # ============================================================
 
 @app.get("/backup")
-def exportar_backup(db: Session = Depends(get_db)):
-    tarefas = db.query(Tarefa).filter(Tarefa.ativo == True).all()
-    checklist = db.query(ChecklistItem).filter(ChecklistItem.ativo == True).all()
-    notas = db.query(Note).filter(Note.ativo == True).all()
+def exportar_backup(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    tarefas = db.query(Tarefa).filter(Tarefa.user_id == current_user.id, Tarefa.ativo == True).all()
+    checklist = db.query(ChecklistItem).filter(ChecklistItem.user_id == current_user.id, ChecklistItem.ativo == True).all()
+    notas = db.query(Note).filter(Note.user_id == current_user.id, Note.ativo == True).all()
     return {
         "versao": "2.0",
         "exportado_em": datetime.now(UTC).isoformat(),
@@ -2012,7 +2297,8 @@ def exportar_backup(db: Session = Depends(get_db)):
 
 
 @app.post("/restaurar")
-async def importar_backup(request: Request, db: Session = Depends(get_db)):
+async def importar_backup(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    user_id = garantir_user_id(current_user.id, "restauração")
     try:
         dados = await request.json()
     except Exception:
@@ -2035,6 +2321,7 @@ async def importar_backup(request: Request, db: Session = Depends(get_db)):
             if hora_inicio and not hora_fim:
                 hora_fim = calcular_hora_fim(hora_inicio, duracao_val)
             nova = Tarefa(
+                user_id=user_id,
                 titulo=titulo,
                 descricao=(t.get("descricao") or "").strip(),
                 origem=(t.get("origem") or "").strip(),
@@ -2064,6 +2351,7 @@ async def importar_backup(request: Request, db: Session = Depends(get_db)):
             if not titulo:
                 continue
             novo = ChecklistItem(
+                user_id=user_id,
                 titulo=titulo,
                 origem=(c.get("origem") or "").strip(),
                 frequencia=c.get("frequencia") or "Semanal",
@@ -2082,6 +2370,7 @@ async def importar_backup(request: Request, db: Session = Depends(get_db)):
             if not texto:
                 continue
             nova_nota = Note(
+                user_id=user_id,
                 texto=texto,
                 data=n.get("data") or "",
                 tipo=n.get("tipo") or "GERAL",
@@ -2136,12 +2425,15 @@ def _enviar_push(sub: PushSubscription, titulo: str, corpo: str, url: str = "/ap
         print(f"[PUSH] Erro ao enviar para {sub.endpoint[:40]}...: {e}")
 
 
-def _enviar_push_todos(titulo: str, corpo: str, url: str = "/app"):
+def _enviar_push_todos(titulo: str, corpo: str, url: str = "/app", user_id: Optional[int] = None):
     if not VAPID_PRIVATE_KEY:
         return
     db = SessionLocal()
     try:
-        subs = db.query(PushSubscription).filter(PushSubscription.ativo == True).all()
+        query = db.query(PushSubscription).filter(PushSubscription.ativo == True)
+        if user_id is not None:
+            query = query.filter(PushSubscription.user_id == user_id)
+        subs = query.all()
         for sub in subs:
             _enviar_push(sub, titulo, corpo, url)
     finally:
@@ -2149,7 +2441,8 @@ def _enviar_push_todos(titulo: str, corpo: str, url: str = "/app"):
 
 
 @app.post("/push/subscribe")
-async def push_subscribe(request: Request, db: Session = Depends(get_db)):
+async def push_subscribe(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    user_id = garantir_user_id(current_user.id, "push")
     try:
         dados = await request.json()
         endpoint = dados.get("endpoint", "")
@@ -2160,14 +2453,22 @@ async def push_subscribe(request: Request, db: Session = Depends(get_db)):
         if not endpoint or not p256dh or not auth:
             raise HTTPException(status_code=400, detail="Dados de inscrição inválidos.")
 
-        sub = db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint).first()
+        sub = db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint, PushSubscription.user_id == user_id).first()
         if sub:
             sub.p256dh = p256dh
             sub.auth = auth
             sub.ativo = True
         else:
-            sub = PushSubscription(endpoint=endpoint, p256dh=p256dh, auth=auth, ativo=True)
-            db.add(sub)
+            sub_existente = db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint).first()
+            if sub_existente and sub_existente.user_id not in (None, user_id):
+                sub_existente.user_id = user_id
+                sub_existente.p256dh = p256dh
+                sub_existente.auth = auth
+                sub_existente.ativo = True
+                sub = sub_existente
+            else:
+                sub = PushSubscription(user_id=user_id, endpoint=endpoint, p256dh=p256dh, auth=auth, ativo=True)
+                db.add(sub)
 
         db.commit()
         db.refresh(sub)
@@ -2179,11 +2480,11 @@ async def push_subscribe(request: Request, db: Session = Depends(get_db)):
 
 
 @app.delete("/push/subscribe")
-async def push_unsubscribe(request: Request, db: Session = Depends(get_db)):
+async def push_unsubscribe(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     try:
         dados = await request.json()
         endpoint = dados.get("endpoint", "")
-        sub = db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint).first()
+        sub = db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint, PushSubscription.user_id == current_user.id).first()
         if sub:
             sub.ativo = False
             db.commit()
@@ -2193,9 +2494,9 @@ async def push_unsubscribe(request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/push/status")
-async def push_status(db: Session = Depends(get_db)):
+async def push_status(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     try:
-        total = db.query(PushSubscription).filter(PushSubscription.ativo == True).count()
+        total = db.query(PushSubscription).filter(PushSubscription.user_id == current_user.id, PushSubscription.ativo == True).count()
     except Exception as e:
         return {
             "vapid_configurado": bool(VAPID_PRIVATE_KEY),
@@ -2211,10 +2512,10 @@ async def push_status(db: Session = Depends(get_db)):
 
 
 @app.get("/push/teste")
-async def push_teste(db: Session = Depends(get_db)):
+async def push_teste(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if not VAPID_PRIVATE_KEY:
         raise HTTPException(status_code=503, detail="VAPID_PRIVATE_KEY não configurada no servidor.")
-    subs = db.query(PushSubscription).filter(PushSubscription.ativo == True).all()
+    subs = db.query(PushSubscription).filter(PushSubscription.user_id == current_user.id, PushSubscription.ativo == True).all()
     if not subs:
         raise HTTPException(status_code=404, detail="Nenhum dispositivo inscrito. Abra o app primeiro.")
     for sub in subs:
@@ -2223,9 +2524,9 @@ async def push_teste(db: Session = Depends(get_db)):
 
 
 @app.get("/push/limpar")
-async def push_limpar(db: Session = Depends(get_db)):
-    count = db.query(PushSubscription).count()
-    db.query(PushSubscription).delete()
+async def push_limpar(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    count = db.query(PushSubscription).filter(PushSubscription.user_id == current_user.id).count()
+    db.query(PushSubscription).filter(PushSubscription.user_id == current_user.id).delete()
     db.commit()
     return {
         "ok": True,
@@ -2274,93 +2575,124 @@ def _loop_notificacoes_push():
             try:
                 hoje_iso = date.today().isoformat()
                 amanha_iso = (date.today() + timedelta(days=1)).isoformat()
-
-                tarefas_hoje = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.data == hoje_iso).order_by(Tarefa.hora_inicio).all()
-                tarefas_amanha = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.data == amanha_iso).all()
-                checklist = db.query(ChecklistItem).filter(ChecklistItem.ativo == True).all()
-                chk_hoje = [i for i in checklist if calcular_pode_mostrar_hoje(i)]
-
+                usuarios = db.query(User).filter(User.ativo == True).all()
                 minutos_agora = hora * 60 + minuto
-                for t in tarefas_hoje:
-                    if not t.hora_inicio or not status_nao_concluido(t.status):
-                        continue
-                    try:
-                        diff = hora_para_minutos(t.hora_inicio) - minutos_agora
-                        origem = f" · {t.origem}" if t.origem else ""
-                        if diff == 60:
-                            _enviar_push_todos("Em 1 hora", f"{t.titulo}{origem} às {t.hora_inicio}")
-                        elif diff == 15:
-                            _enviar_push_todos("Em 15 minutos", f"{t.titulo}{origem} começa às {t.hora_inicio}")
-                        elif diff == 5:
-                            _enviar_push_todos("Em 5 minutos", f"{t.titulo}{origem} começa às {t.hora_inicio}")
-                        elif diff == 0:
-                            _enviar_push_todos("Agora", f"{t.titulo}{origem} está começando")
-                    except Exception:
-                        pass
 
-                if hora == 6 and minuto == 0:
-                    total = len([t for t in tarefas_hoje if normalizar_status(t.status) != "cancelada"])
-                    chk_total = len(chk_hoje)
-                    alta_prio = [t for t in tarefas_hoje if t.prioridade == 1 and status_nao_concluido(t.status)]
-                    if total == 0 and chk_total == 0:
-                        _enviar_push_todos("Bom dia", "Agenda livre hoje. Aproveite o dia.")
-                    elif alta_prio:
-                        _enviar_push_todos("Bom dia", f"{len(alta_prio)} tarefa(s) de alta prioridade hoje. Primeira: {alta_prio[0].titulo}")
-                    else:
-                        _enviar_push_todos("Bom dia", f"Hoje: {total} compromisso(s) e {chk_total} rotina(s) no checklist.")
-
-                if hora == 9 and minuto == 0:
-                    alta = [t for t in tarefas_hoje if t.prioridade == 1 and status_nao_concluido(t.status)]
-                    if alta:
-                        _enviar_push_todos("Tarefa prioritária", f"{len(alta)} tarefa(s) de alta prioridade hoje.")
-
-                if hora == 11 and minuto == 0:
-                    pendentes = [i for i in chk_hoje if i.status == "pendente"]
-                    feitos = [i for i in chk_hoje if i.status == "feito"]
-                    if pendentes and not feitos:
-                        _enviar_push_todos("Checklist do dia", f"Você ainda não iniciou nenhuma rotina. {len(pendentes)} pendente(s).")
-                    elif pendentes:
-                        _enviar_push_todos("Checklist em andamento", f"{len(feitos)} feita(s), faltam {len(pendentes)}.")
-
-                if hora == 20 and minuto == 0:
-                    feitas = len([t for t in tarefas_hoje if normalizar_status(t.status) == "feito"])
-                    total = len([t for t in tarefas_hoje if normalizar_status(t.status) != "cancelada"])
-                    amanha_count = len(tarefas_amanha)
-                    if total == 0:
-                        _enviar_push_todos("Encerrando o dia", "Nenhum compromisso hoje. Descanse bem.")
-                    elif feitas == total:
-                        _enviar_push_todos("Parabéns", f"Todas as {total} tarefa(s) concluídas hoje.")
-                    else:
-                        extra = f" Amanhã: {amanha_count} compromisso(s)." if amanha_count else ""
-                        _enviar_push_todos("Fim do dia", f"{feitas}/{total} tarefas concluídas.{extra}")
-
-                if dia_semana == 0 and hora == 8 and minuto == 0:
-                    semana_total = db.query(Tarefa).filter(
+                for usuario in usuarios:
+                    tarefas_hoje = (
+                        db.query(Tarefa)
+                        .filter(Tarefa.ativo == True, Tarefa.user_id == usuario.id, Tarefa.data == hoje_iso)
+                        .order_by(Tarefa.hora_inicio)
+                        .all()
+                    )
+                    tarefas_amanha = db.query(Tarefa).filter(
                         Tarefa.ativo == True,
-                        Tarefa.data >= hoje_iso,
-                        Tarefa.data <= (date.today() + timedelta(days=4)).isoformat(),
-                    ).count()
-                    _enviar_push_todos("Semana começando", f"Você tem {semana_total} compromisso(s) essa semana.")
+                        Tarefa.user_id == usuario.id,
+                        Tarefa.data == amanha_iso,
+                    ).all()
+                    checklist = db.query(ChecklistItem).filter(
+                        ChecklistItem.ativo == True,
+                        ChecklistItem.user_id == usuario.id,
+                    ).all()
+                    chk_hoje = [i for i in checklist if calcular_pode_mostrar_hoje(i)]
 
-                if dia_semana == 4 and hora == 17 and minuto == 0:
-                    pendentes_sexta = [t for t in tarefas_hoje if status_nao_concluido(t.status)]
-                    if not pendentes_sexta:
-                        _enviar_push_todos("Sexta-feira", "Você zerou todas as tarefas. Bom descanso.")
-                    else:
-                        _enviar_push_todos("Sexta-feira", f"Faltam {len(pendentes_sexta)} tarefa(s) para fechar a semana.")
+                    for t in tarefas_hoje:
+                        if not t.hora_inicio or not status_nao_concluido(t.status):
+                            continue
+                        try:
+                            diff = hora_para_minutos(t.hora_inicio) - minutos_agora
+                            origem = f" · {t.origem}" if t.origem else ""
+                            if diff == 60:
+                                _enviar_push_todos("Em 1 hora", f"{t.titulo}{origem} às {t.hora_inicio}", user_id=usuario.id)
+                            elif diff == 15:
+                                _enviar_push_todos("Em 15 minutos", f"{t.titulo}{origem} começa às {t.hora_inicio}", user_id=usuario.id)
+                            elif diff == 5:
+                                _enviar_push_todos("Em 5 minutos", f"{t.titulo}{origem} começa às {t.hora_inicio}", user_id=usuario.id)
+                            elif diff == 0:
+                                _enviar_push_todos("Agora", f"{t.titulo}{origem} está começando", user_id=usuario.id)
+                        except Exception:
+                            pass
 
-                if hora == 7 and minuto == 0:
-                    feriado = _feriado_hoje_ou_amanha()
-                    if feriado:
-                        quando, nome = feriado
-                        tarefas_feriado = tarefas_hoje if quando == "hoje" else tarefas_amanha
-                        n = len(tarefas_feriado)
-                        if quando == "hoje":
-                            msg = f"Você tem {n} tarefa(s) mesmo assim." if n else "Aproveite o dia de folga."
-                            _enviar_push_todos(f"Hoje é feriado — {nome}", msg)
+                    if hora == 6 and minuto == 0:
+                        total = len([t for t in tarefas_hoje if normalizar_status(t.status) != "cancelada"])
+                        chk_total = len(chk_hoje)
+                        alta_prio = [t for t in tarefas_hoje if t.prioridade == 1 and status_nao_concluido(t.status)]
+                        if total == 0 and chk_total == 0:
+                            _enviar_push_todos("Bom dia", "Agenda livre hoje. Aproveite o dia.", user_id=usuario.id)
+                        elif alta_prio:
+                            _enviar_push_todos(
+                                "Bom dia",
+                                f"{len(alta_prio)} tarefa(s) de alta prioridade hoje. Primeira: {alta_prio[0].titulo}",
+                                user_id=usuario.id,
+                            )
                         else:
-                            msg = f"Você tem {n} tarefa(s) no dia do feriado. Considere adiantar." if n else "Amanhã é folga."
-                            _enviar_push_todos(f"Feriado amanhã — {nome}", msg)
+                            _enviar_push_todos(
+                                "Bom dia",
+                                f"Hoje: {total} compromisso(s) e {chk_total} rotina(s) no checklist.",
+                                user_id=usuario.id,
+                            )
+
+                    if hora == 9 and minuto == 0:
+                        alta = [t for t in tarefas_hoje if t.prioridade == 1 and status_nao_concluido(t.status)]
+                        if alta:
+                            _enviar_push_todos("Tarefa prioritária", f"{len(alta)} tarefa(s) de alta prioridade hoje.", user_id=usuario.id)
+
+                    if hora == 11 and minuto == 0:
+                        pendentes = [i for i in chk_hoje if i.status == "pendente"]
+                        feitos = [i for i in chk_hoje if i.status == "feito"]
+                        if pendentes and not feitos:
+                            _enviar_push_todos(
+                                "Checklist do dia",
+                                f"Você ainda não iniciou nenhuma rotina. {len(pendentes)} pendente(s).",
+                                user_id=usuario.id,
+                            )
+                        elif pendentes:
+                            _enviar_push_todos(
+                                "Checklist em andamento",
+                                f"{len(feitos)} feita(s), faltam {len(pendentes)}.",
+                                user_id=usuario.id,
+                            )
+
+                    if hora == 20 and minuto == 0:
+                        feitas = len([t for t in tarefas_hoje if normalizar_status(t.status) == "feito"])
+                        total = len([t for t in tarefas_hoje if normalizar_status(t.status) != "cancelada"])
+                        amanha_count = len(tarefas_amanha)
+                        if total == 0:
+                            _enviar_push_todos("Encerrando o dia", "Nenhum compromisso hoje. Descanse bem.", user_id=usuario.id)
+                        elif feitas == total:
+                            _enviar_push_todos("Parabéns", f"Todas as {total} tarefa(s) concluídas hoje.", user_id=usuario.id)
+                        else:
+                            extra = f" Amanhã: {amanha_count} compromisso(s)." if amanha_count else ""
+                            _enviar_push_todos("Fim do dia", f"{feitas}/{total} tarefas concluídas.{extra}", user_id=usuario.id)
+
+                    if dia_semana == 0 and hora == 8 and minuto == 0:
+                        semana_total = db.query(Tarefa).filter(
+                            Tarefa.ativo == True,
+                            Tarefa.user_id == usuario.id,
+                            Tarefa.data >= hoje_iso,
+                            Tarefa.data <= (date.today() + timedelta(days=4)).isoformat(),
+                        ).count()
+                        _enviar_push_todos("Semana começando", f"Você tem {semana_total} compromisso(s) essa semana.", user_id=usuario.id)
+
+                    if dia_semana == 4 and hora == 17 and minuto == 0:
+                        pendentes_sexta = [t for t in tarefas_hoje if status_nao_concluido(t.status)]
+                        if not pendentes_sexta:
+                            _enviar_push_todos("Sexta-feira", "Você zerou todas as tarefas. Bom descanso.", user_id=usuario.id)
+                        else:
+                            _enviar_push_todos("Sexta-feira", f"Faltam {len(pendentes_sexta)} tarefa(s) para fechar a semana.", user_id=usuario.id)
+
+                    if hora == 7 and minuto == 0:
+                        feriado = _feriado_hoje_ou_amanha()
+                        if feriado:
+                            quando, nome = feriado
+                            tarefas_feriado = tarefas_hoje if quando == "hoje" else tarefas_amanha
+                            n = len(tarefas_feriado)
+                            if quando == "hoje":
+                                msg = f"Você tem {n} tarefa(s) mesmo assim." if n else "Aproveite o dia de folga."
+                                _enviar_push_todos(f"Hoje é feriado — {nome}", msg, user_id=usuario.id)
+                            else:
+                                msg = f"Você tem {n} tarefa(s) no dia do feriado. Considere adiantar." if n else "Amanhã é folga."
+                                _enviar_push_todos(f"Feriado amanhã — {nome}", msg, user_id=usuario.id)
             finally:
                 db.close()
         except Exception as e:
