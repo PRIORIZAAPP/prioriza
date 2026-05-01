@@ -1209,6 +1209,89 @@
       .checklist-ver-mais:hover {
         background: #f8fafc;
       }
+      .checklist-segmented {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin: 14px 0 14px;
+      }
+      .checklist-segment {
+        border: 1px solid rgba(148,163,184,0.18);
+        background: rgba(255,255,255,0.82);
+        border-radius: 16px;
+        padding: 10px 10px 9px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        color: #64748b;
+        cursor: pointer;
+        transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+      }
+      .checklist-segment:hover {
+        transform: translateY(-1px);
+        border-color: rgba(var(--cor-tema-rgb), 0.18);
+        box-shadow: 0 8px 16px rgba(15,23,42,0.06);
+      }
+      .checklist-segment.active {
+        color: #0f172a;
+        border-color: rgba(var(--cor-tema-rgb), 0.24);
+        background: linear-gradient(180deg, #ffffff 0%, rgba(var(--cor-tema-rgb), 0.06) 100%);
+        box-shadow: 0 10px 22px rgba(var(--cor-tema-rgb), 0.10);
+      }
+      .checklist-segment-label {
+        font-size: 11px;
+        line-height: 1.1;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .checklist-segment-count {
+        font-size: 18px;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #0f172a;
+      }
+      .checklist-segment-sub {
+        font-size: 11px;
+        line-height: 1.2;
+        color: #94a3b8;
+      }
+      .checklist-list-shell {
+        margin-top: 10px;
+      }
+      .checklist-list-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+      .checklist-list-heading h3 {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.2;
+        color: #0f172a;
+      }
+      .checklist-list-meta {
+        font-size: 12px;
+        color: #64748b;
+      }
+      .checklist-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .checklist-list-empty {
+        padding: 14px 12px;
+        border-radius: 14px;
+        border: 1px dashed rgba(148,163,184,0.22);
+        background: rgba(255,255,255,0.62);
+        color: #64748b;
+        font-size: 13px;
+        line-height: 1.45;
+      }
 
       .swipe-dragging {
         transition: none !important;
@@ -2547,7 +2630,30 @@
                 <input id="filtro-origem" type="text" placeholder="Ex: HGG, Escritório" />
               </div>
             </div>
-            <div id="checklist-geral-lista"><small>Carregando checklist...</small></div>
+            <div id="checklist-segmented" class="checklist-segmented">
+              <button class="checklist-segment active" type="button" data-checklist-tab="pendente">
+                <span class="checklist-segment-label">Pendentes</span>
+                <span id="checklist-count-pendente" class="checklist-segment-count">0</span>
+                <span class="checklist-segment-sub">Para executar</span>
+              </button>
+              <button class="checklist-segment" type="button" data-checklist-tab="em_andamento">
+                <span class="checklist-segment-label">Em andamento</span>
+                <span id="checklist-count-em_andamento" class="checklist-segment-count">0</span>
+                <span class="checklist-segment-sub">Em curso</span>
+              </button>
+              <button class="checklist-segment" type="button" data-checklist-tab="feito">
+                <span class="checklist-segment-label">Concluídas</span>
+                <span id="checklist-count-feito" class="checklist-segment-count">0</span>
+                <span class="checklist-segment-sub">Finalizadas</span>
+              </button>
+            </div>
+            <div class="checklist-list-shell">
+              <div class="checklist-list-heading">
+                <h3 id="checklist-list-title">Pendentes</h3>
+                <div id="checklist-list-meta" class="checklist-list-meta">0 item(ns)</div>
+              </div>
+              <div id="checklist-geral-lista" class="checklist-list-container"><small>Carregando checklist...</small></div>
+            </div>
           </div>
         </div>
 
@@ -4623,12 +4729,7 @@
 
     // ── CHECKLIST GERAL ───────────────────────────────────────────
 
-    const CHECKLIST_GERAL_LIMITE_INICIAL = 5;
-    let checklistSecoesEstado = {
-      pendente: { expanded: false, collapsed: false },
-      em_andamento: { expanded: false, collapsed: false },
-      feito: { expanded: false, collapsed: true }
-    };
+    let checklistGeralAbaAtiva = "pendente";
 
     function normalizarStatusChecklist(status) {
       if (status === "em_andamento" || status === "feito") return status;
@@ -4728,86 +4829,55 @@
       return div;
     }
 
-    function renderChecklistSecao(container, titulo, statusKey, itens) {
-      const estado = checklistSecoesEstado[statusKey] || { expanded: false, collapsed: false };
-      const secao = document.createElement("div");
-      secao.className = "checklist-secao";
+    function atualizarTabsChecklist(grupos) {
+      const rotulos = {
+        pendente: "Pendentes",
+        em_andamento: "Em andamento",
+        feito: "Concluídas",
+      };
 
-      const header = document.createElement("div");
-      header.className = "checklist-secao-header";
-
-      const titleWrap = document.createElement("div");
-      titleWrap.className = "checklist-secao-title-wrap";
-
-      const dot = document.createElement("span");
-      dot.className = `checklist-secao-dot ${statusKey}`;
-
-      const title = document.createElement("div");
-      title.className = "checklist-secao-titulo";
-      title.textContent = titulo;
-
-      const count = document.createElement("div");
-      count.className = "checklist-secao-count";
-      count.textContent = `${itens.length} item(ns)`;
-
-      titleWrap.appendChild(dot);
-      titleWrap.appendChild(title);
-      titleWrap.appendChild(count);
-
-      header.appendChild(titleWrap);
-
-      if (statusKey === "feito") {
-        const toggle = document.createElement("button");
-        toggle.type = "button";
-        toggle.className = "checklist-secao-toggle";
-        toggle.textContent = estado.collapsed ? "Mostrar" : "Ocultar";
-        toggle.addEventListener("click", async () => {
-          checklistSecoesEstado[statusKey].collapsed = !checklistSecoesEstado[statusKey].collapsed;
-          await carregarChecklistGeral();
-        });
-        header.appendChild(toggle);
+      if (!grupos[checklistGeralAbaAtiva]?.length) {
+        if (grupos.pendente.length) checklistGeralAbaAtiva = "pendente";
+        else if (grupos.em_andamento.length) checklistGeralAbaAtiva = "em_andamento";
+        else checklistGeralAbaAtiva = "feito";
       }
 
-      secao.appendChild(header);
+      document.querySelectorAll("[data-checklist-tab]").forEach((botao) => {
+        const status = botao.dataset.checklistTab || "pendente";
+        botao.classList.toggle("active", status === checklistGeralAbaAtiva);
+      });
 
-      const caixa = document.createElement("div");
-      caixa.className = "checklist-secao-caixa";
+      document.getElementById("checklist-count-pendente").textContent = String(grupos.pendente.length);
+      document.getElementById("checklist-count-em_andamento").textContent = String(grupos.em_andamento.length);
+      document.getElementById("checklist-count-feito").textContent = String(grupos.feito.length);
 
-      const lista = document.createElement("div");
-      lista.className = "checklist-secao-lista";
-      if (estado.collapsed) {
-        lista.classList.add("collapsed");
-      }
+      const titulo = document.getElementById("checklist-list-title");
+      const meta = document.getElementById("checklist-list-meta");
+      const atual = grupos[checklistGeralAbaAtiva] || [];
+      if (titulo) titulo.textContent = rotulos[checklistGeralAbaAtiva];
+      if (meta) meta.textContent = `${atual.length} item(ns)`;
+    }
 
-      if (itens.length === 0) {
+    function renderChecklistLista(container, statusKey, itens) {
+      const mensagensVazias = {
+        pendente: "Nenhuma rotina pendente agora.",
+        em_andamento: "Nada em andamento no momento.",
+        feito: "Nenhuma rotina concluída ainda.",
+      };
+
+      container.innerHTML = "";
+
+      if (!itens.length) {
         const vazio = document.createElement("div");
-        vazio.className = "checklist-empty";
-        vazio.textContent = statusKey === "feito" ? "Nenhuma rotina concluída." : "Nenhum item nesta seção.";
-        lista.appendChild(vazio);
-      } else {
-        const limite = estado.expanded ? itens.length : CHECKLIST_GERAL_LIMITE_INICIAL;
-        itens.slice(0, limite).forEach(item => lista.appendChild(criarElementoChecklistItem(item)));
-
-        if (itens.length > CHECKLIST_GERAL_LIMITE_INICIAL) {
-          const btnMais = document.createElement("button");
-          btnMais.type = "button";
-          btnMais.className = "checklist-ver-mais";
-          btnMais.textContent = estado.expanded ? "Mostrar menos" : `Ver mais ${itens.length - CHECKLIST_GERAL_LIMITE_INICIAL} item(ns)`;
-          btnMais.addEventListener("click", async () => {
-            checklistSecoesEstado[statusKey].expanded = !checklistSecoesEstado[statusKey].expanded;
-            await carregarChecklistGeral();
-          });
-          caixa.appendChild(lista);
-          caixa.appendChild(btnMais);
-          secao.appendChild(caixa);
-          container.appendChild(secao);
-          return;
-        }
+        vazio.className = "checklist-list-empty";
+        vazio.textContent = mensagensVazias[statusKey] || "Nenhum item nesta lista.";
+        container.appendChild(vazio);
+        return;
       }
 
-      caixa.appendChild(lista);
-      secao.appendChild(caixa);
-      container.appendChild(secao);
+      itens.forEach((item) => {
+        container.appendChild(criarElementoChecklistItem(item));
+      });
     }
 
     // ── CHECKLIST GERAL ───────────────────────────────────────────
@@ -4850,10 +4920,8 @@
           feito: itens.filter(i => normalizarStatusChecklist(i.status || "pendente") === "feito")
         };
 
-        container.innerHTML = "";
-        renderChecklistSecao(container, "Pendentes", "pendente", grupos.pendente);
-        renderChecklistSecao(container, "Em andamento", "em_andamento", grupos.em_andamento);
-        renderChecklistSecao(container, "Feitas", "feito", grupos.feito);
+        atualizarTabsChecklist(grupos);
+        renderChecklistLista(container, checklistGeralAbaAtiva, grupos[checklistGeralAbaAtiva] || []);
       } catch (e) {
         console.error("[PRIORIZA] carregarChecklistGeral:", e);
         container.innerHTML = "<small style='color:#ef4444'>⚠️ Erro ao carregar checklist. <button onclick='carregarChecklistGeral()' style='color:var(--cor-tema);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline'>Tentar novamente</button></small>";
@@ -5709,6 +5777,12 @@
 
       document.getElementById("filtro-frequencia")?.addEventListener("change", carregarChecklistGeral);
       document.getElementById("filtro-origem")?.addEventListener("input",  carregarChecklistGeral);
+      document.querySelectorAll("[data-checklist-tab]").forEach((botao) => {
+        botao.addEventListener("click", () => {
+          checklistGeralAbaAtiva = botao.dataset.checklistTab || "pendente";
+          carregarChecklistGeral();
+        });
+      });
 
       document.getElementById("form-nota")?.addEventListener("submit", async(e)=>{
         e.preventDefault();
