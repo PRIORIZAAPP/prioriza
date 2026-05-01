@@ -1852,6 +1852,118 @@
         border-color: rgba(52, 168, 83, 0.28);
         color: #166534;
       }
+      #screen-ajustes .admin-gestao[hidden] {
+        display: none !important;
+      }
+      #screen-ajustes .admin-resumo-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      #screen-ajustes .admin-resumo-item {
+        padding: 14px 14px 13px;
+        border-radius: 18px;
+        background: rgba(248,250,252,0.94);
+        border: 1px solid rgba(226,232,240,0.95);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.78);
+      }
+      #screen-ajustes .admin-resumo-valor {
+        display: block;
+        font-size: 24px;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #0f172a;
+      }
+      #screen-ajustes .admin-resumo-label {
+        display: block;
+        margin-top: 7px;
+        font-size: 12px;
+        line-height: 1.35;
+        color: #64748b;
+      }
+      #screen-ajustes .admin-usuarios-lista {
+        margin-top: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      #screen-ajustes .admin-usuario-item {
+        padding: 14px;
+        border-radius: 18px;
+        background: rgba(248,250,252,0.82);
+        border: 1px solid rgba(226,232,240,0.88);
+      }
+      #screen-ajustes .admin-usuario-topo {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      #screen-ajustes .admin-usuario-nome {
+        font-size: 15px;
+        font-weight: 750;
+        color: #0f172a;
+        line-height: 1.3;
+      }
+      #screen-ajustes .admin-usuario-email {
+        margin-top: 3px;
+        font-size: 12px;
+        color: #64748b;
+        word-break: break-word;
+      }
+      #screen-ajustes .admin-usuario-meta {
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px 10px;
+      }
+      #screen-ajustes .admin-meta-item {
+        min-width: 0;
+      }
+      #screen-ajustes .admin-meta-item strong {
+        display: block;
+        font-size: 10px;
+        line-height: 1.2;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        margin-bottom: 4px;
+      }
+      #screen-ajustes .admin-meta-item span {
+        display: block;
+        font-size: 12px;
+        line-height: 1.45;
+        color: #334155;
+      }
+      #screen-ajustes .admin-status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 30px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        border: 1px solid rgba(148,163,184,0.2);
+        background: rgba(255,255,255,0.92);
+        color: #475569;
+        white-space: nowrap;
+      }
+      #screen-ajustes .admin-status.ativo {
+        border-color: rgba(34,197,94,0.16);
+        background: rgba(240,253,244,0.96);
+        color: #166534;
+      }
+      #screen-ajustes .admin-empty-state {
+        padding: 16px 14px;
+        border-radius: 16px;
+        background: rgba(248,250,252,0.75);
+        border: 1px dashed rgba(203,213,225,0.92);
+        font-size: 12px;
+        color: #64748b;
+      }
 
       #screen-ajustes {
         display: none;
@@ -1959,6 +2071,10 @@
       @media (max-width: 420px) {
         #screen-ajustes .appearance-options {
           gap: 8px;
+        }
+        #screen-ajustes .admin-resumo-grid,
+        #screen-ajustes .admin-usuario-meta {
+          grid-template-columns: 1fr;
         }
       }
 
@@ -2936,6 +3052,46 @@
                 </div>
               </div>
             </section>
+
+            <section class="settings-section admin-gestao" id="card-gestao-usuarios" hidden aria-hidden="true">
+              <div class="settings-section-head">
+                <div class="settings-section-title">
+                  <svg viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
+                    <path d="M48 192c4-29 25-44 52-44s48 15 52 44" stroke="currentColor" stroke-width="16" stroke-linecap="round" fill="none"/>
+                    <circle cx="100" cy="92" r="28" fill="currentColor" opacity="0.2"/>
+                    <circle cx="100" cy="92" r="28" stroke="currentColor" stroke-width="16"/>
+                    <path d="M146 188c3-22 18-34 39-34s36 12 39 34" stroke="currentColor" stroke-width="16" stroke-linecap="round" fill="none"/>
+                    <circle cx="184" cy="102" r="22" stroke="currentColor" stroke-width="16"/>
+                  </svg>
+                  <h2>Gestão de usuários</h2>
+                </div>
+              </div>
+              <div class="settings-panel">
+                <div class="admin-resumo-grid">
+                  <div class="admin-resumo-item">
+                    <span id="admin-total-usuarios" class="admin-resumo-valor">--</span>
+                    <span class="admin-resumo-label">Total de usuários</span>
+                  </div>
+                  <div class="admin-resumo-item">
+                    <span id="admin-usuarios-ativos" class="admin-resumo-valor">--</span>
+                    <span class="admin-resumo-label">Usuários ativos</span>
+                  </div>
+                  <div class="admin-resumo-item">
+                    <span id="admin-novos-hoje" class="admin-resumo-valor">--</span>
+                    <span class="admin-resumo-label">Novos hoje</span>
+                  </div>
+                  <div class="admin-resumo-item">
+                    <span id="admin-novos-7d" class="admin-resumo-valor">--</span>
+                    <span class="admin-resumo-label">Novos nos últimos 7 dias</span>
+                  </div>
+                </div>
+                <div id="admin-acessos-7d" class="settings-note">Acessos recentes: --</div>
+                <div id="admin-usuarios-lista" class="admin-usuarios-lista">
+                  <div class="admin-empty-state">Carregando usuários...</div>
+                </div>
+                <div id="admin-usuarios-erro" class="settings-note"></div>
+              </div>
+            </section>
           </div>
         </div>
 
@@ -3132,6 +3288,7 @@
     const nativeFetch = window.fetch.bind(window);
     let authMode = "login";
     let authUser = null;
+    let adminGestaoCarregando = false;
     let onboardingIndexAtual = 0;
     let onboardingAberto = false;
     let onboardingModoRevisao = false;
@@ -3286,6 +3443,110 @@
     function preencherContaLogada() {
       document.getElementById("auth-user-name").textContent = authUser?.nome || "Sessão ativa";
       document.getElementById("auth-user-email").textContent = authUser?.email || "";
+      atualizarVisibilidadeGestaoUsuarios();
+      if (authUser?.is_admin) {
+        carregarGestaoUsuariosAdmin();
+      }
+    }
+
+    function formatarDataHoraAdmin(iso) {
+      if (!iso) return "Nunca";
+      const data = new Date(iso);
+      if (Number.isNaN(data.getTime())) return "Nunca";
+      return data.toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).replace(",", " ·");
+    }
+
+    function atualizarVisibilidadeGestaoUsuarios() {
+      const secao = document.getElementById("card-gestao-usuarios");
+      if (!secao) return;
+      const isAdmin = !!authUser?.is_admin;
+      secao.hidden = !isAdmin;
+      secao.setAttribute("aria-hidden", isAdmin ? "false" : "true");
+      if (!isAdmin) {
+        const lista = document.getElementById("admin-usuarios-lista");
+        const erro = document.getElementById("admin-usuarios-erro");
+        if (lista) lista.innerHTML = '<div class="admin-empty-state">Área disponível apenas para administradores.</div>';
+        if (erro) erro.textContent = "";
+      }
+    }
+
+    function preencherResumoAdmin(resumo = {}) {
+      document.getElementById("admin-total-usuarios").textContent = String(resumo.total_usuarios ?? "--");
+      document.getElementById("admin-usuarios-ativos").textContent = String(resumo.usuarios_ativos ?? "--");
+      document.getElementById("admin-novos-hoje").textContent = String(resumo.usuarios_criados_hoje ?? "--");
+      document.getElementById("admin-novos-7d").textContent = String(resumo.usuarios_criados_ultimos_7_dias ?? "--");
+      document.getElementById("admin-acessos-7d").textContent = `Acessos recentes: ${String(resumo.acessos_ultimos_7_dias ?? "--")}`;
+    }
+
+    function renderizarListaAdminUsuarios(usuarios = []) {
+      const lista = document.getElementById("admin-usuarios-lista");
+      if (!lista) return;
+      if (!usuarios.length) {
+        lista.innerHTML = '<div class="admin-empty-state">Nenhum usuário cadastrado até o momento.</div>';
+        return;
+      }
+      lista.innerHTML = usuarios.map((usuario) => `
+        <div class="admin-usuario-item">
+          <div class="admin-usuario-topo">
+            <div>
+              <div class="admin-usuario-nome">${textoSeguro(usuario.nome || "Sem nome")}</div>
+              <div class="admin-usuario-email">${textoSeguro(usuario.email || "Sem e-mail")}</div>
+            </div>
+            <span class="admin-status ${usuario.ativo ? "ativo" : ""}">${usuario.ativo ? "Ativo" : "Inativo"}</span>
+          </div>
+          <div class="admin-usuario-meta">
+            <div class="admin-meta-item">
+              <strong>Criação</strong>
+              <span>${formatarDataHoraAdmin(usuario.criado_em)}</span>
+            </div>
+            <div class="admin-meta-item">
+              <strong>Último acesso</strong>
+              <span>${formatarDataHoraAdmin(usuario.ultimo_acesso)}</span>
+            </div>
+            <div class="admin-meta-item">
+              <strong>Total de acessos</strong>
+              <span>${String(usuario.total_acessos ?? 0)}</span>
+            </div>
+            <div class="admin-meta-item">
+              <strong>ID</strong>
+              <span>#${String(usuario.id ?? "--")}</span>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function carregarGestaoUsuariosAdmin() {
+      if (!authUser?.is_admin || adminGestaoCarregando) return;
+      adminGestaoCarregando = true;
+      const lista = document.getElementById("admin-usuarios-lista");
+      const erro = document.getElementById("admin-usuarios-erro");
+      if (lista) lista.innerHTML = '<div class="admin-empty-state">Carregando usuários...</div>';
+      if (erro) erro.textContent = "";
+      try {
+        const [resResumo, resUsuarios] = await Promise.all([
+          fetch(API + "/admin/resumo", { headers: authHeaders() }),
+          fetch(API + "/admin/usuarios", { headers: authHeaders() }),
+        ]);
+        const dataResumo = await resResumo.json().catch(() => ({}));
+        const dataUsuarios = await resUsuarios.json().catch(() => ({}));
+        if (!resResumo.ok) throw new Error(dataResumo?.detail || "Não foi possível carregar o resumo.");
+        if (!resUsuarios.ok) throw new Error(dataUsuarios?.detail || "Não foi possível carregar os usuários.");
+        preencherResumoAdmin(dataResumo.resumo || {});
+        renderizarListaAdminUsuarios(dataUsuarios.usuarios || []);
+      } catch (e) {
+        preencherResumoAdmin({});
+        if (lista) lista.innerHTML = '<div class="admin-empty-state">Não foi possível carregar os usuários agora.</div>';
+        if (erro) erro.textContent = e?.message || "Não foi possível carregar a gestão de usuários.";
+      } finally {
+        adminGestaoCarregando = false;
+      }
     }
 
     function atualizarUIAuth() {
@@ -5702,6 +5963,9 @@
         });
         if (id === "screen-ajustes") {
           setTimeout(atualizarStatusNotificacoesUI, 50);
+          if (authUser?.is_admin) {
+            setTimeout(carregarGestaoUsuariosAdmin, 120);
+          }
         }
       }
       navItems.forEach(item=>{
