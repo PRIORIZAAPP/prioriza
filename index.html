@@ -2336,18 +2336,6 @@
               <h2>Agenda do dia</h2>
             </div>
             <div class="secao-subtitulo">Toque na bolinha para mudar o status (pendente → em andamento → feito).</div>
-            <div style="text-align:right; margin-bottom:8px">
-              <button id="botao-add-tarefa" class="btn-add-tarefa">
-                <!-- plus circle -->
-                <svg width="13" height="13" viewBox="0 0 256 256" fill="none" color="currentColor">
-                  <circle cx="128" cy="128" r="96" fill="currentColor" opacity="0.25"/>
-                  <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
-                  <line x1="88" y1="128" x2="168" y2="128" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                  <line x1="128" y1="88" x2="128" y2="168" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                </svg>
-                Nova tarefa
-              </button>
-            </div>
             <div id="agenda-dia"><small>Carregando agenda...</small></div>
           </div>
 
@@ -2366,17 +2354,6 @@
             </div>
             <div class="secao-subtitulo">Rotinas recorrentes para hoje. Sem horário definido.</div>
             <div class="swipe-hint"><span>← Em andamento</span><span>Feito →</span></div>
-            <div style="text-align:right; margin-bottom:8px">
-              <button id="botao-nova-rotina-hoje" class="btn-add-tarefa">
-                <svg width="13" height="13" viewBox="0 0 256 256" fill="none" color="currentColor">
-                  <circle cx="128" cy="128" r="96" fill="currentColor" opacity="0.25"/>
-                  <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
-                  <line x1="88" y1="128" x2="168" y2="128" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                  <line x1="128" y1="88" x2="128" y2="168" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                </svg>
-                Nova rotina
-              </button>
-            </div>
             <div id="checklist-dia"><small>Carregando checklist...</small></div>
           </div>
         </div>
@@ -2880,10 +2857,10 @@
           <div class="desktop-panel">
             <div class="desktop-panel-kicker">Ações rápidas</div>
             <div class="desktop-action-grid">
-              <button class="desktop-action" type="button" data-quick-action="#botao-add-tarefa">Criar tarefa de hoje</button>
-              <button class="desktop-action" type="button" data-quick-action="#botao-nova-rotina-hoje">Adicionar rotina</button>
-              <button class="desktop-action" type="button" data-target-jump="screen-agenda">Abrir agenda geral</button>
+              <button class="desktop-action" type="button" data-target-jump="screen-agenda">Criar compromisso na agenda</button>
+              <button class="desktop-action" type="button" data-target-jump="screen-checklist">Criar rotina no checklist</button>
               <button class="desktop-action" type="button" data-target-jump="screen-notas">Ir para anotações</button>
+              <button class="desktop-action" type="button" data-target-jump="screen-ajustes">Abrir ajustes</button>
             </div>
           </div>
 
@@ -5644,9 +5621,6 @@
   await carregarPessoalLista();
 });
 
-      document.getElementById("botao-add-tarefa")?.addEventListener("click", novaTarefaHoje);
-      document.getElementById("botao-nova-rotina-hoje")?.addEventListener("click", novaRotinaHoje);
-      
       document.getElementById("btn-ativar-notificacoes")?.addEventListener("click", ativarNotificacoesManual);
       document.getElementById("btn-testar-notificacao")?.addEventListener("click", testarNotificacaoManual);
       document.querySelectorAll("[data-theme-option]").forEach((botao) => {
