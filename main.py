@@ -39,6 +39,7 @@ CHECKLIST_HORA_LIBERACAO = int(os.environ.get("CHECKLIST_HORA_LIBERACAO", "5"))
 JWT_SECRET = os.environ.get("JWT_SECRET", "prioriza_jwt_dev_only_change_me").strip()
 JWT_EXP_HOURS = int(os.environ.get("JWT_EXP_HOURS", "168"))
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+ADMIN_EMAIL = (os.environ.get("ADMIN_EMAIL", "").strip().lower())
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 if not DATABASE_URL:
@@ -104,6 +105,9 @@ class User(Base):
     senha_hash = Column(Text, nullable=False)
     ativo = Column(Boolean, default=True)
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC))
+    ultimo_acesso = Column(DateTime, nullable=True)
+    total_acessos = Column(Integer, default=0, nullable=False)
+    is_admin = Column(Boolean, default=False, nullable=False)
 
     def to_dict(self):
         return {
@@ -112,6 +116,9 @@ class User(Base):
             "email": self.email,
             "ativo": self.ativo,
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
+            "ultimo_acesso": self.ultimo_acesso.isoformat() if self.ultimo_acesso else None,
+            "total_acessos": int(self.total_acessos or 0),
+            "is_admin": bool(self.is_admin),
         }
 
 
@@ -286,6 +293,14 @@ class GoogleCalendarToken(Base):
         }
 
 
+class UserAccessLog(Base):
+    __tablename__ = "user_access_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    acessado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+
+
 # ============================================================
 # DB / MIGRAÇÕES
 # ============================================================
@@ -388,6 +403,11 @@ def buscar_usuario_por_email(db: Session, email: str) -> Optional[User]:
     return db.query(User).filter(User.email == normalizar_email(email)).first()
 
 
+def email_admin_configurado(email: str) -> bool:
+    email_normalizado = normalizar_email(email)
+    return bool(ADMIN_EMAIL) and email_normalizado == ADMIN_EMAIL
+
+
 def init_db():
     Base.metadata.create_all(bind=engine)
     print("[DB] Tabelas criadas/verificadas com sucesso.")
@@ -423,6 +443,12 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
     return user
 
 
+def get_current_admin_user(current_user: User = Depends(get_current_user)) -> User:
+    if not bool(getattr(current_user, "is_admin", False)):
+        raise HTTPException(status_code=403, detail="Acesso restrito ao administrador.")
+    return current_user
+
+
 def garantir_user_id(user_id: Optional[int], entidade: str = "registro") -> int:
     try:
         valor = int(user_id or 0)
@@ -431,6 +457,13 @@ def garantir_user_id(user_id: Optional[int], entidade: str = "registro") -> int:
     if valor <= 0:
         raise HTTPException(status_code=401, detail=f"Usuário inválido para {entidade}.")
     return valor
+
+
+def registrar_acesso_usuario(db: Session, user: User):
+    agora = datetime.now(UTC)
+    user.ultimo_acesso = agora
+    user.total_acessos = int(user.total_acessos or 0) + 1
+    db.add(UserAccessLog(user_id=garantir_user_id(user.id, "acesso de usuário"), acessado_em=agora))
 
 
 def executar_sql_seguro(sql: str):
@@ -446,25 +479,31 @@ def executar_sql_seguro(sql: str):
 def _sql_tipo_coluna(nome_coluna: str) -> str:
     if nome_coluna == "user_id":
         return "INTEGER"
+    if nome_coluna == "total_acessos":
+        return "INTEGER"
+    if nome_coluna in ("ativo", "is_admin", "sincronizado_google", "all_day"):
+        return "BOOLEAN"
+    if nome_coluna in ("criado_em", "ultimo_acesso", "ultima_sync_google"):
+        return "TIMESTAMP" if not IS_SQLITE else "DATETIME"
     if nome_coluna in ("descricao", "local", "hora_fim", "tipo_evento", "origem_evento", "google_event_id"):
         return "VARCHAR"
     if nome_coluna == "google_html_link":
         return "TEXT"
-    if nome_coluna == "ultima_sync_google":
-        return "TIMESTAMP" if not IS_SQLITE else "DATETIME"
-    if nome_coluna in ("sincronizado_google", "all_day"):
-        return "BOOLEAN"
     return "VARCHAR"
 
 
 def _sql_default_coluna(nome_coluna: str) -> str:
     if nome_coluna == "user_id":
         return ""
+    if nome_coluna == "total_acessos":
+        return " DEFAULT 0"
+    if nome_coluna == "is_admin":
+        return " DEFAULT false" if not IS_SQLITE else " DEFAULT 0"
     if nome_coluna in ("descricao", "local", "hora_fim"):
         return " DEFAULT ''"
     if nome_coluna in ("tipo_evento", "origem_evento"):
         return " DEFAULT 'prioriza'"
-    if nome_coluna in ("sincronizado_google", "all_day"):
+    if nome_coluna in ("ativo", "sincronizado_google", "all_day"):
         return " DEFAULT false" if not IS_SQLITE else " DEFAULT 0"
     return ""
 
@@ -491,8 +530,23 @@ def garantir_coluna_tabela(nome_tabela: str, nome_coluna: str):
         print(f"[MIGRAÇÃO] Falha ao criar {nome_tabela}.{nome_coluna}: {erro}")
 
 
+def preencher_nulos_coluna(nome_tabela: str, nome_coluna: str, valor_sql: str):
+    sql = f"UPDATE {nome_tabela} SET {nome_coluna} = {valor_sql} WHERE {nome_coluna} IS NULL"
+    ok, erro = executar_sql_seguro(sql)
+    if ok:
+        print(f"[MIGRAÇÃO] Nulos preenchidos: {nome_tabela}.{nome_coluna}")
+    else:
+        print(f"[MIGRAÇÃO] Falha ao preencher nulos em {nome_tabela}.{nome_coluna}: {erro}")
+
+
 def rodar_migracoes_automaticas():
     init_db()
+
+    for coluna in ("ultimo_acesso", "total_acessos", "is_admin"):
+        garantir_coluna_tabela("users", coluna)
+
+    preencher_nulos_coluna("users", "total_acessos", "0")
+    preencher_nulos_coluna("users", "is_admin", "false" if not IS_SQLITE else "0")
 
     colunas_tarefas = [
         "user_id",
@@ -517,6 +571,11 @@ def rodar_migracoes_automaticas():
         PushSubscription.__table__.create(bind=engine, checkfirst=True)
     except Exception as e:
         print(f"[MIGRAÇÃO] Aviso ao criar push_subscriptions: {e}")
+
+    try:
+        UserAccessLog.__table__.create(bind=engine, checkfirst=True)
+    except Exception as e:
+        print(f"[MIGRAÇÃO] Aviso ao criar user_access_logs: {e}")
 
     for tabela in ("tarefas", "checklist", "notes", "push_subscriptions", "google_calendar_tokens"):
         try:
@@ -1328,6 +1387,17 @@ def serve_app():
 # AUTH
 # ============================================================
 
+def usuario_admin_dict(usuario: User) -> dict[str, Any]:
+    return {
+        "id": usuario.id,
+        "nome": usuario.nome,
+        "email": usuario.email,
+        "criado_em": usuario.criado_em.isoformat() if usuario.criado_em else None,
+        "ultimo_acesso": usuario.ultimo_acesso.isoformat() if usuario.ultimo_acesso else None,
+        "total_acessos": int(usuario.total_acessos or 0),
+        "ativo": bool(usuario.ativo),
+    }
+
 @app.post("/auth/register")
 async def auth_register(request: Request, db: Session = Depends(get_db)):
     try:
@@ -1369,6 +1439,13 @@ async def auth_login(request: Request, db: Session = Depends(get_db)):
     if not usuario or not usuario.ativo or not verificar_senha(senha, usuario.senha_hash):
         raise HTTPException(status_code=401, detail="E-mail ou senha inválidos.")
 
+    if email_admin_configurado(usuario.email) and not bool(usuario.is_admin):
+        usuario.is_admin = True
+
+    registrar_acesso_usuario(db, usuario)
+    db.commit()
+    db.refresh(usuario)
+
     return {"ok": True, "token": criar_token_acesso(usuario), "user": usuario.to_dict()}
 
 
@@ -1380,6 +1457,47 @@ def auth_me(current_user: User = Depends(get_current_user)):
 @app.post("/auth/logout")
 def auth_logout():
     return {"ok": True}
+
+
+@app.get("/admin/usuarios")
+def admin_listar_usuarios(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin_user),
+):
+    usuarios = db.query(User).order_by(User.criado_em.desc(), User.id.desc()).all()
+    return {
+        "ok": True,
+        "usuarios": [usuario_admin_dict(usuario) for usuario in usuarios],
+        "admin": {"id": current_user.id, "email": current_user.email},
+    }
+
+
+@app.get("/admin/resumo")
+def admin_resumo(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin_user),
+):
+    agora = datetime.now(UTC)
+    inicio_hoje = datetime(agora.year, agora.month, agora.day, tzinfo=UTC)
+    inicio_7d = agora - timedelta(days=7)
+
+    total_usuarios = db.query(User).count()
+    usuarios_ativos = db.query(User).filter(User.ativo == True).count()
+    usuarios_criados_hoje = db.query(User).filter(User.criado_em >= inicio_hoje).count()
+    usuarios_criados_ultimos_7_dias = db.query(User).filter(User.criado_em >= inicio_7d).count()
+    acessos_ultimos_7_dias = db.query(UserAccessLog).filter(UserAccessLog.acessado_em >= inicio_7d).count()
+
+    return {
+        "ok": True,
+        "resumo": {
+            "total_usuarios": total_usuarios,
+            "usuarios_ativos": usuarios_ativos,
+            "usuarios_criados_hoje": usuarios_criados_hoje,
+            "usuarios_criados_ultimos_7_dias": usuarios_criados_ultimos_7_dias,
+            "acessos_ultimos_7_dias": acessos_ultimos_7_dias,
+        },
+        "admin": {"id": current_user.id, "email": current_user.email},
+    }
 
 
 # ============================================================
