@@ -300,6 +300,176 @@
       .auth-link:active {
         opacity: 0.82;
       }
+      .onboarding-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 10040;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 18px;
+        background: rgba(15, 23, 42, 0.46);
+        backdrop-filter: blur(10px);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 180ms ease, visibility 0ms linear 180ms;
+      }
+      .onboarding-overlay[hidden] {
+        display: none !important;
+      }
+      .onboarding-overlay.is-visible {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transition: opacity 180ms ease;
+      }
+      .onboarding-card {
+        width: min(100%, 420px);
+        background: rgba(255,255,255,0.98);
+        border: 1px solid rgba(226,232,240,0.9);
+        border-radius: 28px;
+        box-shadow: 0 28px 60px rgba(15,23,42,0.16);
+        overflow: hidden;
+        transform: translateY(10px) scale(0.985);
+        transition: transform 180ms ease;
+      }
+      .onboarding-overlay.is-visible .onboarding-card {
+        transform: translateY(0) scale(1);
+      }
+      .onboarding-card-head {
+        padding: 20px 20px 0;
+      }
+      .onboarding-progress {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 18px;
+      }
+      .onboarding-progress span {
+        height: 4px;
+        flex: 1;
+        border-radius: 999px;
+        background: rgba(148,163,184,0.18);
+        transition: background 150ms ease, transform 150ms ease;
+      }
+      .onboarding-progress span.active {
+        background: rgba(var(--cor-tema-rgb), 0.9);
+      }
+      .onboarding-body {
+        padding: 0 20px 20px;
+      }
+      .onboarding-icon-wrap {
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, rgba(var(--cor-tema-rgb), 0.14) 0%, rgba(var(--cor-tema-rgb), 0.08) 100%);
+        color: var(--cor-tema);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
+      }
+      .onboarding-icon-wrap svg {
+        width: 28px;
+        height: 28px;
+      }
+      .onboarding-step-label {
+        margin: 18px 0 8px;
+        font-size: 11px;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #94a3b8;
+      }
+      .onboarding-title {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.05;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #0f172a;
+      }
+      .onboarding-lead {
+        margin: 12px 0 0;
+        font-size: 17px;
+        line-height: 1.4;
+        font-weight: 700;
+        color: #1e293b;
+      }
+      .onboarding-description {
+        margin: 10px 0 0;
+        font-size: 14px;
+        line-height: 1.58;
+        color: #64748b;
+      }
+      .onboarding-key {
+        margin: 18px 0 0;
+        padding: 13px 14px;
+        border-radius: 16px;
+        background: rgba(var(--cor-tema-rgb), 0.07);
+        border: 1px solid rgba(var(--cor-tema-rgb), 0.14);
+        color: #20324a;
+        font-size: 13px;
+        line-height: 1.45;
+        font-weight: 700;
+      }
+      .onboarding-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 18px 20px 20px;
+        border-top: 1px solid rgba(226,232,240,0.82);
+        background: rgba(248,250,252,0.72);
+      }
+      .onboarding-actions-left,
+      .onboarding-actions-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .onboarding-actions .btn-outline,
+      .onboarding-actions .btn-primary {
+        min-height: 42px;
+      }
+      .settings-helper-action {
+        border-color: rgba(var(--cor-tema-rgb), 0.16);
+        color: var(--cor-tema-escura);
+        background: rgba(var(--cor-tema-rgb), 0.04);
+      }
+      .settings-helper-action:hover {
+        border-color: rgba(var(--cor-tema-rgb), 0.24);
+        background: rgba(var(--cor-tema-rgb), 0.08);
+      }
+      @media (max-width: 420px) {
+        .onboarding-overlay {
+          padding: 18px 14px;
+        }
+        .onboarding-card-head {
+          padding: 18px 18px 0;
+        }
+        .onboarding-body {
+          padding: 0 18px 18px;
+        }
+        .onboarding-title {
+          font-size: 24px;
+        }
+        .onboarding-lead {
+          font-size: 15px;
+        }
+        .onboarding-actions {
+          padding: 16px 18px 18px;
+          flex-wrap: wrap;
+        }
+        .onboarding-actions-left,
+        .onboarding-actions-right {
+          width: 100%;
+        }
+        .onboarding-actions-right {
+          justify-content: flex-end;
+        }
+      }
       @keyframes authSloganIn {
         from {
           opacity: 0;
@@ -1993,6 +2163,30 @@
       </div>
     </div>
 
+    <div id="onboarding-overlay" class="onboarding-overlay" hidden aria-hidden="true">
+      <div class="onboarding-card" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+        <div class="onboarding-card-head">
+          <div id="onboarding-progress" class="onboarding-progress" aria-hidden="true"></div>
+        </div>
+        <div class="onboarding-body">
+          <div id="onboarding-icon" class="onboarding-icon-wrap"></div>
+          <p id="onboarding-step-label" class="onboarding-step-label">Passo 1 de 5</p>
+          <h2 id="onboarding-title" class="onboarding-title">Hoje</h2>
+          <p id="onboarding-lead" class="onboarding-lead"></p>
+          <p id="onboarding-description" class="onboarding-description"></p>
+          <div id="onboarding-key" class="onboarding-key"></div>
+        </div>
+        <div class="onboarding-actions">
+          <div class="onboarding-actions-left">
+            <button id="btn-onboarding-prev" class="btn-outline" type="button">Voltar</button>
+          </div>
+          <div class="onboarding-actions-right">
+            <button id="btn-onboarding-next" class="btn-primary" type="button">Próximo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ── APP ── -->
     <div id="app-shell" class="app-shell" hidden>
 
@@ -2618,6 +2812,7 @@
                 </div>
                 <div class="settings-note" id="auth-user-email"></div>
                 <div class="settings-actions">
+                  <button id="btn-rever-introducao" class="btn-outline settings-helper-action" type="button">Rever introdução</button>
                   <button id="btn-logout" class="btn-outline danger" type="button">Sair</button>
                 </div>
               </div>
@@ -2780,6 +2975,7 @@
     const API = "";
     const AUTH_TOKEN_KEY = "prioriza_auth_token";
     const TEMA_STORAGE_KEY = "prioriza_tema";
+    const ONBOARDING_STORAGE_KEY = "prioriza_onboarding_visto";
     const TEMAS_PRIORIZA = {
       azul: {
         cor: "#2563eb",
@@ -2817,6 +3013,87 @@
     const nativeFetch = window.fetch.bind(window);
     let authMode = "login";
     let authUser = null;
+    let onboardingIndexAtual = 0;
+    let onboardingAberto = false;
+    let onboardingModoRevisao = false;
+    let onboardingAutoAgendado = false;
+    const ONBOARDING_STEPS = [
+      {
+        titulo: "Hoje",
+        lead: "Aqui está o seu dia organizado.",
+        descricao: "Mostra tudo que você precisa fazer hoje, juntando agenda e rotina em um só lugar.",
+        chave: "Abriu aqui, você já sabe o que fazer.",
+        icone: `
+          <svg viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+            <rect x="40" y="40" width="176" height="176" rx="16" fill="currentColor" opacity="0.14"></rect>
+            <rect x="40" y="40" width="176" height="176" rx="16" stroke="currentColor" stroke-width="16"></rect>
+            <path d="M76 136h24l18-56 20 96 18-56h24" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        `
+      },
+      {
+        titulo: "Agenda",
+        lead: "Aqui você agenda compromissos com data e horário.",
+        descricao: "Tudo que tem hora marcada entra aqui: reuniões, compromissos, atividades e tarefas com data definida.",
+        chave: "Tudo que tem hora marcada entra aqui.",
+        icone: `
+          <svg viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+            <rect x="40" y="48" width="176" height="168" rx="16" fill="currentColor" opacity="0.14"></rect>
+            <rect x="40" y="48" width="176" height="168" rx="16" stroke="currentColor" stroke-width="16"></rect>
+            <path d="M40 96h176" stroke="currentColor" stroke-width="16" stroke-linecap="round"></path>
+            <path d="M84 24v48" stroke="currentColor" stroke-width="16" stroke-linecap="round"></path>
+            <path d="M172 24v48" stroke="currentColor" stroke-width="16" stroke-linecap="round"></path>
+            <circle cx="92" cy="144" r="10" fill="currentColor"></circle>
+            <circle cx="128" cy="144" r="10" fill="currentColor" opacity="0.55"></circle>
+            <circle cx="164" cy="144" r="10" fill="currentColor" opacity="0.3"></circle>
+          </svg>
+        `
+      },
+      {
+        titulo: "Checklist",
+        lead: "Aqui ficam suas rotinas.",
+        descricao: "Use para demandas recorrentes, sem horário fixo, como tarefas diárias, semanais, mensais ou de outras frequências.",
+        chave: "O que precisa acontecer sempre, fica aqui.",
+        icone: `
+          <svg viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+            <rect x="48" y="40" width="160" height="176" rx="16" fill="currentColor" opacity="0.14"></rect>
+            <rect x="48" y="40" width="160" height="176" rx="16" stroke="currentColor" stroke-width="16"></rect>
+            <path d="M88 108l18 18 34-34" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M88 164l18 18 34-34" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M154 116h26" stroke="currentColor" stroke-width="14" stroke-linecap="round"></path>
+            <path d="M154 172h26" stroke="currentColor" stroke-width="14" stroke-linecap="round"></path>
+          </svg>
+        `
+      },
+      {
+        titulo: "Notas",
+        lead: "Aqui você anota o que não pode esquecer.",
+        descricao: "Use para ideias, pendências soltas, lembretes rápidos e pontos de reunião.",
+        chave: "Anotou, não perde.",
+        icone: `
+          <svg viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+            <rect x="52" y="36" width="152" height="184" rx="16" fill="currentColor" opacity="0.14"></rect>
+            <rect x="52" y="36" width="152" height="184" rx="16" stroke="currentColor" stroke-width="16"></rect>
+            <path d="M88 104h80" stroke="currentColor" stroke-width="14" stroke-linecap="round"></path>
+            <path d="M88 140h80" stroke="currentColor" stroke-width="14" stroke-linecap="round"></path>
+            <path d="M88 176h48" stroke="currentColor" stroke-width="14" stroke-linecap="round"></path>
+          </svg>
+        `
+      },
+      {
+        titulo: "Ajustes",
+        lead: "Aqui você configura sua experiência no Prioriza.",
+        descricao: "Use para gerenciar preferências, integrações, notificações, backup e outras configurações importantes do app.",
+        chave: "Seu Prioriza, do seu jeito.",
+        icone: `
+          <svg viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+            <circle cx="128" cy="128" r="30" fill="currentColor" opacity="0.22"></circle>
+            <circle cx="128" cy="128" r="30" stroke="currentColor" stroke-width="16"></circle>
+            <path d="M128 44v24M128 188v24M212 128h-24M68 128H44M186.9 69.1l-17 17M86.1 169.9l-17 17M186.9 186.9l-17-17M86.1 86.1l-17-17" stroke="currentColor" stroke-width="16" stroke-linecap="round"></path>
+          </svg>
+        `
+      }
+    ];
 
     function getAuthToken() {
       try {
@@ -3140,6 +3417,115 @@
       return SPLASH_SLOGANS[Math.floor(Math.random() * SPLASH_SLOGANS.length)];
     }
 
+    function onboardingJaVisto() {
+      try {
+        return localStorage.getItem(ONBOARDING_STORAGE_KEY) === "true";
+      } catch {
+        return false;
+      }
+    }
+
+    function marcarOnboardingComoVisto() {
+      try {
+        localStorage.setItem(ONBOARDING_STORAGE_KEY, "true");
+      } catch (e) {
+        console.warn("[PRIORIZA] Não foi possível salvar o onboarding:", e);
+      }
+    }
+
+    function renderizarOnboarding() {
+      const passo = ONBOARDING_STEPS[onboardingIndexAtual];
+      const progresso = document.getElementById("onboarding-progress");
+      const icon = document.getElementById("onboarding-icon");
+      const stepLabel = document.getElementById("onboarding-step-label");
+      const title = document.getElementById("onboarding-title");
+      const lead = document.getElementById("onboarding-lead");
+      const description = document.getElementById("onboarding-description");
+      const key = document.getElementById("onboarding-key");
+      const prevBtn = document.getElementById("btn-onboarding-prev");
+      const nextBtn = document.getElementById("btn-onboarding-next");
+      if (!passo || !progresso || !icon || !stepLabel || !title || !lead || !description || !key || !prevBtn || !nextBtn) return;
+
+      progresso.innerHTML = ONBOARDING_STEPS
+        .map((_, index) => `<span class="${index === onboardingIndexAtual ? "active" : ""}"></span>`)
+        .join("");
+      icon.innerHTML = passo.icone;
+      stepLabel.textContent = `Passo ${onboardingIndexAtual + 1} de ${ONBOARDING_STEPS.length}`;
+      title.textContent = passo.titulo;
+      lead.textContent = passo.lead;
+      description.textContent = passo.descricao;
+      key.textContent = passo.chave;
+      prevBtn.disabled = onboardingIndexAtual === 0;
+
+      if (onboardingIndexAtual === 0) {
+        nextBtn.textContent = "Começar";
+      } else if (onboardingIndexAtual === ONBOARDING_STEPS.length - 1) {
+        nextBtn.textContent = "Concluir";
+      } else {
+        nextBtn.textContent = "Próximo";
+      }
+    }
+
+    function fecharOnboarding({ salvar = true } = {}) {
+      const overlay = document.getElementById("onboarding-overlay");
+      if (!overlay) return;
+      onboardingAberto = false;
+      onboardingModoRevisao = false;
+      if (salvar) marcarOnboardingComoVisto();
+      overlay.classList.remove("is-visible");
+      overlay.setAttribute("aria-hidden", "true");
+      window.setTimeout(() => {
+        overlay.hidden = true;
+      }, 180);
+    }
+
+    function abrirOnboarding({ forcar = false } = {}) {
+      const overlay = document.getElementById("onboarding-overlay");
+      if (!overlay) return;
+      if (!forcar && onboardingJaVisto()) return;
+
+      onboardingModoRevisao = !!forcar;
+      onboardingAberto = true;
+      onboardingIndexAtual = 0;
+      overlay.hidden = false;
+      overlay.setAttribute("aria-hidden", "false");
+      renderizarOnboarding();
+      window.requestAnimationFrame(() => {
+        overlay.classList.add("is-visible");
+      });
+    }
+
+    function avancarOnboarding() {
+      if (onboardingIndexAtual >= ONBOARDING_STEPS.length - 1) {
+        fecharOnboarding({ salvar: true });
+        return;
+      }
+      onboardingIndexAtual += 1;
+      renderizarOnboarding();
+    }
+
+    function voltarOnboarding() {
+      if (onboardingIndexAtual === 0) return;
+      onboardingIndexAtual -= 1;
+      renderizarOnboarding();
+    }
+
+    function bindOnboardingEvents() {
+      document.getElementById("btn-onboarding-prev")?.addEventListener("click", voltarOnboarding);
+      document.getElementById("btn-onboarding-next")?.addEventListener("click", avancarOnboarding);
+      document.getElementById("btn-rever-introducao")?.addEventListener("click", () => abrirOnboarding({ forcar: true }));
+    }
+
+    function agendarOnboardingPrimeiroAcesso() {
+      if (onboardingAutoAgendado || onboardingJaVisto()) return;
+      onboardingAutoAgendado = true;
+      const splash = document.getElementById("splash-screen");
+      const atraso = splash?.classList.contains("is-visible") ? 2100 : 320;
+      window.setTimeout(() => {
+        if (!onboardingJaVisto()) abrirOnboarding();
+      }, atraso);
+    }
+
     function mostrarSplashDiaria() {
       const splash = document.getElementById("splash-screen");
       const splashLogo = document.getElementById("splash-logo");
@@ -3217,6 +3603,7 @@
       showAppShell();
       await initPromise;
       resetAuthTransitionState();
+      agendarOnboardingPrimeiroAcesso();
     }
 
     let tarefasAgendaCache = [];
@@ -5481,6 +5868,7 @@
 
       await aplicarTema(temaSalvo);
       bindAuthEvents();
+      bindOnboardingEvents();
 
       const autenticado = await validarSessaoAtual();
       if (!autenticado) {
@@ -5491,6 +5879,7 @@
       showAppShell();
       mostrarSplashDiaria();
       await garantirAppAutenticadoInicializado();
+      agendarOnboardingPrimeiroAcesso();
     });
 
     // ═══════════════════════════════════════════════════════════════
