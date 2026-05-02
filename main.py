@@ -40,6 +40,7 @@ JWT_SECRET = os.environ.get("JWT_SECRET", "prioriza_jwt_dev_only_change_me").str
 JWT_EXP_HOURS = int(os.environ.get("JWT_EXP_HOURS", "168"))
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 ADMIN_EMAIL = (os.environ.get("ADMIN_EMAIL", "").strip().lower())
+ACCESS_WINDOW_MINUTES = int(os.environ.get("ACCESS_WINDOW_MINUTES", "30"))
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 if not DATABASE_URL:
@@ -464,6 +465,17 @@ def registrar_acesso_usuario(db: Session, user: User):
     user.ultimo_acesso = agora
     user.total_acessos = int(user.total_acessos or 0) + 1
     db.add(UserAccessLog(user_id=garantir_user_id(user.id, "acesso de usuário"), acessado_em=agora))
+
+
+def registrar_acesso_sessao(db: Session, user: User, janela_minutos: int = ACCESS_WINDOW_MINUTES):
+    agora = datetime.now(UTC)
+    ultimo = user.ultimo_acesso
+    if ultimo and ultimo.tzinfo is None:
+        ultimo = ultimo.replace(tzinfo=UTC)
+    if ultimo and (agora - ultimo) < timedelta(minutes=max(1, int(janela_minutos or 1))):
+        return False
+    registrar_acesso_usuario(db, user)
+    return True
 
 
 def executar_sql_seguro(sql: str):
@@ -1450,7 +1462,10 @@ async def auth_login(request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/auth/me")
-def auth_me(current_user: User = Depends(get_current_user)):
+def auth_me(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if registrar_acesso_sessao(db, current_user):
+        db.commit()
+        db.refresh(current_user)
     return {"ok": True, "user": current_user.to_dict()}
 
 
