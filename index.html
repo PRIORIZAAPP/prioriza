@@ -1888,6 +1888,26 @@
         flex-direction: column;
         gap: 10px;
       }
+      #screen-ajustes .admin-usuarios-lista[hidden] {
+        display: none !important;
+      }
+      #screen-ajustes .admin-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 12px;
+      }
+      #screen-ajustes .admin-toggle-copy {
+        font-size: 12px;
+        line-height: 1.45;
+        color: #64748b;
+      }
+      #screen-ajustes .admin-toggle-btn {
+        min-height: 40px;
+        padding-inline: 14px;
+        white-space: nowrap;
+      }
       #screen-ajustes .admin-usuario-item {
         padding: 14px;
         border-radius: 18px;
@@ -3086,7 +3106,11 @@
                   </div>
                 </div>
                 <div id="admin-acessos-7d" class="settings-note">Acessos recentes: --</div>
-                <div id="admin-usuarios-lista" class="admin-usuarios-lista">
+                <div class="admin-toggle-row">
+                  <div class="admin-toggle-copy">Toque para abrir os registros completos de acesso e cadastro.</div>
+                  <button id="btn-toggle-admin-usuarios" class="btn-outline admin-toggle-btn" type="button" aria-expanded="false">Ver usuários</button>
+                </div>
+                <div id="admin-usuarios-lista" class="admin-usuarios-lista" hidden>
                   <div class="admin-empty-state">Carregando usuários...</div>
                 </div>
                 <div id="admin-usuarios-erro" class="settings-note"></div>
@@ -3289,6 +3313,7 @@
     let authMode = "login";
     let authUser = null;
     let adminGestaoCarregando = false;
+    let adminUsuariosVisivel = false;
     let onboardingIndexAtual = 0;
     let onboardingAberto = false;
     let onboardingModoRevisao = false;
@@ -3468,12 +3493,28 @@
       const isAdmin = !!authUser?.is_admin;
       secao.hidden = !isAdmin;
       secao.setAttribute("aria-hidden", isAdmin ? "false" : "true");
+      const lista = document.getElementById("admin-usuarios-lista");
+      const botao = document.getElementById("btn-toggle-admin-usuarios");
       if (!isAdmin) {
-        const lista = document.getElementById("admin-usuarios-lista");
         const erro = document.getElementById("admin-usuarios-erro");
+        adminUsuariosVisivel = false;
+        if (lista) lista.hidden = true;
+        if (botao) {
+          botao.textContent = "Ver usuários";
+          botao.setAttribute("aria-expanded", "false");
+        }
         if (lista) lista.innerHTML = '<div class="admin-empty-state">Área disponível apenas para administradores.</div>';
         if (erro) erro.textContent = "";
       }
+    }
+
+    function atualizarToggleUsuariosAdmin() {
+      const lista = document.getElementById("admin-usuarios-lista");
+      const botao = document.getElementById("btn-toggle-admin-usuarios");
+      if (!lista || !botao) return;
+      lista.hidden = !adminUsuariosVisivel;
+      botao.textContent = adminUsuariosVisivel ? "Ocultar usuários" : "Ver usuários";
+      botao.setAttribute("aria-expanded", adminUsuariosVisivel ? "true" : "false");
     }
 
     function preencherResumoAdmin(resumo = {}) {
@@ -5983,6 +6024,7 @@
         });
       });
       abrirTela(document.querySelector(".screen.active")?.id || "screen-hoje");
+      atualizarToggleUsuariosAdmin();
 
       document.getElementById("btn-toggle-passados-pessoal")?.addEventListener("click", async () => {
   mostrarPassadosPessoal = !mostrarPassadosPessoal;
@@ -5991,6 +6033,13 @@
 
       document.getElementById("btn-ativar-notificacoes")?.addEventListener("click", ativarNotificacoesManual);
       document.getElementById("btn-testar-notificacao")?.addEventListener("click", testarNotificacaoManual);
+      document.getElementById("btn-toggle-admin-usuarios")?.addEventListener("click", async () => {
+        adminUsuariosVisivel = !adminUsuariosVisivel;
+        atualizarToggleUsuariosAdmin();
+        if (adminUsuariosVisivel && authUser?.is_admin) {
+          await carregarGestaoUsuariosAdmin();
+        }
+      });
       document.querySelectorAll("[data-theme-option]").forEach((botao) => {
         botao.addEventListener("click", () => aplicarTema(botao.dataset.themeOption));
       });
