@@ -1431,7 +1431,12 @@ async def auth_register(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Já existe uma conta com esse e-mail.")
 
     usuario = User(nome=nome, email=email, senha_hash=hash_senha(senha), ativo=True)
+    if email_admin_configurado(usuario.email):
+        usuario.is_admin = True
     db.add(usuario)
+    db.commit()
+    db.refresh(usuario)
+    registrar_acesso_usuario(db, usuario)
     db.commit()
     db.refresh(usuario)
     return {"ok": True, "token": criar_token_acesso(usuario), "user": usuario.to_dict()}
