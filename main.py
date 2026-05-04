@@ -624,6 +624,15 @@ def validar_hora(hora_str: str) -> bool:
         return False
 
 
+def adicionar_meses_data(data_base: date, quantidade: int = 1) -> date:
+    quantidade = int(quantidade or 0)
+    ano = data_base.year + ((data_base.month - 1 + quantidade) // 12)
+    mes = ((data_base.month - 1 + quantidade) % 12) + 1
+    ultimo_dia_mes = (date(ano + (1 if mes == 12 else 0), 1 if mes == 12 else mes + 1, 1) - timedelta(days=1)).day
+    dia = min(data_base.day, ultimo_dia_mes)
+    return date(ano, mes, dia)
+
+
 def hora_para_minutos(hora_str: str) -> int:
     hh, mm = map(int, hora_str.split(":"))
     return hh * 60 + mm
@@ -652,6 +661,63 @@ def normalizar_status(status: Optional[str]) -> str:
     if s not in {"pendente", "em_andamento", "feito", "cancelada", "atrasado", "reagendamento_sugerido", "reagendada_confirmada", "reagendada_manual", "pendente_ajuste"}:
         return "pendente"
     return s
+
+
+def normalizar_repeticao_agenda(valor: Optional[str]) -> str:
+    v = (valor or "").strip().upper()
+    mapa = {
+        "": "NENHUMA",
+        "NENHUMA": "NENHUMA",
+        "NAO": "NENHUMA",
+        "NÃO": "NENHUMA",
+        "NONE": "NENHUMA",
+        "DIARIA": "DIARIA",
+        "DIÁRIA": "DIARIA",
+        "DAILY": "DIARIA",
+        "SEMANAL": "SEMANAL",
+        "WEEKLY": "SEMANAL",
+        "MENSAL": "MENSAL",
+        "MONTHLY": "MENSAL",
+    }
+    return mapa.get(v, "NENHUMA")
+
+
+def gerar_datas_recorrencia_agenda(data_inicial_iso: str, repeticao: str, repetir_ate: Optional[str]) -> list[str]:
+    repeticao_norm = normalizar_repeticao_agenda(repeticao)
+    if repeticao_norm == "NENHUMA":
+        return [data_inicial_iso]
+
+    if not repetir_ate:
+        return [data_inicial_iso]
+
+    repetir_ate = repetir_ate.strip()
+    if not validar_data_iso(data_inicial_iso) or not validar_data_iso(repetir_ate):
+        return [data_inicial_iso]
+
+    inicio = datetime.strptime(data_inicial_iso, "%Y-%m-%d").date()
+    limite = datetime.strptime(repetir_ate, "%Y-%m-%d").date()
+    if limite <= inicio:
+        return [data_inicial_iso]
+
+    datas = [inicio]
+    atual = inicio
+    max_ocorrencias = 120
+
+    while len(datas) < max_ocorrencias:
+        if repeticao_norm == "DIARIA":
+            atual = atual + timedelta(days=1)
+        elif repeticao_norm == "SEMANAL":
+            atual = atual + timedelta(days=7)
+        elif repeticao_norm == "MENSAL":
+            atual = adicionar_meses_data(atual, 1)
+        else:
+            break
+
+        if atual > limite:
+            break
+        datas.append(atual)
+
+    return [d.isoformat() for d in datas]
 
 def status_nao_concluido(status: Optional[str]) -> bool:
     return normalizar_status(status) in {"pendente", "em_andamento", "atrasado", "reagendamento_sugerido", "pendente_ajuste"}
@@ -1955,6 +2021,8 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
     google_html_link = q.get("google_html_link") or q.get("link")
     sincronizado_google = q.get("sincronizado_google")
     ultima_sync_google = q.get("ultima_sync_google")
+    repetir = q.get("repetir")
+    repetir_ate = q.get("repetir_ate")
 
     if not titulo:
         try:
@@ -1977,6 +2045,8 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
             google_html_link = form.get("google_html_link") or form.get("link")
             sincronizado_google = form.get("sincronizado_google")
             ultima_sync_google = form.get("ultima_sync_google")
+            repetir = form.get("repetir")
+            repetir_ate = form.get("repetir_ate")
         except Exception:
             pass
 
@@ -2044,36 +2114,59 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
         }
         tarefa_google = criar_ou_atualizar_tarefa_importada_google(db, user_id, payload_google)
         return tarefa_google.to_dict()
-
-    tarefa = Tarefa(
-        user_id=user_id,
-        titulo=titulo.strip(),
-        descricao=(descricao or "").strip(),
-        origem=(origem or "").strip(),
-        local=(local or "").strip(),
-        data=data_str.strip(),
-        hora_inicio="" if eh_all_day else hora_inicio,
-        hora_fim="" if eh_all_day else hora_fim,
-        duracao_min=duracao_val,
-        prioridade=prioridade_val,
-        status=normalizar_status(status or "pendente"),
-        tipo_evento="prioriza",
-        origem_evento="prioriza",
-        sincronizado_google=False,
-        all_day=eh_all_day,
-        ativo=True,
+    datas_recorrentes = gerar_datas_recorrencia_agenda(
+        data_str.strip(),
+        repetir or "",
+        repetir_ate,
     )
-    db.add(tarefa)
+
+    tarefas_criadas: list[Tarefa] = []
+    for data_ocorrencia in datas_recorrentes:
+        tarefa = Tarefa(
+            user_id=user_id,
+            titulo=titulo.strip(),
+            descricao=(descricao or "").strip(),
+            origem=(origem or "").strip(),
+            local=(local or "").strip(),
+            data=data_ocorrencia,
+            hora_inicio="" if eh_all_day else hora_inicio,
+            hora_fim="" if eh_all_day else hora_fim,
+            duracao_min=duracao_val,
+            prioridade=prioridade_val,
+            status=normalizar_status(status or "pendente"),
+            tipo_evento="prioriza",
+            origem_evento="prioriza",
+            sincronizado_google=False,
+            all_day=eh_all_day,
+            ativo=True,
+        )
+        db.add(tarefa)
+        tarefas_criadas.append(tarefa)
+
     db.commit()
-    db.refresh(tarefa)
+    for tarefa in tarefas_criadas:
+        db.refresh(tarefa)
 
-    if str(sincronizar_google).lower() in {"1", "true", "sim", "yes"}:
-        try:
-            tarefa = sincronizar_tarefa_no_google(db, tarefa, current_user)
-        except Exception as e:
-            print(f"[GOOGLE] Falha ao sincronizar tarefa recém-criada: {e}")
+    google_habilitado = str(sincronizar_google).lower() in {"1", "true", "sim", "yes"}
+    if google_habilitado:
+        sincronizadas: list[Tarefa] = []
+        for tarefa in tarefas_criadas:
+            try:
+                sincronizadas.append(sincronizar_tarefa_no_google(db, tarefa, current_user))
+            except Exception as e:
+                print(f"[GOOGLE] Falha ao sincronizar tarefa recorrente: {e}")
+                sincronizadas.append(tarefa)
+        tarefas_criadas = sincronizadas
 
-    return tarefa.to_dict()
+    if len(tarefas_criadas) == 1:
+        return tarefas_criadas[0].to_dict()
+
+    return {
+        "ok": True,
+        "quantidade": len(tarefas_criadas),
+        "repeticao": normalizar_repeticao_agenda(repetir or ""),
+        "tarefas": [t.to_dict() for t in tarefas_criadas],
+    }
 
 
 @app.put("/tarefas/{tarefa_id}")
