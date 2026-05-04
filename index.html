@@ -1520,6 +1520,15 @@
       .calendar-indicator.tema {
         background: rgba(var(--cor-tema-rgb), 0.82);
       }
+      .calendar-indicator.prio1 {
+        background: #ef4444;
+      }
+      .calendar-indicator.prio2 {
+        background: #f59e0b;
+      }
+      .calendar-indicator.prio3 {
+        background: #22c55e;
+      }
       .calendar-indicator.pessoal {
         background: #7c83f0;
       }
@@ -5775,6 +5784,10 @@
 
     function tipoIndicadorCalendario(item) {
       if (ehStatusFeito(item.status)) return "feito";
+      const prioridade = String(item.prioridade || "");
+      if (prioridade === "1") return "prio1";
+      if (prioridade === "2") return "prio2";
+      if (prioridade === "3") return "prio3";
       const origem = String(item.origem || item.tipo || "").toUpperCase();
       const titulo = String(item.titulo || "").toLowerCase();
       if (origem === "PESSOAL") return "pessoal";
@@ -5785,6 +5798,14 @@
     function indicadoresDoDia(iso) {
       const itens = agendaDoDiaCombinada(iso);
       return itens.map(tipoIndicadorCalendario);
+    }
+
+    function rolarParaAgendaDiaSelecionado() {
+      const alvo = document.getElementById("agenda-dia-container");
+      if (!alvo) return;
+      window.setTimeout(() => {
+        alvo.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 80);
     }
 
     function sincronizarDiaSelecionadoComMesAtual() {
@@ -5862,6 +5883,7 @@
           }
           montarCalendarioMes();
           preencherAgendaDiaSelecionado();
+          rolarParaAgendaDiaSelecionado();
         });
         grid.appendChild(cel);
       }
