@@ -1381,31 +1381,187 @@
       .nota-status-feito { text-decoration: line-through; color: #6b7280; }
 
       /* ── CALENDÁRIO ── */
-      .calendar-wrapper { margin-bottom: 10px; }
-      .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-      .calendar-header-title { font-size: 14px; font-weight: 600; color: #111827; }
+      .agenda-calendar-card {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .agenda-calendar-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .agenda-calendar-topbar .card-header {
+        margin-bottom: 0;
+      }
+      .calendar-wrapper {
+        margin-bottom: 0;
+        padding: 14px;
+        border-radius: 24px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(248,250,252,0.96) 100%);
+        border: 1px solid rgba(226,232,240,0.9);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+      }
+      .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .calendar-header-title {
+        font-size: 20px;
+        line-height: 1.1;
+        font-weight: 780;
+        letter-spacing: -0.03em;
+        color: #0f172a;
+      }
+      .calendar-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
       .calendar-nav-btn {
-        border-radius: 999px; border: none; padding: 4px 8px;
-        font-size: 11px; background: #e5e7eb; color: #111827; cursor: pointer;
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        border: 1px solid rgba(203,213,225,0.92);
+        background: #ffffff;
+        color: #334155;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
       }
-      .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; font-size: 11px; }
-      .calendar-weekday { text-align: center; color: #6b7280; font-weight: 500; margin-bottom: 2px; }
+      .calendar-nav-btn:hover {
+        border-color: rgba(var(--cor-tema-rgb), 0.24);
+        background: rgba(var(--cor-tema-rgb), 0.04);
+        box-shadow: 0 8px 18px rgba(15,23,42,0.06);
+        transform: translateY(-1px);
+      }
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .calendar-weekday {
+        padding: 2px 0 6px;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
       .calendar-day {
-        min-height: 46px; background: #f3f4f6; border-radius: 10px;
-        padding: 3px 4px; cursor: pointer; border: 1px solid transparent;
-        display: flex; flex-direction: column; justify-content: space-between;
+        min-height: 66px;
+        padding: 8px 6px 7px;
+        cursor: pointer;
+        border-radius: 18px;
+        border: 1px solid rgba(226,232,240,0.92);
+        background: rgba(255,255,255,0.82);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 8px;
+        transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
       }
-      .calendar-day.out-month { opacity: 0.35; }
-      .calendar-day.selected  { border-color: var(--cor-tema); background: var(--cor-tema-clara); box-shadow: inset 0 0 0 1px rgba(var(--cor-tema-rgb), 0.1); }
-      .calendar-day-number    { font-size: 12px; font-weight: 600; color: #111827; }
-      .calendar-day-dots      { display: flex; gap: 2px; margin-top: 2px; }
-      .calendar-dot           { width: 6px; height: 6px; border-radius: 999px; }
-      .calendar-dot.prio1     { background: #dc2626; }
-      .calendar-dot.prio2     { background: #facc15; }
-      .calendar-dot.prio3     { background: #22c55e; }
-      .calendar-dot.misto     { background: linear-gradient(90deg, #dc2626, #facc15, #22c55e); }
-      .calendar-holiday       { font-size: 9px; color: #b91c1c; margin-top: 2px; }
-      .agenda-dia-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+      .calendar-day:hover {
+        border-color: rgba(var(--cor-tema-rgb), 0.2);
+        box-shadow: 0 10px 20px rgba(15,23,42,0.06);
+        transform: translateY(-1px);
+      }
+      .calendar-day.out-month {
+        opacity: 0.38;
+      }
+      .calendar-day.today {
+        border-color: rgba(var(--cor-tema-rgb), 0.22);
+        background: rgba(var(--cor-tema-rgb), 0.05);
+      }
+      .calendar-day.selected {
+        border-color: rgba(var(--cor-tema-rgb), 0.34);
+        background: linear-gradient(180deg, rgba(var(--cor-tema-rgb), 0.12) 0%, rgba(var(--cor-tema-rgb), 0.08) 100%);
+        box-shadow: inset 0 0 0 1px rgba(var(--cor-tema-rgb), 0.09), 0 14px 28px rgba(var(--cor-tema-rgb), 0.10);
+      }
+      .calendar-day-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 6px;
+      }
+      .calendar-day-number {
+        font-size: 14px;
+        line-height: 1;
+        font-weight: 720;
+        color: #0f172a;
+      }
+      .calendar-day.today .calendar-day-number {
+        color: var(--cor-tema-escura);
+      }
+      .calendar-day-more {
+        font-size: 10px;
+        line-height: 1;
+        font-weight: 800;
+        color: #64748b;
+      }
+      .calendar-day-indicators {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-height: 18px;
+      }
+      .calendar-indicator {
+        height: 4px;
+        border-radius: 999px;
+        width: 100%;
+      }
+      .calendar-indicator.tema {
+        background: rgba(var(--cor-tema-rgb), 0.82);
+      }
+      .calendar-indicator.pessoal {
+        background: #7c83f0;
+      }
+      .calendar-indicator.extra {
+        background: #f59e0b;
+      }
+      .calendar-indicator.feito {
+        background: #22c55e;
+      }
+      .agenda-dia-container {
+        margin-top: 0;
+        padding: 16px 14px 6px;
+        border-top: 1px solid rgba(226,232,240,0.92);
+      }
+      .agenda-dia-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .agenda-dia-kicker {
+        margin: 0 0 4px 0;
+        font-size: 11px;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #94a3b8;
+      }
+      .agenda-dia-label {
+        font-size: 18px;
+        line-height: 1.2;
+        font-weight: 760;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+      }
+      .agenda-dia-vazio {
+        margin: 0;
+        font-size: 13px;
+        color: #64748b;
+      }
 
       /* ── FLASH ── */
       .full-flash-overlay {
@@ -1622,14 +1778,9 @@
       }
       .agenda-icon-link:hover,
       .agenda-icon-btn:hover { opacity: 0.9; }
-      .calendar-day-dots {
-        display: flex;
-        gap: 3px;
-        margin-top: 2px;
-        flex-wrap: wrap;
+      .calendar-day-indicators {
+        width: 100%;
       }
-      .calendar-dot.google { background: var(--cor-tema); }
-      .calendar-dot.local-google { background: #7c3aed; }
 
       .icon-tema { color: var(--cor-tema) !important; }
       .resumo-icon { color: rgba(var(--cor-tema-rgb), 0.68) !important; }
@@ -2308,7 +2459,7 @@
         }
 
         #screen-agenda.screen.active {
-          grid-template-columns: minmax(0, 1.28fr) minmax(340px, 0.72fr);
+          grid-template-columns: minmax(0, 1fr);
         }
 
         #screen-notas.screen.active,
@@ -2615,21 +2766,18 @@
 
         <!-- ══ ABA AGENDA ══ -->
         <div class="screen" id="screen-agenda">
-          <div class="card">
-            <div class="card-header">
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
-                <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.2"/>
-                <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
-                <line x1="40" y1="96" x2="216" y2="96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                <line x1="80" y1="16" x2="80" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                <line x1="176" y1="16" x2="176" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-              </svg>
-              <h2>Agenda geral</h2>
-            </div>
-            <div class="secao-subtitulo">Calendário mensal com compromissos do PRIORIZA e eventos do Google Agenda no mesmo layout.</div>
-
-            <div class="checklist-toolbar">
-              <div class="checklist-toolbar-info">Defina data, horário, local/contexto e prioridade apenas quando for adicionar algo novo.</div>
+          <div class="card agenda-calendar-card">
+            <div class="agenda-calendar-topbar">
+              <div class="card-header">
+                <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
+                  <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.2"/>
+                  <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
+                  <line x1="40" y1="96" x2="216" y2="96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                  <line x1="80" y1="16" x2="80" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                  <line x1="176" y1="16" x2="176" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                </svg>
+                <h2>Agenda</h2>
+              </div>
               <button id="btn-toggle-form-agenda" class="btn-ghost-action" type="button" aria-expanded="false" aria-controls="agenda-form-wrap">
                 <svg width="16" height="16" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
                   <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
@@ -2644,7 +2792,6 @@
               <div class="checklist-form-header">
                 <div>
                   <div class="checklist-form-title">Adicionar compromisso</div>
-                  <div class="checklist-form-subtitle">Preencha os campos e salve quando precisar.</div>
                 </div>
                 <button id="btn-fechar-form-agenda" class="btn-secondary" type="button">Fechar</button>
               </div>
@@ -2692,31 +2839,37 @@
                 </div>
               </form>
             </div>
-          </div>
 
-          <div id="calendar-container" class="calendar-wrapper">
-            <div class="calendar-header">
-              <button id="btn-cal-prev" class="calendar-nav-btn" aria-label="Mês anterior">
-                <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                  <path d="M160 48L80 128l80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-              <div class="calendar-header-title" id="calendar-title">Mês Ano</div>
-              <button id="btn-cal-next" class="calendar-nav-btn" aria-label="Próximo mês">
-                <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                  <path d="M96 48l80 80-80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
+            <div id="calendar-container" class="calendar-wrapper">
+              <div class="calendar-header">
+                <div class="calendar-nav">
+                  <button id="btn-cal-prev" class="calendar-nav-btn" aria-label="Mês anterior">
+                    <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                      <path d="M160 48L80 128l80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="calendar-header-title" id="calendar-title">Mês Ano</div>
+                <div class="calendar-nav">
+                  <button id="btn-cal-next" class="calendar-nav-btn" aria-label="Próximo mês">
+                    <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                      <path d="M96 48l80 80-80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="calendar-grid" id="calendar-grid"></div>
             </div>
-            <div class="calendar-grid" id="calendar-grid"></div>
-          </div>
 
-          <div id="agenda-dia-container" style="display:none; margin-top:8px">
-            <div class="agenda-dia-header">
-              <span id="agenda-dia-label"><strong>Agenda do dia</strong></span>
-              <button id="btn-voltar-calendario" class="btn-secondary">Ver calendário</button>
+            <div id="agenda-dia-container" class="agenda-dia-container">
+              <div class="agenda-dia-header">
+                <div>
+                  <p class="agenda-dia-kicker">Dia selecionado</p>
+                  <div id="agenda-dia-label" class="agenda-dia-label">Agenda do dia</div>
+                </div>
+              </div>
+              <div id="agenda-geral-lista"><p class="agenda-dia-vazio">Nenhum compromisso neste dia.</p></div>
             </div>
-            <div id="agenda-geral-lista"><small>Nenhum compromisso.</small></div>
           </div>
         </div>
 
@@ -5292,6 +5445,10 @@
       btn.setAttribute("aria-expanded", abrir ? "true" : "false");
       btnText.textContent = abrir ? "Ocultar formulário" : "Novo compromisso";
       if (abrir) {
+        const inputData = document.getElementById("agenda-data");
+        if (inputData && calendarioDiaSelecionadoISO) {
+          inputData.value = calendarioDiaSelecionadoISO;
+        }
         setTimeout(() => document.getElementById("agenda-titulo")?.focus(), 50);
       }
     }
@@ -5607,62 +5764,122 @@
     let calendarioMesAtual          = new Date();
     let calendarioDiaSelecionadoISO = dataHojeISO();
 
+    function formatarAgendaDiaExtenso(iso) {
+      if (!iso) return "Dia selecionado";
+      const [ano, mes, dia] = iso.split("-").map(Number);
+      const data = new Date(ano, (mes || 1) - 1, dia || 1);
+      const diasSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+      const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+      return `${diasSemana[data.getDay()]}, ${String(data.getDate()).padStart(2, "0")} de ${meses[data.getMonth()]}`;
+    }
+
+    function tipoIndicadorCalendario(item) {
+      if (ehStatusFeito(item.status)) return "feito";
+      const origem = String(item.origem || item.tipo || "").toUpperCase();
+      const titulo = String(item.titulo || "").toLowerCase();
+      if (origem === "PESSOAL") return "pessoal";
+      if (titulo.includes("imprevisto") || titulo.includes("extra") || origem.includes("EXTRA")) return "extra";
+      return "tema";
+    }
+
+    function indicadoresDoDia(iso) {
+      const itens = agendaDoDiaCombinada(iso);
+      return itens.map(tipoIndicadorCalendario);
+    }
+
+    function sincronizarDiaSelecionadoComMesAtual() {
+      const atual = normalizarDataParaISO(calendarioDiaSelecionadoISO || "") || dataHojeISO();
+      const [anoSel, mesSel, diaSel] = atual.split("-").map(Number);
+      const ano = calendarioMesAtual.getFullYear();
+      const mes = calendarioMesAtual.getMonth();
+      if (anoSel === ano && (mesSel - 1) === mes) return;
+      const ultimoDia = new Date(ano, mes + 1, 0).getDate();
+      calendarioDiaSelecionadoISO = dateToISO(new Date(ano, mes, Math.min(diaSel || 1, ultimoDia)));
+    }
+
     function montarCalendarioMes() {
-      const grid=document.getElementById("calendar-grid"); const title=document.getElementById("calendar-title");
-      if(!grid||!title) return;
-      const ano=calendarioMesAtual.getFullYear(); const mes=calendarioMesAtual.getMonth();
-      const primeiroDia=new Date(ano,mes,1); const inicio=new Date(ano,mes,1-primeiroDia.getDay());
-      const nomesMes=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-      title.textContent=`${nomesMes[mes]} de ${ano}`;
-      grid.innerHTML="";
-      ["D","S","T","Q","Q","S","S"].forEach(ds=>{ const d=document.createElement("div"); d.className="calendar-weekday"; d.textContent=ds; grid.appendChild(d); });
+      const grid = document.getElementById("calendar-grid");
+      const title = document.getElementById("calendar-title");
+      if (!grid || !title) return;
+      const ano = calendarioMesAtual.getFullYear();
+      const mes = calendarioMesAtual.getMonth();
+      sincronizarDiaSelecionadoComMesAtual();
+      const primeiroDia = new Date(ano, mes, 1);
+      const inicio = new Date(ano, mes, 1 - primeiroDia.getDay());
+      const hojeISO = dataHojeISO();
+      const nomesMes = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+      title.textContent = `${nomesMes[mes]} ${ano}`;
+      grid.innerHTML = "";
+      ["D","S","T","Q","Q","S","S"].forEach((ds) => {
+        const el = document.createElement("div");
+        el.className = "calendar-weekday";
+        el.textContent = ds;
+        grid.appendChild(el);
+      });
 
-      function marcadoresDoDia(iso) {
-        const locais = tarefasAgendaCache.filter(t => normalizarDataParaISO(t.data||"")===iso && t.ativo!==false);
-        const google = googleAgendaCache.filter(t => normalizarDataParaISO(t.data||"")===iso && t.ativo!==false);
-        const dots = [];
-        if (locais.length && google.length) {
-          dots.push("local-google");
-        } else {
-          if (locais.length) {
-            let t1=false,t2=false,t3=false;
-            locais.forEach(t=>{const p=String(t.prioridade||""); if(p==="1")t1=true; if(p==="2")t2=true; if(p==="3")t3=true;});
-            if(t1&&t2&&t3) dots.push("misto");
-            else if(t1) dots.push("prio1");
-            else if(t2) dots.push("prio2");
-            else if(t3) dots.push("prio3");
-            else dots.push("prio2");
-          }
-          if (google.length) dots.push("google");
+      for (let i = 0; i < 42; i++) {
+        const dia = new Date(inicio);
+        dia.setDate(inicio.getDate() + i);
+        const iso = dateToISO(dia);
+        const cel = document.createElement("button");
+        cel.type = "button";
+        cel.className = "calendar-day";
+        if (dia.getMonth() !== mes) cel.classList.add("out-month");
+        if (iso === hojeISO) cel.classList.add("today");
+        if (iso === calendarioDiaSelecionadoISO) cel.classList.add("selected");
+
+        const topo = document.createElement("div");
+        topo.className = "calendar-day-top";
+
+        const num = document.createElement("div");
+        num.className = "calendar-day-number";
+        num.textContent = dia.getDate();
+        topo.appendChild(num);
+
+        const indicadores = indicadoresDoDia(iso);
+        const excedentes = Math.max(0, indicadores.length - 3);
+        if (excedentes > 0) {
+          const more = document.createElement("span");
+          more.className = "calendar-day-more";
+          more.textContent = `+${excedentes}`;
+          topo.appendChild(more);
         }
-        return dots.slice(0,2);
-      }
 
-      for(let i=0;i<42;i++){
-        const dia=new Date(inicio); dia.setDate(inicio.getDate()+i); const iso=dateToISO(dia);
-        const cel=document.createElement("div"); cel.className="calendar-day"; if(dia.getMonth()!==mes)cel.classList.add("out-month"); if(iso===calendarioDiaSelecionadoISO)cel.classList.add("selected");
-        const num=document.createElement("div"); num.className="calendar-day-number"; num.textContent=dia.getDate();
-        const dots=document.createElement("div"); dots.className="calendar-day-dots";
-        marcadoresDoDia(iso).forEach(tipo=>{ const dot=document.createElement("div"); dot.className=`calendar-dot ${tipo}`; dots.appendChild(dot); });
-        cel.appendChild(num); cel.appendChild(dots);
-        cel.addEventListener("click",()=>{
-          calendarioDiaSelecionadoISO=iso;
-          document.getElementById("calendar-container").style.display="none";
-          document.getElementById("agenda-dia-container").style.display="block";
-          montarCalendarioMes(); preencherAgendaDiaSelecionado();
+        const trilhas = document.createElement("div");
+        trilhas.className = "calendar-day-indicators";
+        indicadores.slice(0, 3).forEach((tipo) => {
+          const barra = document.createElement("span");
+          barra.className = `calendar-indicator ${tipo}`;
+          trilhas.appendChild(barra);
+        });
+
+        cel.appendChild(topo);
+        cel.appendChild(trilhas);
+        cel.addEventListener("click", () => {
+          calendarioDiaSelecionadoISO = iso;
+          if (dia.getMonth() !== mes) {
+            calendarioMesAtual = new Date(dia.getFullYear(), dia.getMonth(), 1);
+          }
+          montarCalendarioMes();
+          preencherAgendaDiaSelecionado();
         });
         grid.appendChild(cel);
       }
     }
 
     function preencherAgendaDiaSelecionado() {
-      const lista=document.getElementById("agenda-geral-lista"); const label=document.getElementById("agenda-dia-label"); const inputData=document.getElementById("agenda-data");
-      if(!lista||!label) return;
-      label.textContent="Agenda de "+formatarDataCurtaBR(calendarioDiaSelecionadoISO);
-      if(inputData) inputData.value=calendarioDiaSelecionadoISO;
+      const lista = document.getElementById("agenda-geral-lista");
+      const label = document.getElementById("agenda-dia-label");
+      const inputData = document.getElementById("agenda-data");
+      if (!lista || !label) return;
+      label.textContent = formatarAgendaDiaExtenso(calendarioDiaSelecionadoISO);
+      if (inputData) inputData.value = calendarioDiaSelecionadoISO;
       const itensDoDia = agendaDoDiaCombinada(calendarioDiaSelecionadoISO);
-      if(itensDoDia.length===0){lista.innerHTML="<small>Nenhum compromisso para este dia.</small>";return;}
-      lista.innerHTML="";
+      if (itensDoDia.length === 0) {
+        lista.innerHTML = '<p class="agenda-dia-vazio">Nenhum compromisso neste dia.</p>';
+        return;
+      }
+      lista.innerHTML = "";
       itensDoDia.forEach(t=>{
         const item=document.createElement("div"); item.className="agenda-item";
         if (ehStatusCancelada(t.status)) item.classList.add("cancelada");
