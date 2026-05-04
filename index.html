@@ -2837,11 +2837,17 @@
                   </label>
                   <div id="agenda-google-sync-ajuda" class="agenda-google-ajuda">Ative esta opção quando quiser criar o mesmo compromisso no Google Agenda além do PRIORIZA.</div>
                 </div>
-                <div class="campo-em-breve form-grid" style="margin-top:6px">
+                <div class="form-grid" style="margin-top:6px">
                   <div>
-                    <label><input type="checkbox" id="agenda-repetir" disabled /> Repetir semanalmente <span class="badge-em-breve">em breve</span></label>
+                    <label for="agenda-repetir">Frequência</label>
+                    <select id="agenda-repetir">
+                      <option value="NENHUMA" selected>Não repetir</option>
+                      <option value="DIARIA">Diariamente</option>
+                      <option value="SEMANAL">Semanalmente</option>
+                      <option value="MENSAL">Mensalmente</option>
+                    </select>
                   </div>
-                  <div><label for="agenda-repetir-ate">Até (data)</label><input id="agenda-repetir-ate" type="date" disabled /></div>
+                  <div><label for="agenda-repetir-ate">Repetir até</label><input id="agenda-repetir-ate" type="date" disabled /></div>
                 </div>
                 <div class="btn-row">
                   <button type="submit" id="btn-salvar-compromisso" class="btn-primary">Salvar compromisso</button>
@@ -5462,6 +5468,15 @@
       }
     }
 
+    function atualizarCampoRecorrenciaAgenda() {
+      const select = document.getElementById("agenda-repetir");
+      const inputAte = document.getElementById("agenda-repetir-ate");
+      if (!select || !inputAte) return;
+      const ativo = (select.value || "NENHUMA") !== "NENHUMA";
+      inputAte.disabled = !ativo;
+      if (!ativo) inputAte.value = "";
+    }
+
     // ── SALVAR ROTINA (form) ──────────────────────────────────────
     async function salvarNovaRotinaChecklist(e) {
       e.preventDefault();
@@ -6264,6 +6279,7 @@
       });
       abrirTela(document.querySelector(".screen.active")?.id || "screen-hoje");
       atualizarToggleUsuariosAdmin();
+      atualizarCampoRecorrenciaAgenda();
 
       document.getElementById("btn-toggle-passados-pessoal")?.addEventListener("click", async () => {
   mostrarPassadosPessoal = !mostrarPassadosPessoal;
@@ -6295,6 +6311,7 @@
 
       document.getElementById("btn-toggle-form-agenda")?.addEventListener("click", () => toggleFormAgenda());
       document.getElementById("btn-fechar-form-agenda")?.addEventListener("click", () => toggleFormAgenda(false));
+      document.getElementById("agenda-repetir")?.addEventListener("change", atualizarCampoRecorrenciaAgenda);
       document.getElementById("agenda-titulo")?.addEventListener("keydown", (ev) => {
         if (ev.key === "Escape") toggleFormAgenda(false);
       });
@@ -6324,8 +6341,14 @@
         const hora      = document.getElementById("agenda-hora")?.value||"00:00";
         const duracao   = document.getElementById("agenda-duracao")?.value||"60";
         const prioridade= document.getElementById("agenda-prioridade")?.value||"2";
+        const repetir   = document.getElementById("agenda-repetir")?.value||"NENHUMA";
+        const repetirAte= document.getElementById("agenda-repetir-ate")?.value.trim()||"";
         const syncGoogle = document.getElementById("agenda-sincronizar-google")?.checked === true;
         if(!titulo||!data){await modal.alerta("Preencha pelo menos Título e Data.","Atenção");return;}
+        if (repetir !== "NENHUMA" && !repetirAte) {
+          await modal.alerta("Informe até quando o compromisso deve se repetir.","Atenção");
+          return;
+        }
         const btn=document.getElementById("btn-salvar-compromisso"); btn.disabled=true;
         try {
           const res=await fetch(API+"/tarefas?"+new URLSearchParams({
@@ -6335,17 +6358,31 @@
             hora_inicio:hora,
             duracao_min:duracao,
             prioridade,
+            repetir,
+            repetir_ate: repetirAte,
             sincronizar_google: syncGoogle ? "true" : "false"
           }),{method:"POST",headers:authHeaders()});
           if(!res.ok){await modal.alerta("Não foi possível salvar o compromisso.","Erro");return;}
           const tarefaCriada = await res.json();
+          const quantidadeCriada = Array.isArray(tarefaCriada?.tarefas)
+            ? tarefaCriada.tarefas.length
+            : Number(tarefaCriada?.quantidade || 1);
 
-          let mensagemSucesso = "Compromisso salvo no PRIORIZA.";
+          let mensagemSucesso = quantidadeCriada > 1
+            ? `${quantidadeCriada} compromissos salvos no PRIORIZA.`
+            : "Compromisso salvo no PRIORIZA.";
           if(syncGoogle){
-            if (tarefaCriada?.google_event_id) {
-              mensagemSucesso = "Compromisso salvo no PRIORIZA e enviado ao Google Agenda.";
+            const sincronizouGoogle = Array.isArray(tarefaCriada?.tarefas)
+              ? tarefaCriada.tarefas.some((item) => !!item?.google_event_id)
+              : !!tarefaCriada?.google_event_id;
+            if (sincronizouGoogle) {
+              mensagemSucesso = quantidadeCriada > 1
+                ? `${quantidadeCriada} compromissos salvos e enviados ao Google Agenda.`
+                : "Compromisso salvo no PRIORIZA e enviado ao Google Agenda.";
             } else {
-              mensagemSucesso = "Compromisso salvo no PRIORIZA, mas não foi possível enviar ao Google Agenda.";
+              mensagemSucesso = quantidadeCriada > 1
+                ? `${quantidadeCriada} compromissos salvos, mas não foi possível enviar tudo ao Google Agenda.`
+                : "Compromisso salvo no PRIORIZA, mas não foi possível enviar ao Google Agenda.";
             }
           }
 
@@ -6356,6 +6393,7 @@
           }
           document.getElementById("form-agenda").reset();
           document.getElementById("agenda-sincronizar-google").checked = false;
+          atualizarCampoRecorrenciaAgenda();
           toggleFormAgenda(false);
           await modal.alerta(mensagemSucesso,"Sucesso");
           await carregarAgendaHoje(); await atualizarAgendaMesEDia(); await carregarPessoalLista();
