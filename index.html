@@ -1565,6 +1565,27 @@
         gap: 10px;
         margin-bottom: 12px;
       }
+      .mini-add-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(var(--cor-tema-rgb), 0.12);
+        color: var(--cor-tema-escura);
+        box-shadow: inset 0 0 0 1px rgba(var(--cor-tema-rgb), 0.12);
+        cursor: pointer;
+        transition: transform 150ms ease, background 150ms ease, box-shadow 150ms ease;
+      }
+      .mini-add-btn:hover {
+        background: rgba(var(--cor-tema-rgb), 0.16);
+        box-shadow: inset 0 0 0 1px rgba(var(--cor-tema-rgb), 0.18);
+      }
+      .mini-add-btn:active {
+        transform: scale(0.97);
+      }
       .agenda-dia-kicker {
         margin: 0 0 4px 0;
         font-size: 11px;
@@ -1802,6 +1823,45 @@
       }
       .agenda-icon-link:hover,
       .agenda-icon-btn:hover { opacity: 0.9; }
+      .fab-add {
+        position: fixed;
+        right: 18px;
+        bottom: 88px;
+        width: 54px;
+        height: 54px;
+        border: none;
+        border-radius: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, var(--cor-tema) 0%, var(--cor-tema-escura) 100%);
+        color: #ffffff;
+        box-shadow: 0 16px 28px rgba(var(--cor-tema-rgb), 0.28);
+        cursor: pointer;
+        z-index: 16;
+        transition: transform 150ms ease, box-shadow 150ms ease, opacity 180ms ease;
+      }
+      .fab-add:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 20px 34px rgba(var(--cor-tema-rgb), 0.32);
+      }
+      .fab-add:active {
+        transform: scale(0.97);
+      }
+      .fab-add[hidden] {
+        display: none !important;
+      }
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
       .calendar-day-indicators {
         width: 100%;
       }
@@ -2325,6 +2385,10 @@
           padding: calc(var(--layout-header-offset) + 20px) 20px 20px;
           align-items: start;
         }
+        .fab-add {
+          right: 26px;
+          bottom: 28px;
+        }
 
         .desktop-sidebar,
         .desktop-rail {
@@ -2804,14 +2868,6 @@
                 </svg>
                 <h2>Agenda</h2>
               </div>
-              <button id="btn-toggle-form-agenda" class="btn-ghost-action" type="button" aria-expanded="false" aria-controls="agenda-form-wrap">
-                <svg width="16" height="16" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                  <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
-                  <line x1="128" y1="80" x2="128" y2="176" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                  <line x1="80" y1="128" x2="176" y2="128" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                </svg>
-                <span id="btn-toggle-form-agenda-text">Novo compromisso</span>
-              </button>
             </div>
 
             <div id="agenda-form-wrap" class="checklist-form-wrap">
@@ -2910,9 +2966,22 @@
                   <p class="agenda-dia-kicker">Dia selecionado</p>
                   <div id="agenda-dia-label" class="agenda-dia-label">Agenda do dia</div>
                 </div>
+                <button id="btn-add-dia-agenda" class="mini-add-btn" type="button" aria-label="Novo compromisso neste dia" title="Novo compromisso neste dia">
+                  <svg width="16" height="16" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <line x1="128" y1="72" x2="128" y2="184" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                    <line x1="72" y1="128" x2="184" y2="128" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                  </svg>
+                </button>
               </div>
               <div id="agenda-geral-lista"><p class="agenda-dia-vazio">Nenhum compromisso neste dia.</p></div>
             </div>
+            <button id="btn-toggle-form-agenda" class="fab-add" type="button" aria-expanded="false" aria-controls="agenda-form-wrap" aria-label="Novo compromisso" title="Novo compromisso">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                <line x1="128" y1="64" x2="128" y2="192" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                <line x1="64" y1="128" x2="192" y2="128" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+              </svg>
+              <span id="btn-toggle-form-agenda-text" class="sr-only">Novo compromisso</span>
+            </button>
           </div>
         </div>
 
@@ -2930,15 +2999,6 @@
             <div class="secao-subtitulo">Lista organizada por status. Arraste direita = mudar status · esquerda = excluir.</div>
             <div class="checklist-toolbar">
               <div class="checklist-toolbar-info">Crie novas rotinas sem poluir a tela. O formulário só aparece quando necessário.</div>
-              <button id="btn-toggle-form-checklist" class="btn-ghost-action" type="button" aria-expanded="false" aria-controls="checklist-form-wrap">
-                <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor">
-                  <circle cx="128" cy="128" r="96" fill="currentColor" opacity="0.18"/>
-                  <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
-                  <line x1="88" y1="128" x2="168" y2="128" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                  <line x1="128" y1="88" x2="128" y2="168" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                </svg>
-                <span id="btn-toggle-form-checklist-text">Nova rotina</span>
-              </button>
             </div>
 
             <div id="checklist-form-wrap" class="checklist-form-wrap">
@@ -2982,11 +3042,18 @@
                   </div>
                   <div></div>
                 </div>
-                <div class="btn-row">
+              <div class="btn-row">
                   <button type="submit" id="btn-salvar-rotina" class="btn-primary">Salvar rotina</button>
                 </div>
               </form>
             </div>
+            <button id="btn-toggle-form-checklist" class="fab-add" type="button" aria-expanded="false" aria-controls="checklist-form-wrap" aria-label="Nova rotina" title="Nova rotina">
+              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                <line x1="128" y1="64" x2="128" y2="192" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                <line x1="64" y1="128" x2="192" y2="128" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+              </svg>
+              <span id="btn-toggle-form-checklist-text" class="sr-only">Nova rotina</span>
+            </button>
 
             <div class="filtros-row">
               <div class="filtro-select">
@@ -5569,11 +5636,22 @@
       wrap.classList.toggle("open", abrir);
       btn.classList.toggle("is-open", abrir);
       btn.setAttribute("aria-expanded", abrir ? "true" : "false");
-      btnText.textContent = abrir ? "Ocultar formulário" : "Nova rotina";
+      btn.setAttribute("aria-label", abrir ? "Fechar formulário de rotina" : "Nova rotina");
+      btn.title = abrir ? "Fechar formulário de rotina" : "Nova rotina";
+      btnText.textContent = abrir ? "Fechar formulário de rotina" : "Nova rotina";
       if (abrir) {
         atualizarCategoriaChecklistUI();
         setTimeout(() => document.getElementById("chk-titulo")?.focus(), 50);
       }
+    }
+
+    function abrirFormularioAgendaNaData(dataISO = "") {
+      const inputData = document.getElementById("agenda-data");
+      const dataAlvo = dataISO || calendarioDiaSelecionadoISO || dataHojeISO();
+      if (inputData && dataAlvo) {
+        inputData.value = dataAlvo;
+      }
+      toggleFormAgenda(true);
     }
 
     function toggleFormAgenda(forceOpen = null) {
@@ -5585,7 +5663,9 @@
       wrap.classList.toggle("open", abrir);
       btn.classList.toggle("is-open", abrir);
       btn.setAttribute("aria-expanded", abrir ? "true" : "false");
-      btnText.textContent = abrir ? "Ocultar formulário" : "Novo compromisso";
+      btn.setAttribute("aria-label", abrir ? "Fechar formulário de compromisso" : "Novo compromisso");
+      btn.title = abrir ? "Fechar formulário de compromisso" : "Novo compromisso";
+      btnText.textContent = abrir ? "Fechar formulário de compromisso" : "Novo compromisso";
       if (abrir) {
         atualizarCategoriaAgendaUI();
         const inputData = document.getElementById("agenda-data");
@@ -6437,6 +6517,7 @@
 
       document.getElementById("btn-toggle-form-checklist")?.addEventListener("click", () => toggleFormChecklist());
       document.getElementById("btn-fechar-form-checklist")?.addEventListener("click", () => toggleFormChecklist(false));
+      document.getElementById("btn-add-dia-agenda")?.addEventListener("click", () => abrirFormularioAgendaNaData(calendarioDiaSelecionadoISO));
       document.getElementById("chk-titulo")?.addEventListener("keydown", (ev) => {
         if (ev.key === "Escape") toggleFormChecklist(false);
       });
