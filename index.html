@@ -1508,14 +1508,18 @@
       }
       .calendar-day-indicators {
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        flex-wrap: wrap;
         gap: 4px;
-        min-height: 18px;
+        min-height: 12px;
+        margin-top: 6px;
       }
       .calendar-indicator {
-        height: 4px;
+        width: 6px;
+        height: 6px;
         border-radius: 999px;
-        width: 100%;
+        flex: 0 0 auto;
       }
       .calendar-indicator.tema {
         background: rgba(var(--cor-tema-rgb), 0.82);
@@ -1793,6 +1797,7 @@
 
       .icon-tema { color: var(--cor-tema) !important; }
       .resumo-icon { color: rgba(var(--cor-tema-rgb), 0.68) !important; }
+      .field-hidden { display: none !important; }
 
       .appearance-options {
         display: grid;
@@ -2825,9 +2830,20 @@
                     </select>
                   </div>
                 </div>
+                <div class="form-grid">
+                  <div>
+                    <label for="agenda-categoria">Categoria</label>
+                    <select id="agenda-categoria">
+                      <option value="PROFISSIONAL" selected>Profissional</option>
+                      <option value="PESSOAL">Pessoal</option>
+                    </select>
+                  </div>
+                  <div id="agenda-local-wrap">
+                    <label for="agenda-local">Local / contexto (opcional)</label>
+                    <input id="agenda-local" type="text" placeholder="Ex: HGG, Escritório, Home office" />
+                  </div>
+                </div>
                 <div>
-                  <label for="agenda-local">Local / contexto (opcional)</label>
-                  <input id="agenda-local" type="text" placeholder="Ex: HGG, Escritório, Home office" />
                   <div id="agenda-locais-sugeridos" class="tag-row"></div>
                 </div>
                 <div class="agenda-google-opcao">
@@ -2926,9 +2942,11 @@
                 <div><label for="chk-titulo">Título</label><input id="chk-titulo" type="text" placeholder="Ex: Revisar protocolo, Fechar relatório" required /></div>
                 <div class="form-grid">
                   <div>
-                    <label for="chk-local">Local / contexto</label>
-                    <input id="chk-local" type="text" placeholder="Ex: HGG, Escritório" />
-                    <div id="chk-locais-sugeridos" class="tag-row"></div>
+                    <label for="chk-categoria">Categoria</label>
+                    <select id="chk-categoria">
+                      <option value="PROFISSIONAL" selected>Profissional</option>
+                      <option value="PESSOAL">Pessoal</option>
+                    </select>
                   </div>
                   <div>
                     <label for="chk-frequencia">Frequência</label>
@@ -2943,6 +2961,14 @@
                       <option value="Anual">Anual</option>
                     </select>
                   </div>
+                </div>
+                <div class="form-grid">
+                  <div>
+                    <label for="chk-local">Local / contexto</label>
+                    <input id="chk-local" type="text" placeholder="Ex: HGG, Escritório" />
+                    <div id="chk-locais-sugeridos" class="tag-row"></div>
+                  </div>
+                  <div></div>
                 </div>
                 <div class="btn-row">
                   <button type="submit" id="btn-salvar-rotina" class="btn-primary">Salvar rotina</button>
@@ -3313,7 +3339,7 @@
                   <select id="nota-tipo">
                     <option value="GERAL">Geral</option>
                     <option value="PESSOAL">Pessoal</option>
-                    <option value="TRABALHO">Trabalho</option>
+                    <option value="TRABALHO">Profissional</option>
                   </select>
                 </div>
               </div>
@@ -4384,8 +4410,7 @@
           await modal.alerta("Não foi possível reagendar o compromisso.", "Erro");
           return false;
         }
-        await carregarAgendaHoje();
-        await atualizarAgendaMesEDia();
+        await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true });
         return true;
       } catch (e) {
         console.error(e);
@@ -4452,17 +4477,11 @@
         statusEl.textContent = "Em andamento";
         acoesEl.appendChild(criarBotaoAgora("Iniciar", "primario", async () => {
           await atualizarStatusTarefa(tarefa.id, "em_andamento");
-          await carregarAgendaHoje();
-          await atualizarAgendaMesEDia();
-          await carregarPessoalLista();
-          await atualizarResumoBar();
+          await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, pessoal: true, resumo: true });
         }));
         acoesEl.appendChild(criarBotaoAgora("Concluir", "primario", async () => {
           await atualizarStatusTarefa(tarefa.id, "feito");
-          await carregarAgendaHoje();
-          await atualizarAgendaMesEDia();
-          await carregarPessoalLista();
-          await atualizarResumoBar();
+          await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, pessoal: true, resumo: true });
         }));
         acoesEl.appendChild(criarBotaoAgora("Cancelar", "suave", async () => {
           await cancelarTarefaAgenda(tarefa);
@@ -4475,10 +4494,7 @@
         statusEl.classList.add("atrasado");
         acoesEl.appendChild(criarBotaoAgora("Iniciar", "primario", async () => {
           await atualizarStatusTarefa(tarefa.id, "em_andamento");
-          await carregarAgendaHoje();
-          await atualizarAgendaMesEDia();
-          await carregarPessoalLista();
-          await atualizarResumoBar();
+          await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, pessoal: true, resumo: true });
         }));
         acoesEl.appendChild(criarBotaoAgora("Reagendar", "", async () => {
           await reagendarTarefaAgenda(tarefa);
@@ -4508,6 +4524,83 @@
         const s=document.createElement("span"); s.className="checkbox-pill"; s.textContent=local; s.style.cursor="pointer";
         s.addEventListener("click",()=>{ const inp=document.getElementById(inputId); if(inp) inp.value=local; }); c.appendChild(s);
       });
+    }
+
+    function restaurarScrollJanela(scrollTop) {
+      try {
+        window.scrollTo(0, Number(scrollTop || 0));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function executarPreservandoRolagem(fn) {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+      await fn();
+      window.requestAnimationFrame(() => restaurarScrollJanela(scrollTop));
+    }
+
+    async function recarregarBlocosComRolagem(opts = {}) {
+      const {
+        agendaHoje = false,
+        agendaMes = false,
+        checklistHoje = false,
+        checklistGeral = false,
+        pessoal = false,
+        resumo = false,
+      } = opts;
+
+      await executarPreservandoRolagem(async () => {
+        if (agendaHoje) await carregarAgendaHoje();
+        if (agendaMes) await atualizarAgendaMesEDia();
+        if (checklistHoje) await carregarChecklistHoje();
+        if (checklistGeral) await carregarChecklistGeral();
+        if (pessoal) await carregarPessoalLista();
+        if (resumo) await atualizarResumoBar();
+      });
+    }
+
+    function obterRotuloContextoTarefa(tarefa) {
+      const origem = String(tarefa?.origem || "").trim();
+      const local = String(tarefa?.local || "").trim();
+      const origemUpper = origem.toUpperCase();
+      if (origemUpper === "PESSOAL") return "Pessoal";
+      if (local) return local;
+      if (origemUpper === "PROFISSIONAL") return "Profissional";
+      return origem;
+    }
+
+    function obterRotuloOrigemChecklist(item) {
+      const origem = String(item?.origem || "").trim();
+      const origemUpper = origem.toUpperCase();
+      if (!origem) return "Profissional";
+      if (origemUpper === "PESSOAL") return "Pessoal";
+      if (origemUpper === "PROFISSIONAL") return "Profissional";
+      return origem;
+    }
+
+    function atualizarCategoriaAgendaUI() {
+      const categoria = document.getElementById("agenda-categoria");
+      const localInput = document.getElementById("agenda-local");
+      const localWrap = document.getElementById("agenda-local-wrap");
+      if (!categoria || !localInput || !localWrap) return;
+      const pessoal = (categoria.value || "PROFISSIONAL") === "PESSOAL";
+      const label = localWrap.querySelector("label");
+      if (label) {
+        label.textContent = pessoal ? "Referência (opcional)" : "Local / contexto (opcional)";
+      }
+      localInput.placeholder = pessoal ? "Ex: Casa, Faculdade, Academia" : "Ex: HGG, Escritório, Home office";
+    }
+
+    function atualizarCategoriaChecklistUI() {
+      const categoria = document.getElementById("chk-categoria");
+      const localWrap = document.getElementById("chk-local")?.parentElement;
+      const localInput = document.getElementById("chk-local");
+      if (!categoria || !localWrap || !localInput) return;
+      const pessoal = (categoria.value || "PROFISSIONAL") === "PESSOAL";
+      localWrap.classList.toggle("field-hidden", pessoal);
+      localInput.disabled = pessoal;
+      if (pessoal) localInput.value = "";
     }
 
     // ── DESFAZER (UNDO) após exclusão ──────────────────────────
@@ -4661,7 +4754,8 @@
       if(prio==="1") return `<span class="agenda-tag prio1">Prio 1</span>`;
       if(prio==="2") return `<span class="agenda-tag prio2">Prio 2</span>`;
       if(prio==="3") return `<span class="agenda-tag prio3">Prio 3</span>`;
-      if(t.origem) return `<span class="agenda-tag">${textoSeguro(t.origem)}</span>`;
+      const contexto = obterRotuloContextoTarefa(t);
+      if(contexto && contexto.toUpperCase() !== "PESSOAL") return `<span class="agenda-tag">${textoSeguro(contexto)}</span>`;
       return `<span class="agenda-tag">Trabalho</span>`;
     }
 
@@ -4698,10 +4792,7 @@
         await modal.alerta("Não foi possível cancelar o compromisso.", "Erro");
         return false;
       }
-      await carregarAgendaHoje();
-      await atualizarAgendaMesEDia();
-      await carregarPessoalLista();
-      await atualizarResumoBar();
+      await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, pessoal: true, resumo: true });
       return true;
     }
 
@@ -5129,7 +5220,7 @@
       if (!titulo?.trim()) return;
       const hora   = await modal.perguntar("Hora de início (HH:MM):","Hora","08:00");
       if (hora === null) return;
-      const origem = await modal.perguntar("Local / contexto (Ex: HGG, PESSOAL):","Local");
+      const origem = await modal.perguntar("Local / contexto (opcional):","Local");
       if (origem === null) return;
       const prioStr = await modal.perguntar("Prioridade (1=Alta · 2=Média · 3=Baixa):","Prioridade","2");
       if (prioStr === null) return;
@@ -5224,19 +5315,19 @@
 
           const info = document.createElement("div"); info.className="check-info";
           const tituloEl = document.createElement("div"); tituloEl.className="check-titulo"; tituloEl.textContent=item.titulo;
-          const sub = document.createElement("div"); sub.className="check-sub"; sub.textContent=`${item.frequencia} · ${item.origem}`;
+        const sub = document.createElement("div"); sub.className="check-sub"; sub.textContent=`${item.frequencia} · ${obterRotuloOrigemChecklist(item)}`;
           info.appendChild(tituloEl); info.appendChild(sub);
           div.appendChild(bolinha); div.appendChild(info);
 
           bolinha.addEventListener("click", async ()=>{
             const atual=bolinha.dataset.status||"pendente"; const novo=proximoStatus(atual);
             await atualizarStatusChecklist(item.id,novo);
-            await carregarChecklistHoje(); await carregarChecklistGeral(); await atualizarResumoBar();
+            await recarregarBlocosComRolagem({ checklistHoje: true, checklistGeral: true, resumo: true });
           });
 
           adicionarSwipe(div,
-            ()=>{ mostrarFlashFull("success"); setTimeout(async()=>{ await atualizarStatusChecklist(item.id,"feito"); await carregarChecklistHoje(); await carregarChecklistGeral(); await atualizarResumoBar(); },FLASH_DURATION_MS); },
-            ()=>{ mostrarFlashFull("warning"); setTimeout(async()=>{ await atualizarStatusChecklist(item.id,"em_andamento"); await carregarChecklistHoje(); await carregarChecklistGeral(); },FLASH_DURATION_MS); },
+            ()=>{ mostrarFlashFull("success"); setTimeout(async()=>{ await atualizarStatusChecklist(item.id,"feito"); await recarregarBlocosComRolagem({ checklistHoje: true, checklistGeral: true, resumo: true }); },FLASH_DURATION_MS); },
+            ()=>{ mostrarFlashFull("warning"); setTimeout(async()=>{ await atualizarStatusChecklist(item.id,"em_andamento"); await recarregarBlocosComRolagem({ checklistHoje: true, checklistGeral: true }); },FLASH_DURATION_MS); },
             { previewRightClass: "swipe-preview-right", previewLeftClass: "swipe-preview-left" }
           );
           container.appendChild(div);
@@ -5283,7 +5374,7 @@
 
       const sub = document.createElement("div");
       sub.className = "check-sub";
-      sub.textContent = `${item.frequencia} · ${item.origem || "Sem local"}`;
+      sub.textContent = `${item.frequencia} · ${obterRotuloOrigemChecklist(item)}`;
 
       info.appendChild(tituloEl);
       info.appendChild(sub);
@@ -5308,9 +5399,7 @@
         const atual = bolinha.dataset.status || "pendente";
         const novo = proximoStatus(atual);
         await atualizarStatusChecklist(item.id, novo);
-        await carregarChecklistGeral();
-        await carregarChecklistHoje();
-        await atualizarResumoBar();
+        await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
       });
 
       btnDel.addEventListener("click", async () => {
@@ -5318,8 +5407,7 @@
         mostrarFlashFull("danger");
         setTimeout(async () => {
           await excluirChecklistItem(item.id);
-          await carregarChecklistGeral();
-          await carregarChecklistHoje();
+          await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true });
         }, FLASH_DURATION_MS);
       });
 
@@ -5331,17 +5419,14 @@
           mostrarFlashFull(novo === "feito" ? "success" : "warning");
           setTimeout(async () => {
             await atualizarStatusChecklist(item.id, novo);
-            await carregarChecklistGeral();
-            await carregarChecklistHoje();
-            await atualizarResumoBar();
+            await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
           }, FLASH_DURATION_MS);
         },
         () => {
           mostrarFlashFull("danger");
           setTimeout(async () => {
             await excluirChecklistItem(item.id);
-            await carregarChecklistGeral();
-            await carregarChecklistHoje();
+            await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true });
           }, FLASH_DURATION_MS);
         },
         { previewRightClass: "swipe-preview-right", previewLeftClass: "swipe-preview-left-danger" }
@@ -5460,6 +5545,7 @@
       btn.setAttribute("aria-expanded", abrir ? "true" : "false");
       btnText.textContent = abrir ? "Ocultar formulário" : "Nova rotina";
       if (abrir) {
+        atualizarCategoriaChecklistUI();
         setTimeout(() => document.getElementById("chk-titulo")?.focus(), 50);
       }
     }
@@ -5475,6 +5561,7 @@
       btn.setAttribute("aria-expanded", abrir ? "true" : "false");
       btnText.textContent = abrir ? "Ocultar formulário" : "Novo compromisso";
       if (abrir) {
+        atualizarCategoriaAgendaUI();
         const inputData = document.getElementById("agenda-data");
         if (inputData && calendarioDiaSelecionadoISO) {
           inputData.value = calendarioDiaSelecionadoISO;
@@ -5496,19 +5583,22 @@
     async function salvarNovaRotinaChecklist(e) {
       e.preventDefault();
       const titulo  = document.getElementById("chk-titulo").value.trim();
-      const origem  = document.getElementById("chk-local").value.trim();
+      const categoria = document.getElementById("chk-categoria")?.value || "PROFISSIONAL";
+      const contexto  = document.getElementById("chk-local").value.trim();
+      const origem    = categoria === "PESSOAL" ? "PESSOAL" : (contexto || "PROFISSIONAL");
       const freq    = document.getElementById("chk-frequencia").value;
       if (!titulo) return;
       const btn=document.getElementById("btn-salvar-rotina"); btn.disabled=true;
       try {
         const res=await fetch(API+"/checklist_criar?"+new URLSearchParams({titulo,origem,frequencia:freq}),{method:"POST",headers:authHeaders()});
         if (!res.ok){await modal.alerta("Erro ao salvar rotina.","Erro");return;}
-        if (origem && !getLocaisSalvos().includes(origem)) {
-          if (await modal.confirmar(`Salvar "${origem}" como local frequente?`,"Local frequente","verde")) {
-            adicionarLocalSalvo(origem); renderLocaisSugeridos("agenda-locais-sugeridos","agenda-local"); renderLocaisSugeridos("chk-locais-sugeridos","chk-local");
+        if (categoria !== "PESSOAL" && contexto && !getLocaisSalvos().includes(contexto)) {
+          if (await modal.confirmar(`Salvar "${contexto}" como local frequente?`,"Local frequente","verde")) {
+            adicionarLocalSalvo(contexto); renderLocaisSugeridos("agenda-locais-sugeridos","agenda-local"); renderLocaisSugeridos("chk-locais-sugeridos","chk-local");
           }
         }
-        document.getElementById("chk-titulo").value=""; document.getElementById("chk-local").value=""; document.getElementById("chk-frequencia").value="Diária";
+        document.getElementById("chk-titulo").value=""; document.getElementById("chk-local").value=""; document.getElementById("chk-categoria").value="PROFISSIONAL"; document.getElementById("chk-frequencia").value="Diária";
+        atualizarCategoriaChecklistUI();
         toggleFormChecklist(false);
         await carregarChecklistHoje(); await carregarChecklistGeral(); await carregarPessoalLista();
       } catch(e){console.error(e); await modal.alerta("Erro de conexão.","Erro");}
@@ -5618,9 +5708,7 @@
         const novoStatus = ehStatusFeito(t.status) ? "pendente" : "feito";
         const ok = await atualizarStatusTarefa(t.id, novoStatus);
         if (ok) {
-          await carregarAgendaHoje();
-          await atualizarAgendaMesEDia();
-          await carregarPessoalLista();
+          await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, pessoal: true });
         }
       });
 
@@ -5680,9 +5768,7 @@
       btnExcluir.addEventListener("click", async () => {
         if (!await modal.confirmar(`Excluir "${t.titulo}"?`, "Excluir compromisso", "vermelho")) return;
         await excluirTarefa(t.id);
-        await carregarAgendaHoje();
-        await atualizarAgendaMesEDia();
-        await carregarPessoalLista();
+        await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, pessoal: true });
       });
 
       acoes.appendChild(btnFeito);
@@ -5770,7 +5856,7 @@
 
         const sub = document.createElement("div");
         sub.className = "check-sub";
-        sub.textContent = `${item.frequencia} · ${item.origem}`;
+        sub.textContent = `${item.frequencia} · ${obterRotuloOrigemChecklist(item)}`;
 
         info.appendChild(tituloEl);
         info.appendChild(sub);
@@ -5782,10 +5868,7 @@
           const atual = bolinha.dataset.status || "pendente";
           const novo = proximoStatus(atual);
           await atualizarStatusChecklist(item.id, novo);
-          await carregarChecklistHoje();
-          await carregarChecklistGeral();
-          await carregarPessoalLista();
-          await atualizarResumoBar();
+          await recarregarBlocosComRolagem({ checklistHoje: true, checklistGeral: true, pessoal: true, resumo: true });
         });
 
         checklistDiv.appendChild(div);
@@ -6299,6 +6382,8 @@
       abrirTela(document.querySelector(".screen.active")?.id || "screen-hoje");
       atualizarToggleUsuariosAdmin();
       atualizarCampoRecorrenciaAgenda();
+      atualizarCategoriaAgendaUI();
+      atualizarCategoriaChecklistUI();
 
       document.getElementById("btn-toggle-passados-pessoal")?.addEventListener("click", async () => {
   mostrarPassadosPessoal = !mostrarPassadosPessoal;
@@ -6331,6 +6416,8 @@
       document.getElementById("btn-toggle-form-agenda")?.addEventListener("click", () => toggleFormAgenda());
       document.getElementById("btn-fechar-form-agenda")?.addEventListener("click", () => toggleFormAgenda(false));
       document.getElementById("agenda-repetir")?.addEventListener("change", atualizarCampoRecorrenciaAgenda);
+      document.getElementById("agenda-categoria")?.addEventListener("change", atualizarCategoriaAgendaUI);
+      document.getElementById("chk-categoria")?.addEventListener("change", atualizarCategoriaChecklistUI);
       document.getElementById("agenda-titulo")?.addEventListener("keydown", (ev) => {
         if (ev.key === "Escape") toggleFormAgenda(false);
       });
@@ -6355,7 +6442,9 @@
       document.getElementById("form-agenda")?.addEventListener("submit", async(ev)=>{
         ev.preventDefault();
         const titulo    = document.getElementById("agenda-titulo")?.value.trim();
-        const origem    = document.getElementById("agenda-local")?.value.trim()||"";
+        const categoria = document.getElementById("agenda-categoria")?.value || "PROFISSIONAL";
+        const local     = document.getElementById("agenda-local")?.value.trim()||"";
+        const origem    = categoria === "PESSOAL" ? "PESSOAL" : "PROFISSIONAL";
         const data      = document.getElementById("agenda-data")?.value.trim();
         const hora      = document.getElementById("agenda-hora")?.value||"00:00";
         const duracao   = document.getElementById("agenda-duracao")?.value||"60";
@@ -6373,6 +6462,7 @@
           const res=await fetch(API+"/tarefas?"+new URLSearchParams({
             titulo,
             origem,
+            local,
             data,
             hora_inicio:hora,
             duracao_min:duracao,
@@ -6405,14 +6495,16 @@
             }
           }
 
-          if(origem&&!getLocaisSalvos().includes(origem)){
-            if(await modal.confirmar(`Salvar "${origem}" como local frequente?`,"Local frequente","verde")){
-              adicionarLocalSalvo(origem); renderLocaisSugeridos("agenda-locais-sugeridos","agenda-local"); renderLocaisSugeridos("chk-locais-sugeridos","chk-local");
+          if(local&&!getLocaisSalvos().includes(local)){
+            if(await modal.confirmar(`Salvar "${local}" como local frequente?`,"Local frequente","verde")){
+              adicionarLocalSalvo(local); renderLocaisSugeridos("agenda-locais-sugeridos","agenda-local"); renderLocaisSugeridos("chk-locais-sugeridos","chk-local");
             }
           }
           document.getElementById("form-agenda").reset();
+          document.getElementById("agenda-categoria").value = "PROFISSIONAL";
           document.getElementById("agenda-sincronizar-google").checked = false;
           atualizarCampoRecorrenciaAgenda();
+          atualizarCategoriaAgendaUI();
           toggleFormAgenda(false);
           await modal.alerta(mensagemSucesso,"Sucesso");
           await carregarAgendaHoje(); await atualizarAgendaMesEDia(); await carregarPessoalLista();
@@ -6728,7 +6820,8 @@
       proximasTarefas.forEach(t => {
         const [h, m] = t.hora_inicio.split(":").map(Number);
         const diff = (h * 60 + m) - minutosAgora;
-        const origem = t.origem ? ` · ${t.origem}` : "";
+        const contexto = obterRotuloContextoTarefa(t);
+        const origem = contexto ? ` · ${contexto}` : "";
         if (diff >= 0 && diff <= 2 && podeEnviarAlertaTarefa(t, "agora")) {
           enviarNotificacao(
             "🚨 Compromisso agora!",
@@ -6757,7 +6850,8 @@
         return diff >= 57 && diff <= 60;
       });
       em1hora.forEach(t => {
-        const origem = t.origem ? ` · ${t.origem}` : "";
+        const contexto = obterRotuloContextoTarefa(t);
+        const origem = contexto ? ` · ${contexto}` : "";
         if (podeEnviarAlertaTarefa(t, "1h")) {
           enviarNotificacao(
             "📅 Em 1 hora",
