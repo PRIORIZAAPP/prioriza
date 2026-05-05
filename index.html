@@ -6562,6 +6562,7 @@
 
     const NOTIF_KEY_HOJE = "prioriza_notif_dia";
     const NOTIF_KEY_SEMANA = "prioriza_notif_semana";
+    const NOTIF_KEY_ALERTAS = "prioriza_notif_alertas";
 
     // Feriados nacionais fixos (dia/mês) + variáveis 2025/2026
     const FERIADOS = [
@@ -6616,6 +6617,51 @@
       return d.getHours() * 60 + d.getMinutes(); // em minutos desde meia-noite
     }
 
+    function carregarAlertasNotificados() {
+      try {
+        const bruto = localStorage.getItem(NOTIF_KEY_ALERTAS);
+        const mapa = bruto ? JSON.parse(bruto) : {};
+        return mapa && typeof mapa === "object" ? mapa : {};
+      } catch {
+        return {};
+      }
+    }
+
+    function salvarAlertasNotificados(mapa) {
+      try {
+        localStorage.setItem(NOTIF_KEY_ALERTAS, JSON.stringify(mapa || {}));
+      } catch {}
+    }
+
+    function chaveNotificacaoTarefa(tarefa, tipo) {
+      const data = normalizarDataParaISO(tarefa?.data || "") || dataHojeISO();
+      const hora = tarefa?.hora_inicio || "sem-hora";
+      const id = tarefa?.id || `${tarefa?.titulo || "tarefa"}|${hora}`;
+      return `${data}|${id}|${tipo}`;
+    }
+
+    function limparAlertasAntigos() {
+      const mapa = carregarAlertasNotificados();
+      const hoje = dataHojeISO();
+      let alterou = false;
+      Object.keys(mapa).forEach((chave) => {
+        if (!String(chave).startsWith(`${hoje}|`)) {
+          delete mapa[chave];
+          alterou = true;
+        }
+      });
+      if (alterou) salvarAlertasNotificados(mapa);
+    }
+
+    function podeEnviarAlertaTarefa(tarefa, tipo) {
+      const mapa = carregarAlertasNotificados();
+      const chave = chaveNotificacaoTarefa(tarefa, tipo);
+      if (mapa[chave]) return false;
+      mapa[chave] = new Date().toISOString();
+      salvarAlertasNotificados(mapa);
+      return true;
+    }
+
     async function buscarDadosParaNotificacoes() {
       try {
         const [resTarefas, resChecklist] = await Promise.all([
@@ -6648,6 +6694,7 @@
       const agora = new Date();
       const hojeISO = dataHojeISO();
       const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+      limparAlertasAntigos();
 
       const proximasTarefas = tarefas.filter(t => {
         if (!t.ativo || ehStatusFeito(t.status) || ehStatusCancelada(t.status)) return false;
@@ -6656,24 +6703,24 @@
         const [h, m] = t.hora_inicio.split(":").map(Number);
         const minTarefa = h * 60 + m;
         const diff = minTarefa - minutosAgora;
-        return diff > 0 && diff <= 15; // entre agora e 15 min
+        return diff >= 0 && diff <= 15; // entre agora e 15 min
       });
 
       proximasTarefas.forEach(t => {
         const [h, m] = t.hora_inicio.split(":").map(Number);
         const diff = (h * 60 + m) - minutosAgora;
         const origem = t.origem ? ` · ${t.origem}` : "";
-        if (diff <= 2) {
+        if (diff >= 0 && diff <= 2 && podeEnviarAlertaTarefa(t, "agora")) {
           enviarNotificacao(
             "🚨 Compromisso agora!",
             `${t.titulo}${origem} está começando!`,
           );
-        } else if (diff <= 5) {
+        } else if (diff > 2 && diff <= 5 && podeEnviarAlertaTarefa(t, "5min")) {
           enviarNotificacao(
             "⏰ Em 5 minutos",
             `${t.titulo}${origem} começa às ${t.hora_inicio}`,
           );
-        } else {
+        } else if (diff > 5 && diff <= 15 && podeEnviarAlertaTarefa(t, "15min")) {
           enviarNotificacao(
             "🔔 Em 15 minutos",
             `${t.titulo}${origem} começa às ${t.hora_inicio}`,
@@ -6688,14 +6735,16 @@
         if (!t.hora_inicio) return false;
         const [h, m] = t.hora_inicio.split(":").map(Number);
         const diff = (h * 60 + m) - minutosAgora;
-        return diff > 55 && diff <= 60;
+        return diff >= 57 && diff <= 60;
       });
       em1hora.forEach(t => {
         const origem = t.origem ? ` · ${t.origem}` : "";
-        enviarNotificacao(
-          "📅 Em 1 hora",
-          `${t.titulo}${origem} às ${t.hora_inicio}`,
-        );
+        if (podeEnviarAlertaTarefa(t, "1h")) {
+          enviarNotificacao(
+            "📅 Em 1 hora",
+            `${t.titulo}${origem} às ${t.hora_inicio}`,
+          );
+        }
       });
     }
 
