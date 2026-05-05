@@ -4402,6 +4402,21 @@
       setTimeout(() => alvo.classList.remove("destacada"), 1800);
     }
 
+    async function prepararProximoCompromisso(tarefa) {
+      if (!tarefa) return;
+      calendarioDiaSelecionadoISO = normalizarDataParaISO(tarefa.data || "") || dataHojeISO();
+      const dataAlvo = new Date(`${calendarioDiaSelecionadoISO}T00:00:00`);
+      if (!Number.isNaN(dataAlvo.getTime())) {
+        calendarioMesAtual = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), 1);
+      }
+      if (typeof window.__abrirTelaApp === "function") {
+        window.__abrirTelaApp("screen-agenda");
+      }
+      await atualizarAgendaMesEDia();
+      rolarParaAgendaDiaSelecionado();
+      window.setTimeout(() => destacarTarefaAgora(tarefa.id), 260);
+    }
+
     function criarBotaoAgora(texto, classe, onClick) {
       const btn = document.createElement("button");
       btn.type = "button";
@@ -4477,7 +4492,7 @@
       statusEl.textContent = `Próximo em ${estado.faltamMin} min`;
       statusEl.classList.add("proximo");
       acoesEl.appendChild(criarBotaoAgora("Preparar", "", () => {
-        destacarTarefaAgora(tarefa.id);
+        prepararProximoCompromisso(tarefa);
       }));
     }
 
@@ -5919,6 +5934,9 @@
       lista.innerHTML = "";
       itensDoDia.forEach(t=>{
         const item=document.createElement("div"); item.className="agenda-item";
+        if (t?.id !== undefined && t?.id !== null) {
+          item.dataset.taskId = String(t.id);
+        }
         if (ehStatusCancelada(t.status)) item.classList.add("cancelada");
         const hor=document.createElement("div"); hor.className="agenda-horario"; hor.textContent=t.hora_inicio||"--:--";
         const con=document.createElement("div"); con.className="agenda-conteudo"; con.style.flex="1";
@@ -6263,6 +6281,7 @@
           }
         }
       }
+      window.__abrirTelaApp = abrirTela;
       navItems.forEach(item=>{
         item.addEventListener("click",()=>{
           abrirTela(item.getAttribute("data-target"));
