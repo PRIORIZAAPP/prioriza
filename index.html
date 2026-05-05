@@ -44,6 +44,10 @@
         --cor-topbar-suave: #f8fafc;
         --cor-resumo-texto: #314155;
         --cor-resumo-icone: #526174;
+        --topbar-offset: 84px;
+        --resumo-offset: 40px;
+        --layout-header-offset: 124px;
+        --header-width: min(100vw, 480px);
       }
 
     body {
@@ -491,6 +495,7 @@
         display: flex;
         flex-direction: column;
         background: #e5e7eb;
+        position: relative;
       }
       .app-shell {
   animation: appFadeIn 0.5s ease-out;
@@ -509,8 +514,11 @@
 
       /* ── TOPBAR ── */
       .topbar {
-        position: sticky;
+        position: fixed;
         top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: var(--header-width);
         z-index: 20;
         background:
           linear-gradient(
@@ -580,8 +588,11 @@
 
       /* ── RESUMO BAR ── */
       .resumo-bar {
-        position: sticky;
-        top: 80px;
+        position: fixed;
+        top: var(--topbar-offset);
+        left: 50%;
+        transform: translateX(-50%);
+        width: var(--header-width);
         z-index: 19;
         background: linear-gradient(
           180deg,
@@ -603,7 +614,7 @@
 
       /* ── CONTENT ── */
       .content { flex: 1; padding: 12px 10px 60px 10px; }
-      .app-workspace { flex: 1; display: block; width: 100%; padding: 0; }
+      .app-workspace { flex: 1; display: block; width: 100%; padding: var(--layout-header-offset) 0 0; }
       .app-main-column { min-width: 0; width: 100%; }
       .desktop-sidebar,
       .desktop-rail { display: none; }
@@ -785,7 +796,7 @@
         }
         .app-workspace {
           display: block;
-          padding: 0;
+          padding: var(--layout-header-offset) 0 0;
         }
         .app-main-column {
           display: block;
@@ -2273,6 +2284,7 @@
 
         .app-shell {
           max-width: none;
+          --header-width: 100vw;
           width: 100%;
           min-height: 100vh;
           margin: 0 auto;
@@ -2301,7 +2313,7 @@
         }
 
         .resumo-bar {
-          top: 108px;
+          top: var(--topbar-offset);
           padding: 9px 20px;
           font-size: 13px;
         }
@@ -2310,7 +2322,7 @@
           display: grid;
           grid-template-columns: 240px minmax(0, 1fr) 292px;
           gap: 20px;
-          padding: 20px;
+          padding: calc(var(--layout-header-offset) + 20px) 20px 20px;
           align-items: start;
         }
 
@@ -4279,6 +4291,18 @@
     })();
 
     // ── RELÓGIO ──────────────────────────────────────────────────
+    function atualizarOffsetsCabecalho() {
+      const root = document.documentElement;
+      const topbar = document.querySelector(".topbar");
+      const resumo = document.querySelector(".resumo-bar");
+      if (!root || !topbar || !resumo) return;
+      const topbarHeight = Math.ceil(topbar.getBoundingClientRect().height || 0);
+      const resumoHeight = Math.ceil(resumo.getBoundingClientRect().height || 0);
+      root.style.setProperty("--topbar-offset", `${topbarHeight}px`);
+      root.style.setProperty("--resumo-offset", `${resumoHeight}px`);
+      root.style.setProperty("--layout-header-offset", `${topbarHeight + resumoHeight}px`);
+    }
+
     function atualizarRelogio() {
       const valor = dataHojeLabel() + " · " + horaAtualCurta();
       const el = document.getElementById("data-hora-topbar");
@@ -4286,6 +4310,7 @@
       document.querySelectorAll("[data-current-date]").forEach((item) => {
         item.textContent = valor;
       });
+      window.requestAnimationFrame(atualizarOffsetsCabecalho);
     }
 
     function definirResumoVisual(texto) {
@@ -4294,6 +4319,7 @@
       document.querySelectorAll("[data-resumo-espelho]").forEach((item) => {
         item.textContent = texto;
       });
+      window.requestAnimationFrame(atualizarOffsetsCabecalho);
     }
 
     // ── FERIADOS ─────────────────────────────────────────────────
@@ -6384,6 +6410,8 @@
       atualizarCampoRecorrenciaAgenda();
       atualizarCategoriaAgendaUI();
       atualizarCategoriaChecklistUI();
+      atualizarOffsetsCabecalho();
+      window.addEventListener("resize", atualizarOffsetsCabecalho);
 
       document.getElementById("btn-toggle-passados-pessoal")?.addEventListener("click", async () => {
   mostrarPassadosPessoal = !mostrarPassadosPessoal;
