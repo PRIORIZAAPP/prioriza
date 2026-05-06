@@ -2624,92 +2624,93 @@
         }
 
         #screen-hoje.screen.active {
-          grid-template-columns: minmax(0, 1.35fr) minmax(380px, 0.95fr);
+          grid-template-columns: minmax(0, 1.28fr) minmax(320px, 0.78fr);
           grid-template-areas:
             "agora agora"
             "agenda checklist";
-          grid-auto-rows: minmax(0, auto);
           gap: 18px;
           align-items: start;
         }
 
-        #screen-hoje.screen.active > #card-agora {
-          grid-area: agora;
-        }
+        #screen-hoje.screen.active > #card-agora { grid-area: agora; }
+        #screen-hoje.screen.active > #hoje-agenda-card { grid-area: agenda; }
+        #screen-hoje.screen.active > #hoje-checklist-card { grid-area: checklist; }
 
-        #screen-hoje.screen.active > #hoje-agenda-card {
-          grid-area: agenda;
-        }
-
-        #screen-hoje.screen.active > #hoje-checklist-card {
-          grid-area: checklist;
-        }
-
-        #screen-hoje.screen.active > #hoje-agenda-card,
-        #screen-hoje.screen.active > #hoje-checklist-card {
-          min-height: 440px;
+        .app-shell[data-active-screen="screen-hoje"] .desktop-rail .desktop-panel:nth-child(n+2) {
+          display: none;
         }
 
         #card-agora {
           display: grid;
           grid-template-columns: minmax(0, 1fr) auto;
+          gap: 10px 20px;
           align-items: center;
-          gap: 16px 24px;
-          padding: 20px 26px;
+          padding: 18px 22px;
+        }
+
+        #card-agora .agora-topo,
+        #card-agora .agora-status,
+        #card-agora .agora-item-titulo,
+        #card-agora .agora-horario {
+          grid-column: 1;
         }
 
         #card-agora .agora-topo {
-          margin: 0 0 8px 0;
-          gap: 12px;
+          margin: 0;
+          gap: 8px;
         }
 
         #card-agora .agora-icone {
-          width: 22px;
-          height: 22px;
+          width: 14px;
+          height: 14px;
+          opacity: 0.9;
         }
 
         #card-agora .agora-titulo {
-          font-size: 15px;
+          font-size: 12px;
           font-weight: 800;
-          letter-spacing: 0.08em;
+          letter-spacing: 0.12em;
           text-transform: uppercase;
           color: var(--cor-tema);
         }
 
         #card-agora .agora-status {
-          margin: 0 0 8px 0;
-          font-size: 12px;
-          letter-spacing: 0.12em;
+          margin: 0;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.14em;
           text-transform: uppercase;
-          color: #475569;
+          color: #64748b;
         }
 
         #card-agora .agora-item-titulo {
-          font-size: 38px;
-          line-height: 1.04;
-          margin: 0;
+          margin: 2px 0 0 0;
+          font-size: 30px;
+          line-height: 1.06;
           letter-spacing: -0.04em;
-          max-width: 18ch;
+          max-width: 20ch;
         }
 
         #card-agora .agora-horario {
-          margin: 10px 0 0 0;
-          font-size: 15px;
+          margin: 2px 0 0 0;
+          font-size: 14px;
           color: #64748b;
           font-weight: 600;
         }
 
         #card-agora .agora-acoes {
-          margin: 0;
+          grid-column: 2;
+          grid-row: 1 / span 4;
           align-self: center;
           justify-content: flex-end;
-          max-width: 420px;
+          margin: 0;
+          max-width: 360px;
         }
 
         #card-agora .agora-btn {
-          min-height: 40px;
-          padding: 0 16px;
-          font-size: 13px;
+          min-height: 36px;
+          padding: 0 14px;
+          font-size: 12px;
           font-weight: 700;
         }
 
@@ -2717,18 +2718,12 @@
         #hoje-checklist-card {
           display: flex;
           flex-direction: column;
-          padding-bottom: 14px;
+          padding-bottom: 12px;
         }
 
         #hoje-agenda-card .card-header,
         #hoje-checklist-card .card-header {
-          margin-bottom: 10px;
-        }
-
-        #hoje-agenda-card .card-header h2,
-        #hoje-checklist-card .card-header h2 {
-          font-size: 17px;
-          letter-spacing: -0.02em;
+          margin-bottom: 8px;
         }
 
         #hoje-agenda-card .secao-subtitulo,
@@ -2741,7 +2736,7 @@
           flex: 1;
           min-height: 0;
           overflow: auto;
-          padding-right: 8px;
+          padding-right: 6px;
         }
 
         #hoje-agenda-card #agenda-dia::-webkit-scrollbar,
@@ -2751,73 +2746,68 @@
 
         #hoje-agenda-card #agenda-dia::-webkit-scrollbar-thumb,
         #hoje-checklist-card #checklist-dia::-webkit-scrollbar-thumb {
-          background: rgba(148, 163, 184, 0.38);
+          background: rgba(148, 163, 184, 0.34);
           border-radius: 999px;
         }
 
         #hoje-agenda-card .agenda-item {
           position: relative;
           display: grid;
-          grid-template-columns: 72px minmax(0, 1fr) auto;
-          align-items: center;
-          gap: 14px;
-          padding: 16px 18px 16px 0;
+          grid-template-columns: 78px minmax(0, 1fr);
+          gap: 8px 16px;
+          align-items: start;
+          padding: 16px 0 16px 14px;
           border-bottom: 1px solid rgba(226, 232, 240, 0.82);
         }
 
-        #hoje-agenda-card .agenda-item::after {
+        #hoje-agenda-card .agenda-item::before {
           content: "";
           position: absolute;
-          top: 14px;
-          right: 0;
+          left: 0;
+          top: 16px;
           width: 4px;
-          height: calc(100% - 28px);
+          height: calc(100% - 32px);
           border-radius: 999px;
           background: var(--agenda-accent, rgba(var(--cor-tema-rgb), 0.92));
-          opacity: 0.95;
+          opacity: 0.96;
         }
 
-        #hoje-agenda-card .agenda-item:last-child {
-          border-bottom: none;
-        }
-
-        #hoje-agenda-card .agenda-status-btn {
-          display: none;
-        }
+        #hoje-agenda-card .agenda-item:last-child { border-bottom: none; }
+        #hoje-agenda-card .agenda-status-btn { display: none; }
 
         #hoje-agenda-card .agenda-horario {
+          grid-column: 1;
+          grid-row: 1 / span 2;
           width: auto;
-          font-size: 22px;
-          font-weight: 750;
+          padding-top: 2px;
+          font-size: 20px;
+          font-weight: 760;
           letter-spacing: -0.03em;
           color: #0f172a;
-          align-self: start;
-          padding-top: 2px;
         }
 
         #hoje-agenda-card .agenda-conteudo {
+          grid-column: 2;
           min-width: 0;
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 5px;
         }
 
         #hoje-agenda-card .agenda-titulo {
-          font-size: 22px;
-          font-weight: 760;
-          line-height: 1.08;
+          font-size: 18px;
+          font-weight: 730;
+          line-height: 1.16;
           letter-spacing: -0.03em;
           white-space: normal;
         }
 
-        #hoje-agenda-card .agenda-tag {
-          display: none;
-        }
+        #hoje-agenda-card .agenda-tag { display: none; }
 
         #hoje-agenda-card .agenda-meta {
           margin-top: 0;
-          font-size: 13px;
-          line-height: 1.45;
+          font-size: 12px;
+          line-height: 1.4;
           color: #64748b;
           display: -webkit-box;
           -webkit-line-clamp: 2;
@@ -2825,41 +2815,42 @@
           overflow: hidden;
         }
 
-        #hoje-agenda-card .desktop-status-actions {
-          margin-left: 0;
-          justify-content: flex-end;
-          align-items: center;
-          gap: 8px;
-        }
-
         #hoje-agenda-card .agenda-acoes-desktop {
+          grid-column: 2;
           display: inline-flex;
           align-items: center;
-          justify-content: flex-end;
+          justify-content: flex-start;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-top: 2px;
+        }
+
+        #hoje-agenda-card .desktop-status-actions,
+        #hoje-checklist-card .desktop-status-actions {
+          margin-left: 0;
+          justify-content: flex-start;
+          align-items: center;
           gap: 8px;
           flex-wrap: wrap;
         }
 
         #hoje-agenda-card .desktop-status-btn,
         #hoje-checklist-card .desktop-status-btn {
-          min-height: 34px;
-          padding: 0 12px;
+          min-height: 32px;
+          padding: 0 11px;
           font-size: 12px;
         }
 
         #hoje-agenda-card .agenda-icon-btn,
         #hoje-agenda-card .agenda-icon-link {
-          width: 34px;
-          height: 34px;
+          width: 32px;
+          height: 32px;
         }
 
         #hoje-checklist-card .checklist-item {
           position: relative;
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
-          align-items: center;
-          gap: 12px;
-          padding: 16px 0 16px 14px;
+          display: block;
+          padding: 14px 0 14px 14px;
           margin-bottom: 0;
           background: transparent;
           border-radius: 0;
@@ -2870,41 +2861,30 @@
         #hoje-checklist-card .checklist-item::before {
           content: "";
           position: absolute;
-          top: 14px;
           left: 0;
+          top: 14px;
           width: 4px;
           height: calc(100% - 28px);
           border-radius: 999px;
           background: rgba(var(--cor-tema-rgb), 0.92);
         }
 
-        #hoje-checklist-card .checklist-item.pessoal::before {
-          background: #8b5cf6;
-        }
-
-        #hoje-checklist-card .checklist-item.feito::before {
-          background: #22c55e;
-        }
-
-        #hoje-checklist-card .checklist-item:last-child {
-          border-bottom: none;
-          margin-bottom: 0;
-        }
-
-        #hoje-checklist-card .check-status {
-          display: none;
-        }
+        #hoje-checklist-card .checklist-item.pessoal::before { background: #8b5cf6; }
+        #hoje-checklist-card .checklist-item.feito::before { background: #22c55e; }
+        #hoje-checklist-card .checklist-item:last-child { border-bottom: none; margin-bottom: 0; }
+        #hoje-checklist-card .check-status { display: none; }
 
         #hoje-checklist-card .check-info {
           min-width: 0;
+          margin-bottom: 10px;
         }
 
         #hoje-checklist-card .check-titulo {
-          font-size: 21px;
-          line-height: 1.1;
-          letter-spacing: -0.03em;
+          font-size: 15px;
+          line-height: 1.18;
+          letter-spacing: -0.02em;
           white-space: normal;
-          overflow: visible;
+          overflow: hidden;
           text-overflow: initial;
           display: -webkit-box;
           -webkit-line-clamp: 2;
@@ -2912,17 +2892,9 @@
         }
 
         #hoje-checklist-card .check-sub {
-          margin-top: 6px;
-          font-size: 13px;
-          line-height: 1.4;
-        }
-
-        #hoje-checklist-card .desktop-status-actions {
-          margin-left: 0;
-          justify-content: flex-end;
-          align-items: center;
-          gap: 8px;
-          flex-wrap: wrap;
+          margin-top: 4px;
+          font-size: 12px;
+          line-height: 1.35;
         }
 
         #screen-agenda.screen.active {
@@ -7048,6 +7020,7 @@
       function abrirTela(id, opts = {}) {
         if (!id) return;
         const manterPosicao = opts?.manterPosicao === true;
+        document.getElementById("app-shell")?.setAttribute("data-active-screen", id);
         screens.forEach((screen) => {
           screen.classList.toggle("active", screen.id === id);
         });
