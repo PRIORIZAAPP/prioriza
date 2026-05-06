@@ -2624,7 +2624,149 @@
         }
 
         #screen-hoje.screen.active {
-          grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-auto-rows: minmax(0, auto);
+          gap: 18px;
+        }
+
+        #screen-hoje.screen.active > #card-agora {
+          grid-column: 1 / -1;
+        }
+
+        #screen-hoje.screen.active > #hoje-agenda-card,
+        #screen-hoje.screen.active > #hoje-checklist-card {
+          min-height: 420px;
+        }
+
+        #card-agora {
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr) auto;
+          align-items: center;
+          gap: 10px 18px;
+          padding: 16px 20px;
+        }
+
+        #card-agora .agora-topo {
+          grid-column: 1;
+          grid-row: 1 / span 3;
+          align-self: center;
+          margin: 0;
+          padding-right: 6px;
+        }
+
+        #card-agora .agora-status,
+        #card-agora .agora-item-titulo,
+        #card-agora .agora-horario {
+          grid-column: 2;
+        }
+
+        #card-agora .agora-status {
+          margin: 0;
+          font-size: 11px;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+        }
+
+        #card-agora .agora-item-titulo {
+          font-size: 28px;
+          line-height: 1.08;
+          margin: 0;
+        }
+
+        #card-agora .agora-horario {
+          margin: 0;
+          font-size: 14px;
+          color: #64748b;
+        }
+
+        #card-agora .agora-acoes {
+          grid-column: 3;
+          grid-row: 1 / span 3;
+          align-self: center;
+          justify-content: flex-end;
+          min-width: 0;
+          max-width: 360px;
+        }
+
+        #card-agora .btn-agora {
+          min-height: 38px;
+          padding: 0 14px;
+          font-size: 13px;
+        }
+
+        #hoje-agenda-card,
+        #hoje-checklist-card {
+          display: flex;
+          flex-direction: column;
+        }
+
+        #hoje-agenda-card .card-header,
+        #hoje-checklist-card .card-header {
+          margin-bottom: 8px;
+        }
+
+        #hoje-agenda-card .secao-subtitulo,
+        #hoje-checklist-card .secao-subtitulo {
+          display: none;
+        }
+
+        #hoje-agenda-card #agenda-dia,
+        #hoje-checklist-card #checklist-dia {
+          flex: 1;
+          min-height: 0;
+          overflow: auto;
+          padding-right: 6px;
+        }
+
+        #hoje-agenda-card #agenda-dia::-webkit-scrollbar,
+        #hoje-checklist-card #checklist-dia::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        #hoje-agenda-card #agenda-dia::-webkit-scrollbar-thumb,
+        #hoje-checklist-card #checklist-dia::-webkit-scrollbar-thumb {
+          background: rgba(148, 163, 184, 0.38);
+          border-radius: 999px;
+        }
+
+        #hoje-agenda-card .agenda-item,
+        #hoje-checklist-card .checklist-item {
+          border-bottom-color: rgba(226, 232, 240, 0.78);
+        }
+
+        #hoje-agenda-card .agenda-item {
+          display: grid;
+          grid-template-columns: 32px 56px minmax(0, 1fr) auto auto;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 0;
+        }
+
+        #hoje-agenda-card .agenda-conteudo {
+          min-width: 0;
+        }
+
+        #hoje-agenda-card .agenda-horario {
+          width: auto;
+          font-size: 14px;
+        }
+
+        #hoje-agenda-card .agenda-titulo {
+          white-space: normal;
+          line-height: 1.2;
+        }
+
+        #hoje-agenda-card .desktop-status-actions {
+          margin-left: 0;
+          justify-content: flex-end;
+        }
+
+        #hoje-agenda-card .agenda-item:last-child {
+          border-bottom: none;
+        }
+
+        #hoje-checklist-card .checklist-item:last-child {
+          margin-bottom: 0;
         }
 
         #screen-agenda.screen.active {
@@ -2895,7 +3037,7 @@
             <div class="agora-acoes" id="agora-acoes"></div>
           </div>
 
-          <div class="card">
+          <div class="card" id="hoje-agenda-card">
             <div class="card-header">
               <!-- icon: calendar-dots duotone -->
               <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
@@ -2914,7 +3056,7 @@
             <div id="agenda-dia"><small>Carregando agenda...</small></div>
           </div>
 
-          <div class="card">
+          <div class="card" id="hoje-checklist-card">
             <div class="card-header">
               <!-- icon: clipboard-list duotone -->
               <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
