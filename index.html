@@ -915,6 +915,46 @@
         padding: 10px 0; border-bottom: 1px solid #e5e7eb;
         display: flex; gap: 10px; align-items: center;
       }
+      .desktop-status-actions {
+        display: none;
+      }
+      .desktop-status-btn {
+        border: none;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1;
+        cursor: pointer;
+        transition: transform 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
+      }
+      .desktop-status-btn:hover {
+        opacity: 0.92;
+      }
+      .desktop-status-btn:active {
+        transform: scale(0.98);
+      }
+      .desktop-status-btn:disabled {
+        opacity: 0.58;
+        cursor: wait;
+        transform: none;
+        box-shadow: none;
+      }
+      .desktop-status-btn.andamento {
+        background: #fff7ed;
+        color: #c2410c;
+        box-shadow: inset 0 0 0 1px rgba(251, 146, 60, 0.28);
+      }
+      .desktop-status-btn.concluir {
+        background: #dcfce7;
+        color: #166534;
+        box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.22);
+      }
+      .desktop-status-btn.reabrir {
+        background: #eef2ff;
+        color: #4338ca;
+        box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.18);
+      }
       .agenda-horario { width: 56px; font-weight: 600; font-size: 13px; color: #111827; flex-shrink: 0; }
       .agenda-conteudo { flex: 1; font-size: 13px; }
       .agenda-titulo { font-weight: 600; color: #111827; }
@@ -1135,6 +1175,16 @@
       .check-info { flex: 1; font-size: 13px; min-width: 0; }
       .check-titulo { font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .check-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
+      .checklist-item.feito .check-titulo {
+        color: #6b7280;
+        text-decoration: line-through;
+      }
+      .checklist-item.feito .check-sub {
+        color: #94a3b8;
+      }
+      .checklist-item.feito {
+        opacity: 0.84;
+      }
       .check-proxima { font-size: 11px; margin-top: 2px; }
       .check-proxima.atrasado { color: #b91c1c; }
       .check-proxima.hoje     { color: #f97316; }
@@ -2347,6 +2397,14 @@
 
         .screen {
           animation: none;
+        }
+
+        .desktop-status-actions {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          margin-left: auto;
+          flex-wrap: wrap;
         }
 
         .app-shell {
@@ -4725,6 +4783,84 @@
       if (pessoal) localInput.value = "";
     }
 
+    function emLayoutDesktop() {
+      return window.matchMedia("(min-width: 1100px)").matches;
+    }
+
+    function definirEstadoVisualAgendaHoje(itemEl, bolinhaEl, status) {
+      const statusAtual = status || "pendente";
+      if (itemEl) itemEl.classList.toggle("cancelada", ehStatusCancelada(statusAtual));
+      if (!bolinhaEl) return;
+      bolinhaEl.dataset.status = statusAtual;
+      bolinhaEl.className = `agenda-status-btn ${statusAtual}`;
+      bolinhaEl.innerHTML = iconStatusInline(statusAtual);
+    }
+
+    function definirEstadoVisualChecklistHoje(itemEl, bolinhaEl, status) {
+      const statusAtual = status || "pendente";
+      if (itemEl) itemEl.classList.toggle("feito", ehStatusFeito(statusAtual));
+      if (!bolinhaEl) return;
+      bolinhaEl.dataset.status = statusAtual;
+      bolinhaEl.className = `check-status ${statusAtual}`;
+      if (statusAtual === "feito") {
+        bolinhaEl.innerHTML = `<svg width="11" height="11" viewBox="0 0 256 256" fill="none"><polyline points="48,128 104,184 208,72" stroke="white" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        return;
+      }
+      if (statusAtual === "em_andamento") {
+        bolinhaEl.innerHTML = `<svg width="11" height="11" viewBox="0 0 256 256" fill="none"><circle cx="128" cy="128" r="80" stroke="#f97316" stroke-width="28"/><line x1="128" y1="80" x2="128" y2="128" stroke="#f97316" stroke-width="28" stroke-linecap="round"/><line x1="128" y1="128" x2="162" y2="154" stroke="#f97316" stroke-width="28" stroke-linecap="round"/></svg>`;
+        return;
+      }
+      bolinhaEl.innerHTML = "";
+    }
+
+    function criarGrupoAcoesStatusDesktop(configs) {
+      const grupo = document.createElement("div");
+      grupo.className = "desktop-status-actions";
+      const botoes = [];
+      configs.filter(Boolean).forEach((config) => {
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.className = `desktop-status-btn ${config.variant || ""}`.trim();
+        botao.textContent = config.label;
+        botao.dataset.targetStatus = config.targetStatus || "";
+        botao.addEventListener("click", config.onClick);
+        grupo.appendChild(botao);
+        botoes.push(botao);
+      });
+      grupo.__setDisabled = (disabled) => {
+        botoes.forEach((botao) => {
+          botao.disabled = !!disabled;
+        });
+      };
+      grupo.__sync = (statusAtual) => {
+        botoes.forEach((botao) => {
+          const alvo = botao.dataset.targetStatus || "";
+          botao.disabled = !!alvo && alvo === (statusAtual || "");
+          botao.style.opacity = botao.disabled ? "0.48" : "";
+        });
+      };
+      return grupo;
+    }
+
+    function telaAtiva(id) {
+      return document.getElementById(id)?.classList.contains("active");
+    }
+
+    function sincronizarTarefaHojeEmSegundoPlano(tarefa) {
+      window.setTimeout(() => {
+        if (telaAtiva("screen-agenda")) atualizarAgendaMesEDia();
+        if (String(tarefa?.origem || "").toUpperCase() === "PESSOAL" && telaAtiva("screen-pessoal")) {
+          carregarPessoalLista();
+        }
+      }, 120);
+    }
+
+    function sincronizarChecklistHojeEmSegundoPlano() {
+      window.setTimeout(() => {
+        if (telaAtiva("screen-checklist")) carregarChecklistGeral();
+      }, 120);
+    }
+
     // ── DESFAZER (UNDO) após exclusão ──────────────────────────
     let _undoTimer = null;
     let _undoPendente = null;
@@ -5207,13 +5343,17 @@
               bolinha.addEventListener("click", async () => {
                 const atual = bolinha.dataset.status || "pendente";
                 const novo  = proximoStatus(atual);
-                bolinha.dataset.status = novo;
-                bolinha.className = `agenda-status-btn ${novo}`;
-                bolinha.innerHTML = iconStatusInline(novo);
+                definirEstadoVisualAgendaHoje(item, bolinha, novo);
                 const ok = await atualizarStatusTarefa(t.id, novo);
-                if (!ok) console.warn("[PRIORIZA] PUT falhou para tarefa", t.id);
+                if (!ok) {
+                  definirEstadoVisualAgendaHoje(item, bolinha, atual);
+                  console.warn("[PRIORIZA] PUT falhou para tarefa", t.id);
+                  return;
+                }
+                t.status = novo;
                 await recalcularResumoBar();
                 renderizarAgoraCard();
+                sincronizarTarefaHojeEmSegundoPlano(t);
               });
               item.appendChild(bolinha);
             }
@@ -5259,6 +5399,38 @@
               link.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M104 152l72-72" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M136 80h40v40" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 136v48a8 8 0 0 1-8 8H72a8 8 0 0 1-8-8V112a8 8 0 0 1 8-8h48" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
               item.appendChild(link);
             } else if ((t.tipo_evento || "") !== "google") {
+              const bolinha = item.querySelector(".agenda-status-btn");
+              const executarAcaoStatusHoje = async (novoStatus, grupoAcoes) => {
+                if (!bolinha) return;
+                const statusAnterior = bolinha.dataset.status || t.status || "pendente";
+                grupoAcoes?.__setDisabled?.(true);
+                definirEstadoVisualAgendaHoje(item, bolinha, novoStatus);
+                const ok = await atualizarStatusTarefa(t.id, novoStatus);
+                if (!ok) {
+                  definirEstadoVisualAgendaHoje(item, bolinha, statusAnterior);
+                  grupoAcoes?.__sync?.(statusAnterior);
+                  grupoAcoes?.__setDisabled?.(false);
+                  await modal.alerta("Não foi possível atualizar o status.", "Erro");
+                  return;
+                }
+                t.status = novoStatus;
+                await recalcularResumoBar();
+                renderizarAgoraCard();
+                grupoAcoes?.__setDisabled?.(false);
+                grupoAcoes?.__sync?.(novoStatus);
+                sincronizarTarefaHojeEmSegundoPlano(t);
+              };
+
+              if (emLayoutDesktop()) {
+                const grupoAcoes = criarGrupoAcoesStatusDesktop([
+                  { label: "Andamento", variant: "andamento", targetStatus: "em_andamento", onClick: () => executarAcaoStatusHoje("em_andamento", grupoAcoes) },
+                  { label: "Concluir", variant: "concluir", targetStatus: "feito", onClick: () => executarAcaoStatusHoje("feito", grupoAcoes) },
+                  { label: "Reabrir", variant: "reabrir", targetStatus: "pendente", onClick: () => executarAcaoStatusHoje("pendente", grupoAcoes) },
+                ]);
+                grupoAcoes.__sync?.(t.status || "pendente");
+                item.appendChild(grupoAcoes);
+              }
+
               const btnCancelar = document.createElement("button");
               btnCancelar.className = "agenda-icon-btn";
               btnCancelar.style.background = "#f3f4f6";
@@ -5374,8 +5546,10 @@
     // ── CHECKLIST: status ─────────────────────────────────────────
     async function atualizarStatusChecklist(id, novoStatus) {
       try {
-        await fetch(API+"/checklist_status?"+new URLSearchParams({item_id:String(id),status:novoStatus}),{method:"POST",headers:authHeaders()});
-      } catch(e){console.error(e);}
+        const res = await fetch(API+"/checklist_status?"+new URLSearchParams({item_id:String(id),status:novoStatus}),{method:"POST",headers:authHeaders()});
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return true;
+      } catch(e){console.error(e); return false;}
     }
 
     // ── CHECKLIST: reset automático ───────────────────────────────
@@ -5434,22 +5608,59 @@
           bolinha.dataset.status = status;
           if (status==="feito")        bolinha.innerHTML=`<svg width="11" height="11" viewBox="0 0 256 256" fill="none"><polyline points="48,128 104,184 208,72" stroke="white" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
           if (status==="em_andamento") bolinha.innerHTML=`<svg width="11" height="11" viewBox="0 0 256 256" fill="none"><circle cx="128" cy="128" r="80" stroke="#f97316" stroke-width="28"/><line x1="128" y1="80" x2="128" y2="128" stroke="#f97316" stroke-width="28" stroke-linecap="round"/><line x1="128" y1="128" x2="162" y2="154" stroke="#f97316" stroke-width="28" stroke-linecap="round"/></svg>`;
+          if (status==="feito") div.classList.add("feito");
 
           const info = document.createElement("div"); info.className="check-info";
           const tituloEl = document.createElement("div"); tituloEl.className="check-titulo"; tituloEl.textContent=item.titulo;
-        const sub = document.createElement("div"); sub.className="check-sub"; sub.textContent=`${item.frequencia} · ${obterRotuloOrigemChecklist(item)}`;
+          const sub = document.createElement("div"); sub.className="check-sub"; sub.textContent=`${item.frequencia} · ${obterRotuloOrigemChecklist(item)}`;
           info.appendChild(tituloEl); info.appendChild(sub);
           div.appendChild(bolinha); div.appendChild(info);
 
+          const executarAcaoChecklistHoje = async (novoStatus, grupoAcoes) => {
+            const statusAnterior = bolinha.dataset.status || item.status || "pendente";
+            grupoAcoes?.__setDisabled?.(true);
+            definirEstadoVisualChecklistHoje(div, bolinha, novoStatus);
+            const ok = await atualizarStatusChecklist(item.id, novoStatus);
+            if (!ok) {
+              definirEstadoVisualChecklistHoje(div, bolinha, statusAnterior);
+              grupoAcoes?.__sync?.(statusAnterior);
+              grupoAcoes?.__setDisabled?.(false);
+              await modal.alerta("Não foi possível atualizar a rotina.", "Erro");
+              return;
+            }
+            item.status = novoStatus;
+            await atualizarResumoBar();
+            grupoAcoes?.__setDisabled?.(false);
+            grupoAcoes?.__sync?.(novoStatus);
+            sincronizarChecklistHojeEmSegundoPlano();
+          };
+
           bolinha.addEventListener("click", async ()=>{
             const atual=bolinha.dataset.status||"pendente"; const novo=proximoStatus(atual);
-            await atualizarStatusChecklist(item.id,novo);
-            await recarregarBlocosComRolagem({ checklistHoje: true, checklistGeral: true, resumo: true });
+            definirEstadoVisualChecklistHoje(div, bolinha, novo);
+            const ok = await atualizarStatusChecklist(item.id,novo);
+            if (!ok) {
+              definirEstadoVisualChecklistHoje(div, bolinha, atual);
+              return;
+            }
+            item.status = novo;
+            await atualizarResumoBar();
+            sincronizarChecklistHojeEmSegundoPlano();
           });
 
+          if (emLayoutDesktop()) {
+            const grupoAcoes = criarGrupoAcoesStatusDesktop([
+              { label: "Andamento", variant: "andamento", targetStatus: "em_andamento", onClick: () => executarAcaoChecklistHoje("em_andamento", grupoAcoes) },
+              { label: "Concluir", variant: "concluir", targetStatus: "feito", onClick: () => executarAcaoChecklistHoje("feito", grupoAcoes) },
+              { label: "Reabrir", variant: "reabrir", targetStatus: "pendente", onClick: () => executarAcaoChecklistHoje("pendente", grupoAcoes) },
+            ]);
+            grupoAcoes.__sync?.(item.status || "pendente");
+            div.appendChild(grupoAcoes);
+          }
+
           adicionarSwipe(div,
-            ()=>{ mostrarFlashFull("success"); setTimeout(async()=>{ await atualizarStatusChecklist(item.id,"feito"); await recarregarBlocosComRolagem({ checklistHoje: true, checklistGeral: true, resumo: true }); },FLASH_DURATION_MS); },
-            ()=>{ mostrarFlashFull("warning"); setTimeout(async()=>{ await atualizarStatusChecklist(item.id,"em_andamento"); await recarregarBlocosComRolagem({ checklistHoje: true, checklistGeral: true }); },FLASH_DURATION_MS); },
+            ()=>{ mostrarFlashFull("success"); setTimeout(async()=>{ definirEstadoVisualChecklistHoje(div, bolinha, "feito"); const ok = await atualizarStatusChecklist(item.id,"feito"); if (!ok) { definirEstadoVisualChecklistHoje(div, bolinha, item.status || "pendente"); return; } item.status = "feito"; await atualizarResumoBar(); sincronizarChecklistHojeEmSegundoPlano(); },FLASH_DURATION_MS); },
+            ()=>{ mostrarFlashFull("warning"); setTimeout(async()=>{ definirEstadoVisualChecklistHoje(div, bolinha, "em_andamento"); const ok = await atualizarStatusChecklist(item.id,"em_andamento"); if (!ok) { definirEstadoVisualChecklistHoje(div, bolinha, item.status || "pendente"); return; } item.status = "em_andamento"; await atualizarResumoBar(); sincronizarChecklistHojeEmSegundoPlano(); },FLASH_DURATION_MS); },
             { previewRightClass: "swipe-preview-right", previewLeftClass: "swipe-preview-left" }
           );
           container.appendChild(div);
