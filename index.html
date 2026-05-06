@@ -2345,6 +2345,10 @@
             linear-gradient(180deg, #0f172a 0%, #162033 100%);
         }
 
+        .screen {
+          animation: none;
+        }
+
         .app-shell {
           max-width: none;
           --header-width: 100vw;
@@ -4545,7 +4549,7 @@
         calendarioMesAtual = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), 1);
       }
       if (typeof window.__abrirTelaApp === "function") {
-        window.__abrirTelaApp("screen-agenda");
+        window.__abrirTelaApp("screen-agenda", { manterPosicao: true });
       }
       await atualizarAgendaMesEDia();
       rolarParaAgendaDiaSelecionado();
@@ -4641,6 +4645,14 @@
         window.scrollTo(0, Number(scrollTop || 0));
       } catch (e) {
         console.error(e);
+      }
+    }
+
+    function irParaTopoSemAnimacao() {
+      try {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      } catch (e) {
+        window.scrollTo(0, 0);
       }
     }
 
@@ -6472,14 +6484,21 @@
 
       // Navegação
       const navItems=document.querySelectorAll(".bottom-nav .nav-item, .desktop-sidebar .nav-item"); const screens=document.querySelectorAll(".screen");
-      function abrirTela(id) {
+      function abrirTela(id, opts = {}) {
         if (!id) return;
+        const manterPosicao = opts?.manterPosicao === true;
         screens.forEach((screen) => {
           screen.classList.toggle("active", screen.id === id);
         });
         navItems.forEach((item) => {
           item.classList.toggle("active", item.getAttribute("data-target") === id);
         });
+        if (!manterPosicao) {
+          requestAnimationFrame(() => {
+            irParaTopoSemAnimacao();
+            requestAnimationFrame(irParaTopoSemAnimacao);
+          });
+        }
         if (id === "screen-ajustes") {
           setTimeout(atualizarStatusNotificacoesUI, 50);
           if (authUser?.is_admin) {
