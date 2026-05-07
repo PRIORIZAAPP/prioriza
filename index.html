@@ -2921,6 +2921,443 @@
           box-shadow: 0 10px 28px rgba(15,23,42,0.08);
         }
 
+        body {
+          background:
+            radial-gradient(circle at top left, rgba(var(--cor-tema-rgb), 0.06), transparent 34%),
+            linear-gradient(180deg, #f4f7fb 0%, #eef3f8 100%);
+        }
+
+        .app-shell {
+          background: linear-gradient(180deg, #f5f8fc 0%, #eef3f8 100%);
+        }
+
+        .topbar {
+          padding: 14px 18px 12px;
+          min-height: 96px;
+          background: linear-gradient(
+            90deg,
+            #ffffff 0%,
+            #f7fbff 14%,
+            rgba(var(--cor-tema-rgb), 0.28) 46%,
+            rgba(var(--cor-tema-rgb), 0.62) 78%,
+            var(--cor-tema-escura) 100%
+          );
+        }
+
+        .topbar-main {
+          gap: 16px;
+        }
+
+        .prioriza-logo {
+          height: 48px;
+        }
+
+        .topbar-date-line {
+          font-size: 12px;
+          font-weight: 600;
+          color: #334155;
+        }
+
+        .audio-btn {
+          width: 52px;
+          height: 52px;
+          box-shadow: none;
+          border: 1px solid rgba(255,255,255,0.18);
+        }
+
+        .audio-tip {
+          max-width: 240px;
+          font-size: 11px;
+          line-height: 1.35;
+          opacity: 0.86;
+        }
+
+        .resumo-bar {
+          padding: 7px 18px;
+          font-size: 12px;
+          border-bottom: 1px solid rgba(226,232,240,0.9);
+          box-shadow: 0 8px 20px rgba(15,23,42,0.05);
+        }
+
+        .app-workspace {
+          grid-template-columns: 220px minmax(0, 1fr) 250px;
+          gap: 16px;
+          padding: calc(var(--layout-header-offset) + 16px) 16px 16px;
+        }
+
+        .desktop-sidebar,
+        .desktop-rail {
+          gap: 12px;
+          top: calc(var(--layout-header-offset) + 16px);
+        }
+
+        .desktop-sidebar-card,
+        .desktop-panel,
+        .card {
+          background: rgba(255,255,255,0.9);
+          border: 1px solid rgba(148,163,184,0.14);
+          box-shadow: 0 6px 18px rgba(15,23,42,0.05);
+          backdrop-filter: blur(10px);
+        }
+
+        .desktop-sidebar-card,
+        .desktop-panel {
+          border-radius: 20px;
+          padding: 16px;
+        }
+
+        .desktop-sidebar-kicker,
+        .desktop-panel-kicker {
+          font-size: 10px;
+          margin-bottom: 6px;
+          color: #7c8aa0;
+        }
+
+        .desktop-sidebar-title,
+        .desktop-panel-title {
+          font-size: 16px;
+          line-height: 1.2;
+          letter-spacing: -0.02em;
+          margin-bottom: 4px;
+        }
+
+        .desktop-sidebar-text,
+        .desktop-panel-text,
+        .desktop-panel-muted {
+          font-size: 12px;
+          line-height: 1.45;
+          color: #64748b;
+        }
+
+        .desktop-sidebar-text {
+          display: none;
+        }
+
+        .desktop-sidebar-nav {
+          gap: 8px;
+        }
+
+        .desktop-sidebar .nav-item {
+          gap: 10px;
+          padding: 12px 14px 12px 18px;
+          border-radius: 16px;
+          border-color: rgba(148,163,184,0.14);
+          background: rgba(255,255,255,0.72);
+          font-size: 13px;
+          color: #475569;
+          box-shadow: none;
+        }
+
+        .desktop-sidebar .nav-item:hover {
+          color: #0f172a;
+          border-color: rgba(148,163,184,0.22);
+          box-shadow: none;
+        }
+
+        .desktop-sidebar .nav-item.active {
+          background: #ffffff;
+          color: #0f172a;
+          border-color: rgba(148,163,184,0.18);
+          box-shadow: none;
+        }
+
+        .desktop-sidebar .nav-item.active::before {
+          left: 8px;
+          width: 2px;
+          height: 52%;
+          background: var(--cor-tema);
+          border-radius: 999px;
+        }
+
+        .desktop-sidebar .nav-item span {
+          font-size: 13px;
+          font-weight: 600;
+        }
+
+        .desktop-panel-title[data-current-date] {
+          font-size: 14px;
+          font-weight: 700;
+          line-height: 1.35;
+        }
+
+        .desktop-action-grid {
+          gap: 8px;
+        }
+
+        .desktop-action {
+          padding: 10px 12px;
+          border-radius: 14px;
+          font-size: 12px;
+          font-weight: 600;
+          border-color: rgba(148,163,184,0.14);
+          background: rgba(255,255,255,0.78);
+          box-shadow: none;
+        }
+
+        .desktop-action:hover {
+          transform: none;
+          border-color: rgba(148,163,184,0.22);
+          box-shadow: none;
+        }
+
+        .desktop-theme-preview span {
+          width: 28px;
+          height: 28px;
+          border-radius: 10px;
+          box-shadow: inset 0 1px 1px rgba(255,255,255,0.35), 0 0 0 1px rgba(15,23,42,0.08);
+        }
+
+        .screen.active {
+          gap: 16px;
+        }
+
+        .card {
+          border-radius: 20px;
+          padding: 16px;
+        }
+
+        .card-header h2 {
+          font-size: 17px;
+          font-weight: 700;
+          letter-spacing: -0.02em;
+        }
+
+        .secao-subtitulo,
+        .swipe-hint {
+          display: none;
+        }
+
+        #screen-hoje.screen.active {
+          grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.92fr);
+          grid-template-areas:
+            "agora agora"
+            "agenda checklist";
+          gap: 16px;
+        }
+
+        .app-shell[data-active-screen="screen-hoje"] .desktop-rail .desktop-panel:nth-child(n+2) {
+          display: none;
+        }
+
+        #card-agora {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          grid-template-areas:
+            "top status"
+            "title actions"
+            "meta actions";
+          gap: 6px 16px;
+          align-items: center;
+          padding: 14px 18px;
+          min-height: 0;
+        }
+
+        #card-agora .agora-topo {
+          grid-area: top;
+          gap: 8px;
+          margin: 0;
+        }
+
+        #card-agora .agora-icone {
+          width: 15px;
+          height: 15px;
+        }
+
+        #card-agora .agora-titulo {
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #64748b;
+        }
+
+        #card-agora .agora-status {
+          grid-area: status;
+          justify-self: end;
+          margin: 0;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #334155;
+        }
+
+        #card-agora .agora-item-titulo {
+          grid-area: title;
+          margin: 0;
+          font-size: 18px;
+          line-height: 1.2;
+          letter-spacing: -0.025em;
+          max-width: none;
+          color: #0f172a;
+        }
+
+        #card-agora .agora-horario {
+          grid-area: meta;
+          margin: 0;
+          font-size: 13px;
+          font-weight: 500;
+          color: #64748b;
+        }
+
+        #card-agora .agora-acoes {
+          grid-area: actions;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 8px;
+          margin: 0;
+        }
+
+        #card-agora .agora-btn,
+        #hoje-agenda-card .desktop-status-btn,
+        #hoje-checklist-card .desktop-status-btn {
+          min-height: 30px;
+          padding: 0 10px;
+          font-size: 11px;
+          font-weight: 600;
+          border-radius: 999px;
+          box-shadow: none;
+        }
+
+        #card-agora .agora-btn,
+        #hoje-agenda-card .desktop-status-btn {
+          border: 1px solid rgba(148,163,184,0.18);
+        }
+
+        #card-agora .agora-btn:not(.primary),
+        #hoje-agenda-card .desktop-status-btn.andamento,
+        #hoje-agenda-card .desktop-status-btn.reabrir,
+        #hoje-checklist-card .desktop-status-btn.andamento,
+        #hoje-checklist-card .desktop-status-btn.reabrir {
+          background: #ffffff;
+          color: #475569;
+        }
+
+        #hoje-agenda-card .desktop-status-btn.concluir,
+        #hoje-checklist-card .desktop-status-btn.concluir,
+        #card-agora .agora-btn.primary {
+          background: rgba(34,197,94,0.1);
+          border-color: rgba(34,197,94,0.24);
+          color: #166534;
+        }
+
+        #hoje-agenda-card,
+        #hoje-checklist-card {
+          padding-bottom: 10px;
+        }
+
+        #hoje-agenda-card #agenda-dia,
+        #hoje-checklist-card #checklist-dia {
+          padding-right: 2px;
+        }
+
+        #hoje-agenda-card .agenda-item {
+          grid-template-columns: 70px minmax(0, 1fr) auto;
+          gap: 6px 14px;
+          padding: 14px 0 14px 14px;
+        }
+
+        #hoje-agenda-card .agenda-item::before {
+          top: 14px;
+          left: 0;
+          width: 3px;
+          height: calc(100% - 28px);
+        }
+
+        #hoje-agenda-card .agenda-horario {
+          grid-column: 1;
+          grid-row: 1 / span 2;
+          font-size: 15px;
+          font-weight: 700;
+          padding-top: 1px;
+        }
+
+        #hoje-agenda-card .agenda-conteudo {
+          grid-column: 2;
+          gap: 3px;
+        }
+
+        #hoje-agenda-card .agenda-titulo {
+          font-size: 16px;
+          font-weight: 650;
+          line-height: 1.24;
+        }
+
+        #hoje-agenda-card .agenda-meta {
+          font-size: 12px;
+          line-height: 1.35;
+          color: #64748b;
+        }
+
+        #hoje-agenda-card .agenda-acoes-desktop {
+          grid-column: 3;
+          grid-row: 1 / span 2;
+          align-self: center;
+          justify-content: flex-end;
+          gap: 6px;
+          max-width: 198px;
+        }
+
+        #hoje-agenda-card .desktop-status-actions,
+        #hoje-checklist-card .desktop-status-actions {
+          gap: 6px;
+        }
+
+        #hoje-agenda-card .agenda-icon-btn,
+        #hoje-agenda-card .agenda-icon-link {
+          width: 28px;
+          height: 28px;
+          background: #f8fafc;
+          border: 1px solid rgba(148,163,184,0.14);
+          box-shadow: none;
+        }
+
+        #hoje-checklist-card .checklist-item {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 8px 12px;
+          padding: 12px 0 12px 14px;
+        }
+
+        #hoje-checklist-card .checklist-item::before {
+          top: 12px;
+          left: 0;
+          width: 3px;
+          height: calc(100% - 24px);
+        }
+
+        #hoje-checklist-card .check-info {
+          grid-column: 1;
+          margin-bottom: 0;
+        }
+
+        #hoje-checklist-card .check-titulo {
+          font-size: 14px;
+          line-height: 1.28;
+          font-weight: 650;
+          -webkit-line-clamp: 2;
+        }
+
+        #hoje-checklist-card .check-sub {
+          margin-top: 3px;
+          font-size: 12px;
+          line-height: 1.35;
+          color: #64748b;
+        }
+
+        #hoje-checklist-card .desktop-status-actions {
+          grid-column: 2;
+          grid-row: 1 / span 2;
+          justify-content: flex-end;
+          align-self: center;
+          max-width: 178px;
+        }
+
+        #hoje-checklist-card .check-status {
+          display: none;
+        }
+
         .bottom-nav-wrapper {
           display: none;
         }
