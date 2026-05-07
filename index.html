@@ -4394,42 +4394,55 @@
       }
 
       .audio-tip,
-      .desktop-sidebar-shortcuts {
+      .desktop-sidebar-shortcuts,
+      .topbar-date-line {
         display: none !important;
       }
 
       .topbar {
-        min-height: 72px;
-        padding: 8px 18px 8px;
+        min-height: 64px;
+        padding: 8px 18px;
         background: linear-gradient(
           90deg,
           #ffffff 0%,
           #f8fbff 18%,
-          rgba(var(--cor-tema-rgb), 0.22) 48%,
-          rgba(var(--cor-tema-rgb), 0.52) 82%,
+          rgba(var(--cor-tema-rgb), 0.24) 46%,
+          rgba(var(--cor-tema-rgb), 0.56) 80%,
           var(--cor-tema-escura) 100%
         );
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
         box-shadow:
-          inset 0 -1px 0 rgba(255,255,255,0.08),
-          0 8px 22px rgba(15,23,42,0.05);
+          inset 0 -1px 0 rgba(255,255,255,0.12),
+          0 6px 18px rgba(15,23,42,0.05);
         overflow: hidden;
         isolation: isolate;
       }
 
       .topbar-main {
+        display: flex;
+        flex-direction: row;
         align-items: center;
+        justify-content: space-between;
+        min-height: 100%;
       }
 
       .prioriza-logo {
-        height: 44px;
+        height: 48px;
       }
 
-      .topbar-date-line {
-        font-size: 11px;
-        line-height: 1.2;
-        color: #334155;
+      .topbar-brand-row {
+        display: flex;
+        align-items: center;
+      }
+
+      .topbar-right {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0;
+        min-height: 100%;
       }
 
       .audio-btn {
@@ -4440,34 +4453,23 @@
       }
 
       .resumo-bar {
-        padding: 6px 18px;
-        font-size: 12px;
-        background: rgba(248,250,252,0.96);
-        border-bottom: 1px solid rgba(203,213,225,0.6);
-        box-shadow: 0 2px 10px rgba(15,23,42,0.03);
+        display: none !important;
       }
 
       .app-workspace {
-        grid-template-columns: 192px minmax(0, 1fr);
-        gap: 18px;
-        padding: calc(var(--layout-header-offset) + 18px) 14px 14px;
+        grid-template-columns: 212px minmax(0, 1fr);
+        gap: 20px;
+        padding: calc(var(--layout-header-offset) + 12px) 14px 14px;
       }
 
       .desktop-sidebar {
         gap: 12px;
         top: calc(var(--layout-header-offset) + 14px);
+        min-height: calc(100vh - var(--layout-header-offset) - 28px);
       }
 
-      .desktop-sidebar-brand {
-        padding: 4px 2px 8px;
-      }
-
-      .desktop-sidebar-brand img {
-        height: 28px;
-      }
-
-      .desktop-sidebar-brand-sub {
-        display: none;
+      .desktop-sidebar-nav {
+        flex: 1;
       }
 
       .desktop-sidebar .nav-item {
@@ -4516,6 +4518,17 @@
         color: #64748b;
       }
 
+      .desktop-sidebar-status {
+        margin-top: auto;
+      }
+
+      .desktop-sidebar-status-summary {
+        margin-top: 8px;
+        font-size: 12px;
+        line-height: 1.55;
+        color: #334155;
+      }
+
       .desktop-mini-calendar-nav {
         gap: 6px;
       }
@@ -4527,24 +4540,23 @@
       }
 
       .desktop-mini-calendar {
-        gap: 8px 6px;
+        gap: 9px 6px;
       }
 
       .desktop-mini-weekday,
       .desktop-mini-day {
-        min-height: 28px;
+        min-height: 34px;
       }
 
       .desktop-mini-day {
         border-radius: 8px;
         font-size: 12px;
+        flex-direction: column;
+        gap: 2px;
       }
 
       .desktop-mini-day.has-events::after {
-        background: var(--cor-tema);
-        width: 5px;
-        height: 5px;
-        bottom: 4px;
+        display: none;
       }
 
       .app-main-column {
@@ -4562,15 +4574,17 @@
 
       #screen-hoje.screen.active {
         display: grid;
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
         grid-template-areas:
-          "agora"
-          "timeline";
-        gap: 0;
+          "agora calendar"
+          "timeline calendar";
+        gap: 0 24px;
+        align-items: start;
       }
 
       #screen-hoje.screen.active > #card-agora { grid-area: agora; }
       #screen-hoje.screen.active > #hoje-operational-timeline-card { grid-area: timeline; }
+      #screen-hoje.screen.active > #hoje-calendar-card { grid-area: calendar; }
       #screen-hoje.screen.active > #hoje-agenda-card,
       #screen-hoje.screen.active > #hoje-checklist-card {
         display: none !important;
@@ -4681,6 +4695,57 @@
 
       #hoje-operational-timeline-card {
         padding: 14px 0 0;
+      }
+
+      #hoje-calendar-card {
+        display: block;
+        padding: 10px 0 0 18px;
+        margin-top: 2px;
+        border-left: 1px solid rgba(226,232,240,0.92);
+      }
+
+      .today-calendar-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 10px;
+        margin-bottom: 2px;
+      }
+
+      .today-calendar-note {
+        margin-top: 12px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #64748b;
+      }
+
+      .desktop-mini-day-number {
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1;
+      }
+
+      .desktop-mini-day-dots {
+        min-height: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+      }
+
+      .desktop-mini-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 999px;
+        background: var(--mini-dot-color, rgba(var(--cor-tema-rgb), 0.85));
+      }
+
+      .desktop-mini-dot-more {
+        font-size: 9px;
+        font-weight: 700;
+        line-height: 1;
+        color: #64748b;
       }
 
       .timeline-operational-head {
@@ -5154,23 +5219,9 @@
             </div>
           </div>
 
-          <div class="desktop-sidebar-section desktop-sidebar-calendar">
-            <div class="desktop-sidebar-section-head">
-              <span id="desktop-mini-calendar-title" class="desktop-sidebar-section-title">Mês atual</span>
-              <div class="desktop-mini-calendar-nav">
-                <button id="btn-desktop-mini-prev" class="desktop-mini-calendar-btn" type="button" aria-label="Mês anterior">
-                  <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                    <path d="M160 48L80 128l80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
-                <button id="btn-desktop-mini-next" class="desktop-mini-calendar-btn" type="button" aria-label="Próximo mês">
-                  <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                    <path d="M96 48l80 80-80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div id="desktop-mini-calendar" class="desktop-mini-calendar"><small>Carregando calendário...</small></div>
+          <div class="desktop-sidebar-section desktop-sidebar-status">
+            <div class="desktop-sidebar-section-title">Status do dia</div>
+            <div class="desktop-sidebar-status-summary" data-resumo-espelho>Carregando resumo...</div>
           </div>
 
         </aside>
@@ -5203,6 +5254,26 @@
               <button id="btn-ver-agenda-completa-home" class="home-card-link" type="button" style="display:none">Ver agenda completa</button>
             </div>
             <div id="operational-timeline"><small>Carregando rotina do dia...</small></div>
+          </div>
+
+          <div class="card" id="hoje-calendar-card" hidden>
+            <div class="today-calendar-head">
+              <span id="desktop-mini-calendar-title" class="desktop-sidebar-section-title">Mês atual</span>
+              <div class="desktop-mini-calendar-nav">
+                <button id="btn-desktop-mini-prev" class="desktop-mini-calendar-btn" type="button" aria-label="Mês anterior">
+                  <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <path d="M160 48L80 128l80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button id="btn-desktop-mini-next" class="desktop-mini-calendar-btn" type="button" aria-label="Próximo mês">
+                  <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <path d="M96 48l80 80-80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div id="desktop-mini-calendar" class="desktop-mini-calendar"><small>Carregando calendário...</small></div>
+            <div id="desktop-calendar-note" class="today-calendar-note">Selecione um dia para abrir a agenda completa.</div>
           </div>
 
           <div class="card" id="hoje-agenda-card">
@@ -7033,14 +7104,25 @@
     }
 
     function renderizarMiniCalendarioDesktop() {
+      const card = document.getElementById("hoje-calendar-card");
       const titulo = document.getElementById("desktop-mini-calendar-title");
       const grid = document.getElementById("desktop-mini-calendar");
-      if (!titulo || !grid) return;
+      const nota = document.getElementById("desktop-calendar-note");
+      const desktop = emLayoutDesktop();
+      if (card) card.hidden = !desktop;
+      if (!titulo || !grid || !desktop) return;
 
       const ano = calendarioMesAtual.getFullYear();
       const mes = calendarioMesAtual.getMonth();
       const nomesMes = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
       titulo.textContent = `${nomesMes[mes]} ${ano}`;
+      if (nota) {
+        const dataSelecionada = new Date(`${calendarioDiaSelecionadoISO || dataHojeISO()}T00:00:00`);
+        const label = Number.isNaN(dataSelecionada.getTime())
+          ? "Selecione um dia para abrir a agenda completa."
+          : dataSelecionada.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
+        nota.textContent = label.charAt(0).toUpperCase() + label.slice(1);
+      }
 
       const primeiroDia = new Date(ano, mes, 1);
       const inicio = new Date(ano, mes, 1 - primeiroDia.getDay());
@@ -7068,8 +7150,33 @@
         if (dia.getMonth() !== mes) botao.classList.add("outside");
         if (iso === hojeISO) botao.classList.add("today");
         if (iso === calendarioDiaSelecionadoISO) botao.classList.add("selected");
-        if (itensMes.some((t) => normalizarDataParaISO(t.data || "") === iso)) botao.classList.add("has-events");
-        botao.textContent = String(dia.getDate());
+        const itensDia = itensMes.filter((t) => normalizarDataParaISO(t.data || "") === iso);
+        if (itensDia.length) botao.classList.add("has-events");
+
+        const numero = document.createElement("span");
+        numero.className = "desktop-mini-day-number";
+        numero.textContent = String(dia.getDate());
+
+        const dots = document.createElement("span");
+        dots.className = "desktop-mini-day-dots";
+        itensDia
+          .map((t) => obterCorIndicadorHoje(t))
+          .slice(0, 3)
+          .forEach((cor) => {
+            const dot = document.createElement("span");
+            dot.className = "desktop-mini-dot";
+            dot.style.setProperty("--mini-dot-color", cor);
+            dots.appendChild(dot);
+          });
+        if (itensDia.length > 3) {
+          const more = document.createElement("span");
+          more.className = "desktop-mini-dot-more";
+          more.textContent = `+${itensDia.length - 3}`;
+          dots.appendChild(more);
+        }
+
+        botao.appendChild(numero);
+        botao.appendChild(dots);
         botao.addEventListener("click", () => {
           calendarioDiaSelecionadoISO = iso;
           calendarioMesAtual = new Date(dia.getFullYear(), dia.getMonth(), 1);
