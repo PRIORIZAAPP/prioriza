@@ -4448,13 +4448,13 @@
       }
 
       .app-workspace {
-        grid-template-columns: 172px minmax(0, 1fr);
-        gap: 16px;
+        grid-template-columns: 192px minmax(0, 1fr);
+        gap: 18px;
         padding: calc(var(--layout-header-offset) + 18px) 14px 14px;
       }
 
       .desktop-sidebar {
-        gap: 10px;
+        gap: 12px;
         top: calc(var(--layout-header-offset) + 14px);
       }
 
@@ -4497,8 +4497,16 @@
         background: rgba(255,255,255,0.64);
         border: 1px solid rgba(203,213,225,0.52);
         border-radius: 12px;
-        padding: 10px;
+        padding: 12px;
         box-shadow: none;
+      }
+
+      .desktop-sidebar-section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
       }
 
       .desktop-sidebar-section-title {
@@ -4508,8 +4516,23 @@
         color: #64748b;
       }
 
-      .desktop-mini-calendar {
+      .desktop-mini-calendar-nav {
         gap: 6px;
+      }
+
+      .desktop-mini-calendar-btn {
+        width: 24px;
+        height: 24px;
+        border-radius: 8px;
+      }
+
+      .desktop-mini-calendar {
+        gap: 8px 6px;
+      }
+
+      .desktop-mini-weekday,
+      .desktop-mini-day {
+        min-height: 28px;
       }
 
       .desktop-mini-day {
@@ -4519,6 +4542,9 @@
 
       .desktop-mini-day.has-events::after {
         background: var(--cor-tema);
+        width: 5px;
+        height: 5px;
+        bottom: 4px;
       }
 
       .app-main-column {
@@ -5061,11 +5087,6 @@
 
       <div class="app-workspace">
         <aside class="desktop-sidebar" aria-label="Navegação desktop">
-          <div class="desktop-sidebar-brand">
-            <div class="desktop-sidebar-brand-label">PRIORIZA</div>
-            <div class="desktop-sidebar-brand-sub">Central operacional</div>
-          </div>
-
           <div class="desktop-sidebar-nav">
             <div class="nav-item active" data-target="screen-hoje">
               <svg viewBox="0 0 256 256" fill="none" color="currentColor">
