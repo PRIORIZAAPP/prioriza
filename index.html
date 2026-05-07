@@ -3739,6 +3739,649 @@
         }
       }
 
+      @media (min-width: 1100px) {
+        body {
+          background:
+            radial-gradient(circle at top left, rgba(var(--cor-tema-rgb), 0.03), transparent 34%),
+            linear-gradient(180deg, #e9eef4 0%, #e3e9f1 100%);
+        }
+
+        .app-shell {
+          background: transparent;
+        }
+
+        .topbar {
+          min-height: 70px;
+          padding: 8px 16px;
+          background: linear-gradient(
+            90deg,
+            #ffffff 0%,
+            #f6f9fc 24%,
+            rgba(var(--cor-tema-rgb), 0.09) 58%,
+            rgba(var(--cor-tema-rgb), 0.22) 84%,
+            rgba(30, 64, 175, 0.72) 100%
+          );
+          box-shadow: inset 0 -1px 0 rgba(148,163,184,0.18);
+        }
+
+        .prioriza-logo {
+          height: 36px;
+        }
+
+        .topbar-date-line {
+          font-size: 11px;
+          font-weight: 600;
+          color: #334155;
+        }
+
+        .audio-tip {
+          display: none !important;
+        }
+
+        .audio-btn {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          box-shadow: 0 2px 8px rgba(15,23,42,0.08);
+        }
+
+        .resumo-bar {
+          padding: 6px 14px;
+          font-size: 12px;
+          background: rgba(247,250,252,0.92);
+          border-bottom: 1px solid rgba(203,213,225,0.7);
+          box-shadow: 0 2px 8px rgba(15,23,42,0.03);
+        }
+
+        .app-workspace {
+          grid-template-columns: 208px minmax(0, 1fr) 244px;
+          gap: 0;
+          padding: calc(var(--layout-header-offset) + 12px) 12px 12px;
+          align-items: stretch;
+        }
+
+        .desktop-sidebar,
+        .desktop-rail {
+          display: flex;
+          position: sticky;
+          top: calc(var(--layout-header-offset) + 12px);
+          align-self: start;
+        }
+
+        .desktop-sidebar {
+          gap: 14px;
+          padding: 10px 14px 12px 6px;
+        }
+
+        .desktop-rail {
+          padding: 10px 0 12px 16px;
+        }
+
+        .desktop-sidebar-brand {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          padding: 0 10px 4px;
+        }
+
+        .desktop-sidebar-brand-label {
+          font-size: 13px;
+          font-weight: 800;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #0f172a;
+        }
+
+        .desktop-sidebar-brand-sub {
+          font-size: 11px;
+          color: #64748b;
+        }
+
+        .desktop-sidebar-nav {
+          gap: 4px;
+        }
+
+        .desktop-sidebar .nav-item {
+          min-height: 38px;
+          padding: 8px 10px 8px 14px;
+          border-radius: 8px;
+          background: transparent;
+          border: 1px solid transparent;
+          color: #475569;
+          box-shadow: none;
+        }
+
+        .desktop-sidebar .nav-item:hover {
+          background: rgba(255,255,255,0.54);
+          border-color: rgba(203,213,225,0.5);
+          box-shadow: none;
+        }
+
+        .desktop-sidebar .nav-item.active {
+          background: rgba(255,255,255,0.82);
+          border-color: rgba(203,213,225,0.6);
+          color: #0f172a;
+          box-shadow: none;
+        }
+
+        .desktop-sidebar .nav-item.active::before {
+          left: 4px;
+          width: 2px;
+          height: 42%;
+          background: var(--cor-tema);
+        }
+
+        .desktop-sidebar .nav-item svg {
+          width: 18px;
+          height: 18px;
+        }
+
+        .desktop-sidebar .nav-item span {
+          font-size: 12px;
+          font-weight: 600;
+        }
+
+        .desktop-sidebar-section {
+          border-top: 1px solid rgba(203,213,225,0.6);
+          padding-top: 12px;
+        }
+
+        .desktop-sidebar-section-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          margin-bottom: 8px;
+        }
+
+        .desktop-sidebar-section-title {
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #64748b;
+        }
+
+        .desktop-mini-calendar-nav {
+          display: inline-flex;
+          gap: 4px;
+        }
+
+        .desktop-mini-calendar-btn {
+          width: 22px;
+          height: 22px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid rgba(203,213,225,0.7);
+          border-radius: 6px;
+          background: rgba(255,255,255,0.82);
+          color: #64748b;
+          cursor: pointer;
+        }
+
+        .desktop-mini-calendar {
+          display: grid;
+          grid-template-columns: repeat(7, minmax(0, 1fr));
+          gap: 4px;
+        }
+
+        .desktop-mini-weekday,
+        .desktop-mini-day {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 24px;
+          font-size: 11px;
+        }
+
+        .desktop-mini-weekday {
+          color: #94a3b8;
+          font-weight: 700;
+        }
+
+        .desktop-mini-day {
+          border: 1px solid transparent;
+          border-radius: 7px;
+          color: #334155;
+          background: transparent;
+          cursor: pointer;
+        }
+
+        .desktop-mini-day.outside {
+          color: #cbd5e1;
+        }
+
+        .desktop-mini-day.today {
+          border-color: rgba(var(--cor-tema-rgb), 0.22);
+          background: rgba(var(--cor-tema-rgb), 0.08);
+          color: var(--cor-tema-escura);
+          font-weight: 700;
+        }
+
+        .desktop-mini-day.selected {
+          background: rgba(var(--cor-tema-rgb), 0.14);
+          border-color: rgba(var(--cor-tema-rgb), 0.24);
+          color: var(--cor-tema-escura);
+          font-weight: 700;
+        }
+
+        .desktop-mini-day.has-events::after {
+          content: "";
+          width: 4px;
+          height: 4px;
+          border-radius: 999px;
+          background: rgba(var(--cor-tema-rgb), 0.92);
+          position: absolute;
+          transform: translateY(8px);
+        }
+
+        .desktop-mini-day {
+          position: relative;
+        }
+
+        .desktop-shortcut-list {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .desktop-shortcut-btn {
+          border: none;
+          background: transparent;
+          color: #334155;
+          font-size: 12px;
+          font-weight: 600;
+          text-align: left;
+          padding: 4px 0;
+          cursor: pointer;
+        }
+
+        .desktop-shortcut-btn:hover {
+          color: var(--cor-tema-escura);
+        }
+
+        .app-main-column {
+          min-width: 0;
+          background: rgba(255,255,255,0.9);
+          border: 1px solid rgba(203,213,225,0.68);
+          border-radius: 14px;
+          box-shadow: 0 2px 10px rgba(15,23,42,0.04);
+          overflow: hidden;
+        }
+
+        .content {
+          padding: 0;
+        }
+
+        .screen.active {
+          gap: 0;
+          padding: 18px 18px 16px;
+        }
+
+        #screen-hoje.screen.active {
+          grid-template-columns: minmax(340px, 1.12fr) minmax(300px, 0.88fr);
+          grid-template-areas:
+            "agora agora"
+            "checklist agenda";
+          gap: 0;
+          background: transparent;
+        }
+
+        #screen-hoje.screen.active > #card-agora { grid-area: agora; }
+        #screen-hoje.screen.active > #hoje-checklist-card { grid-area: checklist; }
+        #screen-hoje.screen.active > #hoje-agenda-card { grid-area: agenda; }
+
+        #card-agora,
+        #hoje-checklist-card,
+        #hoje-agenda-card {
+          background: transparent;
+          border: none;
+          box-shadow: none;
+          border-radius: 0;
+          padding: 0;
+        }
+
+        #card-agora {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 6px 14px;
+          align-items: center;
+          padding: 0 0 16px 0;
+          margin-bottom: 2px;
+          border-bottom: 1px solid rgba(226,232,240,0.9);
+        }
+
+        #card-agora .agora-topo {
+          margin: 0;
+        }
+
+        #card-agora .agora-titulo {
+          font-size: 11px;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #64748b;
+        }
+
+        #card-agora .agora-status {
+          justify-self: end;
+          font-size: 11px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #334155;
+        }
+
+        #card-agora .agora-item-titulo {
+          font-size: 18px;
+          line-height: 1.2;
+          letter-spacing: -0.02em;
+          color: #0f172a;
+          margin: 0;
+        }
+
+        #card-agora .agora-horario {
+          font-size: 12px;
+          color: #64748b;
+          margin: 0;
+        }
+
+        #card-agora .agora-acoes {
+          justify-content: flex-end;
+          gap: 6px;
+          margin: 0;
+        }
+
+        .agora-btn {
+          min-height: 30px;
+          padding: 0 10px;
+          border-radius: 7px;
+          border: 1px solid rgba(203,213,225,0.7);
+          background: #ffffff;
+          color: #475569;
+          box-shadow: none;
+          font-size: 11px;
+          font-weight: 600;
+        }
+
+        #hoje-checklist-card {
+          padding-right: 18px;
+          border-right: 1px solid rgba(226,232,240,0.9);
+          margin-right: 18px;
+        }
+
+        #hoje-agenda-card {
+          padding-left: 2px;
+        }
+
+        #hoje-checklist-card .card-header,
+        #hoje-agenda-card .card-header {
+          margin-bottom: 10px;
+        }
+
+        #hoje-checklist-card .card-header h2,
+        #hoje-agenda-card .card-header h2 {
+          font-size: 15px;
+        }
+
+        #hoje-checklist-card #checklist-dia,
+        #hoje-agenda-card #agenda-dia {
+          min-height: 0;
+          overflow: auto;
+          max-height: calc(100vh - var(--layout-header-offset) - 134px);
+          padding-right: 4px;
+        }
+
+        #hoje-checklist-card .checklist-item,
+        #hoje-agenda-card .agenda-item {
+          border-bottom: 1px solid rgba(226,232,240,0.86);
+        }
+
+        #hoje-checklist-card .checklist-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 0;
+          background: transparent;
+          border-radius: 0;
+        }
+
+        #hoje-checklist-card .checklist-item::before {
+          display: none;
+        }
+
+        #hoje-checklist-card .check-status {
+          display: flex;
+          width: 20px;
+          height: 20px;
+          border-width: 2px;
+          flex-shrink: 0;
+        }
+
+        #hoje-checklist-card .check-info {
+          flex: 1;
+          min-width: 0;
+          margin: 0;
+        }
+
+        #hoje-checklist-card .check-titulo {
+          font-size: 13px;
+          line-height: 1.3;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          color: #0f172a;
+        }
+
+        #hoje-checklist-card .check-sub {
+          margin-top: 2px;
+          font-size: 11px;
+          color: #64748b;
+        }
+
+        #hoje-checklist-card .desktop-status-actions {
+          display: none;
+        }
+
+        .hoje-checklist-remove {
+          width: 22px;
+          height: 22px;
+          border-radius: 6px;
+          border: 1px solid rgba(203,213,225,0.7);
+          background: transparent;
+          color: #94a3b8;
+          box-shadow: none;
+        }
+
+        #hoje-agenda-card .agenda-item {
+          display: grid;
+          grid-template-columns: 52px minmax(0, 1fr);
+          gap: 4px 12px;
+          align-items: start;
+          padding: 10px 0 10px 12px;
+          border-radius: 0;
+          cursor: pointer;
+        }
+
+        #hoje-agenda-card .agenda-item::before {
+          left: 0;
+          top: 10px;
+          width: 3px;
+          height: calc(100% - 20px);
+          border-radius: 999px;
+          opacity: 0.82;
+        }
+
+        #hoje-agenda-card .agenda-status-btn,
+        #hoje-agenda-card .agenda-acoes-desktop,
+        #hoje-agenda-card .agenda-tag {
+          display: none !important;
+        }
+
+        #hoje-agenda-card .agenda-horario {
+          grid-column: 1;
+          grid-row: 1 / span 2;
+          font-size: 12px;
+          font-weight: 700;
+          color: #334155;
+        }
+
+        #hoje-agenda-card .agenda-conteudo {
+          grid-column: 2;
+          gap: 2px;
+        }
+
+        #hoje-agenda-card .agenda-titulo {
+          font-size: 13px;
+          font-weight: 650;
+          line-height: 1.28;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          color: #0f172a;
+        }
+
+        #hoje-agenda-card .agenda-meta {
+          font-size: 11px;
+          line-height: 1.3;
+          color: #64748b;
+          -webkit-line-clamp: 1;
+        }
+
+        .home-card-link {
+          display: inline-flex !important;
+          margin-left: auto;
+          border: none;
+          background: transparent;
+          color: #64748b;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 0;
+        }
+
+        .desktop-rail {
+          display: flex;
+          align-self: stretch;
+        }
+
+        .desktop-context-shell {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          padding: 10px 0 10px 16px;
+          border-left: 1px solid rgba(203,213,225,0.64);
+        }
+
+        .desktop-context-block {
+          padding: 2px 0 12px;
+          border-bottom: 1px solid rgba(226,232,240,0.88);
+        }
+
+        .desktop-context-block:last-child {
+          border-bottom: none;
+        }
+
+        .desktop-context-kicker {
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #64748b;
+          margin-bottom: 6px;
+        }
+
+        .desktop-context-date {
+          font-size: 15px;
+          font-weight: 700;
+          line-height: 1.35;
+          color: #0f172a;
+          margin-bottom: 6px;
+        }
+
+        .desktop-context-summary,
+        .desktop-context-focus-meta {
+          font-size: 12px;
+          line-height: 1.5;
+          color: #64748b;
+        }
+
+        .desktop-context-focus-title {
+          font-size: 14px;
+          font-weight: 650;
+          line-height: 1.35;
+          color: #0f172a;
+          margin-bottom: 4px;
+        }
+
+        .card,
+        .agenda-calendar-card,
+        .checklist-item,
+        .agenda-dia-container,
+        .agenda-dia-item,
+        .btn-primary,
+        .btn-secondary,
+        .btn-outline,
+        .desktop-status-btn,
+        .calendar-nav-btn,
+        .mini-add-btn,
+        .fab-add {
+          border-radius: 8px;
+        }
+
+        .card,
+        .agenda-calendar-card,
+        .settings-panel,
+        .agenda-integracao-card,
+        .checklist-list-shell {
+          box-shadow: none;
+          border-color: rgba(203,213,225,0.7);
+        }
+
+        .btn-primary,
+        .btn-secondary,
+        .btn-outline,
+        .desktop-status-btn {
+          min-height: 32px;
+          padding: 0 11px;
+          font-size: 12px;
+          border-radius: 7px;
+          box-shadow: none;
+        }
+
+        .btn-primary {
+          background: rgba(var(--cor-tema-rgb), 0.1);
+          border: 1px solid rgba(var(--cor-tema-rgb), 0.18);
+          color: var(--cor-tema-escura);
+        }
+
+        .btn-secondary,
+        .btn-outline,
+        .desktop-status-btn {
+          background: #ffffff;
+          border-color: rgba(203,213,225,0.72);
+          color: #475569;
+        }
+
+        .fab-add {
+          right: 16px;
+          bottom: 16px;
+          width: 48px;
+          height: 48px;
+          min-width: 48px;
+          padding: 0;
+          border-radius: 999px;
+          box-shadow: 0 8px 18px rgba(var(--cor-tema-rgb), 0.14);
+        }
+
+        .fab-add::after {
+          content: "";
+        }
+
+        .bottom-nav-wrapper {
+          display: none;
+        }
+      }
+
     </style>
   </head>
   <body>
@@ -3885,10 +4528,9 @@
 
       <div class="app-workspace">
         <aside class="desktop-sidebar" aria-label="Navegação desktop">
-          <div class="desktop-sidebar-card">
-            <div class="desktop-sidebar-kicker">Workspace</div>
-            <div class="desktop-sidebar-title">PRIORIZA</div>
-            <div class="desktop-sidebar-text">Uma mesa de controle para tarefas, agenda, rotina e organização pessoal em uma só vista.</div>
+          <div class="desktop-sidebar-brand">
+            <div class="desktop-sidebar-brand-label">PRIORIZA</div>
+            <div class="desktop-sidebar-brand-sub">Central operacional</div>
           </div>
 
           <div class="desktop-sidebar-nav">
@@ -3955,6 +4597,35 @@
                 <path d="M19.14,12.94a7.43,7.43,0,0,0,.05-1,7.43,7.43,0,0,0-.05-1l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.28,7.28,0,0,0-1.73-1l-.38-2.65A.5.5,0,0,0,13.67,2H10.33a.5.5,0,0,0-.5.42L9.45,5.07a7.28,7.28,0,0,0-1.73,1l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L4.86,10a7.43,7.43,0,0,0-.05,1,7.43,7.43,0,0,0,.05,1L2.75,13.65a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.28,7.28,0,0,0,1.73,1l.38,2.65a.5.5,0,0,0,.5.42h3.34a.5.5,0,0,0,.5-.42l.38-2.65a7.28,7.28,0,0,0,1.73-1l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64ZM12,15.5A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/>
               </svg>
               <span>Ajustes</span>
+            </div>
+          </div>
+
+          <div class="desktop-sidebar-section desktop-sidebar-calendar">
+            <div class="desktop-sidebar-section-head">
+              <span id="desktop-mini-calendar-title" class="desktop-sidebar-section-title">Mês atual</span>
+              <div class="desktop-mini-calendar-nav">
+                <button id="btn-desktop-mini-prev" class="desktop-mini-calendar-btn" type="button" aria-label="Mês anterior">
+                  <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <path d="M160 48L80 128l80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button id="btn-desktop-mini-next" class="desktop-mini-calendar-btn" type="button" aria-label="Próximo mês">
+                  <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <path d="M96 48l80 80-80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div id="desktop-mini-calendar" class="desktop-mini-calendar"><small>Carregando calendário...</small></div>
+          </div>
+
+          <div class="desktop-sidebar-section desktop-sidebar-shortcuts">
+            <div class="desktop-sidebar-section-title">Atalhos</div>
+            <div class="desktop-shortcut-list">
+              <button class="desktop-shortcut-btn" type="button" data-target-jump="screen-agenda">Agenda completa</button>
+              <button class="desktop-shortcut-btn" type="button" data-target-jump="screen-checklist">Checklist geral</button>
+              <button class="desktop-shortcut-btn" type="button" data-target-jump="screen-notas">Anotações</button>
+              <button class="desktop-shortcut-btn" type="button" data-target-jump="screen-ajustes">Ajustes</button>
             </div>
           </div>
         </aside>
@@ -4606,31 +5277,17 @@
         </div><!-- /app-main-column -->
 
         <aside class="desktop-rail" aria-label="Painel contextual">
-          <div class="desktop-panel">
-            <div class="desktop-panel-kicker">Panorama</div>
-            <div class="desktop-panel-title" data-current-date>--/-- · --:--h</div>
-            <div class="desktop-panel-text" data-resumo-espelho>Carregando resumo...</div>
-          </div>
-
-          <div class="desktop-panel">
-            <div class="desktop-panel-kicker">Ações rápidas</div>
-            <div class="desktop-action-grid">
-              <button class="desktop-action" type="button" data-target-jump="screen-agenda">Criar compromisso na agenda</button>
-              <button class="desktop-action" type="button" data-target-jump="screen-checklist">Criar rotina no checklist</button>
-              <button class="desktop-action" type="button" data-target-jump="screen-notas">Ir para anotações</button>
-              <button class="desktop-action" type="button" data-target-jump="screen-ajustes">Abrir ajustes</button>
+          <div class="desktop-context-shell">
+            <div class="desktop-context-block">
+              <div class="desktop-context-kicker">Hoje</div>
+              <div class="desktop-context-date" data-current-date>--/-- · --:--h</div>
+              <div class="desktop-context-summary" data-resumo-espelho>Carregando resumo...</div>
             </div>
-          </div>
-
-          <div class="desktop-panel">
-            <div class="desktop-panel-kicker">Paleta ativa</div>
-            <div class="desktop-theme-preview" aria-hidden="true">
-              <span style="background:#2563eb"></span>
-              <span style="background:#3b8f6a"></span>
-              <span style="background:#6f5aa8"></span>
-              <span style="background:#5a6878"></span>
+            <div class="desktop-context-block">
+              <div class="desktop-context-kicker">Em foco</div>
+              <div id="desktop-focus-title" class="desktop-context-focus-title">Sem tarefa crítica agora.</div>
+              <div id="desktop-focus-meta" class="desktop-context-focus-meta">Abra a Agenda para acompanhar o dia completo.</div>
             </div>
-            <div class="desktop-panel-muted">No desktop, o PRIORIZA ganha mais respiro, foco visual e uma navegação digna de software de verdade.</div>
           </div>
         </aside>
       </div><!-- /app-workspace -->
@@ -5707,6 +6364,38 @@
       return btn;
     }
 
+    function atualizarContextoDesktopAgora(estado) {
+      const tituloEl = document.getElementById("desktop-focus-title");
+      const metaEl = document.getElementById("desktop-focus-meta");
+      if (!tituloEl || !metaEl) return;
+      if (!estado?.tarefa) {
+        tituloEl.textContent = "Sem tarefa crítica agora.";
+        metaEl.textContent = "Abra a Agenda para acompanhar o dia completo.";
+        return;
+      }
+      const tarefa = estado.tarefa;
+      const contexto = obterRotuloContextoTarefa(tarefa);
+      const contextoValido = contexto && contexto.toUpperCase() !== "PROFISSIONAL" ? contexto : "";
+      if (estado.tipo === "em_andamento") {
+        tituloEl.textContent = tarefa.titulo || "Compromisso em andamento";
+        metaEl.textContent = contextoValido
+          ? `Em andamento · ${tarefa.hora_inicio || "--:--"} · ${contextoValido}`
+          : `Em andamento · ${tarefa.hora_inicio || "--:--"}`;
+        return;
+      }
+      if (estado.tipo === "atrasada") {
+        tituloEl.textContent = tarefa.titulo || "Compromisso atrasado";
+        metaEl.textContent = contextoValido
+          ? `Atrasado · ${tarefa.hora_inicio || "--:--"} · ${contextoValido}`
+          : `Atrasado · ${tarefa.hora_inicio || "--:--"}`;
+        return;
+      }
+      tituloEl.textContent = tarefa.titulo || "Próximo compromisso";
+      metaEl.textContent = contextoValido
+        ? `Próximo em ${estado.faltamMin} min · ${contextoValido}`
+        : `Próximo em ${estado.faltamMin} min`;
+    }
+
     function renderizarAgoraCard() {
       const card = document.getElementById("card-agora");
       const statusEl = document.getElementById("agora-status");
@@ -5718,6 +6407,7 @@
       const estado = obterEstadoAgora(tarefasAgendaCache);
       if (!estado?.tarefa) {
         card.hidden = true;
+        atualizarContextoDesktopAgora(null);
         return;
       }
 
@@ -5725,6 +6415,7 @@
       card.hidden = false;
       acoesEl.innerHTML = "";
       statusEl.className = "agora-status";
+      atualizarContextoDesktopAgora(estado);
       tituloEl.textContent = tarefa.titulo || "Compromisso sem título";
       const horaFim = tarefa.hora_fim || (tarefa.fim_min !== null ? minutosParaHora(tarefa.fim_min) : "");
       const horarioBase = horaFim ? `${tarefa.hora_inicio || "--:--"} às ${horaFim}` : (tarefa.hora_inicio || "--:--");
@@ -5769,6 +6460,59 @@
       acoesEl.appendChild(criarBotaoAgora("Preparar", "", () => {
         prepararProximoCompromisso(tarefa);
       }));
+    }
+
+    function renderizarMiniCalendarioDesktop() {
+      const titulo = document.getElementById("desktop-mini-calendar-title");
+      const grid = document.getElementById("desktop-mini-calendar");
+      if (!titulo || !grid) return;
+
+      const ano = calendarioMesAtual.getFullYear();
+      const mes = calendarioMesAtual.getMonth();
+      const nomesMes = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+      titulo.textContent = `${nomesMes[mes]} ${ano}`;
+
+      const primeiroDia = new Date(ano, mes, 1);
+      const inicio = new Date(ano, mes, 1 - primeiroDia.getDay());
+      const hojeISO = dataHojeISO();
+      const itensMes = [
+        ...tarefasAgendaCache.filter((t) => t.ativo !== false),
+        ...googleAgendaCache.filter((t) => t.ativo !== false),
+      ];
+
+      grid.innerHTML = "";
+      ["D","S","T","Q","Q","S","S"].forEach((label) => {
+        const el = document.createElement("div");
+        el.className = "desktop-mini-weekday";
+        el.textContent = label;
+        grid.appendChild(el);
+      });
+
+      for (let i = 0; i < 42; i++) {
+        const dia = new Date(inicio);
+        dia.setDate(inicio.getDate() + i);
+        const iso = dateToISO(dia);
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.className = "desktop-mini-day";
+        if (dia.getMonth() !== mes) botao.classList.add("outside");
+        if (iso === hojeISO) botao.classList.add("today");
+        if (iso === calendarioDiaSelecionadoISO) botao.classList.add("selected");
+        if (itensMes.some((t) => normalizarDataParaISO(t.data || "") === iso)) botao.classList.add("has-events");
+        botao.textContent = String(dia.getDate());
+        botao.addEventListener("click", () => {
+          calendarioDiaSelecionadoISO = iso;
+          calendarioMesAtual = new Date(dia.getFullYear(), dia.getMonth(), 1);
+          renderizarMiniCalendarioDesktop();
+          if (typeof window.__abrirTelaApp === "function") {
+            window.__abrirTelaApp("screen-agenda", { manterPosicao: true });
+          }
+          montarCalendarioMes();
+          preencherAgendaDiaSelecionado();
+          rolarParaAgendaDiaSelecionado();
+        });
+        grid.appendChild(botao);
+      }
     }
 
     // ── LOCAIS ───────────────────────────────────────────────────
@@ -6633,6 +7377,7 @@
           });
         }
         renderizarAgoraCard();
+        renderizarMiniCalendarioDesktop();
       } catch(e) {
         console.error("[PRIORIZA] carregarAgendaHoje:", e);
         agendaDiv.innerHTML = `<small style="color:#ef4444">⚠️ Erro ao carregar agenda. <button onclick="carregarAgendaHoje()" style="color:var(--cor-tema);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline">Tentar novamente</button></small>`;
@@ -7514,6 +8259,7 @@
         });
         grid.appendChild(cel);
       }
+      renderizarMiniCalendarioDesktop();
     }
 
     function preencherAgendaDiaSelecionado() {
@@ -7907,6 +8653,7 @@
       atualizarCategoriaAgendaUI();
       atualizarCategoriaChecklistUI();
       atualizarOffsetsCabecalho();
+      renderizarMiniCalendarioDesktop();
       window.addEventListener("resize", atualizarOffsetsCabecalho);
 
       document.getElementById("btn-toggle-passados-pessoal")?.addEventListener("click", async () => {
@@ -7929,6 +8676,8 @@
 
       document.getElementById("btn-cal-prev")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()-1); montarCalendarioMes(); });
       document.getElementById("btn-cal-next")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()+1); montarCalendarioMes(); });
+      document.getElementById("btn-desktop-mini-prev")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()-1); montarCalendarioMes(); });
+      document.getElementById("btn-desktop-mini-next")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()+1); montarCalendarioMes(); });
       document.getElementById("btn-voltar-calendario")?.addEventListener("click",()=>{ document.getElementById("calendar-container").style.display="block"; document.getElementById("agenda-dia-container").style.display="none"; });
 
       document.getElementById("btn-toggle-form-checklist")?.addEventListener("click", () => toggleFormChecklist());
