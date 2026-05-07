@@ -4382,7 +4382,506 @@
         }
       }
 
-    </style>
+    @media (min-width: 1100px) {
+      body {
+        background:
+          radial-gradient(circle at top left, rgba(var(--cor-tema-rgb), 0.03), transparent 30%),
+          linear-gradient(180deg, #edf2f7 0%, #e7edf4 100%);
+      }
+
+      .app-shell {
+        background: linear-gradient(180deg, #eef3f8 0%, #e8eef5 100%);
+      }
+
+      .audio-tip,
+      .desktop-sidebar-shortcuts {
+        display: none !important;
+      }
+
+      .topbar {
+        min-height: 72px;
+        padding: 8px 18px 8px;
+        background: linear-gradient(
+          90deg,
+          #ffffff 0%,
+          #f8fbff 18%,
+          rgba(var(--cor-tema-rgb), 0.14) 48%,
+          rgba(var(--cor-tema-rgb), 0.38) 82%,
+          var(--cor-tema-escura) 100%
+        );
+        box-shadow: inset 0 -1px 0 rgba(255,255,255,0.08);
+      }
+
+      .topbar-main {
+        align-items: center;
+      }
+
+      .prioriza-logo {
+        height: 44px;
+      }
+
+      .topbar-date-line {
+        font-size: 11px;
+        line-height: 1.2;
+        color: #334155;
+      }
+
+      .audio-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(15,23,42,0.08);
+      }
+
+      .resumo-bar {
+        padding: 6px 18px;
+        font-size: 12px;
+        background: rgba(248,250,252,0.92);
+        border-bottom: 1px solid rgba(203,213,225,0.6);
+        box-shadow: 0 2px 10px rgba(15,23,42,0.03);
+      }
+
+      .app-workspace {
+        grid-template-columns: 172px minmax(0, 1fr) 220px;
+        gap: 16px;
+        padding: calc(var(--layout-header-offset) + 14px) 14px 14px;
+      }
+
+      .desktop-sidebar {
+        gap: 10px;
+        top: calc(var(--layout-header-offset) + 14px);
+      }
+
+      .desktop-sidebar-brand {
+        padding: 4px 2px 8px;
+      }
+
+      .desktop-sidebar-brand img {
+        height: 28px;
+      }
+
+      .desktop-sidebar-brand-sub {
+        display: none;
+      }
+
+      .desktop-sidebar .nav-item {
+        min-height: 40px;
+        padding: 8px 12px 8px 14px;
+        border-radius: 10px;
+        font-size: 12px;
+        background: rgba(255,255,255,0.74);
+        border: 1px solid rgba(148,163,184,0.14);
+        box-shadow: none;
+      }
+
+      .desktop-sidebar .nav-item.active {
+        background: #ffffff;
+        border-color: rgba(148,163,184,0.18);
+      }
+
+      .desktop-sidebar .nav-item.active::before {
+        left: 6px;
+        width: 2px;
+        height: 42%;
+        background: var(--cor-tema);
+        border-radius: 999px;
+      }
+
+      .desktop-sidebar-section {
+        background: rgba(255,255,255,0.64);
+        border: 1px solid rgba(203,213,225,0.52);
+        border-radius: 12px;
+        padding: 10px;
+        box-shadow: none;
+      }
+
+      .desktop-sidebar-section-title {
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #64748b;
+      }
+
+      .desktop-mini-calendar {
+        gap: 6px;
+      }
+
+      .desktop-mini-day {
+        border-radius: 8px;
+        font-size: 12px;
+      }
+
+      .desktop-mini-day.has-events::after {
+        background: var(--cor-tema);
+      }
+
+      .app-main-column {
+        background: rgba(255,255,255,0.9);
+        border: 1px solid rgba(203,213,225,0.58);
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(15,23,42,0.04);
+        padding: 16px 18px 18px;
+      }
+
+      .app-main-column .content {
+        padding: 0;
+      }
+
+      #screen-hoje.screen.active {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+          "agora"
+          "timeline";
+        gap: 0;
+      }
+
+      #screen-hoje.screen.active > #card-agora { grid-area: agora; }
+      #screen-hoje.screen.active > #hoje-operational-timeline-card { grid-area: timeline; }
+      #screen-hoje.screen.active > #hoje-agenda-card,
+      #screen-hoje.screen.active > #hoje-checklist-card {
+        display: none !important;
+      }
+
+      .app-shell[data-active-screen="screen-hoje"] #card-agora {
+        display: grid;
+      }
+
+      #screen-hoje .card,
+      #hoje-operational-timeline-card,
+      #card-agora {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      #card-agora {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+          "top status"
+          "title actions"
+          "meta actions";
+        gap: 6px 16px;
+        align-items: center;
+        padding: 2px 0 14px;
+        border-bottom: 1px solid rgba(226,232,240,0.9);
+      }
+
+      #card-agora .agora-topo {
+        grid-area: top;
+        margin: 0;
+        gap: 8px;
+      }
+
+      #card-agora .agora-icone {
+        width: 15px;
+        height: 15px;
+        color: var(--cor-tema);
+      }
+
+      #card-agora .agora-titulo,
+      #card-agora .agora-status {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      #card-agora .agora-titulo { color: #64748b; }
+      #card-agora .agora-status {
+        grid-area: status;
+        justify-self: end;
+        color: #334155;
+      }
+
+      #card-agora .agora-item-titulo {
+        grid-area: title;
+        margin: 0;
+        font-size: 20px;
+        line-height: 1.18;
+        letter-spacing: -0.03em;
+        color: #0f172a;
+      }
+
+      #card-agora .agora-horario {
+        grid-area: meta;
+        margin: 0;
+        font-size: 13px;
+        font-weight: 500;
+        color: #64748b;
+      }
+
+      #card-agora .agora-acoes {
+        grid-area: actions;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        margin: 0;
+      }
+
+      #card-agora .agora-btn,
+      .timeline-soft-btn,
+      .timeline-ghost-btn {
+        min-height: 30px;
+        padding: 0 10px;
+        border-radius: 9px;
+        font-size: 11px;
+        font-weight: 600;
+        box-shadow: none;
+      }
+
+      #card-agora .agora-btn:not(.primary),
+      .timeline-ghost-btn {
+        background: #ffffff;
+        border: 1px solid rgba(148,163,184,0.22);
+        color: #475569;
+      }
+
+      #card-agora .agora-btn.primary,
+      .timeline-soft-btn {
+        background: rgba(var(--cor-tema-rgb), 0.08);
+        border: 1px solid rgba(var(--cor-tema-rgb), 0.18);
+        color: var(--cor-tema-escura);
+      }
+
+      #hoje-operational-timeline-card {
+        padding: 14px 0 0;
+      }
+
+      .timeline-operational-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 10px;
+        margin-bottom: 2px;
+        border-bottom: 1px solid rgba(226,232,240,0.84);
+      }
+
+      .timeline-operational-kicker {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: 4px;
+      }
+
+      .timeline-operational-head h2 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: #0f172a;
+      }
+
+      .home-card-link {
+        display: inline-flex !important;
+        align-items: center;
+        margin-left: auto;
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .home-card-link:hover {
+        color: var(--cor-tema-escura);
+      }
+
+      #operational-timeline {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .timeline-row {
+        position: relative;
+        display: grid;
+        grid-template-columns: 74px minmax(0, 1fr) auto;
+        gap: 10px 16px;
+        align-items: center;
+        padding: 14px 0 14px 12px;
+        border-bottom: 1px solid rgba(226,232,240,0.82);
+      }
+
+      .timeline-row::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 14px;
+        width: 3px;
+        height: calc(100% - 28px);
+        border-radius: 999px;
+        background: var(--timeline-accent, rgba(var(--cor-tema-rgb), 0.86));
+      }
+
+      .timeline-row:last-child {
+        border-bottom: none;
+      }
+
+      .timeline-stamp {
+        grid-column: 1;
+        justify-self: start;
+        border: none;
+        background: transparent;
+        padding: 0;
+        font-size: 13px;
+        font-weight: 700;
+        color: #0f172a;
+        cursor: pointer;
+      }
+
+      .timeline-row.checklist .timeline-stamp {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #64748b;
+      }
+
+      .timeline-body {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .timeline-row-head {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .timeline-kind {
+        flex: 0 0 auto;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #64748b;
+      }
+
+      .timeline-title {
+        min-width: 0;
+        font-size: 15px;
+        font-weight: 650;
+        line-height: 1.25;
+        color: #0f172a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .timeline-meta {
+        font-size: 12px;
+        line-height: 1.4;
+        color: #64748b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .timeline-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .timeline-icon-btn,
+      .timeline-status-toggle {
+        width: 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        border: 1px solid rgba(148,163,184,0.18);
+        background: #ffffff;
+        color: #475569;
+        box-shadow: none;
+      }
+
+      .timeline-status-toggle {
+        border-radius: 999px;
+      }
+
+      .timeline-status-toggle.pendente {
+        border-color: rgba(148,163,184,0.32);
+      }
+
+      .timeline-status-toggle.em_andamento {
+        border-color: rgba(249,115,22,0.24);
+        background: rgba(249,115,22,0.08);
+      }
+
+      .timeline-status-toggle.feito {
+        border-color: rgba(34,197,94,0.2);
+        background: rgba(34,197,94,0.08);
+      }
+
+      .timeline-empty {
+        padding: 20px 0 4px;
+        font-size: 13px;
+        color: #64748b;
+      }
+
+      .desktop-rail {
+        display: block;
+      }
+
+      .desktop-context-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        position: sticky;
+        top: calc(var(--layout-header-offset) + 14px);
+      }
+
+      .desktop-context-block {
+        background: rgba(255,255,255,0.72);
+        border: 1px solid rgba(203,213,225,0.54);
+        border-radius: 12px;
+        padding: 12px 14px;
+        box-shadow: none;
+      }
+
+      .desktop-context-kicker {
+        margin-bottom: 6px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #64748b;
+      }
+
+      .desktop-context-date {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: #0f172a;
+      }
+
+      .desktop-context-summary,
+      .desktop-context-focus-meta {
+        margin-top: 6px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #64748b;
+      }
+
+      .desktop-context-focus-title {
+        font-size: 14px;
+        font-weight: 650;
+        line-height: 1.35;
+        color: #0f172a;
+      }
+    }
+  </style>
   </head>
   <body>
 
@@ -4619,15 +5118,6 @@
             <div id="desktop-mini-calendar" class="desktop-mini-calendar"><small>Carregando calendário...</small></div>
           </div>
 
-          <div class="desktop-sidebar-section desktop-sidebar-shortcuts">
-            <div class="desktop-sidebar-section-title">Atalhos</div>
-            <div class="desktop-shortcut-list">
-              <button class="desktop-shortcut-btn" type="button" data-target-jump="screen-agenda">Agenda completa</button>
-              <button class="desktop-shortcut-btn" type="button" data-target-jump="screen-checklist">Checklist geral</button>
-              <button class="desktop-shortcut-btn" type="button" data-target-jump="screen-notas">Anotações</button>
-              <button class="desktop-shortcut-btn" type="button" data-target-jump="screen-ajustes">Ajustes</button>
-            </div>
-          </div>
         </aside>
 
         <div class="app-main-column">
@@ -4649,6 +5139,17 @@
             <div class="agora-acoes" id="agora-acoes"></div>
           </div>
 
+          <div class="card" id="hoje-operational-timeline-card" hidden>
+            <div class="timeline-operational-head">
+              <div>
+                <div class="timeline-operational-kicker">Sistema operacional da rotina</div>
+                <h2>Timeline operacional</h2>
+              </div>
+              <button id="btn-ver-agenda-completa-home" class="home-card-link" type="button" style="display:none">Ver agenda completa</button>
+            </div>
+            <div id="operational-timeline"><small>Carregando rotina do dia...</small></div>
+          </div>
+
           <div class="card" id="hoje-agenda-card">
             <div class="card-header">
               <!-- icon: calendar-dots duotone -->
@@ -4663,7 +5164,6 @@
                 <circle cx="172" cy="156" r="14" fill="currentColor"/>
               </svg>
               <h2>Agenda do dia</h2>
-              <button id="btn-ver-agenda-completa-home" class="home-card-link" type="button" style="display:none">Ver agenda completa</button>
             </div>
             <div class="secao-subtitulo">Toque na bolinha para mudar o status (pendente → em andamento → feito).</div>
             <div id="agenda-dia"><small>Carregando agenda...</small></div>
@@ -5284,7 +5784,7 @@
               <div class="desktop-context-summary" data-resumo-espelho>Carregando resumo...</div>
             </div>
             <div class="desktop-context-block">
-              <div class="desktop-context-kicker">Em foco</div>
+              <div class="desktop-context-kicker">Agora</div>
               <div id="desktop-focus-title" class="desktop-context-focus-title">Sem tarefa crítica agora.</div>
               <div id="desktop-focus-meta" class="desktop-context-focus-meta">Abra a Agenda para acompanhar o dia completo.</div>
             </div>
@@ -6123,6 +6623,7 @@
     let tarefasAgendaCache = [];
     let googleAgendaCache = [];
     let googleAgendaStatus = { configurado: false, conectado: false };
+    let checklistHojeCache = [];
 
     // ── VAPID e Push Notifications (definições globais) ────────────
     const VAPID_PUBLIC_KEY = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBkYIRPqbb5ZfElDa1Ew";
@@ -6355,6 +6856,20 @@
       window.setTimeout(() => destacarTarefaAgora(tarefa.id), 260);
     }
 
+    async function abrirAgendaDesktopNoDia(dataIso, tarefaId = null) {
+      calendarioDiaSelecionadoISO = normalizarDataParaISO(dataIso || "") || dataHojeISO();
+      const dataAlvo = new Date(`${calendarioDiaSelecionadoISO}T00:00:00`);
+      if (!Number.isNaN(dataAlvo.getTime())) {
+        calendarioMesAtual = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), 1);
+      }
+      if (typeof window.__abrirTelaApp === "function") {
+        window.__abrirTelaApp("screen-agenda", { manterPosicao: true });
+      }
+      await atualizarAgendaMesEDia();
+      rolarParaAgendaDiaSelecionado();
+      if (tarefaId) window.setTimeout(() => destacarTarefaAgora(tarefaId), 260);
+    }
+
     function criarBotaoAgora(texto, classe, onClick) {
       const btn = document.createElement("button");
       btn.type = "button";
@@ -6504,15 +7019,194 @@
           calendarioDiaSelecionadoISO = iso;
           calendarioMesAtual = new Date(dia.getFullYear(), dia.getMonth(), 1);
           renderizarMiniCalendarioDesktop();
-          if (typeof window.__abrirTelaApp === "function") {
-            window.__abrirTelaApp("screen-agenda", { manterPosicao: true });
-          }
-          montarCalendarioMes();
-          preencherAgendaDiaSelecionado();
-          rolarParaAgendaDiaSelecionado();
+          abrirAgendaDesktopNoDia(iso);
         });
         grid.appendChild(botao);
       }
+    }
+
+    function obterMetaTimelineChecklist(item) {
+      const partes = [];
+      if (item?.frequencia) partes.push(item.frequencia);
+      const origem = obterRotuloOrigemChecklist(item);
+      if (origem) partes.push(origem);
+      return partes.join(" · ");
+    }
+
+    function obterDadosTimelineOperacional() {
+      const agoraMin = new Date().getHours() * 60 + new Date().getMinutes();
+      const agendaHoje = agendaDoDiaCombinada(dataHojeISO())
+        .filter((t) => t.ativo !== false && !ehStatusCancelada(t.status) && !ehStatusFeito(t.status))
+        .map(normalizarTarefaAgenda)
+        .map((t) => ({ ...t, _tipo: "agenda", _ordem: t.inicio_min ?? 9999 }))
+        .sort((a, b) => (a._ordem ?? 9999) - (b._ordem ?? 9999));
+
+      const checklistHoje = checklistHojeCache
+        .filter((item) => item.ativo !== false && normalizarStatusChecklist(item.status || "pendente") !== "feito")
+        .map((item, idx) => ({ ...item, _tipo: "checklist", _ordem: agoraMin + 0.25 + (idx * 0.01) }));
+
+      const agendaPassada = agendaHoje.filter((item) => (item.inicio_min ?? 9999) < agoraMin);
+      const agendaFutura = agendaHoje.filter((item) => (item.inicio_min ?? 9999) >= agoraMin);
+      return [...agendaPassada, ...checklistHoje, ...agendaFutura];
+    }
+
+    function renderizarTimelineOperacionalDesktop() {
+      const card = document.getElementById("hoje-operational-timeline-card");
+      const container = document.getElementById("operational-timeline");
+      const linkAgenda = document.getElementById("btn-ver-agenda-completa-home");
+      if (!card || !container) return;
+
+      const desktop = emLayoutDesktop();
+      card.hidden = !desktop;
+      if (linkAgenda) linkAgenda.style.display = desktop ? "inline-flex" : "none";
+      if (!desktop) return;
+
+      const itens = obterDadosTimelineOperacional();
+      container.innerHTML = "";
+
+      if (itens.length === 0) {
+        container.innerHTML = `<div class="timeline-empty">Nenhuma pendência crítica no momento. Abra a Agenda para planejar o restante do dia.</div>`;
+        return;
+      }
+
+      itens.forEach((item) => {
+        const status = item._tipo === "checklist"
+          ? normalizarStatusChecklist(item.status || "pendente")
+          : String(item.status || "pendente").toLowerCase();
+
+        const row = document.createElement("div");
+        row.className = `timeline-row ${item._tipo} ${status}`;
+        row.style.setProperty(
+          "--timeline-accent",
+          item._tipo === "agenda"
+            ? obterCorIndicadorHoje(item)
+            : ((String(item.origem || "").toUpperCase() === "PESSOAL") ? "#8b5cf6" : "rgba(var(--cor-tema-rgb), 0.86)")
+        );
+
+        const stamp = document.createElement(item._tipo === "agenda" ? "button" : "div");
+        if (item._tipo === "agenda") stamp.type = "button";
+        stamp.className = "timeline-stamp";
+        stamp.textContent = item._tipo === "agenda"
+          ? (item.all_day ? "Dia todo" : (item.hora_inicio || "--:--"))
+          : (status === "em_andamento" ? "Agora" : "Rotina");
+
+        const body = document.createElement("div");
+        body.className = "timeline-body";
+
+        const header = document.createElement("div");
+        header.className = "timeline-row-head";
+
+        const kind = document.createElement("div");
+        kind.className = "timeline-kind";
+        kind.textContent = item._tipo === "agenda"
+          ? ((String(item.origem || "").toUpperCase() === "PESSOAL") ? "Pessoal" : "Compromisso")
+          : "Rotina";
+
+        const title = document.createElement("div");
+        title.className = "timeline-title";
+        title.textContent = item.titulo || "Item sem título";
+
+        const meta = document.createElement("div");
+        meta.className = "timeline-meta";
+        meta.textContent = item._tipo === "agenda"
+          ? (obterResumoAgendaHojeDesktop(item) || "Prioriza")
+          : (obterMetaTimelineChecklist(item) || "Rotina do dia");
+
+        header.appendChild(kind);
+        header.appendChild(title);
+        body.appendChild(header);
+        body.appendChild(meta);
+
+        const actions = document.createElement("div");
+        actions.className = "timeline-actions";
+
+        if (item._tipo === "agenda") {
+          row.addEventListener("click", () => abrirAgendaDesktopNoDia(item.data, item.id));
+          stamp.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            abrirAgendaDesktopNoDia(item.data, item.id);
+          });
+
+          const btnAbrir = document.createElement("button");
+          btnAbrir.type = "button";
+          btnAbrir.className = "timeline-ghost-btn";
+          btnAbrir.textContent = "Abrir";
+          btnAbrir.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            abrirAgendaDesktopNoDia(item.data, item.id);
+          });
+          actions.appendChild(btnAbrir);
+
+          if (item.tipo_evento !== "google") {
+            const btnStatus = document.createElement("button");
+            btnStatus.type = "button";
+            btnStatus.className = "timeline-soft-btn";
+            const emAndamento = ehStatusAndamento(item.status);
+            btnStatus.textContent = emAndamento ? "Concluir" : "Iniciar";
+            btnStatus.addEventListener("click", async (ev) => {
+              ev.stopPropagation();
+              btnStatus.disabled = true;
+              const novoStatus = emAndamento ? "feito" : "em_andamento";
+              const ok = await atualizarStatusTarefa(item.id, novoStatus);
+              btnStatus.disabled = false;
+              if (!ok) {
+                await modal.alerta("Não foi possível atualizar o compromisso.", "Erro");
+                return;
+              }
+              item.status = novoStatus;
+              await atualizarResumoBar();
+              renderizarAgoraCard();
+              renderizarTimelineOperacionalDesktop();
+              preencherAgendaDiaSelecionado();
+              montarCalendarioMes();
+            });
+            actions.appendChild(btnStatus);
+          }
+        } else {
+          const toggle = document.createElement("button");
+          toggle.type = "button";
+          toggle.className = `timeline-status-toggle ${status}`;
+          toggle.innerHTML = iconStatusInline(status);
+          toggle.title = "Alterar status";
+          toggle.setAttribute("aria-label", `Alterar status de ${item.titulo}`);
+          toggle.addEventListener("click", async (ev) => {
+            ev.stopPropagation();
+            toggle.disabled = true;
+            const novoStatus = proximoStatus(status);
+            const ok = await atualizarStatusChecklist(item.id, novoStatus);
+            toggle.disabled = false;
+            if (!ok) {
+              await modal.alerta("Não foi possível atualizar a rotina.", "Erro");
+              return;
+            }
+            item.status = novoStatus;
+            const idx = checklistHojeCache.findIndex((entry) => entry.id === item.id);
+            if (idx !== -1) checklistHojeCache[idx].status = novoStatus;
+            await atualizarResumoBar();
+            renderizarTimelineOperacionalDesktop();
+          });
+          actions.appendChild(toggle);
+
+          const excluir = document.createElement("button");
+          excluir.type = "button";
+          excluir.className = "timeline-icon-btn";
+          excluir.textContent = "×";
+          excluir.title = "Excluir rotina";
+          excluir.setAttribute("aria-label", `Excluir ${item.titulo}`);
+          excluir.addEventListener("click", async (ev) => {
+            ev.stopPropagation();
+            if (!await modal.confirmar(`Remover "${item.titulo}"?`, "Excluir rotina", "vermelho")) return;
+            await excluirChecklistItem(item.id);
+            await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
+          });
+          actions.appendChild(excluir);
+        }
+
+        row.appendChild(stamp);
+        row.appendChild(body);
+        row.appendChild(actions);
+        container.appendChild(row);
+      });
     }
 
     // ── LOCAIS ───────────────────────────────────────────────────
@@ -7377,6 +8071,7 @@
           });
         }
         renderizarAgoraCard();
+        renderizarTimelineOperacionalDesktop();
         renderizarMiniCalendarioDesktop();
       } catch(e) {
         console.error("[PRIORIZA] carregarAgendaHoje:", e);
@@ -7500,7 +8195,12 @@
           return true;
         });
 
-        if (visiveis.length===0) { container.innerHTML="<small>Nenhum item pendente para hoje. 🎉</small>"; return; }
+        checklistHojeCache = visiveis.map((item) => ({ ...item }));
+        if (visiveis.length===0) {
+          container.innerHTML="<small>Nenhum item pendente para hoje. 🎉</small>";
+          renderizarTimelineOperacionalDesktop();
+          return;
+        }
         container.innerHTML="";
 
         visiveis.forEach(item => {
@@ -7579,8 +8279,10 @@
           container.appendChild(div);
         });
         renderizarAgoraCard();
+        renderizarTimelineOperacionalDesktop();
       } catch(e) {
         console.error("[PRIORIZA] carregarChecklistHoje:", e);
+        checklistHojeCache = [];
         container.innerHTML="<small style='color:#ef4444'>⚠️ Erro ao carregar checklist. <button onclick='carregarChecklistHoje()' style='color:var(--cor-tema);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline'>Tentar novamente</button></small>";
       }
     }
