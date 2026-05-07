@@ -3358,6 +3358,291 @@
           display: none;
         }
 
+        .home-card-link {
+          display: inline-flex !important;
+          align-items: center;
+          margin-left: auto;
+          border: none;
+          background: transparent;
+          color: #64748b;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          padding: 0;
+        }
+
+        .home-card-link:hover {
+          color: #0f172a;
+        }
+
+        .audio-tip {
+          display: none;
+        }
+
+        .topbar {
+          min-height: 78px;
+          padding: 10px 16px 10px;
+          background: linear-gradient(
+            90deg,
+            #ffffff 0%,
+            #f7fbff 18%,
+            rgba(var(--cor-tema-rgb), 0.2) 50%,
+            rgba(var(--cor-tema-rgb), 0.52) 80%,
+            var(--cor-tema-escura) 100%
+          );
+        }
+
+        .topbar-main {
+          align-items: center;
+        }
+
+        .prioriza-logo {
+          height: 40px;
+        }
+
+        .topbar-date-line {
+          font-size: 11px;
+          line-height: 1.2;
+        }
+
+        .audio-btn {
+          width: 46px;
+          height: 46px;
+          box-shadow: 0 6px 16px rgba(15,23,42,0.12);
+        }
+
+        .resumo-bar {
+          padding: 6px 16px;
+          font-size: 12px;
+        }
+
+        .app-workspace {
+          grid-template-columns: 180px minmax(0, 1fr);
+          gap: 14px;
+          padding: calc(var(--layout-header-offset) + 14px) 14px 14px;
+        }
+
+        .desktop-rail,
+        .desktop-sidebar-card,
+        .app-shell[data-active-screen="screen-hoje"] #card-agora {
+          display: none;
+        }
+
+        .desktop-sidebar {
+          gap: 10px;
+          top: calc(var(--layout-header-offset) + 14px);
+        }
+
+        .desktop-sidebar .nav-item {
+          min-height: 44px;
+          padding: 10px 12px 10px 16px;
+          border-radius: 12px;
+          font-size: 12px;
+        }
+
+        .desktop-sidebar .nav-item.active::before {
+          left: 6px;
+          width: 2px;
+          height: 46%;
+        }
+
+        .desktop-sidebar .nav-item span {
+          font-size: 12px;
+          font-weight: 600;
+        }
+
+        .card,
+        .desktop-panel,
+        .desktop-sidebar .nav-item {
+          border-radius: 12px;
+          box-shadow: 0 3px 12px rgba(15,23,42,0.04);
+        }
+
+        .card {
+          padding: 14px;
+        }
+
+        .card-header {
+          margin-bottom: 10px;
+        }
+
+        .card-header h2 {
+          font-size: 16px;
+          font-weight: 700;
+        }
+
+        .app-main-column {
+          min-width: 0;
+        }
+
+        #screen-hoje.screen.active {
+          grid-template-columns: minmax(320px, 0.92fr) minmax(360px, 1.08fr);
+          grid-template-areas: "checklist agenda";
+          gap: 14px;
+        }
+
+        #screen-hoje.screen.active > #hoje-checklist-card { grid-area: checklist; }
+        #screen-hoje.screen.active > #hoje-agenda-card { grid-area: agenda; }
+
+        #hoje-checklist-card,
+        #hoje-agenda-card {
+          max-height: calc(100vh - var(--layout-header-offset) - 30px);
+        }
+
+        #hoje-checklist-card #checklist-dia,
+        #hoje-agenda-card #agenda-dia {
+          overflow: auto;
+          min-height: 0;
+          padding-right: 2px;
+        }
+
+        #hoje-checklist-card #checklist-dia::-webkit-scrollbar,
+        #hoje-agenda-card #agenda-dia::-webkit-scrollbar {
+          width: 7px;
+        }
+
+        #hoje-checklist-card #checklist-dia::-webkit-scrollbar-thumb,
+        #hoje-agenda-card #agenda-dia::-webkit-scrollbar-thumb {
+          background: rgba(148,163,184,0.26);
+          border-radius: 999px;
+        }
+
+        #hoje-checklist-card .checklist-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 0;
+          border-bottom: 1px solid rgba(226,232,240,0.8);
+          background: transparent;
+          border-radius: 0;
+        }
+
+        #hoje-checklist-card .checklist-item::before {
+          display: none;
+        }
+
+        #hoje-checklist-card .check-status {
+          display: flex;
+          width: 20px;
+          height: 20px;
+          flex-shrink: 0;
+          border-width: 2px;
+        }
+
+        #hoje-checklist-card .check-info {
+          flex: 1;
+          min-width: 0;
+          margin: 0;
+        }
+
+        #hoje-checklist-card .check-titulo {
+          font-size: 13px;
+          line-height: 1.25;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: block;
+        }
+
+        #hoje-checklist-card .check-sub {
+          margin-top: 2px;
+          font-size: 11px;
+          line-height: 1.3;
+        }
+
+        #hoje-checklist-card .desktop-status-actions {
+          display: none;
+        }
+
+        .hoje-checklist-remove {
+          width: 24px;
+          height: 24px;
+          border-radius: 999px;
+          border: 1px solid rgba(148,163,184,0.18);
+          background: #ffffff;
+          color: #94a3b8;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+
+        .hoje-checklist-remove:hover {
+          color: #475569;
+          border-color: rgba(148,163,184,0.28);
+        }
+
+        #hoje-agenda-card .agenda-item {
+          display: grid;
+          grid-template-columns: 56px minmax(0, 1fr);
+          gap: 4px 12px;
+          align-items: start;
+          padding: 10px 0 10px 12px;
+          border-bottom: 1px solid rgba(226,232,240,0.8);
+          cursor: pointer;
+        }
+
+        #hoje-agenda-card .agenda-item::before {
+          left: 0;
+          top: 10px;
+          width: 3px;
+          height: calc(100% - 20px);
+          opacity: 0.82;
+        }
+
+        #hoje-agenda-card .agenda-status-btn,
+        #hoje-agenda-card .agenda-acoes-desktop,
+        #hoje-agenda-card .agenda-tag {
+          display: none !important;
+        }
+
+        #hoje-agenda-card .agenda-horario {
+          grid-column: 1;
+          grid-row: 1 / span 2;
+          font-size: 13px;
+          font-weight: 700;
+          color: #334155;
+          padding-top: 1px;
+        }
+
+        #hoje-agenda-card .agenda-conteudo {
+          grid-column: 2;
+          gap: 2px;
+        }
+
+        #hoje-agenda-card .agenda-titulo {
+          font-size: 13px;
+          line-height: 1.25;
+          font-weight: 650;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        #hoje-agenda-card .agenda-meta {
+          font-size: 11px;
+          line-height: 1.3;
+          -webkit-line-clamp: 1;
+        }
+
+        .fab-add {
+          right: 18px;
+          bottom: 18px;
+          width: 52px;
+          height: 52px;
+          min-width: 52px;
+          padding: 0;
+          border-radius: 999px;
+          gap: 0;
+          box-shadow: 0 14px 28px rgba(var(--cor-tema-rgb), 0.2);
+        }
+
+        .fab-add::after {
+          content: "";
+        }
+
         .bottom-nav-wrapper {
           display: none;
         }
@@ -3616,6 +3901,7 @@
                 <circle cx="172" cy="156" r="14" fill="currentColor"/>
               </svg>
               <h2>Agenda do dia</h2>
+              <button id="btn-ver-agenda-completa-home" class="home-card-link" type="button" style="display:none">Ver agenda completa</button>
             </div>
             <div class="secao-subtitulo">Toque na bolinha para mudar o status (pendente → em andamento → feito).</div>
             <div id="agenda-dia"><small>Carregando agenda...</small></div>
@@ -6057,11 +6343,26 @@
         }
 
         const combinadaHoje = agendaDoDiaCombinada(dataHojeISO());
-        if (combinadaHoje.length === 0) {
+        const agoraMinutos = new Date().getHours() * 60 + new Date().getMinutes();
+        const agendaHojeRender = emLayoutDesktop()
+          ? (() => {
+              const ativos = combinadaHoje
+                .filter((t) => t.ativo !== false && !ehStatusCancelada(t.status) && !ehStatusFeito(t.status))
+                .map(normalizarTarefaAgenda);
+              const futuros = ativos.filter((t) => {
+                if (t.all_day || t.hora_inicio === "Dia todo") return true;
+                if (t.fim_min === null) return true;
+                return t.fim_min >= agoraMinutos;
+              });
+              return (futuros.length ? futuros : ativos).slice(0, 6);
+            })()
+          : combinadaHoje;
+
+        if (agendaHojeRender.length === 0) {
           agendaDiv.innerHTML = "<small>Nenhum compromisso agendado para hoje.</small>";
         } else {
           agendaDiv.innerHTML = "";
-          combinadaHoje.forEach(t => {
+          agendaHojeRender.forEach(t => {
             const item = document.createElement("div");
             item.className = "agenda-item";
             if (t.id !== undefined && t.id !== null) item.dataset.taskId = String(t.id);
@@ -6070,13 +6371,13 @@
               item.style.setProperty("--agenda-accent", obterCorIndicadorHoje(t));
             }
 
-            if ((t.tipo_evento || "") === "google") {
+            if ((t.tipo_evento || "") === "google" && !emLayoutDesktop()) {
               const marcador = document.createElement("div");
               marcador.className = "agenda-status-btn pendente";
               marcador.innerHTML = `<svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="var(--cor-tema)"><rect x="48" y="48" width="160" height="160" rx="24" fill="currentColor" opacity="0.18"/><rect x="48" y="48" width="160" height="160" rx="24" stroke="currentColor" stroke-width="20"/></svg>`;
               marcador.title = "Evento do Google Agenda";
               item.appendChild(marcador);
-            } else {
+            } else if (!emLayoutDesktop() || (t.tipo_evento || "") !== "google") {
               const statusAtual = t.status || "pendente";
               const bolinha = document.createElement("div");
               bolinha.className = `agenda-status-btn ${statusAtual}`;
@@ -6098,7 +6399,7 @@
                 renderizarAgoraCard();
                 sincronizarTarefaHojeEmSegundoPlano(t);
               });
-              item.appendChild(bolinha);
+              if (!emLayoutDesktop()) item.appendChild(bolinha);
             }
 
             const horario = document.createElement("div");
@@ -6144,7 +6445,7 @@
             const acoesDesktop = emLayoutDesktop() ? document.createElement("div") : null;
             if (acoesDesktop) acoesDesktop.className = "agenda-acoes-desktop";
 
-            if ((t.tipo_evento || "") === "google" && t.link) {
+            if ((t.tipo_evento || "") === "google" && t.link && !emLayoutDesktop()) {
               const link = document.createElement("a");
               link.className = "agenda-icon-link";
               link.href = t.link;
@@ -6153,7 +6454,7 @@
               link.title = "Abrir no Google Agenda";
               link.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M104 152l72-72" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M136 80h40v40" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 136v48a8 8 0 0 1-8 8H72a8 8 0 0 1-8-8V112a8 8 0 0 1 8-8h48" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
               (acoesDesktop || item).appendChild(link);
-            } else if ((t.tipo_evento || "") !== "google") {
+            } else if ((t.tipo_evento || "") !== "google" && !emLayoutDesktop()) {
               const bolinha = item.querySelector(".agenda-status-btn");
               const executarAcaoStatusHoje = async (novoStatus, grupoAcoes) => {
                 if (!bolinha) return;
@@ -6224,6 +6525,17 @@
 
             if (acoesDesktop && acoesDesktop.childElementCount) {
               item.appendChild(acoesDesktop);
+            }
+
+            if (emLayoutDesktop()) {
+              item.addEventListener("click", () => {
+                if (window.__abrirTelaApp) window.__abrirTelaApp("screen-agenda");
+                if (t.data) {
+                  calendarioDiaSelecionadoISO = normalizarDataParaISO(t.data) || calendarioDiaSelecionadoISO;
+                  preencherAgendaDiaSelecionado();
+                }
+                rolarParaAgendaDia();
+              });
             }
 
             agendaDiv.appendChild(item);
@@ -6408,13 +6720,19 @@
           });
 
           if (emLayoutDesktop()) {
-            const grupoAcoes = criarGrupoAcoesStatusDesktop([
-              { label: "Andamento", variant: "andamento", targetStatus: "em_andamento", onClick: () => executarAcaoChecklistHoje("em_andamento", grupoAcoes) },
-              { label: "Concluir", variant: "concluir", targetStatus: "feito", onClick: () => executarAcaoChecklistHoje("feito", grupoAcoes) },
-              { label: "Reabrir", variant: "reabrir", targetStatus: "pendente", onClick: () => executarAcaoChecklistHoje("pendente", grupoAcoes) },
-            ]);
-            grupoAcoes.__sync?.(item.status || "pendente");
-            div.appendChild(grupoAcoes);
+            const btnRemover = document.createElement("button");
+            btnRemover.type = "button";
+            btnRemover.className = "hoje-checklist-remove";
+            btnRemover.title = "Excluir rotina";
+            btnRemover.setAttribute("aria-label", `Excluir ${item.titulo}`);
+            btnRemover.textContent = "×";
+            btnRemover.addEventListener("click", async (ev) => {
+              ev.stopPropagation();
+              if (!await modal.confirmar(`Remover "${item.titulo}"?`, "Excluir rotina", "vermelho")) return;
+              await excluirChecklistItem(item.id);
+              await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
+            });
+            div.appendChild(btnRemover);
           }
 
           adicionarSwipe(div,
@@ -7525,6 +7843,7 @@
       document.getElementById("btn-toggle-form-checklist")?.addEventListener("click", () => toggleFormChecklist());
       document.getElementById("btn-fechar-form-checklist")?.addEventListener("click", () => toggleFormChecklist(false));
       document.getElementById("btn-add-dia-agenda")?.addEventListener("click", () => abrirFormularioAgendaNaData(calendarioDiaSelecionadoISO));
+      document.getElementById("btn-ver-agenda-completa-home")?.addEventListener("click", () => abrirTela("screen-agenda"));
       document.getElementById("chk-titulo")?.addEventListener("keydown", (ev) => {
         if (ev.key === "Escape") toggleFormChecklist(false);
       });
