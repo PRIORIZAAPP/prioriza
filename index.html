@@ -4968,6 +4968,32 @@
       #screen-checklist {
         padding-bottom: 120px;
       }
+
+      /* DESKTOP HOJE SPLIT TIMELINE CALENDARIO */
+      #screen-hoje.screen.active {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        grid-template-areas:
+          "agora calendar"
+          "timeline calendar";
+        gap: 0 32px;
+        align-items: start;
+      }
+
+      #hoje-operational-timeline-card {
+        padding: 18px 18px 0 0;
+      }
+
+      #hoje-calendar-card {
+        display: block;
+        background: #f8fafc;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 18px;
+        padding: 22px 24px;
+        min-height: 420px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+        margin-top: 6px;
+      }
     }
   </style>
   </head>
