@@ -902,6 +902,194 @@
   opacity: 0.7;
   text-decoration: line-through;
 }
+      @media (min-width: 1100px) {
+        #screen-pessoal .card {
+          border-radius: 18px;
+          padding: 24px 26px;
+        }
+
+        #screen-pessoal .secao-subtitulo {
+          margin-bottom: 14px;
+          color: #64748b;
+        }
+
+        #screen-pessoal hr {
+          display: none;
+        }
+
+        #screen-pessoal #pessoal-agenda-title {
+          font-size: 15px;
+          font-weight: 700;
+          color: #0f172a;
+        }
+
+        #screen-pessoal #btn-toggle-passados-pessoal {
+          border-radius: 12px;
+          border: 1px solid rgba(148, 163, 184, 0.26);
+          background: #ffffff;
+          color: #475569;
+          padding: 8px 12px;
+        }
+
+        #screen-pessoal .pessoal-panel {
+          border: 1px solid rgba(226, 232, 240, 0.92);
+          border-radius: 18px;
+          background: #ffffff;
+          padding: 18px 18px 12px;
+          margin-bottom: 16px !important;
+          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.035);
+        }
+
+        #screen-pessoal .pessoal-panel--rotinas {
+          background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+        }
+
+        #screen-pessoal .pessoal-panel h3,
+        #screen-pessoal .pessoal-panel h4 {
+          font-size: 13px !important;
+          font-weight: 700;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          color: #64748b !important;
+          margin-bottom: 12px !important;
+        }
+
+        #screen-pessoal .pessoal-bloco-vazio {
+          padding: 12px 2px 6px;
+          color: #94a3b8;
+        }
+
+        #screen-pessoal .pessoal-item {
+          gap: 16px;
+          align-items: center;
+          padding: 14px 4px;
+          border-bottom-color: rgba(226, 232, 240, 0.92);
+        }
+
+        #screen-pessoal .pessoal-datahora {
+          width: 88px;
+          font-size: 12px;
+          line-height: 1.45;
+          color: #334155;
+        }
+
+        #screen-pessoal .pessoal-conteudo {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        #screen-pessoal .pessoal-titulo {
+          font-size: 15px;
+          color: #0f172a;
+          margin-bottom: 0;
+        }
+
+        #screen-pessoal .pessoal-titulo + div,
+        #screen-pessoal .pessoal-serie-meta,
+        #screen-pessoal .pessoal-serie-next,
+        #screen-pessoal .pessoal-item-meta {
+          font-size: 12px;
+          color: #64748b;
+        }
+
+        #screen-pessoal .pessoal-acoes {
+          gap: 8px;
+        }
+
+        #screen-pessoal .pessoal-btn {
+          width: 34px;
+          height: 34px;
+          border-radius: 12px;
+          border: 1px solid rgba(203, 213, 225, 0.72);
+          background: #ffffff;
+          color: #64748b;
+          transition: color 140ms ease, border-color 140ms ease, background 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+        }
+
+        #screen-pessoal .pessoal-btn:hover {
+          opacity: 1;
+          transform: translateY(-1px);
+          box-shadow: 0 8px 14px rgba(15, 23, 42, 0.06);
+        }
+
+        #screen-pessoal .pessoal-btn.feito:hover {
+          color: #15803d;
+          border-color: rgba(34, 197, 94, 0.3);
+          background: #f0fdf4;
+        }
+
+        #screen-pessoal .pessoal-btn.editar:hover {
+          color: #2563eb;
+          border-color: rgba(59, 130, 246, 0.28);
+          background: #eff6ff;
+        }
+
+        #screen-pessoal .pessoal-btn.excluir:hover,
+        #screen-pessoal .pessoal-btn.cancelar:hover {
+          color: #dc2626;
+          border-color: rgba(248, 113, 113, 0.32);
+          background: #fef2f2;
+        }
+
+        #screen-pessoal .pessoal-item.is-em-andamento {
+          background: linear-gradient(90deg, rgba(255, 247, 237, 0.96) 0%, rgba(255, 255, 255, 1) 68%);
+          box-shadow: 0 10px 18px rgba(249, 115, 22, 0.07);
+          border-radius: 14px;
+          padding-left: 12px;
+          padding-right: 12px;
+          border-left: 2px solid rgba(249, 115, 22, 0.75);
+        }
+
+        #screen-pessoal .pessoal-item.is-feito {
+          background: rgba(240, 253, 244, 0.72);
+          border-radius: 14px;
+          padding-left: 12px;
+          padding-right: 12px;
+        }
+
+        #screen-pessoal .pessoal-item.is-feito .pessoal-titulo {
+          text-decoration: line-through;
+          opacity: 0.72;
+        }
+
+        #screen-pessoal .pessoal-item.is-feito .pessoal-conteudo,
+        #screen-pessoal .pessoal-item.is-feito .pessoal-datahora {
+          opacity: 0.72;
+        }
+
+        #screen-pessoal .pessoal-item.is-cancelada {
+          opacity: 0.62;
+        }
+
+        #screen-pessoal .pessoal-series-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        #screen-pessoal .pessoal-serie-item {
+          border: 1px solid rgba(226, 232, 240, 0.9);
+          border-radius: 14px;
+          background: #f8fafc;
+          padding: 14px 16px;
+        }
+
+        #screen-pessoal .pessoal-serie-titulo {
+          font-size: 15px;
+          font-weight: 700;
+          color: #0f172a;
+          margin-bottom: 4px;
+        }
+
+        #screen-pessoal .pessoal-serie-meta {
+          margin-bottom: 4px;
+        }
+
+        #screen-pessoal .pessoal-passados-shell {
+          margin-top: 8px;
+        }
+      }
       /* ── SCREENS ── */
       .screen { display: none; animation: fadeIn 0.15s ease-out; }
       .screen.active { display: block; }
@@ -5662,33 +5850,33 @@
             <div class="secao-subtitulo">Compromissos e rotinas pessoais organizados por momento.</div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px; flex-wrap:wrap;">
-              <h3 style="margin:0; font-size:14px; color:#111827;">Agenda pessoal</h3>
+              <h3 id="pessoal-agenda-title" style="margin:0; font-size:14px; color:#111827;">Agenda pessoal</h3>
               <button id="btn-toggle-passados-pessoal" class="btn-secondary" type="button">Mostrar passados</button>
             </div>
 
-            <div id="pessoal-hoje-box" style="margin-bottom:12px;">
-              <h4 style="margin:0 0 8px 0; font-size:13px; color:#111827;">Hoje</h4>
+            <div id="pessoal-hoje-box" class="pessoal-panel pessoal-panel--hoje" style="margin-bottom:12px;">
+              <h4 id="pessoal-hoje-title" style="margin:0 0 8px 0; font-size:13px; color:#111827;">Hoje</h4>
               <div id="pessoal-agenda-hoje"><small>Carregando...</small></div>
             </div>
 
             <hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"/>
 
-            <div id="pessoal-proximos-box" style="margin-bottom:12px;">
-              <h4 style="margin:0 0 8px 0; font-size:13px; color:#111827;">Próximos</h4>
+            <div id="pessoal-proximos-box" class="pessoal-panel pessoal-panel--proximos" style="margin-bottom:12px;">
+              <h4 id="pessoal-proximos-title" style="margin:0 0 8px 0; font-size:13px; color:#111827;">Próximos</h4>
               <div id="pessoal-agenda-proximos"><small>Carregando...</small></div>
             </div>
 
             <hr id="hr-passados-pessoal" style="border:none;border-top:1px solid #e5e7eb;margin:8px 0; display:none;"/>
 
-            <div id="pessoal-passados-box" style="display:none; margin-bottom:12px;">
-              <h4 style="margin:0 0 8px 0; font-size:13px; color:#111827;">Passados</h4>
+            <div id="pessoal-passados-box" class="pessoal-panel pessoal-panel--passados" style="display:none; margin-bottom:12px;">
+              <h4 id="pessoal-passados-title" style="margin:0 0 8px 0; font-size:13px; color:#111827;">Passados</h4>
               <div id="pessoal-agenda-passados"><small>Nenhum compromisso passado.</small></div>
             </div>
 
             <hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"/>
 
-            <div>
-              <h3 style="margin:4px 0 8px 0;font-size:14px;color:#111827">Checklist pessoal</h3>
+            <div id="pessoal-rotinas-box" class="pessoal-panel pessoal-panel--rotinas">
+              <h3 id="pessoal-rotinas-title" style="margin:4px 0 8px 0;font-size:14px;color:#111827">Checklist pessoal</h3>
               <div id="pessoal-checklist"><small>Carregando...</small></div>
             </div>
           </div>
@@ -8910,13 +9098,22 @@
 
     // ── ABA PESSOAL ───────────────────────────────────────────────
    async function carregarPessoalLista() {
-  const hojeDiv      = document.getElementById("pessoal-agenda-hoje");
-  const proximosDiv  = document.getElementById("pessoal-agenda-proximos");
-  const passadosDiv  = document.getElementById("pessoal-agenda-passados");
+  const hojeDiv = document.getElementById("pessoal-agenda-hoje");
+  const proximosDiv = document.getElementById("pessoal-agenda-proximos");
+  const passadosDiv = document.getElementById("pessoal-agenda-passados");
   const checklistDiv = document.getElementById("pessoal-checklist");
-  const boxPassados  = document.getElementById("pessoal-passados-box");
-  const hrPassados   = document.getElementById("hr-passados-pessoal");
-  const btnToggle    = document.getElementById("btn-toggle-passados-pessoal");
+  const boxPassados = document.getElementById("pessoal-passados-box");
+  const hrPassados = document.getElementById("hr-passados-pessoal");
+  const btnToggle = document.getElementById("btn-toggle-passados-pessoal");
+  const agendaTitle = document.getElementById("pessoal-agenda-title");
+  const proximosTitle = document.getElementById("pessoal-proximos-title");
+  const rotinasTitle = document.getElementById("pessoal-rotinas-title");
+  const desktop = emLayoutDesktop();
+
+  if (agendaTitle) agendaTitle.textContent = desktop ? "Painel pessoal" : "Agenda pessoal";
+  if (proximosTitle) proximosTitle.textContent = desktop ? "Próximos 7 dias" : "Próximos";
+  if (rotinasTitle) rotinasTitle.textContent = desktop ? "Rotinas pessoais" : "Checklist pessoal";
+  if (boxPassados) boxPassados.classList.toggle("pessoal-passados-shell", desktop);
 
   function compararDataHora(a, b) {
     const da = normalizarDataParaISO(a.data || "");
@@ -8925,22 +9122,69 @@
     return (a.hora_inicio || "").localeCompare(b.hora_inicio || "");
   }
 
-  function dataHoraJaPassou(t) {
+  function obterDataHoraInicio(t) {
     const data = normalizarDataParaISO(t.data || "");
-    if (!data) return false;
+    if (!data) return null;
+    const [ano, mes, dia] = data.split("-").map(Number);
+    const [hora, minuto] = String(t.hora_inicio || "00:00").split(":").map(Number);
+    return new Date(ano, (mes || 1) - 1, dia || 1, hora || 0, minuto || 0, 0, 0);
+  }
 
+  function dataHoraJaPassou(t) {
+    const dt = obterDataHoraInicio(t);
+    if (!dt) return false;
+    return dt.getTime() < Date.now() && !dataEhHoje(t.data || "");
+  }
+
+  function dentroProximos7Dias(t) {
+    const dt = obterDataHoraInicio(t);
+    if (!dt) return false;
     const agora = new Date();
-    const hora = (t.hora_inicio || "00:00").split(":");
-    const dt = new Date(
-      Number(data.slice(0, 4)),
-      Number(data.slice(5, 7)) - 1,
-      Number(data.slice(8, 10)),
-      Number(hora[0] || 0),
-      Number(hora[1] || 0),
-      0
-    );
+    const inicioHoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), 0, 0, 0, 0);
+    const fim = new Date(inicioHoje);
+    fim.setDate(fim.getDate() + 7);
+    return dt.getTime() >= inicioHoje.getTime() && dt.getTime() < fim.getTime() && !dataEhHoje(t.data || "");
+  }
 
-    return dt < agora && !dataEhHoje(data);
+  function capitalizarPrimeira(texto) {
+    const valor = String(texto || "").trim();
+    return valor ? valor.charAt(0).toUpperCase() + valor.slice(1) : "";
+  }
+
+  function dataBRHora(iso, hora) {
+    if (!iso) return "";
+    return `${formatarDataCurtaBR(iso)} às ${hora || "--:--"}`;
+  }
+
+  function metaPessoalDesktop(t) {
+    const partes = [];
+    if (t.local) partes.push(t.local);
+    const contexto = String(obterRotuloContextoTarefa?.(t) || "").trim();
+    if (contexto && !partes.includes(contexto) && contexto.toUpperCase() !== "PESSOAL") partes.push(contexto);
+    if (ehStatusCancelada(t.status)) partes.push("Cancelada");
+    return partes.join(" • ");
+  }
+
+  function classeVisualStatusPessoal(status) {
+    if (ehStatusCancelada(status)) return "is-cancelada";
+    if (ehStatusFeito(status)) return "is-feito";
+    if ((status || "") === "em_andamento") return "is-em-andamento";
+    return "";
+  }
+
+  function criarBotaoPessoal({ classe = "", titulo = "", texto = "", onClick }) {
+    const btn = document.createElement("button");
+    btn.className = `pessoal-btn ${classe}`.trim();
+    btn.type = "button";
+    btn.title = titulo;
+    btn.setAttribute("aria-label", titulo);
+    btn.textContent = texto;
+    btn.addEventListener("click", async (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      await onClick?.();
+    });
+    return btn;
   }
 
   function renderBlocoAgenda(container, itens, vazioTexto) {
@@ -8954,7 +9198,7 @@
 
     itens.forEach(t => {
       const item = document.createElement("div");
-      item.className = "pessoal-item";
+      item.className = `pessoal-item ${classeVisualStatusPessoal(t.status)}`.trim();
 
       const data = normalizarDataParaISO(t.data || "");
       const dataBR = data ? formatarDataCurtaBR(data) : "--/--";
@@ -8962,96 +9206,105 @@
 
       const dataHora = document.createElement("div");
       dataHora.className = "pessoal-datahora";
-      dataHora.innerHTML = `${textoSeguro(dataBR)}<br>${textoSeguro(hora)}`;
+      dataHora.innerHTML = desktop
+        ? `${textoSeguro(dataBR)}<br>${textoSeguro(hora)}`
+        : `${textoSeguro(dataBR)}<br>${textoSeguro(hora)}`;
 
       const conteudo = document.createElement("div");
       conteudo.className = "pessoal-conteudo";
 
       const titulo = document.createElement("div");
-      titulo.className = "pessoal-titulo" + (ehStatusFeito(t.status) || ehStatusCancelada(t.status) ? " pessoal-status-feito" : "");
+      titulo.className = "pessoal-titulo" + (!desktop && (ehStatusFeito(t.status) || ehStatusCancelada(t.status)) ? " pessoal-status-feito" : "");
       titulo.textContent = t.titulo;
 
-      const tags = document.createElement("div");
-      tags.innerHTML = ehStatusCancelada(t.status)
-        ? `<span class="agenda-tag cancelada">Cancelada</span>`
-        : `<span class="agenda-tag pessoal">Pessoal</span>`;
-
       conteudo.appendChild(titulo);
-      conteudo.appendChild(tags);
+
+      if (desktop) {
+        const meta = document.createElement("div");
+        meta.className = "pessoal-item-meta";
+        meta.textContent = metaPessoalDesktop(t) || "Evento pessoal";
+        conteudo.appendChild(meta);
+      } else {
+        const tags = document.createElement("div");
+        tags.innerHTML = ehStatusCancelada(t.status)
+          ? `<span class="agenda-tag cancelada">Cancelada</span>`
+          : `<span class="agenda-tag pessoal">Pessoal</span>`;
+        conteudo.appendChild(tags);
+      }
 
       const acoes = document.createElement("div");
       acoes.className = "pessoal-acoes";
 
-      const btnFeito = document.createElement("button");
-      btnFeito.className = "pessoal-btn feito";
-      btnFeito.type = "button";
-      btnFeito.title = "Marcar como feito";
-      btnFeito.textContent = "✔";
-      btnFeito.addEventListener("click", async () => {
-        const novoStatus = ehStatusFeito(t.status) ? "pendente" : "feito";
-        const ok = await atualizarStatusTarefa(t.id, novoStatus);
-        if (ok) {
+      const btnFeito = criarBotaoPessoal({
+        classe: "feito",
+        titulo: ehStatusFeito(t.status) ? "Reabrir compromisso" : "Marcar como feito",
+        texto: "✓",
+        onClick: async () => {
+          const novoStatus = ehStatusFeito(t.status) ? "pendente" : "feito";
+          const ok = await atualizarStatusTarefa(t.id, novoStatus);
+          if (ok) {
+            await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, pessoal: true });
+          }
+        }
+      });
+
+      const btnEditar = criarBotaoPessoal({
+        classe: "editar",
+        titulo: "Editar",
+        texto: "✎",
+        onClick: async () => {
+          const novoTitulo = await modal.perguntar("Editar título do compromisso:", "Editar compromisso", t.titulo || "");
+          if (novoTitulo === null || !novoTitulo.trim()) return;
+
+          try {
+            const params = new URLSearchParams({
+              tarefa_id: String(t.id),
+              titulo: novoTitulo.trim(),
+              origem: t.origem || "PESSOAL",
+              data: normalizarDataParaISO(t.data || ""),
+              hora_inicio: t.hora_inicio || "00:00",
+              duracao_min: String(t.duracao_min || 60),
+              prioridade: String(t.prioridade || 2)
+            });
+
+            const res = await fetch(API + "/tarefas_editar?" + params.toString(), {
+              method: "POST",
+              headers: authHeaders()
+            });
+
+            if (!res.ok) {
+              await modal.alerta("Não foi possível editar o compromisso.", "Erro");
+              return;
+            }
+
+            await carregarAgendaHoje();
+            await atualizarAgendaMesEDia();
+            await carregarPessoalLista();
+          } catch (e) {
+            console.error(e);
+            await modal.alerta("Erro ao editar compromisso.", "Erro");
+          }
+        }
+      });
+
+      const btnCancelar = criarBotaoPessoal({
+        classe: "cancelar",
+        titulo: "Cancelar",
+        texto: "×",
+        onClick: async () => {
+          await cancelarTarefaAgenda(t);
+        }
+      });
+
+      const btnExcluir = criarBotaoPessoal({
+        classe: "excluir",
+        titulo: "Excluir",
+        texto: "⌫",
+        onClick: async () => {
+          if (!await modal.confirmar(`Excluir "${t.titulo}"?`, "Excluir compromisso", "vermelho")) return;
+          await excluirTarefa(t.id);
           await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, pessoal: true });
         }
-      });
-
-      const btnEditar = document.createElement("button");
-      btnEditar.className = "pessoal-btn editar";
-      btnEditar.type = "button";
-      btnEditar.title = "Editar";
-      btnEditar.textContent = "✏";
-      btnEditar.addEventListener("click", async () => {
-        const novoTitulo = await modal.perguntar("Editar título do compromisso:", "Editar compromisso", t.titulo || "");
-        if (novoTitulo === null || !novoTitulo.trim()) return;
-
-        try {
-          const params = new URLSearchParams({
-            tarefa_id: String(t.id),
-            titulo: novoTitulo.trim(),
-            origem: t.origem || "PESSOAL",
-            data: normalizarDataParaISO(t.data || ""),
-            hora_inicio: t.hora_inicio || "00:00",
-            duracao_min: String(t.duracao_min || 60),
-            prioridade: String(t.prioridade || 2)
-          });
-
-          const res = await fetch(API + "/tarefas_editar?" + params.toString(), {
-            method: "POST",
-            headers: authHeaders()
-          });
-
-          if (!res.ok) {
-            await modal.alerta("Não foi possível editar o compromisso.", "Erro");
-            return;
-          }
-
-          await carregarAgendaHoje();
-          await atualizarAgendaMesEDia();
-          await carregarPessoalLista();
-        } catch (e) {
-          console.error(e);
-          await modal.alerta("Erro ao editar compromisso.", "Erro");
-        }
-      });
-
-      const btnCancelar = document.createElement("button");
-      btnCancelar.className = "pessoal-btn";
-      btnCancelar.type = "button";
-      btnCancelar.title = "Cancelar";
-      btnCancelar.textContent = "✕";
-      btnCancelar.addEventListener("click", async () => {
-        await cancelarTarefaAgenda(t);
-      });
-
-      const btnExcluir = document.createElement("button");
-      btnExcluir.className = "pessoal-btn excluir";
-      btnExcluir.type = "button";
-      btnExcluir.title = "Excluir";
-      btnExcluir.textContent = "🗑";
-      btnExcluir.addEventListener("click", async () => {
-        if (!await modal.confirmar(`Excluir "${t.titulo}"?`, "Excluir compromisso", "vermelho")) return;
-        await excluirTarefa(t.id);
-        await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, pessoal: true });
       });
 
       acoes.appendChild(btnFeito);
@@ -9067,27 +9320,129 @@
     });
   }
 
+  function inferirFrequenciaSerie(itens) {
+    if (!itens || itens.length < 2) return "Recorrente";
+    const datas = itens
+      .map(obterDataHoraInicio)
+      .filter(Boolean)
+      .sort((a, b) => a.getTime() - b.getTime());
+    if (datas.length < 2) return "Recorrente";
+
+    const diffs = [];
+    for (let i = 1; i < datas.length && diffs.length < 3; i += 1) {
+      const dias = Math.round((datas[i].getTime() - datas[i - 1].getTime()) / 86400000);
+      if (dias > 0) diffs.push(dias);
+    }
+    if (!diffs.length) return "Recorrente";
+    const diff = diffs[0];
+    if (diff <= 1) return "Diária";
+    if (diff >= 6 && diff <= 8) return "Semanal";
+    if (diff >= 27 && diff <= 32) return "Mensal";
+    return "Recorrente";
+  }
+
+  function agruparSeriesRecorrentes(itens) {
+    const mapa = new Map();
+    const hoje = dataHojeISO();
+
+    itens.forEach((t) => {
+      const data = normalizarDataParaISO(t.data || "");
+      if (!data) return;
+      const chave = [
+        String(t.titulo || "").trim().toLowerCase(),
+        String(t.hora_inicio || "").trim(),
+        String(t.duracao_min || "").trim(),
+        String(t.local || "").trim().toLowerCase()
+      ].join("|");
+      if (!mapa.has(chave)) mapa.set(chave, []);
+      mapa.get(chave).push(t);
+    });
+
+    return Array.from(mapa.values())
+      .map((grupo) => grupo.sort(compararDataHora))
+      .filter((grupo) => grupo.length > 1)
+      .map((grupo) => {
+        const proxima = grupo.find((t) => {
+          const data = normalizarDataParaISO(t.data || "");
+          return data && data >= hoje && !ehStatusCancelada(t.status);
+        }) || grupo[0];
+
+        const dataProxima = normalizarDataParaISO(proxima?.data || "");
+        const weekday = dataProxima
+          ? capitalizarPrimeira(new Date(`${dataProxima}T00:00:00`).toLocaleDateString("pt-BR", { weekday: "long" }))
+          : "";
+        const frequencia = inferirFrequenciaSerie(grupo);
+        const hora = proxima?.hora_inicio || grupo[0]?.hora_inicio || "--:--";
+
+        return {
+          titulo: grupo[0]?.titulo || "Rotina pessoal",
+          frequencia,
+          diaSemana: weekday,
+          hora,
+          proximoTexto: dataBRHora(dataProxima, hora),
+          grupo
+        };
+      })
+      .sort((a, b) => {
+        const dataA = normalizarDataParaISO(a.grupo[0]?.data || "");
+        const dataB = normalizarDataParaISO(b.grupo[0]?.data || "");
+        return dataA.localeCompare(dataB);
+      });
+  }
+
+  function renderSeriesRecorrentes(container, series) {
+    if (!container) return;
+    if (!series.length) {
+      container.innerHTML = `<div class="pessoal-bloco-vazio">Nenhuma rotina recorrente pessoal encontrada.</div>`;
+      return;
+    }
+
+    const lista = document.createElement("div");
+    lista.className = "pessoal-series-list";
+
+    series.forEach((serie) => {
+      const item = document.createElement("div");
+      item.className = "pessoal-serie-item";
+
+      const titulo = document.createElement("div");
+      titulo.className = "pessoal-serie-titulo";
+      titulo.textContent = serie.titulo;
+
+      const meta = document.createElement("div");
+      meta.className = "pessoal-serie-meta";
+      meta.textContent = [serie.frequencia, serie.diaSemana, serie.hora].filter(Boolean).join(" • ");
+
+      const proximo = document.createElement("div");
+      proximo.className = "pessoal-serie-next";
+      proximo.textContent = `Próximo: ${serie.proximoTexto || "a definir"}`;
+
+      item.appendChild(titulo);
+      item.appendChild(meta);
+      item.appendChild(proximo);
+      lista.appendChild(item);
+    });
+
+    container.innerHTML = "";
+    container.appendChild(lista);
+  }
+
   try {
-    // ── AGENDA PESSOAL ──
     const resT = await fetch(API + "/tarefas", { headers: authHeaders() });
     if (!resT.ok) throw new Error("Servidor retornou " + resT.status);
     let tarefas = await resT.json();
 
     tarefas = (Array.isArray(tarefas) ? tarefas : []).filter(
-      t => (t.origem || "").toUpperCase() === "PESSOAL" && t.ativo !== false
+      (t) => (t.origem || "").toUpperCase() === "PESSOAL" && t.ativo !== false
     );
 
     tarefas.sort(compararDataHora);
 
-    const hojeItens = tarefas.filter(t => dataEhHoje(t.data || ""));
-    const proximosItens = tarefas.filter(t => {
-      const d = normalizarDataParaISO(t.data || "");
-      return d && d > dataHojeISO();
-    });
-    const passadosItens = tarefas.filter(t => dataHoraJaPassou(t));
+    const hojeItens = tarefas.filter((t) => dataEhHoje(t.data || ""));
+    const proximosItens = tarefas.filter((t) => dentroProximos7Dias(t));
+    const passadosItens = tarefas.filter((t) => dataHoraJaPassou(t));
 
     renderBlocoAgenda(hojeDiv, hojeItens, "Nenhum compromisso pessoal para hoje.");
-    renderBlocoAgenda(proximosDiv, proximosItens, "Nenhum próximo compromisso pessoal.");
+    renderBlocoAgenda(proximosDiv, proximosItens, desktop ? "Nenhum compromisso pessoal na próxima semana." : "Nenhum próximo compromisso pessoal.");
 
     if (mostrarPassadosPessoal) {
       boxPassados.style.display = "block";
@@ -9100,20 +9455,24 @@
       btnToggle.textContent = "Mostrar passados";
     }
 
-    // ── CHECKLIST PESSOAL ──
+    if (desktop) {
+      renderSeriesRecorrentes(checklistDiv, agruparSeriesRecorrentes(tarefas));
+      return;
+    }
+
     const resC = await fetch(API + "/checklist", { headers: authHeaders() });
     if (!resC.ok) throw new Error("Servidor retornou " + resC.status);
     let itens = await resC.json();
 
     itens = (Array.isArray(itens) ? itens : []).filter(
-      i => i.ativo !== false && (i.origem || "").toUpperCase() === "PESSOAL"
+      (i) => i.ativo !== false && (i.origem || "").toUpperCase() === "PESSOAL"
     );
 
     if (itens.length === 0) {
       checklistDiv.innerHTML = "<small>Nenhuma rotina pessoal.</small>";
     } else {
       checklistDiv.innerHTML = "";
-      itens.forEach(item => {
+      itens.forEach((item) => {
         const status = item.status || "pendente";
 
         const div = document.createElement("div");
@@ -9162,7 +9521,7 @@
     if (hojeDiv) hojeDiv.innerHTML = "<small>Erro ao carregar agenda pessoal.</small>";
     if (proximosDiv) proximosDiv.innerHTML = "<small>Erro ao carregar agenda pessoal.</small>";
     if (passadosDiv) passadosDiv.innerHTML = "<small>Erro ao carregar agenda pessoal.</small>";
-    if (checklistDiv) checklistDiv.innerHTML = "<small>Erro ao carregar checklist pessoal.</small>";
+    if (checklistDiv) checklistDiv.innerHTML = desktop ? "<small>Erro ao carregar rotinas pessoais.</small>" : "<small>Erro ao carregar checklist pessoal.</small>";
   }
 }
     // ── CALENDÁRIO ────────────────────────────────────────────────
