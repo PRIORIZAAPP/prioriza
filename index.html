@@ -4777,6 +4777,27 @@
         border-bottom: none;
       }
 
+      .timeline-row.agenda.em_andamento {
+        box-shadow: inset 0 0 0 1px rgba(249,115,22,0.08);
+      }
+
+      .timeline-row.agenda.em_andamento::before {
+        background: #f97316;
+        box-shadow: 0 0 0 4px rgba(249,115,22,0.08);
+      }
+
+      .timeline-row.agenda.feito {
+        opacity: 0.58;
+      }
+
+      .timeline-row.agenda.feito::before {
+        background: #22c55e;
+      }
+
+      .timeline-row.agenda.feito .timeline-title {
+        text-decoration: line-through;
+      }
+
       .timeline-stamp {
         grid-column: 1;
         justify-self: start;
@@ -7206,18 +7227,23 @@
     function obterDadosTimelineOperacional() {
       const agoraMin = new Date().getHours() * 60 + new Date().getMinutes();
       const agendaHoje = agendaDoDiaCombinada(dataHojeISO())
-        .filter((t) => t.ativo !== false && !ehStatusCancelada(t.status) && !ehStatusFeito(t.status))
+        .filter((t) => t.ativo !== false && !ehStatusCancelada(t.status))
         .map(normalizarTarefaAgenda)
-        .map((t) => ({ ...t, _tipo: "agenda", _ordem: t.inicio_min ?? 9999 }))
+        .map((t) => ({
+          ...t,
+          _tipo: "agenda",
+          _ordem: ehStatusFeito(t.status) ? (20000 + (t.inicio_min ?? 9999)) : (t.inicio_min ?? 9999)
+        }))
         .sort((a, b) => (a._ordem ?? 9999) - (b._ordem ?? 9999));
 
       const checklistHoje = checklistHojeCache
         .filter((item) => item.ativo !== false && normalizarStatusChecklist(item.status || "pendente") !== "feito")
         .map((item, idx) => ({ ...item, _tipo: "checklist", _ordem: agoraMin + 0.25 + (idx * 0.01) }));
 
-      const agendaPassada = agendaHoje.filter((item) => (item.inicio_min ?? 9999) < agoraMin);
-      const agendaFutura = agendaHoje.filter((item) => (item.inicio_min ?? 9999) >= agoraMin);
-      return [...agendaPassada, ...checklistHoje, ...agendaFutura];
+      const agendaPassada = agendaHoje.filter((item) => !ehStatusFeito(item.status) && (item.inicio_min ?? 9999) < agoraMin);
+      const agendaFutura = agendaHoje.filter((item) => !ehStatusFeito(item.status) && (item.inicio_min ?? 9999) >= agoraMin);
+      const agendaFeita = agendaHoje.filter((item) => ehStatusFeito(item.status));
+      return [...agendaPassada, ...checklistHoje, ...agendaFutura, ...agendaFeita];
     }
 
     function renderizarTimelineOperacionalDesktop() {
@@ -7228,7 +7254,7 @@
 
       const desktop = emLayoutDesktop();
       card.hidden = !desktop;
-      if (linkAgenda) linkAgenda.style.display = desktop ? "inline-flex" : "none";
+      if (linkAgenda) linkAgenda.style.display = "none";
       if (!desktop) return;
 
       const itens = obterDadosTimelineOperacional();
@@ -7291,47 +7317,89 @@
         actions.className = "timeline-actions";
 
         if (item._tipo === "agenda") {
-          row.addEventListener("click", () => abrirAgendaDesktopNoDia(item.data, item.id));
-          stamp.addEventListener("click", (ev) => {
+          const toggle = document.createElement("button");
+          toggle.type = "button";
+          toggle.className = `timeline-status-toggle ${status}`;
+          toggle.innerHTML = iconStatusInline(status);
+          toggle.title = "Alterar status";
+          toggle.setAttribute("aria-label", `Alterar status de ${item.titulo}`);
+          toggle.addEventListener("click", async (ev) => {
             ev.stopPropagation();
-            abrirAgendaDesktopNoDia(item.data, item.id);
+            toggle.disabled = true;
+            const novoStatus = proximoStatus(status);
+            const ok = await atualizarStatusTarefa(item.id, novoStatus);
+            toggle.disabled = false;
+            if (!ok) {
+              await modal.alerta("Não foi possível atualizar o compromisso.", "Erro");
+              return;
+            }
+            item.status = novoStatus;
+            const idx = tarefasAgendaCache.findIndex((entry) => entry.id === item.id);
+            if (idx !== -1) tarefasAgendaCache[idx].status = novoStatus;
+            await atualizarResumoBar();
+            renderizarAgoraCard();
+            renderizarTimelineOperacionalDesktop();
+            preencherAgendaDiaSelecionado();
+            montarCalendarioMes();
           });
+          actions.appendChild(toggle);
 
-          const btnAbrir = document.createElement("button");
-          btnAbrir.type = "button";
-          btnAbrir.className = "timeline-ghost-btn";
-          btnAbrir.textContent = "Abrir";
-          btnAbrir.addEventListener("click", (ev) => {
+          const btnEditar = document.createElement("button");
+          btnEditar.type = "button";
+          btnEditar.className = "timeline-icon-btn";
+          btnEditar.textContent = "✎";
+          btnEditar.title = "Editar compromisso";
+          btnEditar.setAttribute("aria-label", `Editar ${item.titulo}`);
+          btnEditar.addEventListener("click", async (ev) => {
             ev.stopPropagation();
-            abrirAgendaDesktopNoDia(item.data, item.id);
-          });
-          actions.appendChild(btnAbrir);
-
-          if (item.tipo_evento !== "google") {
-            const btnStatus = document.createElement("button");
-            btnStatus.type = "button";
-            btnStatus.className = "timeline-soft-btn";
-            const emAndamento = ehStatusAndamento(item.status);
-            btnStatus.textContent = emAndamento ? "Concluir" : "Iniciar";
-            btnStatus.addEventListener("click", async (ev) => {
-              ev.stopPropagation();
-              btnStatus.disabled = true;
-              const novoStatus = emAndamento ? "feito" : "em_andamento";
-              const ok = await atualizarStatusTarefa(item.id, novoStatus);
-              btnStatus.disabled = false;
-              if (!ok) {
-                await modal.alerta("Não foi possível atualizar o compromisso.", "Erro");
+            const novoTitulo = await modal.perguntar("Editar título do compromisso:", "Editar compromisso", item.titulo || "");
+            if (novoTitulo === null || !novoTitulo.trim()) return;
+            try {
+              const params = new URLSearchParams({
+                tarefa_id: String(item.id),
+                titulo: novoTitulo.trim(),
+                origem: item.origem || "PROFISSIONAL",
+                data: normalizarDataParaISO(item.data || ""),
+                hora_inicio: item.hora_inicio || "00:00",
+                duracao_min: String(item.duracao_min || 60),
+                prioridade: String(item.prioridade || 2)
+              });
+              const res = await fetch(API + "/tarefas_editar?" + params.toString(), {
+                method: "POST",
+                headers: authHeaders()
+              });
+              if (!res.ok) {
+                await modal.alerta("Não foi possível editar o compromisso.", "Erro");
                 return;
               }
-              item.status = novoStatus;
-              await atualizarResumoBar();
-              renderizarAgoraCard();
+              item.titulo = novoTitulo.trim();
+              const idx = tarefasAgendaCache.findIndex((entry) => entry.id === item.id);
+              if (idx !== -1) tarefasAgendaCache[idx].titulo = novoTitulo.trim();
               renderizarTimelineOperacionalDesktop();
-              preencherAgendaDiaSelecionado();
-              montarCalendarioMes();
-            });
-            actions.appendChild(btnStatus);
-          }
+              renderizarAgoraCard();
+              await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, resumo: true });
+            } catch (e) {
+              console.error(e);
+              await modal.alerta("Erro ao editar compromisso.", "Erro");
+            }
+          });
+          actions.appendChild(btnEditar);
+
+          const excluir = document.createElement("button");
+          excluir.type = "button";
+          excluir.className = "timeline-icon-btn";
+          excluir.textContent = "×";
+          excluir.title = "Excluir compromisso";
+          excluir.setAttribute("aria-label", `Excluir ${item.titulo}`);
+          excluir.addEventListener("click", async (ev) => {
+            ev.stopPropagation();
+            if (!await modal.confirmar(`Excluir "${item.titulo}"?`, "Excluir compromisso", "vermelho")) return;
+            await excluirTarefa(item.id);
+            await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, resumo: true });
+            renderizarAgoraCard();
+            renderizarTimelineOperacionalDesktop();
+          });
+          actions.appendChild(excluir);
         } else {
           const toggle = document.createElement("button");
           toggle.type = "button";
