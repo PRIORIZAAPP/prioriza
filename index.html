@@ -4976,23 +4976,40 @@
         grid-template-areas:
           "agora calendar"
           "timeline calendar";
-        gap: 0 32px;
+        gap: 0 44px;
         align-items: start;
       }
 
       #hoje-operational-timeline-card {
-        padding: 18px 18px 0 0;
+        padding: 18px 24px 0 0;
       }
 
       #hoje-calendar-card {
+        position: relative;
         display: block;
         background: #f8fafc;
         border: 1px solid rgba(148, 163, 184, 0.22);
         border-radius: 18px;
         padding: 22px 24px;
         min-height: 420px;
-        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
         margin-top: 6px;
+      }
+
+      #hoje-calendar-card::before {
+        content: "";
+        position: absolute;
+        left: -22px;
+        top: 12px;
+        bottom: 12px;
+        width: 1px;
+        background: linear-gradient(
+          180deg,
+          rgba(148, 163, 184, 0) 0%,
+          rgba(148, 163, 184, 0.26) 12%,
+          rgba(148, 163, 184, 0.26) 88%,
+          rgba(148, 163, 184, 0) 100%
+        );
       }
     }
   </style>
