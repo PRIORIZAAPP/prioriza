@@ -4750,6 +4750,39 @@
       #operational-timeline {
         display: flex;
         flex-direction: column;
+        gap: 22px;
+      }
+
+      .timeline-section {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .timeline-section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .timeline-section-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #64748b;
+      }
+
+      .timeline-section-subtitle {
+        font-size: 12px;
+        color: #94a3b8;
+      }
+
+      .timeline-section-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
       }
 
       .timeline-row {
@@ -4758,17 +4791,18 @@
         grid-template-columns: 74px minmax(0, 1fr) auto;
         gap: 10px 16px;
         align-items: center;
-        padding: 14px 0 14px 12px;
-        border-bottom: 1px solid rgba(226,232,240,0.82);
+        padding: 16px 16px 16px 14px;
+        border-bottom: none;
+        border-radius: 16px;
       }
 
       .timeline-row::before {
         content: "";
         position: absolute;
         left: 0;
-        top: 14px;
-        width: 3px;
-        height: calc(100% - 28px);
+        top: 12px;
+        width: 4px;
+        height: calc(100% - 24px);
         border-radius: 999px;
         background: var(--timeline-accent, rgba(var(--cor-tema-rgb), 0.86));
       }
@@ -4777,17 +4811,33 @@
         border-bottom: none;
       }
 
+      .timeline-row.agenda {
+        background: #ffffff;
+        box-shadow: 0 10px 22px rgba(15,23,42,0.04);
+      }
+
+      .timeline-row.checklist {
+        background: linear-gradient(180deg, rgba(248,250,252,0.92) 0%, rgba(241,245,249,0.9) 100%);
+        border: 1px solid rgba(226,232,240,0.76);
+        padding-top: 14px;
+        padding-bottom: 14px;
+      }
+
       .timeline-row.agenda.em_andamento {
-        box-shadow: inset 0 0 0 1px rgba(249,115,22,0.08);
+        background: linear-gradient(180deg, rgba(255,247,237,0.96) 0%, rgba(255,251,235,0.96) 100%);
+        box-shadow:
+          inset 0 0 0 1px rgba(249,115,22,0.1),
+          0 12px 26px rgba(249,115,22,0.08);
       }
 
       .timeline-row.agenda.em_andamento::before {
         background: #f97316;
-        box-shadow: 0 0 0 4px rgba(249,115,22,0.08);
+        box-shadow: 0 0 0 5px rgba(249,115,22,0.08);
       }
 
       .timeline-row.agenda.feito {
-        opacity: 0.58;
+        opacity: 0.68;
+        background: linear-gradient(180deg, rgba(240,253,244,0.9) 0%, rgba(248,250,252,0.94) 100%);
       }
 
       .timeline-row.agenda.feito::before {
@@ -4804,8 +4854,8 @@
         border: none;
         background: transparent;
         padding: 0;
-        font-size: 13px;
-        font-weight: 700;
+        font-size: 18px;
+        font-weight: 800;
         color: #0f172a;
         cursor: pointer;
       }
@@ -4850,6 +4900,11 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+
+      .timeline-row.checklist .timeline-title {
+        font-size: 14px;
+        font-weight: 600;
       }
 
       .timeline-meta {
@@ -7265,6 +7320,35 @@
         return;
       }
 
+      const agendaItens = itens.filter((item) => item._tipo === "agenda");
+      const checklistItens = itens.filter((item) => item._tipo === "checklist");
+
+      const criarSecaoTimeline = (titulo, subtitulo = "") => {
+        const section = document.createElement("section");
+        section.className = "timeline-section";
+        const head = document.createElement("div");
+        head.className = "timeline-section-head";
+        const title = document.createElement("div");
+        title.className = "timeline-section-title";
+        title.textContent = titulo;
+        head.appendChild(title);
+        if (subtitulo) {
+          const sub = document.createElement("div");
+          sub.className = "timeline-section-subtitle";
+          sub.textContent = subtitulo;
+          head.appendChild(sub);
+        }
+        const list = document.createElement("div");
+        list.className = "timeline-section-list";
+        section.appendChild(head);
+        section.appendChild(list);
+        container.appendChild(section);
+        return list;
+      };
+
+      const agendaList = criarSecaoTimeline("Compromissos do dia", "Agenda principal");
+      const checklistList = criarSecaoTimeline("Rotinas operacionais", "Execução contínua");
+
       itens.forEach((item) => {
         const status = item._tipo === "checklist"
           ? normalizarStatusChecklist(item.status || "pendente")
@@ -7443,7 +7527,7 @@
         row.appendChild(stamp);
         row.appendChild(body);
         row.appendChild(actions);
-        container.appendChild(row);
+        (item._tipo === "agenda" ? agendaList : checklistList).appendChild(row);
       });
     }
 
