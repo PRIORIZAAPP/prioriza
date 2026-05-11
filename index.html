@@ -1086,6 +1086,56 @@
           margin-bottom: 4px;
         }
 
+        #screen-pessoal .pessoal-serie-toggle {
+          margin-top: 8px;
+          border: 1px solid rgba(203, 213, 225, 0.68);
+          background: #ffffff;
+          color: #475569;
+          border-radius: 12px;
+          padding: 8px 10px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
+        }
+
+        #screen-pessoal .pessoal-serie-toggle:hover {
+          color: #1e40af;
+          border-color: rgba(96, 165, 250, 0.34);
+          background: #f8fbff;
+        }
+
+        #screen-pessoal .pessoal-serie-detalhes {
+          margin-top: 10px;
+          padding-top: 10px;
+          border-top: 1px solid rgba(226, 232, 240, 0.9);
+          display: none;
+        }
+
+        #screen-pessoal .pessoal-serie-detalhes.is-open {
+          display: block;
+        }
+
+        #screen-pessoal .pessoal-serie-datas {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        #screen-pessoal .pessoal-serie-datachip {
+          border: 1px solid rgba(226, 232, 240, 0.92);
+          background: #ffffff;
+          color: #64748b;
+          border-radius: 999px;
+          padding: 6px 10px;
+          font-size: 11px;
+          font-weight: 600;
+          line-height: 1;
+        }
+
         #screen-pessoal .pessoal-passados-shell {
           margin-top: 8px;
         }
@@ -9341,6 +9391,15 @@
     return "Recorrente";
   }
 
+  function chaveSerieRecorrente(t) {
+    return [
+      String(t.titulo || "").trim().toLowerCase(),
+      String(t.hora_inicio || "").trim(),
+      String(t.duracao_min || "").trim(),
+      String(t.local || "").trim().toLowerCase()
+    ].join("|");
+  }
+
   function agruparSeriesRecorrentes(itens) {
     const mapa = new Map();
     const hoje = dataHojeISO();
@@ -9348,12 +9407,7 @@
     itens.forEach((t) => {
       const data = normalizarDataParaISO(t.data || "");
       if (!data) return;
-      const chave = [
-        String(t.titulo || "").trim().toLowerCase(),
-        String(t.hora_inicio || "").trim(),
-        String(t.duracao_min || "").trim(),
-        String(t.local || "").trim().toLowerCase()
-      ].join("|");
+      const chave = chaveSerieRecorrente(t);
       if (!mapa.has(chave)) mapa.set(chave, []);
       mapa.get(chave).push(t);
     });
@@ -9375,6 +9429,7 @@
         const hora = proxima?.hora_inicio || grupo[0]?.hora_inicio || "--:--";
 
         return {
+          chave: chaveSerieRecorrente(grupo[0] || {}),
           titulo: grupo[0]?.titulo || "Rotina pessoal",
           frequencia,
           diaSemana: weekday,
@@ -9416,9 +9471,40 @@
       proximo.className = "pessoal-serie-next";
       proximo.textContent = `Próximo: ${serie.proximoTexto || "a definir"}`;
 
+      const btnToggle = document.createElement("button");
+      btnToggle.type = "button";
+      btnToggle.className = "pessoal-serie-toggle";
+      btnToggle.textContent = "Ver próximas ocorrências";
+
+      const detalhes = document.createElement("div");
+      detalhes.className = "pessoal-serie-detalhes";
+
+      const datas = document.createElement("div");
+      datas.className = "pessoal-serie-datas";
+      serie.grupo
+        .filter((t) => {
+          const data = normalizarDataParaISO(t.data || "");
+          return data && data >= dataHojeISO() && !ehStatusCancelada(t.status);
+        })
+        .slice(0, 6)
+        .forEach((t) => {
+          const chip = document.createElement("span");
+          chip.className = "pessoal-serie-datachip";
+          chip.textContent = dataBRHora(normalizarDataParaISO(t.data || ""), t.hora_inicio || "--:--");
+          datas.appendChild(chip);
+        });
+
+      detalhes.appendChild(datas);
+      btnToggle.addEventListener("click", () => {
+        const aberto = detalhes.classList.toggle("is-open");
+        btnToggle.textContent = aberto ? "Ocultar ocorrências" : "Ver próximas ocorrências";
+      });
+
       item.appendChild(titulo);
       item.appendChild(meta);
       item.appendChild(proximo);
+      if (datas.childElementCount) item.appendChild(btnToggle);
+      if (datas.childElementCount) item.appendChild(detalhes);
       lista.appendChild(item);
     });
 
@@ -9437,8 +9523,18 @@
 
     tarefas.sort(compararDataHora);
 
+    const series = agruparSeriesRecorrentes(tarefas);
+    const chavesSeries = new Set(series.map((serie) => serie.chave));
     const hojeItens = tarefas.filter((t) => dataEhHoje(t.data || ""));
-    const proximosItens = tarefas.filter((t) => dentroProximos7Dias(t));
+    const proximosBrutos = tarefas.filter((t) => dentroProximos7Dias(t));
+    const chavesJaUsadas = new Set();
+    const proximosItens = proximosBrutos.filter((t) => {
+      const chave = chaveSerieRecorrente(t);
+      if (!desktop || !chavesSeries.has(chave)) return true;
+      if (chavesJaUsadas.has(chave)) return false;
+      chavesJaUsadas.add(chave);
+      return true;
+    });
     const passadosItens = tarefas.filter((t) => dataHoraJaPassou(t));
 
     renderBlocoAgenda(hojeDiv, hojeItens, "Nenhum compromisso pessoal para hoje.");
@@ -9456,7 +9552,7 @@
     }
 
     if (desktop) {
-      renderSeriesRecorrentes(checklistDiv, agruparSeriesRecorrentes(tarefas));
+      renderSeriesRecorrentes(checklistDiv, series);
       return;
     }
 
