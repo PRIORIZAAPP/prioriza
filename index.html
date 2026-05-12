@@ -2530,6 +2530,228 @@
       #screen-ajustes .secao-subtitulo {
         margin-top: 0;
       }
+      #screen-ajustes .settings-native-shell {
+        max-width: 880px;
+        margin: 0 auto;
+      }
+      #screen-ajustes .settings-main-view,
+      #screen-ajustes .settings-detail-view {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      #screen-ajustes .settings-ios-header {
+        padding: 6px 4px 0;
+      }
+      #screen-ajustes .settings-ios-header h1 {
+        margin: 0;
+        font-size: 32px;
+        line-height: 1.04;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        color: #0f172a;
+      }
+      #screen-ajustes .settings-profile-card,
+      #screen-ajustes .settings-logout-row,
+      #screen-ajustes .settings-group-card,
+      #screen-ajustes .settings-detail-card {
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        background: rgba(255,255,255,0.94);
+        border-radius: 24px;
+        box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+      }
+      #screen-ajustes .settings-profile-card {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 18px;
+        cursor: pointer;
+        text-align: left;
+        color: inherit;
+      }
+      #screen-ajustes .settings-profile-avatar,
+      #screen-ajustes .settings-profile-detail-avatar {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: linear-gradient(180deg, rgba(var(--cor-tema-rgb), 0.18) 0%, rgba(var(--cor-tema-rgb), 0.1) 100%);
+        color: var(--cor-tema-escura);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        flex-shrink: 0;
+      }
+      #screen-ajustes .settings-profile-copy {
+        min-width: 0;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      #screen-ajustes .settings-profile-copy strong,
+      #screen-ajustes .settings-profile-detail-name {
+        font-size: 20px;
+        line-height: 1.15;
+        color: #0f172a;
+        font-weight: 750;
+        letter-spacing: -0.02em;
+      }
+      #screen-ajustes .settings-profile-copy span,
+      #screen-ajustes .settings-profile-detail-email,
+      #screen-ajustes .settings-profile-detail-meta {
+        font-size: 14px;
+        line-height: 1.4;
+        color: #64748b;
+      }
+      #screen-ajustes .settings-chevron {
+        color: #cbd5e1;
+        font-size: 28px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+      #screen-ajustes .settings-group-card {
+        overflow: hidden;
+      }
+      #screen-ajustes .settings-link-row {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-height: 62px;
+        padding: 0 18px;
+        background: transparent;
+        border: none;
+        color: inherit;
+        text-align: left;
+      }
+      #screen-ajustes .settings-link-row + .settings-link-row {
+        border-top: 1px solid rgba(226, 232, 240, 0.92);
+      }
+      #screen-ajustes .settings-link-icon {
+        width: 24px;
+        height: 24px;
+        color: #64748b;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      #screen-ajustes .settings-link-icon svg {
+        width: 20px;
+        height: 20px;
+        display: block;
+      }
+      #screen-ajustes .settings-link-text {
+        flex: 1;
+        min-width: 0;
+        font-size: 17px;
+        line-height: 1.3;
+        color: #111827;
+      }
+      #screen-ajustes .settings-logout-row {
+        width: 100%;
+        min-height: 58px;
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        background: rgba(255,255,255,0.96);
+        color: #2563eb;
+        font-size: 18px;
+        font-weight: 500;
+      }
+      #screen-ajustes .settings-detail-header {
+        display: grid;
+        grid-template-columns: 40px 1fr 40px;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0 2px;
+      }
+      #screen-ajustes .settings-detail-header h2 {
+        margin: 0;
+        text-align: center;
+        font-size: 20px;
+        font-weight: 760;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+      }
+      #screen-ajustes .settings-back-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        border: none;
+        background: rgba(255,255,255,0.86);
+        color: #0f172a;
+        font-size: 28px;
+        line-height: 1;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+      }
+      #screen-ajustes .settings-detail-card {
+        padding: 18px;
+      }
+      #screen-ajustes .settings-profile-detail-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 10px;
+        padding-block: 22px;
+      }
+      #screen-ajustes .settings-profile-detail-avatar {
+        width: 82px;
+        height: 82px;
+        font-size: 28px;
+      }
+      #screen-ajustes .settings-profile-logout {
+        margin-top: 8px;
+        width: 100%;
+      }
+      #screen-ajustes .settings-inline-block {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      #screen-ajustes .settings-inline-label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #94a3b8;
+      }
+      #screen-ajustes .settings-inline-value {
+        font-size: 17px;
+        line-height: 1.35;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      #screen-ajustes .settings-inline-note,
+      #screen-ajustes .settings-detail-footnote {
+        font-size: 13px;
+        line-height: 1.55;
+        color: #64748b;
+      }
+      #screen-ajustes .settings-detail-page .settings-actions {
+        margin-top: 16px;
+      }
+      #screen-ajustes .settings-detail-page .settings-section-head {
+        margin-bottom: 14px;
+      }
+      @media (min-width: 1100px) {
+        #screen-ajustes .settings-native-shell {
+          max-width: 760px;
+          padding-inline: 8px;
+        }
+        #screen-ajustes .settings-ios-header h1 {
+          font-size: 34px;
+        }
+        #screen-ajustes .settings-profile-card,
+        #screen-ajustes .settings-group-card,
+        #screen-ajustes .settings-detail-card,
+        #screen-ajustes .settings-logout-row {
+          border-radius: 22px;
+        }
+      }
       #screen-ajustes .appearance-options {
         display: flex;
         align-items: flex-start;
@@ -3120,12 +3342,15 @@
           grid-template-columns: minmax(0, 1fr);
         }
 
-        #screen-notas.screen.active,
-        #screen-ajustes.screen.active {
+        #screen-notas.screen.active {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
-        #screen-ajustes.screen.active > .settings-shell {
+        #screen-ajustes.screen.active {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        #screen-ajustes.screen.active > .settings-native-shell {
           grid-column: 1 / -1;
         }
 
@@ -5934,243 +6159,299 @@
 
         <!-- ══ ABA AJUSTES ══ -->
         <div class="screen" id="screen-ajustes">
-          <div class="settings-shell">
-            <div class="settings-hero">
-              <h1>Ajustes</h1>
-              <p>Central de controle do PRIORIZA com aparência, alertas, integrações e segurança dos seus dados em um só lugar.</p>
+          <div class="settings-native-shell">
+            <div id="settings-main-view" class="settings-main-view">
+              <div class="settings-ios-header">
+                <h1>Configurações</h1>
+              </div>
+
+              <button class="settings-profile-card" type="button" data-settings-open="perfil">
+                <div class="settings-profile-avatar" data-settings-avatar>PR</div>
+                <div class="settings-profile-copy">
+                  <strong data-auth-user-name>Sessão ativa</strong>
+                  <span data-auth-user-email></span>
+                </div>
+                <span class="settings-chevron" aria-hidden="true">›</span>
+              </button>
+
+              <div class="settings-group-card">
+                <button class="settings-link-row" type="button" data-settings-open="conta">
+                  <span class="settings-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" color="currentColor"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 19c.6-3.2 2.8-4.8 6.5-4.8 3.7 0 5.9 1.6 6.5 4.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+                  <span class="settings-link-text">Conta</span>
+                  <span class="settings-chevron" aria-hidden="true">›</span>
+                </button>
+                <button class="settings-link-row" type="button" data-settings-open="google">
+                  <span class="settings-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" color="currentColor"><rect x="4" y="5" width="16" height="15" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M4 9.5h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 3.5v3M16 3.5v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+                  <span class="settings-link-text">Google Agenda</span>
+                  <span class="settings-chevron" aria-hidden="true">›</span>
+                </button>
+                <button class="settings-link-row" type="button" data-settings-open="backup">
+                  <span class="settings-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" color="currentColor"><path d="M20 12a8 8 0 1 1-2.34-5.66" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 4v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  <span class="settings-link-text">Backup e restauração</span>
+                  <span class="settings-chevron" aria-hidden="true">›</span>
+                </button>
+              </div>
+
+              <div class="settings-group-card">
+                <button class="settings-link-row" type="button" data-settings-open="notificacoes">
+                  <span class="settings-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" color="currentColor"><path d="M6.5 15.5h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 15.5v-4a4 4 0 1 1 8 0v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 18a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+                  <span class="settings-link-text">Notificações</span>
+                  <span class="settings-chevron" aria-hidden="true">›</span>
+                </button>
+                <button class="settings-link-row" type="button" data-settings-open="aparencia">
+                  <span class="settings-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" color="currentColor"><path d="M12 4l1.4 4.6L18 10l-4.6 1.4L12 16l-1.4-4.6L6 10l4.6-1.4L12 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M18.5 4.5l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6.6-1.8Z" fill="currentColor"/></svg></span>
+                  <span class="settings-link-text">Aparência</span>
+                  <span class="settings-chevron" aria-hidden="true">›</span>
+                </button>
+                <button class="settings-link-row" type="button" data-settings-open="privacidade">
+                  <span class="settings-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" color="currentColor"><path d="M12 3.8 18.5 6v5.3c0 3.8-2.4 6.4-6.5 8.9-4.1-2.5-6.5-5.1-6.5-8.9V6L12 3.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                  <span class="settings-link-text">Privacidade e segurança</span>
+                  <span class="settings-chevron" aria-hidden="true">›</span>
+                </button>
+              </div>
+
+              <div class="settings-group-card">
+                <button class="settings-link-row" type="button" data-settings-open="ajuda">
+                  <span class="settings-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" color="currentColor"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M9.9 9.3a2.4 2.4 0 1 1 3.4 2.2c-.9.4-1.3.9-1.3 1.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="16.9" r="1" fill="currentColor"/></svg></span>
+                  <span class="settings-link-text">Ajuda e feedback</span>
+                  <span class="settings-chevron" aria-hidden="true">›</span>
+                </button>
+                <button class="settings-link-row" type="button" data-settings-open="sobre">
+                  <span class="settings-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" color="currentColor"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M12 10.2v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7.2" r="1" fill="currentColor"/></svg></span>
+                  <span class="settings-link-text">Sobre o Prioriza</span>
+                  <span class="settings-chevron" aria-hidden="true">›</span>
+                </button>
+              </div>
+
+              <button id="btn-logout-quick" class="settings-logout-row" type="button" data-settings-logout>Sair</button>
             </div>
 
-            <section class="settings-section" id="card-aparencia">
-              <div class="settings-section-head">
-                <div class="settings-section-title">
-                  <svg viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
-                    <circle cx="76" cy="96" r="36" fill="currentColor" opacity="0.22"/>
-                    <circle cx="180" cy="96" r="36" fill="currentColor" opacity="0.4"/>
-                    <circle cx="128" cy="168" r="36" fill="currentColor"/>
-                  </svg>
-                  <h2>Aparência</h2>
+            <div id="settings-detail-view" class="settings-detail-view" hidden>
+              <section class="settings-detail-page" data-settings-page="perfil" hidden>
+                <div class="settings-detail-header">
+                  <button class="settings-back-btn" type="button" data-settings-close>‹</button>
+                  <h2>Perfil</h2>
+                  <span></span>
                 </div>
-              </div>
-              <div class="settings-panel">
-                <div class="appearance-options">
-                  <button class="theme-option" type="button" data-theme-option="azul">
-                    <span class="theme-swatch" style="background:#2563eb"></span>
-                    <strong>Azul</strong>
-                  </button>
-                  <button class="theme-option" type="button" data-theme-option="verde">
-                    <span class="theme-swatch" style="background:#3b8f6a"></span>
-                    <strong>Verde</strong>
-                  </button>
-                  <button class="theme-option" type="button" data-theme-option="roxo">
-                    <span class="theme-swatch" style="background:#6f5aa8"></span>
-                    <strong>Roxo</strong>
-                  </button>
-                  <button class="theme-option" type="button" data-theme-option="grafite">
-                    <span class="theme-swatch" style="background:#5a6878"></span>
-                    <strong>Grafite</strong>
-                  </button>
+                <div class="settings-detail-card settings-profile-detail-card">
+                  <div class="settings-profile-detail-avatar" data-settings-avatar>PR</div>
+                  <div class="settings-profile-detail-name" data-auth-user-name>Sessão ativa</div>
+                  <div class="settings-profile-detail-email" data-auth-user-email></div>
+                  <div class="settings-profile-detail-meta">Cadastro: <span data-auth-user-created>Não disponível</span></div>
+                  <button id="btn-logout" class="btn-outline danger settings-profile-logout" type="button" data-settings-logout>Sair</button>
                 </div>
-              </div>
-            </section>
+              </section>
 
-            <section class="settings-section" id="card-notificacoes">
-              <div class="settings-section-head">
-                <div class="settings-section-title">
-                  <svg viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
-                    <path d="M128 232a24 24 0 0 0 24-24H104a24 24 0 0 0 24 24Z" fill="currentColor" opacity="0.22"/>
-                    <path d="M128 232a24 24 0 0 0 24-24H104a24 24 0 0 0 24 24Z" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
-                    <path d="M56 200h144" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                    <path d="M80 200v-64a48 48 0 1 1 96 0v64" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  <h2>Notificações</h2>
-                </div>
-              </div>
-              <div class="settings-panel">
-                <div class="settings-row">
-                  <div class="settings-stack">
-                    <span class="settings-label">Status</span>
-                    <div id="notif-status" class="settings-value">Verificando status...</div>
-                  </div>
-                </div>
-                <div id="notif-status-detalhe" class="settings-note">As notificações dependem da permissão do navegador e podem variar conforme o dispositivo.</div>
-                <div class="settings-actions">
-                  <button id="btn-ativar-notificacoes" class="btn-outline" type="button">
-                    <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                      <path d="M128 40v176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                      <path d="M40 128h176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                    </svg>
-                    Ativar notificações
-                  </button>
-                  <button id="btn-testar-notificacao" class="btn-outline" type="button">
-                    <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                      <path d="M48 128h160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                      <path d="M160 80l48 48-48 48" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    Testar
-                  </button>
-                </div>
-              </div>
-            </section>
-
-            <section class="settings-section" id="card-integracoes">
-              <div class="settings-section-head">
-                <div class="settings-section-title">
-                  <svg viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
-                    <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.2"/>
-                    <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
-                    <path d="M80 128h96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                    <path d="M128 80v96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                  </svg>
-                  <h2>Integrações</h2>
-                </div>
-              </div>
-              <div class="settings-panel">
-                <div id="agenda-google-card" class="agenda-integracao-card">
-                  <div class="agenda-integracao-topo">
-                    <div class="settings-stack">
-                      <div class="agenda-integracao-titulo">
-                        <svg width="18" height="18" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor" aria-hidden="true">
-                          <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.14"/>
-                          <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
-                          <line x1="40" y1="96" x2="216" y2="96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                          <line x1="80" y1="16" x2="80" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                          <line x1="176" y1="16" x2="176" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                        </svg>
-                        Google Agenda
-                      </div>
-                      <div id="agenda-google-subtitulo" class="agenda-integracao-subtitulo">Verificando status da integração...</div>
-                    </div>
-                    <div id="agenda-google-status" class="agenda-status-badge desconectado">
-                      <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                        <circle cx="128" cy="128" r="84" stroke="currentColor" stroke-width="20"/>
-                      </svg>
-                      Desconectado
-                    </div>
-                  </div>
-                  <div class="agenda-integracao-acoes">
-                    <button id="btn-google-conectar" class="btn-outline" type="button">
-                      <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                        <path d="M128 48v160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                        <path d="M48 128h160" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                      </svg>
-                      Conectar Google
-                    </button>
-                    <button id="btn-google-atualizar" class="btn-outline" type="button">
-                      <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                        <path d="M216 128a88 88 0 1 1-26-62" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M216 56v56h-56" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                      Atualizar eventos
-                    </button>
-                    <button id="btn-google-desconectar" class="btn-outline danger" type="button" style="display:none">
-                      <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                        <path d="M200 56L56 200" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                        <path d="M56 56l144 144" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                      </svg>
-                      Desconectar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section class="settings-section" id="card-backup">
-              <div class="settings-section-head">
-                <div class="settings-section-title">
-                  <svg viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
-                    <rect x="48" y="32" width="160" height="192" rx="8" fill="currentColor" opacity="0.2"/>
-                    <rect x="48" y="32" width="160" height="192" rx="8" stroke="currentColor" stroke-width="16"/>
-                    <path d="M128 88 L128 168" stroke="currentColor" stroke-width="18" stroke-linecap="round"/>
-                    <path d="M96 140 L128 168 L160 140" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  <h2>Backup e restauração</h2>
-                </div>
-              </div>
-              <div class="settings-panel">
-                <div class="settings-backup-grid">
-                  <button id="btn-exportar-backup" class="btn-outline" type="button">
-                    <span aria-hidden="true">↓</span>
-                    Baixar backup
-                  </button>
-                  <label id="label-importar-backup" class="backup-label">
-                    <span aria-hidden="true">↑</span>
-                    Restaurar backup
-                    <input id="input-importar-backup" type="file" accept=".json" style="display:none">
-                  </label>
-                </div>
-                <div id="backup-status" class="settings-note"></div>
-              </div>
-            </section>
-
-            <section class="settings-section" id="card-conta">
-              <div class="settings-section-head">
-                <div class="settings-section-title">
-                  <svg viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
-                    <circle cx="128" cy="88" r="36" fill="currentColor" opacity="0.22"/>
-                    <circle cx="128" cy="88" r="36" stroke="currentColor" stroke-width="16"/>
-                    <path d="M64 208c4-42 30-64 64-64s60 22 64 64" stroke="currentColor" stroke-width="16" stroke-linecap="round" fill="none"/>
-                  </svg>
+              <section class="settings-detail-page" data-settings-page="conta" hidden>
+                <div class="settings-detail-header">
+                  <button class="settings-back-btn" type="button" data-settings-close>‹</button>
                   <h2>Conta</h2>
+                  <span></span>
                 </div>
-              </div>
-              <div class="settings-panel">
-                <div class="settings-row">
-                  <div class="settings-stack">
-                    <span class="settings-label">Usuário</span>
-                    <div id="auth-user-name" class="settings-value">Sessão ativa</div>
+                <div class="settings-detail-card">
+                  <div class="settings-inline-block">
+                    <div class="settings-inline-label">Usuário</div>
+                    <div class="settings-inline-value" data-auth-user-name>Sessão ativa</div>
+                    <div class="settings-inline-note" data-auth-user-email></div>
+                  </div>
+                  <div class="settings-actions">
+                    <button id="btn-rever-introducao" class="btn-outline settings-helper-action" type="button">Rever introdução</button>
                   </div>
                 </div>
-                <div class="settings-note" id="auth-user-email"></div>
-                <div class="settings-actions">
-                  <button id="btn-rever-introducao" class="btn-outline settings-helper-action" type="button">Rever introdução</button>
-                  <button id="btn-logout" class="btn-outline danger" type="button">Sair</button>
-                </div>
-              </div>
-            </section>
+              </section>
 
-            <section class="settings-section admin-gestao" id="card-gestao-usuarios" hidden aria-hidden="true">
-              <div class="settings-section-head">
-                <div class="settings-section-title">
-                  <svg viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
-                    <path d="M48 192c4-29 25-44 52-44s48 15 52 44" stroke="currentColor" stroke-width="16" stroke-linecap="round" fill="none"/>
-                    <circle cx="100" cy="92" r="28" fill="currentColor" opacity="0.2"/>
-                    <circle cx="100" cy="92" r="28" stroke="currentColor" stroke-width="16"/>
-                    <path d="M146 188c3-22 18-34 39-34s36 12 39 34" stroke="currentColor" stroke-width="16" stroke-linecap="round" fill="none"/>
-                    <circle cx="184" cy="102" r="22" stroke="currentColor" stroke-width="16"/>
-                  </svg>
-                  <h2>Gestão de usuários</h2>
+              <section class="settings-detail-page" data-settings-page="google" hidden>
+                <div class="settings-detail-header">
+                  <button class="settings-back-btn" type="button" data-settings-close>‹</button>
+                  <h2>Google Agenda</h2>
+                  <span></span>
                 </div>
-              </div>
-              <div class="settings-panel">
-                <div class="admin-resumo-grid">
-                  <div class="admin-resumo-item">
-                    <span id="admin-total-usuarios" class="admin-resumo-valor">--</span>
-                    <span class="admin-resumo-label">Total de usuários</span>
-                  </div>
-                  <div class="admin-resumo-item">
-                    <span id="admin-usuarios-ativos" class="admin-resumo-valor">--</span>
-                    <span class="admin-resumo-label">Usuários ativos</span>
-                  </div>
-                  <div class="admin-resumo-item">
-                    <span id="admin-novos-hoje" class="admin-resumo-valor">--</span>
-                    <span class="admin-resumo-label">Novos hoje</span>
-                  </div>
-                  <div class="admin-resumo-item">
-                    <span id="admin-novos-7d" class="admin-resumo-valor">--</span>
-                    <span class="admin-resumo-label">Novos nos últimos 7 dias</span>
+                <div class="settings-detail-card">
+                  <div id="agenda-google-card" class="agenda-integracao-card">
+                    <div class="agenda-integracao-topo">
+                      <div class="settings-stack">
+                        <div class="agenda-integracao-titulo">
+                          <svg width="18" height="18" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor" aria-hidden="true">
+                            <rect x="40" y="40" width="176" height="176" rx="8" fill="currentColor" opacity="0.14"/>
+                            <rect x="40" y="40" width="176" height="176" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
+                            <line x1="40" y1="96" x2="216" y2="96" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                            <line x1="80" y1="16" x2="80" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                            <line x1="176" y1="16" x2="176" y2="64" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                          </svg>
+                          Google Agenda
+                        </div>
+                        <div id="agenda-google-subtitulo" class="agenda-integracao-subtitulo">Verificando status da integração...</div>
+                      </div>
+                      <div id="agenda-google-status" class="agenda-status-badge desconectado">
+                        <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                          <circle cx="128" cy="128" r="84" stroke="currentColor" stroke-width="20"/>
+                        </svg>
+                        Desconectado
+                      </div>
+                    </div>
+                    <div class="agenda-integracao-acoes">
+                      <button id="btn-google-conectar" class="btn-outline" type="button">Conectar Google</button>
+                      <button id="btn-google-atualizar" class="btn-outline" type="button">Atualizar eventos</button>
+                      <button id="btn-google-desconectar" class="btn-outline danger" type="button" style="display:none">Desconectar</button>
+                    </div>
                   </div>
                 </div>
-                <div id="admin-acessos-7d" class="settings-note">Acessos recentes: --</div>
-                <div class="admin-toggle-row">
-                  <div class="admin-toggle-copy">Toque para abrir os registros completos de acesso e cadastro.</div>
-                  <button id="btn-toggle-admin-usuarios" class="btn-outline admin-toggle-btn" type="button" aria-expanded="false">Ver usuários</button>
+              </section>
+
+              <section class="settings-detail-page" data-settings-page="backup" hidden>
+                <div class="settings-detail-header">
+                  <button class="settings-back-btn" type="button" data-settings-close>‹</button>
+                  <h2>Backup e restauração</h2>
+                  <span></span>
                 </div>
-                <div id="admin-usuarios-lista" class="admin-usuarios-lista" hidden>
-                  <div class="admin-empty-state">Carregando usuários...</div>
+                <div class="settings-detail-card">
+                  <div class="settings-backup-grid">
+                    <button id="btn-exportar-backup" class="btn-outline" type="button">
+                      <span aria-hidden="true">↓</span>
+                      Baixar backup
+                    </button>
+                    <label id="label-importar-backup" class="backup-label">
+                      <span aria-hidden="true">↑</span>
+                      Restaurar backup
+                      <input id="input-importar-backup" type="file" accept=".json" style="display:none">
+                    </label>
+                  </div>
+                  <div class="settings-detail-footnote">Seus dados continuam vinculados à sua conta atual ao restaurar um backup.</div>
+                  <div id="backup-status" class="settings-note"></div>
                 </div>
-                <div id="admin-usuarios-erro" class="settings-note"></div>
-              </div>
-            </section>
+              </section>
+
+              <section class="settings-detail-page" data-settings-page="notificacoes" hidden>
+                <div class="settings-detail-header">
+                  <button class="settings-back-btn" type="button" data-settings-close>‹</button>
+                  <h2>Notificações</h2>
+                  <span></span>
+                </div>
+                <div class="settings-detail-card">
+                  <div class="settings-row">
+                    <div class="settings-stack">
+                      <span class="settings-label">Status</span>
+                      <div id="notif-status" class="settings-value">Verificando status...</div>
+                    </div>
+                  </div>
+                  <div id="notif-status-detalhe" class="settings-note">As notificações dependem da permissão do navegador e podem variar conforme o dispositivo.</div>
+                  <div class="settings-actions">
+                    <button id="btn-ativar-notificacoes" class="btn-outline" type="button">Ativar notificações</button>
+                    <button id="btn-testar-notificacao" class="btn-outline" type="button">Testar</button>
+                  </div>
+                </div>
+              </section>
+
+              <section class="settings-detail-page" data-settings-page="aparencia" hidden>
+                <div class="settings-detail-header">
+                  <button class="settings-back-btn" type="button" data-settings-close>‹</button>
+                  <h2>Aparência</h2>
+                  <span></span>
+                </div>
+                <div class="settings-detail-card">
+                  <div class="appearance-options">
+                    <button class="theme-option" type="button" data-theme-option="azul">
+                      <span class="theme-swatch" style="background:#2563eb"></span>
+                      <strong>Azul</strong>
+                    </button>
+                    <button class="theme-option" type="button" data-theme-option="verde">
+                      <span class="theme-swatch" style="background:#3b8f6a"></span>
+                      <strong>Verde</strong>
+                    </button>
+                    <button class="theme-option" type="button" data-theme-option="roxo">
+                      <span class="theme-swatch" style="background:#6f5aa8"></span>
+                      <strong>Roxo</strong>
+                    </button>
+                    <button class="theme-option" type="button" data-theme-option="grafite">
+                      <span class="theme-swatch" style="background:#5a6878"></span>
+                      <strong>Grafite</strong>
+                    </button>
+                  </div>
+                </div>
+              </section>
+
+              <section class="settings-detail-page" data-settings-page="privacidade" hidden>
+                <div class="settings-detail-header">
+                  <button class="settings-back-btn" type="button" data-settings-close>‹</button>
+                  <h2>Privacidade e segurança</h2>
+                  <span></span>
+                </div>
+                <div class="settings-detail-card">
+                  <div class="settings-inline-block">
+                    <div class="settings-inline-value">Seus dados ficam vinculados à sua conta</div>
+                    <div class="settings-inline-note">O Prioriza separa tarefas, notas, checklist, integrações e backup por usuário autenticado.</div>
+                  </div>
+                </div>
+                <section class="settings-detail-card admin-gestao" id="card-gestao-usuarios" hidden aria-hidden="true">
+                  <div class="settings-section-head">
+                    <div class="settings-section-title">
+                      <svg viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
+                        <path d="M48 192c4-29 25-44 52-44s48 15 52 44" stroke="currentColor" stroke-width="16" stroke-linecap="round" fill="none"/>
+                        <circle cx="100" cy="92" r="28" fill="currentColor" opacity="0.2"/>
+                        <circle cx="100" cy="92" r="28" stroke="currentColor" stroke-width="16"/>
+                        <path d="M146 188c3-22 18-34 39-34s36 12 39 34" stroke="currentColor" stroke-width="16" stroke-linecap="round" fill="none"/>
+                        <circle cx="184" cy="102" r="22" stroke="currentColor" stroke-width="16"/>
+                      </svg>
+                      <h2>Gestão de usuários</h2>
+                    </div>
+                  </div>
+                  <div class="admin-resumo-grid">
+                    <div class="admin-resumo-item">
+                      <span id="admin-total-usuarios" class="admin-resumo-valor">--</span>
+                      <span class="admin-resumo-label">Total de usuários</span>
+                    </div>
+                    <div class="admin-resumo-item">
+                      <span id="admin-usuarios-ativos" class="admin-resumo-valor">--</span>
+                      <span class="admin-resumo-label">Usuários ativos</span>
+                    </div>
+                    <div class="admin-resumo-item">
+                      <span id="admin-novos-hoje" class="admin-resumo-valor">--</span>
+                      <span class="admin-resumo-label">Novos hoje</span>
+                    </div>
+                    <div class="admin-resumo-item">
+                      <span id="admin-novos-7d" class="admin-resumo-valor">--</span>
+                      <span class="admin-resumo-label">Novos nos últimos 7 dias</span>
+                    </div>
+                  </div>
+                  <div id="admin-acessos-7d" class="settings-note">Acessos recentes: --</div>
+                  <div class="admin-toggle-row">
+                    <div class="admin-toggle-copy">Toque para abrir os registros completos de acesso e cadastro.</div>
+                    <button id="btn-toggle-admin-usuarios" class="btn-outline admin-toggle-btn" type="button" aria-expanded="false">Ver usuários</button>
+                  </div>
+                  <div id="admin-usuarios-lista" class="admin-usuarios-lista" hidden>
+                    <div class="admin-empty-state">Carregando usuários...</div>
+                  </div>
+                  <div id="admin-usuarios-erro" class="settings-note"></div>
+                </section>
+              </section>
+
+              <section class="settings-detail-page" data-settings-page="ajuda" hidden>
+                <div class="settings-detail-header">
+                  <button class="settings-back-btn" type="button" data-settings-close>‹</button>
+                  <h2>Ajuda e feedback</h2>
+                  <span></span>
+                </div>
+                <div class="settings-detail-card">
+                  <div class="settings-inline-value">Tudo para você retomar rápido</div>
+                  <div class="settings-inline-note">Use esta área para rever a introdução do app e manter sua rotina clara quando voltar ao Prioriza.</div>
+                  <div class="settings-actions">
+                    <button class="btn-outline settings-helper-action" type="button" id="btn-rever-introducao-ajuda">Rever introdução</button>
+                  </div>
+                </div>
+              </section>
+
+              <section class="settings-detail-page" data-settings-page="sobre" hidden>
+                <div class="settings-detail-header">
+                  <button class="settings-back-btn" type="button" data-settings-close>‹</button>
+                  <h2>Sobre o Prioriza</h2>
+                  <span></span>
+                </div>
+                <div class="settings-detail-card">
+                  <div class="settings-inline-value">Sistema operacional da sua rotina</div>
+                  <div class="settings-inline-note">O Prioriza reúne agenda, checklist, notas, ajustes e organização pessoal em uma experiência única, com foco em clareza e execução.</div>
+                </div>
+              </section>
+            </div>
           </div>
         </div>
 
@@ -6353,6 +6634,7 @@
     const nativeFetch = window.fetch.bind(window);
     let authMode = "login";
     let authUser = null;
+    let settingsPageAtual = null;
     let adminGestaoCarregando = false;
     let adminUsuariosVisivel = false;
     let onboardingIndexAtual = 0;
@@ -6507,12 +6789,62 @@
     }
 
     function preencherContaLogada() {
-      document.getElementById("auth-user-name").textContent = authUser?.nome || "Sessão ativa";
-      document.getElementById("auth-user-email").textContent = authUser?.email || "";
+      const nome = authUser?.nome || "Sessão ativa";
+      const email = authUser?.email || "";
+      const criado = authUser?.criado_em ? formatarDataHoraAdmin(authUser.criado_em) : "Não disponível";
+      const iniciais = String(nome)
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((parte) => parte.charAt(0).toUpperCase())
+        .join("") || "PR";
+
+      document.querySelectorAll("[data-auth-user-name]").forEach((el) => {
+        el.textContent = nome;
+      });
+      document.querySelectorAll("[data-auth-user-email]").forEach((el) => {
+        el.textContent = email;
+      });
+      document.querySelectorAll("[data-auth-user-created]").forEach((el) => {
+        el.textContent = criado;
+      });
+      document.querySelectorAll("[data-settings-avatar]").forEach((el) => {
+        el.textContent = iniciais;
+      });
       atualizarVisibilidadeGestaoUsuarios();
       if (authUser?.is_admin) {
         carregarGestaoUsuariosAdmin();
       }
+    }
+
+    function atualizarTelaAjustes() {
+      const main = document.getElementById("settings-main-view");
+      const detail = document.getElementById("settings-detail-view");
+      if (!main || !detail) return;
+      const aberto = !!settingsPageAtual;
+      main.hidden = aberto;
+      detail.hidden = !aberto;
+      detail.querySelectorAll("[data-settings-page]").forEach((page) => {
+        page.hidden = page.dataset.settingsPage !== settingsPageAtual;
+      });
+    }
+
+    function abrirSubpaginaAjustes(chave) {
+      settingsPageAtual = chave || null;
+      atualizarTelaAjustes();
+      document.getElementById("screen-ajustes")?.scrollTo?.({ top: 0, behavior: "smooth" });
+    }
+
+    function fecharSubpaginaAjustes() {
+      settingsPageAtual = null;
+      atualizarTelaAjustes();
+    }
+
+    async function confirmarLogoutAjustes() {
+      const ok = await modal.confirmar("Deseja sair da sua conta agora?", "Sair do Prioriza", "azul");
+      if (!ok) return;
+      await fazerLogout();
     }
 
     function formatarDataHoraAdmin(iso) {
@@ -7041,7 +7373,9 @@
       }
 
       if (!logoutJaVinculado) {
-        document.getElementById("btn-logout")?.addEventListener("click", fazerLogout);
+        document.querySelectorAll("[data-settings-logout]").forEach((botao) => {
+          botao.addEventListener("click", confirmarLogoutAjustes);
+        });
         logoutJaVinculado = true;
       }
     }
@@ -10120,6 +10454,7 @@
           });
         }
         if (id === "screen-ajustes") {
+          fecharSubpaginaAjustes();
           setTimeout(atualizarStatusNotificacoesUI, 50);
           if (authUser?.is_admin) {
             setTimeout(carregarGestaoUsuariosAdmin, 120);
@@ -10156,6 +10491,18 @@
   await carregarPessoalLista();
 });
 
+      document.getElementById("screen-ajustes")?.addEventListener("click", (ev) => {
+        const abrir = ev.target.closest("[data-settings-open]");
+        if (abrir) {
+          abrirSubpaginaAjustes(abrir.dataset.settingsOpen);
+          return;
+        }
+        const fechar = ev.target.closest("[data-settings-close]");
+        if (fechar) {
+          fecharSubpaginaAjustes();
+        }
+      });
+
       document.getElementById("btn-ativar-notificacoes")?.addEventListener("click", ativarNotificacoesManual);
       document.getElementById("btn-testar-notificacao")?.addEventListener("click", testarNotificacaoManual);
       document.getElementById("btn-toggle-admin-usuarios")?.addEventListener("click", async () => {
@@ -10168,6 +10515,7 @@
       document.querySelectorAll("[data-theme-option]").forEach((botao) => {
         botao.addEventListener("click", () => aplicarTema(botao.dataset.themeOption));
       });
+      document.getElementById("btn-rever-introducao-ajuda")?.addEventListener("click", () => abrirOnboarding({ forcar: true }));
 
       document.getElementById("btn-cal-prev")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()-1); montarCalendarioMes(); });
       document.getElementById("btn-cal-next")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()+1); montarCalendarioMes(); });
