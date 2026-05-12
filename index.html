@@ -2538,16 +2538,16 @@
       #screen-ajustes .settings-detail-view {
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 12px;
       }
       #screen-ajustes .settings-ios-header {
         padding: 6px 4px 0;
       }
       #screen-ajustes .settings-ios-header h1 {
         margin: 0;
-        font-size: 29px;
+        font-size: 28px;
         line-height: 1.04;
-        font-weight: 720;
+        font-weight: 680;
         letter-spacing: -0.04em;
         color: #0f172a;
       }
@@ -2597,7 +2597,7 @@
         font-size: 18px;
         line-height: 1.15;
         color: #0f172a;
-        font-weight: 650;
+        font-weight: 620;
         letter-spacing: -0.02em;
       }
       #screen-ajustes .settings-profile-copy span,
@@ -2621,7 +2621,7 @@
         display: flex;
         align-items: center;
         gap: 14px;
-        min-height: 56px;
+        min-height: 52px;
         padding: 0 18px;
         background: transparent;
         border: none;
@@ -2651,7 +2651,7 @@
         font-size: 16px;
         line-height: 1.3;
         color: #111827;
-        font-weight: 500;
+        font-weight: 480;
       }
       #screen-ajustes .settings-logout-row {
         width: 100%;
@@ -2659,7 +2659,7 @@
         border: 1px solid rgba(226, 232, 240, 0.95);
         background: rgba(255,255,255,0.96);
         color: #2563eb;
-        font-size: 18px;
+        font-size: 17px;
         font-weight: 500;
       }
       #screen-ajustes .settings-detail-header {
@@ -2673,7 +2673,7 @@
         margin: 0;
         text-align: center;
         font-size: 18px;
-        font-weight: 650;
+        font-weight: 620;
         color: #0f172a;
         letter-spacing: -0.02em;
       }
@@ -2690,6 +2690,13 @@
       }
       #screen-ajustes .settings-detail-card {
         padding: 18px;
+      }
+      #screen-ajustes .settings-main-footer {
+        padding: 4px 8px 8px;
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #94a3b8;
       }
       #screen-ajustes .settings-profile-detail-card {
         display: flex;
@@ -2723,7 +2730,7 @@
       #screen-ajustes .settings-inline-value {
         font-size: 16px;
         line-height: 1.35;
-        font-weight: 600;
+        font-weight: 560;
         color: #0f172a;
       }
       #screen-ajustes .settings-inline-note,
@@ -2732,51 +2739,81 @@
         line-height: 1.55;
         color: #64748b;
       }
-      #screen-ajustes .settings-inline-detail-host {
-        display: none;
-      }
-      #screen-ajustes .settings-inline-detail-host.is-open {
-        display: block;
-        padding: 0 14px 14px;
-        border-top: 1px solid rgba(226, 232, 240, 0.92);
-        background: rgba(255,255,255,0.98);
-      }
-      #screen-ajustes .settings-inline-detail-page {
-        display: block;
-      }
-      #screen-ajustes .settings-inline-detail-page .settings-detail-header {
-        display: none;
-      }
-      #screen-ajustes .settings-inline-detail-page .settings-detail-card {
-        border: none;
-        box-shadow: none;
-        background: transparent;
-        padding: 14px 0 2px;
-        border-radius: 0;
-      }
-      #screen-ajustes .settings-inline-detail-page .settings-profile-detail-card {
-        align-items: flex-start;
-        text-align: left;
-        padding-top: 16px;
-        padding-bottom: 6px;
-      }
-      #screen-ajustes .settings-inline-detail-page .settings-profile-detail-avatar {
-        width: 68px;
-        height: 68px;
-        font-size: 24px;
-      }
-      #screen-ajustes .settings-link-row.is-open {
-        background: rgba(248, 250, 252, 0.62);
-      }
-      #screen-ajustes .settings-link-row.is-open .settings-chevron,
-      #screen-ajustes .settings-profile-card.is-open .settings-chevron {
-        color: var(--cor-tema);
-      }
       #screen-ajustes .settings-detail-page .settings-actions {
         margin-top: 16px;
       }
       #screen-ajustes .settings-detail-page .settings-section-head {
         margin-bottom: 14px;
+      }
+      #screen-ajustes .settings-body-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      #screen-ajustes .settings-body-copy p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.62;
+        color: #64748b;
+      }
+      #screen-ajustes .settings-detail-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      #screen-ajustes .settings-detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 13px 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(226, 232, 240, 0.82);
+        background: rgba(248, 250, 252, 0.72);
+      }
+      #screen-ajustes .settings-detail-item strong {
+        font-size: 14px;
+        line-height: 1.35;
+        font-weight: 560;
+        color: #0f172a;
+      }
+      #screen-ajustes .settings-detail-item span {
+        font-size: 13px;
+        line-height: 1.55;
+        color: #64748b;
+      }
+      #screen-ajustes .settings-placeholder-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: minmax(0, 1fr);
+      }
+      #screen-ajustes .settings-placeholder-btn,
+      #screen-ajustes .settings-soft-btn {
+        width: 100%;
+        min-height: 44px;
+        padding: 0 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(203, 213, 225, 0.82);
+        background: rgba(255,255,255,0.78);
+        color: #334155;
+        font-size: 14px;
+        font-weight: 500;
+        text-align: left;
+      }
+      #screen-ajustes .settings-soft-btn {
+        text-align: center;
+      }
+      #screen-ajustes .settings-placeholder-btn:hover,
+      #screen-ajustes .settings-soft-btn:hover {
+        border-color: rgba(var(--cor-tema-rgb), 0.24);
+        color: var(--cor-tema-escura);
+      }
+      #screen-ajustes .settings-version-signature {
+        margin-top: 18px;
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.6;
+        color: #94a3b8;
       }
       @media (min-width: 1100px) {
         #screen-ajustes .settings-native-shell {
@@ -6265,6 +6302,7 @@
               </div>
 
               <button id="btn-logout-quick" class="settings-logout-row" type="button" data-settings-logout>Sair</button>
+              <div class="settings-main-footer">PRIORIZA v1 · Sistema operacional da rotina</div>
             </div>
 
             <div id="settings-detail-view" class="settings-detail-view" hidden>
@@ -6279,6 +6317,7 @@
                   <div class="settings-profile-detail-name" data-auth-user-name>Sessão ativa</div>
                   <div class="settings-profile-detail-email" data-auth-user-email></div>
                   <div class="settings-profile-detail-meta">Cadastro: <span data-auth-user-created>Não disponível</span></div>
+                  <button class="settings-soft-btn" type="button" data-settings-placeholder="Alteração de senha">Alterar senha</button>
                   <button id="btn-logout" class="btn-outline danger settings-profile-logout" type="button" data-settings-logout>Sair</button>
                 </div>
               </section>
@@ -6290,13 +6329,23 @@
                   <span></span>
                 </div>
                 <div class="settings-detail-card">
-                  <div class="settings-inline-block">
-                    <div class="settings-inline-label">Usuário</div>
-                    <div class="settings-inline-value" data-auth-user-name>Sessão ativa</div>
-                    <div class="settings-inline-note" data-auth-user-email></div>
+                  <div class="settings-body-copy">
+                    <p>Gerencie suas informações de acesso e segurança da conta.</p>
                   </div>
-                  <div class="settings-actions">
-                    <button id="btn-rever-introducao" class="btn-outline settings-helper-action" type="button">Rever introdução</button>
+                  <div class="settings-detail-list">
+                    <div class="settings-detail-item">
+                      <strong>E-mail cadastrado</strong>
+                      <span data-auth-user-email></span>
+                    </div>
+                    <div class="settings-detail-item">
+                      <strong>Sessão atual</strong>
+                      <span data-auth-user-name>Sessão ativa</span>
+                    </div>
+                  </div>
+                  <div class="settings-actions settings-placeholder-grid">
+                    <button class="settings-placeholder-btn" type="button" data-settings-placeholder="Alteração de senha">Alterar senha</button>
+                    <button class="settings-placeholder-btn" type="button" data-settings-placeholder="Recuperação de conta">Recuperação de conta</button>
+                    <button class="settings-placeholder-btn" type="button" data-settings-placeholder="Sessões futuras">Sessões futuras</button>
                   </div>
                 </div>
               </section>
@@ -6308,6 +6357,19 @@
                   <span></span>
                 </div>
                 <div class="settings-detail-card">
+                  <div class="settings-body-copy">
+                    <p>Conecte sua agenda do Google para sincronizar compromissos automaticamente entre dispositivos e plataformas.</p>
+                  </div>
+                  <div class="settings-detail-list" style="margin-bottom:14px;">
+                    <div class="settings-detail-item">
+                      <strong>Status da conexão</strong>
+                      <span id="agenda-google-status-texto">Atualizado automaticamente conforme sua integração.</span>
+                    </div>
+                    <div class="settings-detail-item">
+                      <strong>Última sincronização</strong>
+                      <span>Disponível após a próxima atualização manual.</span>
+                    </div>
+                  </div>
                   <div id="agenda-google-card" class="agenda-integracao-card">
                     <div class="agenda-integracao-topo">
                       <div class="settings-stack">
@@ -6346,6 +6408,19 @@
                   <span></span>
                 </div>
                 <div class="settings-detail-card">
+                  <div class="settings-body-copy">
+                    <p>Seus dados são importantes. Recomendamos manter backups periódicos das suas informações.</p>
+                  </div>
+                  <div class="settings-detail-list" style="margin-bottom:14px;">
+                    <div class="settings-detail-item">
+                      <strong>Exportar backup</strong>
+                      <span>Baixe uma cópia dos seus dados do PRIORIZA.</span>
+                    </div>
+                    <div class="settings-detail-item">
+                      <strong>Restaurar backup</strong>
+                      <span>Importe um backup salvo anteriormente.</span>
+                    </div>
+                  </div>
                   <div class="settings-backup-grid">
                     <button id="btn-exportar-backup" class="btn-outline" type="button">
                       <span aria-hidden="true">↓</span>
@@ -6369,6 +6444,9 @@
                   <span></span>
                 </div>
                 <div class="settings-detail-card">
+                  <div class="settings-body-copy">
+                    <p>Mantenha sua rotina organizada com lembretes e notificações importantes.</p>
+                  </div>
                   <div class="settings-row">
                     <div class="settings-stack">
                       <span class="settings-label">Status</span>
@@ -6380,6 +6458,12 @@
                     <button id="btn-ativar-notificacoes" class="btn-outline" type="button">Ativar notificações</button>
                     <button id="btn-testar-notificacao" class="btn-outline" type="button">Testar</button>
                   </div>
+                  <div class="settings-detail-list" style="margin-top:14px;">
+                    <div class="settings-detail-item">
+                      <strong>Próximos recursos</strong>
+                      <span>Lembretes inteligentes, resumo da manhã, checklist atrasado e horário silencioso.</span>
+                    </div>
+                  </div>
                 </div>
               </section>
 
@@ -6390,6 +6474,9 @@
                   <span></span>
                 </div>
                 <div class="settings-detail-card">
+                  <div class="settings-body-copy">
+                    <p>Personalize o visual do PRIORIZA de acordo com seu estilo de organização.</p>
+                  </div>
                   <div class="appearance-options">
                     <button class="theme-option" type="button" data-theme-option="azul">
                       <span class="theme-swatch" style="background:#2563eb"></span>
@@ -6418,9 +6505,16 @@
                   <span></span>
                 </div>
                 <div class="settings-detail-card">
-                  <div class="settings-inline-block">
-                    <div class="settings-inline-value">Seus dados ficam vinculados à sua conta</div>
-                    <div class="settings-inline-note">O Prioriza separa tarefas, notas, checklist, integrações e backup por usuário autenticado.</div>
+                  <div class="settings-body-copy">
+                    <p>Seus dados pertencem a você.</p>
+                    <p>O PRIORIZA foi desenvolvido para armazenar suas informações de forma segura, preservando sua rotina, compromissos e organização pessoal.</p>
+                    <p>Recursos de autenticação, backup e sincronização são constantemente aprimorados para garantir estabilidade e confiabilidade no uso diário.</p>
+                  </div>
+                  <div class="settings-actions settings-placeholder-grid">
+                    <button class="settings-placeholder-btn" type="button" data-settings-placeholder="Alteração de senha">Alterar senha</button>
+                    <button class="settings-placeholder-btn" type="button" data-settings-placeholder="Sessões futuras">Sessões futuras</button>
+                    <button class="settings-placeholder-btn" type="button" data-settings-open="google">Integrações conectadas</button>
+                    <button class="settings-placeholder-btn" type="button" data-settings-open="backup">Backup e restauração</button>
                   </div>
                 </div>
                 <section class="settings-detail-card admin-gestao" id="card-gestao-usuarios" hidden aria-hidden="true">
@@ -6473,9 +6567,15 @@
                   <span></span>
                 </div>
                 <div class="settings-detail-card">
-                  <div class="settings-inline-value">Tudo para você retomar rápido</div>
-                  <div class="settings-inline-note">Use esta área para rever a introdução do app e manter sua rotina clara quando voltar ao Prioriza.</div>
-                  <div class="settings-actions">
+                  <div class="settings-body-copy">
+                    <p>O PRIORIZA está em evolução constante.</p>
+                    <p>Sua experiência, sugestões e feedbacks ajudam diretamente na construção de uma rotina mais leve, organizada e funcional.</p>
+                    <p>Encontrou um problema, teve uma ideia ou quer sugerir uma melhoria? Fale com a gente.</p>
+                  </div>
+                  <div class="settings-actions settings-placeholder-grid">
+                    <button class="settings-placeholder-btn" type="button" data-settings-placeholder="Envio de feedback">Enviar feedback</button>
+                    <button class="settings-placeholder-btn" type="button" data-settings-placeholder="Relato de problema">Reportar problema</button>
+                    <button class="settings-placeholder-btn" type="button" data-settings-placeholder="Sugestão de melhoria">Sugestão de melhoria</button>
                     <button class="btn-outline settings-helper-action" type="button" id="btn-rever-introducao-ajuda">Rever introdução</button>
                   </div>
                 </div>
@@ -6488,8 +6588,16 @@
                   <span></span>
                 </div>
                 <div class="settings-detail-card">
-                  <div class="settings-inline-value">Sistema operacional da sua rotina</div>
-                  <div class="settings-inline-note">O Prioriza reúne agenda, checklist, notas, ajustes e organização pessoal em uma experiência única, com foco em clareza e execução.</div>
+                  <div class="settings-body-copy">
+                    <p>O PRIORIZA nasceu de uma necessidade real: transformar rotinas complexas em algo mais leve, organizado e executável.</p>
+                    <p>Inicialmente criado para resolver desafios operacionais do dia a dia, o projeto evoluiu para uma plataforma focada em produtividade, organização pessoal e gestão prática da rotina.</p>
+                    <p>Mais do que um aplicativo de tarefas, o PRIORIZA busca funcionar como um sistema operacional da rotina — conectando compromissos, prioridades, hábitos, planejamento e execução em um único ambiente.</p>
+                    <p>O projeto segue em evolução contínua, sempre priorizando simplicidade, clareza e utilidade real no dia a dia.</p>
+                  </div>
+                  <div class="settings-version-signature">
+                    <div>PRIORIZA v1</div>
+                    <div>Sistema operacional da rotina</div>
+                  </div>
                 </div>
               </section>
             </div>
@@ -6860,69 +6968,28 @@
     }
 
     function atualizarTelaAjustes() {
+      const main = document.getElementById("settings-main-view");
       const detail = document.getElementById("settings-detail-view");
-      if (!detail) return;
+      if (!main || !detail) return;
+      const mostrandoDetalhe = !!settingsPageAtual;
+      main.hidden = mostrandoDetalhe;
+      detail.hidden = !mostrandoDetalhe;
       detail.querySelectorAll("[data-settings-page]").forEach((page) => {
         page.hidden = page.dataset.settingsPage !== settingsPageAtual;
       });
     }
 
-    function garantirHostsAjustes() {
-      document.querySelectorAll("#screen-ajustes [data-settings-open]").forEach((gatilho) => {
-        const chave = gatilho.dataset.settingsOpen;
-        if (!chave) return;
-        const proximo = gatilho.nextElementSibling;
-        if (proximo && proximo.matches(`.settings-inline-detail-host[data-settings-host="${chave}"]`)) return;
-        const host = document.createElement("div");
-        host.className = "settings-inline-detail-host";
-        host.dataset.settingsHost = chave;
-        gatilho.insertAdjacentElement("afterend", host);
-      });
-    }
-
     function abrirSubpaginaAjustes(chave) {
       if (!chave) return;
-      garantirHostsAjustes();
-      if (settingsPageAtual === chave) {
-        fecharSubpaginaAjustes();
-        return;
-      }
-
-      fecharSubpaginaAjustes();
-
       const detail = document.getElementById("settings-detail-view");
       const page = detail?.querySelector(`[data-settings-page="${chave}"]`);
-      const gatilho = document.querySelector(`#screen-ajustes [data-settings-open="${chave}"]`);
-      const host = document.querySelector(`#screen-ajustes .settings-inline-detail-host[data-settings-host="${chave}"]`);
-      if (!detail || !page || !gatilho || !host) return;
-
+      if (!detail || !page) return;
       settingsPageAtual = chave;
-      page.hidden = false;
-      page.classList.add("settings-inline-detail-page");
-      host.classList.add("is-open");
-      host.appendChild(page);
-      gatilho.classList.add("is-open");
-      host.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      atualizarTelaAjustes();
+      detail.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function fecharSubpaginaAjustes() {
-      const detail = document.getElementById("settings-detail-view");
-      if (!detail) {
-        settingsPageAtual = null;
-        return;
-      }
-      document.querySelectorAll("#screen-ajustes .settings-inline-detail-host.is-open").forEach((host) => {
-        const page = host.querySelector("[data-settings-page]");
-        if (page) {
-          page.hidden = true;
-          page.classList.remove("settings-inline-detail-page");
-          detail.appendChild(page);
-        }
-        host.classList.remove("is-open");
-      });
-      document.querySelectorAll("#screen-ajustes [data-settings-open].is-open").forEach((el) => {
-        el.classList.remove("is-open");
-      });
       settingsPageAtual = null;
       atualizarTelaAjustes();
     }
@@ -6931,6 +6998,11 @@
       const ok = await modal.confirmar("Deseja sair da sua conta agora?", "Sair do Prioriza", "azul");
       if (!ok) return;
       await fazerLogout();
+    }
+
+    async function abrirPlaceholderAjustes(acao) {
+      const alvo = acao || "Este recurso";
+      await modal.alerta(`${alvo} está em preparação para uma próxima versão do PRIORIZA.`, "Em breve");
     }
 
     function formatarDataHoraAdmin(iso) {
@@ -10567,7 +10639,6 @@
       atualizarCampoRecorrenciaAgenda();
       atualizarCategoriaAgendaUI();
       atualizarCategoriaChecklistUI();
-      garantirHostsAjustes();
       atualizarOffsetsCabecalho();
       renderizarMiniCalendarioDesktop();
       window.addEventListener("resize", atualizarOffsetsCabecalho);
@@ -10579,6 +10650,11 @@
 });
 
       document.getElementById("screen-ajustes")?.addEventListener("click", (ev) => {
+        const placeholder = ev.target.closest("[data-settings-placeholder]");
+        if (placeholder) {
+          abrirPlaceholderAjustes(placeholder.dataset.settingsPlaceholder);
+          return;
+        }
         const abrir = ev.target.closest("[data-settings-open]");
         if (abrir) {
           abrirSubpaginaAjustes(abrir.dataset.settingsOpen);
