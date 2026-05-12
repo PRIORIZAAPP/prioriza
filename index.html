@@ -5583,16 +5583,18 @@
         position: fixed;
         right: 28px;
         bottom: 28px;
-        width: 52px;
-        height: 52px;
+        width: 56px;
+        height: 56px;
         min-width: 0;
         padding: 0;
-        border-radius: 14px;
+        border-radius: 16px;
         background: linear-gradient(180deg, rgba(var(--cor-tema-rgb), 0.88) 0%, rgba(var(--cor-tema-rgb), 0.72) 100%);
         color: #ffffff;
         border: 1px solid rgba(255,255,255,0.18);
-        box-shadow: 0 10px 20px rgba(var(--cor-tema-rgb), 0.18);
-        z-index: 80;
+        box-shadow: 0 12px 24px rgba(var(--cor-tema-rgb), 0.18);
+        z-index: 120;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
       }
 
       .fab-add::after {
@@ -6087,13 +6089,6 @@
               </div>
               <div id="agenda-geral-lista"><p class="agenda-dia-vazio">Nenhum compromisso neste dia.</p></div>
             </div>
-            <button id="btn-toggle-form-agenda" class="fab-add fab-add-agenda" type="button" aria-expanded="false" aria-controls="agenda-form-wrap" aria-label="Novo compromisso" title="Novo compromisso">
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                <line x1="128" y1="64" x2="128" y2="192" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                <line x1="64" y1="128" x2="192" y2="128" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-              </svg>
-              <span id="btn-toggle-form-agenda-text" class="sr-only">Novo compromisso</span>
-            </button>
           </div>
         </div>
 
@@ -6159,14 +6154,6 @@
                 </div>
               </form>
             </div>
-            <button id="btn-toggle-form-checklist" class="fab-add fab-add-checklist" type="button" aria-expanded="false" aria-controls="checklist-form-wrap" aria-label="Nova rotina" title="Nova rotina">
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                <line x1="128" y1="64" x2="128" y2="192" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-                <line x1="64" y1="128" x2="192" y2="128" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-              </svg>
-              <span id="btn-toggle-form-checklist-text" class="sr-only">Nova rotina</span>
-            </button>
-
             <div class="filtros-row">
               <div class="filtro-select">
                 <label for="filtro-frequencia">Frequência</label>
@@ -6693,6 +6680,22 @@
           </div>
         </aside>
       </div><!-- /app-workspace -->
+
+      <button id="btn-toggle-form-agenda" class="fab-add fab-add-agenda" type="button" aria-expanded="false" aria-controls="agenda-form-wrap" aria-label="Novo compromisso" title="Novo compromisso">
+        <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+          <line x1="128" y1="64" x2="128" y2="192" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+          <line x1="64" y1="128" x2="192" y2="128" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+        </svg>
+        <span id="btn-toggle-form-agenda-text" class="sr-only">Novo compromisso</span>
+      </button>
+
+      <button id="btn-toggle-form-checklist" class="fab-add fab-add-checklist" type="button" aria-expanded="false" aria-controls="checklist-form-wrap" aria-label="Nova rotina" title="Nova rotina">
+        <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+          <line x1="128" y1="64" x2="128" y2="192" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+          <line x1="64" y1="128" x2="192" y2="128" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+        </svg>
+        <span id="btn-toggle-form-checklist-text" class="sr-only">Nova rotina</span>
+      </button>
 
       <!-- BOTTOM NAV -->
       <div class="bottom-nav-wrapper">
