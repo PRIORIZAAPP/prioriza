@@ -279,6 +279,20 @@
         color: #b91c1c;
         margin-top: 12px;
       }
+      .auth-error.is-success {
+        color: #166534;
+      }
+      .auth-support-row {
+        margin-top: -4px;
+        display: flex;
+        justify-content: flex-end;
+      }
+      .auth-helper-copy {
+        margin: -2px 0 4px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #64748b;
+      }
       .auth-switch {
         margin-top: 18px;
         display: flex;
@@ -5710,7 +5724,19 @@
               <label for="auth-login-senha">Senha</label>
               <input id="auth-login-senha" type="password" autocomplete="current-password" placeholder="Sua senha" required />
             </div>
+            <div class="auth-support-row">
+              <button id="btn-auth-forgot" class="auth-link" type="button">Esqueci minha senha</button>
+            </div>
             <button id="btn-auth-login" class="btn-primary" type="submit">Entrar</button>
+          </form>
+
+          <form id="auth-form-forgot" class="auth-form" hidden>
+            <div class="auth-helper-copy">Informe seu e-mail para receber um link temporário de redefinição.</div>
+            <div>
+              <label for="auth-forgot-email">E-mail</label>
+              <input id="auth-forgot-email" type="email" autocomplete="email" placeholder="voce@exemplo.com" required />
+            </div>
+            <button id="btn-auth-forgot-submit" class="btn-primary" type="submit">Enviar link</button>
           </form>
 
           <form id="auth-form-register" class="auth-form" hidden>
@@ -5731,6 +5757,19 @@
               <input id="auth-register-confirmar" type="password" autocomplete="new-password" placeholder="Repita a senha" required />
             </div>
             <button id="btn-auth-register" class="btn-primary" type="submit">Criar conta</button>
+          </form>
+
+          <form id="auth-form-reset" class="auth-form" hidden>
+            <div class="auth-helper-copy">Digite sua nova senha para concluir a recuperação da conta.</div>
+            <div>
+              <label for="auth-reset-senha">Nova senha</label>
+              <input id="auth-reset-senha" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" required />
+            </div>
+            <div>
+              <label for="auth-reset-confirmar">Confirmar senha</label>
+              <input id="auth-reset-confirmar" type="password" autocomplete="new-password" placeholder="Repita a nova senha" required />
+            </div>
+            <button id="btn-auth-reset" class="btn-primary" type="submit">Redefinir senha</button>
           </form>
 
           <div id="auth-error" class="auth-error" aria-live="polite"></div>
@@ -6810,6 +6849,7 @@
     const nativeFetch = window.fetch.bind(window);
     let authMode = "login";
     let authUser = null;
+    let resetPasswordToken = "";
     let settingsPageAtual = null;
     let adminGestaoCarregando = false;
     let adminUsuariosVisivel = false;
@@ -6941,8 +6981,17 @@
       if (slogan) slogan.textContent = "";
     }
 
+    function detectarTokenResetSenha() {
+      const params = new URLSearchParams(window.location.search || "");
+      const token = (params.get("token") || "").trim();
+      const rotaReset = (window.location.pathname || "").includes("/reset-password");
+      resetPasswordToken = token;
+      return rotaReset && token;
+    }
+
     function showAuthScreen(mode = "login") {
       authMode = mode === "register" ? "register" : "login";
+      if (mode === "forgot" || mode === "reset") authMode = mode;
       const screen = document.getElementById("auth-screen");
       const appShell = document.getElementById("app-shell");
       resetAuthTransitionState();
@@ -6959,9 +7008,11 @@
       preencherContaLogada();
     }
 
-    function definirErroAuth(texto = "") {
+    function definirErroAuth(texto = "", tipo = "erro") {
       const el = document.getElementById("auth-error");
-      if (el) el.textContent = texto;
+      if (!el) return;
+      el.textContent = texto;
+      el.classList.toggle("is-success", tipo === "sucesso");
     }
 
     function preencherContaLogada() {
@@ -7158,20 +7209,41 @@
 
     function atualizarUIAuth() {
       const loginForm = document.getElementById("auth-form-login");
+      const forgotForm = document.getElementById("auth-form-forgot");
       const registerForm = document.getElementById("auth-form-register");
+      const resetForm = document.getElementById("auth-form-reset");
       const toggleText = document.getElementById("auth-switch-text");
       const toggleBtn = document.getElementById("btn-auth-toggle");
       const title = document.getElementById("auth-title");
       const subtitle = document.getElementById("auth-subtitle");
       const isRegister = authMode === "register";
-      if (loginForm) loginForm.hidden = isRegister;
+      const isForgot = authMode === "forgot";
+      const isReset = authMode === "reset";
+      if (loginForm) loginForm.hidden = isRegister || isForgot || isReset;
+      if (forgotForm) forgotForm.hidden = !isForgot;
       if (registerForm) registerForm.hidden = !isRegister;
-      if (toggleText) toggleText.textContent = isRegister ? "Já tem conta?" : "Ainda não tem conta?";
-      if (toggleBtn) toggleBtn.textContent = isRegister ? "Entrar" : "Criar conta";
-      if (title) title.textContent = isRegister ? "Criar conta" : "Entrar no PRIORIZA";
-      if (subtitle) subtitle.textContent = isRegister
-        ? "Comece a organizar sua rotina com mais clareza."
-        : "Acesse sua rotina e continue de onde parou.";
+      if (resetForm) resetForm.hidden = !isReset;
+      if (toggleText) {
+        if (isRegister) toggleText.textContent = "Já tem conta?";
+        else if (isForgot || isReset) toggleText.textContent = "Lembrou sua senha?";
+        else toggleText.textContent = "Ainda não tem conta?";
+      }
+      if (toggleBtn) {
+        if (isRegister || isForgot || isReset) toggleBtn.textContent = "Entrar";
+        else toggleBtn.textContent = "Criar conta";
+      }
+      if (title) {
+        if (isRegister) title.textContent = "Criar conta";
+        else if (isForgot) title.textContent = "Recuperar senha";
+        else if (isReset) title.textContent = "Definir nova senha";
+        else title.textContent = "Entrar no PRIORIZA";
+      }
+      if (subtitle) {
+        if (isRegister) subtitle.textContent = "Comece a organizar sua rotina com mais clareza.";
+        else if (isForgot) subtitle.textContent = "Receba um link seguro para redefinir sua senha.";
+        else if (isReset) subtitle.textContent = "Crie uma nova senha para voltar ao seu fluxo.";
+        else subtitle.textContent = "Acesse sua rotina e continue de onde parou.";
+      }
       definirErroAuth("");
     }
 
@@ -7181,12 +7253,23 @@
       showAuthScreen("login");
     }
 
+    function limparUrlResetSenha() {
+      try {
+        const url = new URL(window.location.href);
+        url.pathname = "/app";
+        url.searchParams.delete("token");
+        window.history.replaceState({}, document.title, url.pathname + url.search);
+      } catch (e) {
+        console.warn("[AUTH] Não foi possível limpar URL de reset:", e);
+      }
+    }
+
     async function apiFetch(url, options = {}) {
       const headersOriginais = options.headers || {};
       const opts = { ...options, headers: authHeaders(headersOriginais) };
       const resposta = await nativeFetch(url, opts);
       const rota = String(url || "");
-      const ignorar401 = rota.includes("/auth/login") || rota.includes("/auth/register");
+      const ignorar401 = rota.includes("/auth/login") || rota.includes("/auth/register") || rota.includes("/auth/forgot-password") || rota.includes("/auth/reset-password");
       if (resposta.status === 401 && !ignorar401) {
         handleUnauthorized();
       }
@@ -10515,7 +10598,18 @@
 
     function bindAuthEvents() {
       document.getElementById("btn-auth-toggle")?.addEventListener("click", () => {
-        showAuthScreen(authMode === "login" ? "register" : "login");
+        if (authMode === "login") {
+          showAuthScreen("register");
+          return;
+        }
+        showAuthScreen("login");
+      });
+
+      document.getElementById("btn-auth-forgot")?.addEventListener("click", () => {
+        const emailAtual = document.getElementById("auth-login-email")?.value.trim() || "";
+        const campo = document.getElementById("auth-forgot-email");
+        if (campo && emailAtual) campo.value = emailAtual;
+        showAuthScreen("forgot");
       });
 
       document.getElementById("auth-form-login")?.addEventListener("submit", async (ev) => {
@@ -10536,6 +10630,24 @@
           await entrarNoAppComTransicao();
         } catch (e) {
           definirErroAuth(e.message || "Não foi possível entrar.");
+        }
+      });
+
+      document.getElementById("auth-form-forgot")?.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        definirErroAuth("");
+        const email = document.getElementById("auth-forgot-email")?.value.trim() || "";
+        try {
+          const res = await nativeFetch(API + "/auth/forgot-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data?.detail || "Não foi possível iniciar a recuperação.");
+          definirErroAuth(data?.message || "Se este e-mail estiver cadastrado, enviaremos as instruções de recuperação.", "sucesso");
+        } catch (e) {
+          definirErroAuth(e.message || "Não foi possível iniciar a recuperação.");
         }
       });
 
@@ -10567,6 +10679,42 @@
           await entrarNoAppComTransicao();
         } catch (e) {
           definirErroAuth(e.message || "Não foi possível criar a conta.");
+        }
+      });
+
+      document.getElementById("auth-form-reset")?.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        definirErroAuth("");
+        const senha = document.getElementById("auth-reset-senha")?.value || "";
+        const confirmar = document.getElementById("auth-reset-confirmar")?.value || "";
+        if (!resetPasswordToken) {
+          definirErroAuth("O link de recuperação é inválido ou expirou.");
+          return;
+        }
+        if (senha.length < 6) {
+          definirErroAuth("A senha deve ter pelo menos 6 caracteres.");
+          return;
+        }
+        if (senha !== confirmar) {
+          definirErroAuth("As senhas não coincidem.");
+          return;
+        }
+        try {
+          const res = await nativeFetch(API + "/auth/reset-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: resetPasswordToken, senha, confirmar_senha: confirmar }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data?.detail || "Não foi possível redefinir a senha.");
+          resetPasswordToken = "";
+          limparUrlResetSenha();
+          showAuthScreen("login");
+          definirErroAuth(data?.message || "Senha atualizada com sucesso. Você já pode entrar.", "sucesso");
+          const campoEmail = document.getElementById("auth-login-email");
+          if (campoEmail) campoEmail.focus();
+        } catch (e) {
+          definirErroAuth(e.message || "Não foi possível redefinir a senha.");
         }
       });
     }
@@ -10970,6 +11118,11 @@
       await aplicarTema(temaSalvo);
       bindAuthEvents();
       bindOnboardingEvents();
+
+      if (detectarTokenResetSenha()) {
+        showAuthScreen("reset");
+        return;
+      }
 
       const autenticado = await validarSessaoAtual();
       if (!autenticado) {
