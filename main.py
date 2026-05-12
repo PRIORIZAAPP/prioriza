@@ -1,5 +1,6 @@
-﻿import json
+import json
 import os
+import requests
 import threading
 import unicodedata
 import base64
@@ -40,7 +41,10 @@ JWT_SECRET = os.environ.get("JWT_SECRET", "prioriza_jwt_dev_only_change_me").str
 JWT_EXP_HOURS = int(os.environ.get("JWT_EXP_HOURS", "168"))
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 ADMIN_EMAIL = (os.environ.get("ADMIN_EMAIL", "").strip().lower())
-ACCESS_WINDOW_MINUTES = int(os.environ.get("ACCESS_WINDOW_MINUTES", "30"))
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "").strip()
+EMAIL_FROM = os.environ.get("EMAIL_FROM", "").strip()
+APP_URL = os.environ.get("APP_URL", "").strip()
+PASSWORD_RESET_EXP_MINUTES = int(os.environ.get("PASSWORD_RESET_EXP_MINUTES", "30"))
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 if not DATABASE_URL:
@@ -302,6 +306,17 @@ class UserAccessLog(Base):
     acessado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
 
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    token_hash = Column(Text, nullable=False, index=True)
+    expires_at = Column(DateTime, nullable=False)
+    used_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+
+
 # ============================================================
 # DB / MIGRAÇÕES
 # ============================================================
@@ -345,6 +360,61 @@ def verificar_senha(senha: str, senha_hash: str) -> bool:
         derivado = hashlib.pbkdf2_hmac("sha256", senha.encode("utf-8"), salt, int(iteracoes))
         return hmac.compare_digest(esperado, derivado)
     except Exception:
+        return False
+
+
+def hash_token_recuperacao(token: str) -> str:
+    return hashlib.sha256((token or "").encode("utf-8")).hexdigest()
+
+
+def gerar_token_recuperacao() -> str:
+    return secrets.token_urlsafe(32)
+
+
+def construir_link_reset_password(token: str) -> str:
+    base = (APP_URL or "").strip().rstrip("/")
+    if not base:
+        base = "http://localhost:8000"
+    return f"{base}/reset-password?token={token}"
+
+
+def enviar_email_recuperacao_senha(email_destino: str, nome: str, token: str) -> bool:
+    if not RESEND_API_KEY or not EMAIL_FROM:
+        print("[AUTH] Recuperação de senha sem envio: RESEND_API_KEY ou EMAIL_FROM não configurados.")
+        return False
+
+    link = construir_link_reset_password(token)
+    saudacao = (nome or "").strip() or "Olá"
+    html = f"""
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a">
+      <h2 style="margin:0 0 12px 0;">Redefina sua senha no PRIORIZA</h2>
+      <p style="margin:0 0 12px 0;">{saudacao}, recebemos uma solicitação para redefinir sua senha.</p>
+      <p style="margin:0 0 18px 0;">Use o botão abaixo para criar uma nova senha. Este link expira em {PASSWORD_RESET_EXP_MINUTES} minutos.</p>
+      <p style="margin:0 0 18px 0;">
+        <a href="{link}" style="display:inline-block;padding:12px 18px;background:#2563eb;color:#ffffff;text-decoration:none;border-radius:12px;font-weight:600;">Redefinir senha</a>
+      </p>
+      <p style="margin:0 0 10px 0;font-size:14px;color:#475569;">Se o botão não funcionar, copie este link:</p>
+      <p style="margin:0;font-size:13px;color:#2563eb;word-break:break-all;">{link}</p>
+    </div>
+    """.strip()
+    payload = {
+        "from": EMAIL_FROM,
+        "to": [email_destino],
+        "subject": "Redefinição de senha do PRIORIZA",
+        "html": html,
+    }
+    headers = {
+        "Authorization": f"Bearer {RESEND_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    try:
+        resposta = requests.post("https://api.resend.com/emails", json=payload, headers=headers, timeout=20)
+        if resposta.ok:
+            return True
+        print(f"[AUTH] Falha ao enviar e-mail de recuperação via Resend: {resposta.status_code} {resposta.text}")
+        return False
+    except Exception as e:
+        print(f"[AUTH] Erro ao enviar e-mail de recuperação: {e}")
         return False
 
 
@@ -467,17 +537,6 @@ def registrar_acesso_usuario(db: Session, user: User):
     db.add(UserAccessLog(user_id=garantir_user_id(user.id, "acesso de usuário"), acessado_em=agora))
 
 
-def registrar_acesso_sessao(db: Session, user: User, janela_minutos: int = ACCESS_WINDOW_MINUTES):
-    agora = datetime.now(UTC)
-    ultimo = user.ultimo_acesso
-    if ultimo and ultimo.tzinfo is None:
-        ultimo = ultimo.replace(tzinfo=UTC)
-    if ultimo and (agora - ultimo) < timedelta(minutes=max(1, int(janela_minutos or 1))):
-        return False
-    registrar_acesso_usuario(db, user)
-    return True
-
-
 def executar_sql_seguro(sql: str):
     try:
         with engine.connect() as conn:
@@ -557,6 +616,9 @@ def rodar_migracoes_automaticas():
     for coluna in ("ultimo_acesso", "total_acessos", "is_admin"):
         garantir_coluna_tabela("users", coluna)
 
+    for coluna in ("user_id", "token_hash", "expires_at", "used_at", "created_at"):
+        garantir_coluna_tabela("password_reset_tokens", coluna)
+
     preencher_nulos_coluna("users", "total_acessos", "0")
     preencher_nulos_coluna("users", "is_admin", "false" if not IS_SQLITE else "0")
 
@@ -624,15 +686,6 @@ def validar_hora(hora_str: str) -> bool:
         return False
 
 
-def adicionar_meses_data(data_base: date, quantidade: int = 1) -> date:
-    quantidade = int(quantidade or 0)
-    ano = data_base.year + ((data_base.month - 1 + quantidade) // 12)
-    mes = ((data_base.month - 1 + quantidade) % 12) + 1
-    ultimo_dia_mes = (date(ano + (1 if mes == 12 else 0), 1 if mes == 12 else mes + 1, 1) - timedelta(days=1)).day
-    dia = min(data_base.day, ultimo_dia_mes)
-    return date(ano, mes, dia)
-
-
 def hora_para_minutos(hora_str: str) -> int:
     hh, mm = map(int, hora_str.split(":"))
     return hh * 60 + mm
@@ -661,63 +714,6 @@ def normalizar_status(status: Optional[str]) -> str:
     if s not in {"pendente", "em_andamento", "feito", "cancelada", "atrasado", "reagendamento_sugerido", "reagendada_confirmada", "reagendada_manual", "pendente_ajuste"}:
         return "pendente"
     return s
-
-
-def normalizar_repeticao_agenda(valor: Optional[str]) -> str:
-    v = (valor or "").strip().upper()
-    mapa = {
-        "": "NENHUMA",
-        "NENHUMA": "NENHUMA",
-        "NAO": "NENHUMA",
-        "NÃO": "NENHUMA",
-        "NONE": "NENHUMA",
-        "DIARIA": "DIARIA",
-        "DIÁRIA": "DIARIA",
-        "DAILY": "DIARIA",
-        "SEMANAL": "SEMANAL",
-        "WEEKLY": "SEMANAL",
-        "MENSAL": "MENSAL",
-        "MONTHLY": "MENSAL",
-    }
-    return mapa.get(v, "NENHUMA")
-
-
-def gerar_datas_recorrencia_agenda(data_inicial_iso: str, repeticao: str, repetir_ate: Optional[str]) -> list[str]:
-    repeticao_norm = normalizar_repeticao_agenda(repeticao)
-    if repeticao_norm == "NENHUMA":
-        return [data_inicial_iso]
-
-    if not repetir_ate:
-        return [data_inicial_iso]
-
-    repetir_ate = repetir_ate.strip()
-    if not validar_data_iso(data_inicial_iso) or not validar_data_iso(repetir_ate):
-        return [data_inicial_iso]
-
-    inicio = datetime.strptime(data_inicial_iso, "%Y-%m-%d").date()
-    limite = datetime.strptime(repetir_ate, "%Y-%m-%d").date()
-    if limite <= inicio:
-        return [data_inicial_iso]
-
-    datas = [inicio]
-    atual = inicio
-    max_ocorrencias = 120
-
-    while len(datas) < max_ocorrencias:
-        if repeticao_norm == "DIARIA":
-            atual = atual + timedelta(days=1)
-        elif repeticao_norm == "SEMANAL":
-            atual = atual + timedelta(days=7)
-        elif repeticao_norm == "MENSAL":
-            atual = adicionar_meses_data(atual, 1)
-        else:
-            break
-
-        if atual > limite:
-            break
-        datas.append(atual)
-
-    return [d.isoformat() for d in datas]
 
 def status_nao_concluido(status: Optional[str]) -> bool:
     return normalizar_status(status) in {"pendente", "em_andamento", "atrasado", "reagendamento_sugerido", "pendente_ajuste"}
@@ -1461,6 +1457,11 @@ def serve_app():
     return FileResponse(str(BASE_DIR / "index.html"))
 
 
+@app.get("/reset-password")
+def serve_reset_password():
+    return FileResponse(str(BASE_DIR / "index.html"))
+
+
 # ============================================================
 # AUTH
 # ============================================================
@@ -1497,12 +1498,7 @@ async def auth_register(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Já existe uma conta com esse e-mail.")
 
     usuario = User(nome=nome, email=email, senha_hash=hash_senha(senha), ativo=True)
-    if email_admin_configurado(usuario.email):
-        usuario.is_admin = True
     db.add(usuario)
-    db.commit()
-    db.refresh(usuario)
-    registrar_acesso_usuario(db, usuario)
     db.commit()
     db.refresh(usuario)
     return {"ok": True, "token": criar_token_acesso(usuario), "user": usuario.to_dict()}
@@ -1532,11 +1528,90 @@ async def auth_login(request: Request, db: Session = Depends(get_db)):
     return {"ok": True, "token": criar_token_acesso(usuario), "user": usuario.to_dict()}
 
 
+@app.post("/auth/forgot-password")
+async def auth_forgot_password(request: Request, db: Session = Depends(get_db)):
+    mensagem = "Se este e-mail estiver cadastrado, enviaremos as instruções de recuperação."
+    try:
+        payload = await request.json()
+    except Exception:
+        return {"ok": True, "message": mensagem}
+
+    email = normalizar_email(payload.get("email") or "")
+    if not validar_email(email):
+        return {"ok": True, "message": mensagem}
+
+    usuario = buscar_usuario_por_email(db, email)
+    if not usuario or not usuario.ativo:
+        return {"ok": True, "message": mensagem}
+
+    agora = datetime.now(UTC)
+    db.query(PasswordResetToken).filter(
+        PasswordResetToken.user_id == usuario.id,
+        PasswordResetToken.used_at.is_(None),
+    ).update({"used_at": agora}, synchronize_session=False)
+
+    token = gerar_token_recuperacao()
+    reset = PasswordResetToken(
+        user_id=usuario.id,
+        token_hash=hash_token_recuperacao(token),
+        expires_at=agora + timedelta(minutes=PASSWORD_RESET_EXP_MINUTES),
+    )
+    db.add(reset)
+    db.commit()
+
+    enviado = enviar_email_recuperacao_senha(usuario.email, usuario.nome, token)
+    if not enviado:
+        print(f"[AUTH] Link de recuperação não enviado para {usuario.email}.")
+
+    return {"ok": True, "message": mensagem}
+
+
+@app.post("/auth/reset-password")
+async def auth_reset_password(request: Request, db: Session = Depends(get_db)):
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="JSON inválido.")
+
+    token = (payload.get("token") or "").strip()
+    senha = str(payload.get("senha") or "")
+    confirmar = str(payload.get("confirmar_senha") or payload.get("confirmar") or "")
+
+    if not token:
+        raise HTTPException(status_code=400, detail="Token de recuperação inválido.")
+    if len(senha) < 6:
+        raise HTTPException(status_code=400, detail="A senha deve ter pelo menos 6 caracteres.")
+    if confirmar and senha != confirmar:
+        raise HTTPException(status_code=400, detail="As senhas não coincidem.")
+
+    agora = datetime.now(UTC)
+    token_hash = hash_token_recuperacao(token)
+    registro = db.query(PasswordResetToken).filter(
+        PasswordResetToken.token_hash == token_hash,
+        PasswordResetToken.used_at.is_(None),
+    ).order_by(PasswordResetToken.id.desc()).first()
+
+    if not registro or not registro.expires_at or registro.expires_at < agora:
+        raise HTTPException(status_code=400, detail="Este link de recuperação é inválido ou expirou.")
+
+    usuario = db.query(User).filter(User.id == registro.user_id, User.ativo == True).first()
+    if not usuario:
+        raise HTTPException(status_code=400, detail="Este link de recuperação é inválido ou expirou.")
+
+    usuario.senha_hash = hash_senha(senha)
+    registro.used_at = agora
+    db.query(PasswordResetToken).filter(
+        PasswordResetToken.user_id == usuario.id,
+        PasswordResetToken.used_at.is_(None),
+        PasswordResetToken.id != registro.id,
+    ).update({"used_at": agora}, synchronize_session=False)
+    db.commit()
+
+    return {"ok": True, "message": "Senha atualizada com sucesso. Você já pode entrar com a nova senha."}
+
+
 @app.get("/auth/me")
-def auth_me(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    if registrar_acesso_sessao(db, current_user):
-        db.commit()
-        db.refresh(current_user)
+def auth_me(current_user: User = Depends(get_current_user)):
     return {"ok": True, "user": current_user.to_dict()}
 
 
@@ -2021,8 +2096,6 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
     google_html_link = q.get("google_html_link") or q.get("link")
     sincronizado_google = q.get("sincronizado_google")
     ultima_sync_google = q.get("ultima_sync_google")
-    repetir = q.get("repetir")
-    repetir_ate = q.get("repetir_ate")
 
     if not titulo:
         try:
@@ -2045,8 +2118,6 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
             google_html_link = form.get("google_html_link") or form.get("link")
             sincronizado_google = form.get("sincronizado_google")
             ultima_sync_google = form.get("ultima_sync_google")
-            repetir = form.get("repetir")
-            repetir_ate = form.get("repetir_ate")
         except Exception:
             pass
 
@@ -2114,59 +2185,36 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
         }
         tarefa_google = criar_ou_atualizar_tarefa_importada_google(db, user_id, payload_google)
         return tarefa_google.to_dict()
-    datas_recorrentes = gerar_datas_recorrencia_agenda(
-        data_str.strip(),
-        repetir or "",
-        repetir_ate,
+
+    tarefa = Tarefa(
+        user_id=user_id,
+        titulo=titulo.strip(),
+        descricao=(descricao or "").strip(),
+        origem=(origem or "").strip(),
+        local=(local or "").strip(),
+        data=data_str.strip(),
+        hora_inicio="" if eh_all_day else hora_inicio,
+        hora_fim="" if eh_all_day else hora_fim,
+        duracao_min=duracao_val,
+        prioridade=prioridade_val,
+        status=normalizar_status(status or "pendente"),
+        tipo_evento="prioriza",
+        origem_evento="prioriza",
+        sincronizado_google=False,
+        all_day=eh_all_day,
+        ativo=True,
     )
-
-    tarefas_criadas: list[Tarefa] = []
-    for data_ocorrencia in datas_recorrentes:
-        tarefa = Tarefa(
-            user_id=user_id,
-            titulo=titulo.strip(),
-            descricao=(descricao or "").strip(),
-            origem=(origem or "").strip(),
-            local=(local or "").strip(),
-            data=data_ocorrencia,
-            hora_inicio="" if eh_all_day else hora_inicio,
-            hora_fim="" if eh_all_day else hora_fim,
-            duracao_min=duracao_val,
-            prioridade=prioridade_val,
-            status=normalizar_status(status or "pendente"),
-            tipo_evento="prioriza",
-            origem_evento="prioriza",
-            sincronizado_google=False,
-            all_day=eh_all_day,
-            ativo=True,
-        )
-        db.add(tarefa)
-        tarefas_criadas.append(tarefa)
-
+    db.add(tarefa)
     db.commit()
-    for tarefa in tarefas_criadas:
-        db.refresh(tarefa)
+    db.refresh(tarefa)
 
-    google_habilitado = str(sincronizar_google).lower() in {"1", "true", "sim", "yes"}
-    if google_habilitado:
-        sincronizadas: list[Tarefa] = []
-        for tarefa in tarefas_criadas:
-            try:
-                sincronizadas.append(sincronizar_tarefa_no_google(db, tarefa, current_user))
-            except Exception as e:
-                print(f"[GOOGLE] Falha ao sincronizar tarefa recorrente: {e}")
-                sincronizadas.append(tarefa)
-        tarefas_criadas = sincronizadas
+    if str(sincronizar_google).lower() in {"1", "true", "sim", "yes"}:
+        try:
+            tarefa = sincronizar_tarefa_no_google(db, tarefa, current_user)
+        except Exception as e:
+            print(f"[GOOGLE] Falha ao sincronizar tarefa recém-criada: {e}")
 
-    if len(tarefas_criadas) == 1:
-        return tarefas_criadas[0].to_dict()
-
-    return {
-        "ok": True,
-        "quantidade": len(tarefas_criadas),
-        "repeticao": normalizar_repeticao_agenda(repetir or ""),
-        "tarefas": [t.to_dict() for t in tarefas_criadas],
-    }
+    return tarefa.to_dict()
 
 
 @app.put("/tarefas/{tarefa_id}")
