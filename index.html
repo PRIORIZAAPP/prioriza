@@ -6624,7 +6624,7 @@
                     </div>
                   </div>
                   <div class="settings-actions settings-placeholder-grid" style="margin-top:12px;">
-                    <button class="settings-placeholder-btn" type="button" id="btn-atualizar-sessoes">Atualizar sessões</button>
+                    <button class="settings-placeholder-btn" type="button" id="btn-atualizar-sessoes">Atualizar status</button>
                     <button class="settings-placeholder-btn" type="button" data-settings-open="google">Integrações conectadas</button>
                     <button class="settings-placeholder-btn" type="button" data-settings-open="conta">Segurança da conta</button>
                     <button class="settings-placeholder-btn" type="button" id="btn-recursos-futuros">Recursos futuros</button>
@@ -7311,21 +7311,22 @@
         const expiraEm = data?.sessao_atual?.expira_em ? formatarDataHoraAdmin(data.sessao_atual.expira_em) : "Não disponível";
         const sessoes = Array.isArray(data?.sessoes_recentes) ? data.sessoes_recentes : [];
         statusEl.textContent = `Sessão atual válida até ${expiraEm}.`;
-        if (!sessoes.length) {
+        const sessaoMaisRecente = sessoes[0];
+        if (!sessaoMaisRecente) {
           lista.innerHTML = `
             <div class="settings-detail-item">
-              <strong>Nenhum acesso recente encontrado</strong>
-              <span>Os próximos logins aparecerão aqui para consulta rápida.</span>
+              <strong>Último acesso</strong>
+              <span>Ainda não há um registro recente para mostrar.</span>
             </div>
           `;
           return;
         }
-        lista.innerHTML = sessoes.map((sessao, index) => `
+        lista.innerHTML = `
           <div class="settings-detail-item">
-            <strong>${index === 0 ? "Acesso mais recente" : `Acesso ${index + 1}`}</strong>
-            <span>${formatarDataHoraAdmin(sessao.acessado_em)}</span>
+            <strong>Acesso mais recente</strong>
+            <span>${formatarDataHoraAdmin(sessaoMaisRecente.acessado_em)}</span>
           </div>
-        `).join("");
+        `;
       } catch (e) {
         statusEl.textContent = e.message || "Não foi possível carregar as sessões recentes.";
       }
