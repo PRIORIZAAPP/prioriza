@@ -2618,6 +2618,19 @@
         font-weight: 800;
         letter-spacing: 0.04em;
         flex-shrink: 0;
+        overflow: hidden;
+      }
+      #screen-ajustes .settings-profile-avatar.has-photo,
+      #screen-ajustes .settings-profile-detail-avatar.has-photo {
+        background: #e2e8f0;
+        color: transparent;
+      }
+      #screen-ajustes .settings-profile-avatar img,
+      #screen-ajustes .settings-profile-detail-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
       }
       #screen-ajustes .settings-profile-copy {
         min-width: 0;
@@ -2749,6 +2762,19 @@
         width: 82px;
         height: 82px;
         font-size: 28px;
+      }
+      #screen-ajustes .settings-profile-avatar-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 6px;
+      }
+      #screen-ajustes .settings-profile-avatar-hint {
+        font-size: 12px;
+        line-height: 1.4;
+        color: #64748b;
+        text-align: center;
       }
       #screen-ajustes .settings-profile-logout {
         margin-top: 4px;
@@ -6370,6 +6396,12 @@
                   <div class="settings-profile-detail-name" data-auth-user-name>Sessão ativa</div>
                   <div class="settings-profile-detail-email" data-auth-user-email></div>
                   <div class="settings-profile-detail-meta">Cadastro: <span data-auth-user-created>Não disponível</span></div>
+                  <div class="settings-profile-avatar-actions">
+                    <button id="btn-upload-avatar" class="settings-soft-btn" type="button">Atualizar foto</button>
+                    <button id="btn-remover-avatar" class="settings-soft-btn" type="button" hidden>Remover foto</button>
+                  </div>
+                  <input id="input-avatar-upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
+                  <div class="settings-profile-avatar-hint">Use uma imagem JPG, PNG, WebP ou GIF com até 5 MB.</div>
                   <button class="settings-soft-btn" type="button" data-settings-placeholder="Alteração de senha">Alterar senha</button>
                   <button id="btn-logout" class="btn-outline danger settings-profile-logout" type="button" data-settings-logout>Sair</button>
                 </div>
@@ -7015,17 +7047,38 @@
       el.classList.toggle("is-success", tipo === "sucesso");
     }
 
-    function preencherContaLogada() {
-      const nome = authUser?.nome || "Sessão ativa";
-      const email = authUser?.email || "";
-      const criado = authUser?.criado_em ? formatarDataHoraAdmin(authUser.criado_em) : "Não disponível";
-      const iniciais = String(nome)
+    function obterIniciaisUsuario(nome = "") {
+      return String(nome || "")
         .trim()
         .split(/\s+/)
         .filter(Boolean)
         .slice(0, 2)
         .map((parte) => parte.charAt(0).toUpperCase())
         .join("") || "PR";
+    }
+
+    function renderizarAvatarPerfil(el, nome, avatarUrl) {
+      if (!el) return;
+      const iniciais = obterIniciaisUsuario(nome);
+      if (avatarUrl) {
+        el.classList.add("has-photo");
+        el.innerHTML = `<img src="${textoSeguro(avatarUrl)}" alt="Foto de perfil de ${textoSeguro(nome || "usuário")}" loading="lazy" />`;
+        return;
+      }
+      el.classList.remove("has-photo");
+      el.textContent = iniciais;
+    }
+
+    function atualizarAcoesAvatarPerfil() {
+      const btnRemover = document.getElementById("btn-remover-avatar");
+      if (btnRemover) btnRemover.hidden = !authUser?.avatar_url;
+    }
+
+    function preencherContaLogada() {
+      const nome = authUser?.nome || "Sessão ativa";
+      const email = authUser?.email || "";
+      const criado = authUser?.criado_em ? formatarDataHoraAdmin(authUser.criado_em) : "Não disponível";
+      const avatarUrl = authUser?.avatar_url || "";
 
       document.querySelectorAll("[data-auth-user-name]").forEach((el) => {
         el.textContent = nome;
@@ -7037,8 +7090,9 @@
         el.textContent = criado;
       });
       document.querySelectorAll("[data-settings-avatar]").forEach((el) => {
-        el.textContent = iniciais;
+        renderizarAvatarPerfil(el, nome, avatarUrl);
       });
+      atualizarAcoesAvatarPerfil();
       atualizarVisibilidadeGestaoUsuarios();
       if (authUser?.is_admin) {
         carregarGestaoUsuariosAdmin();
@@ -7084,6 +7138,71 @@
       const ok = await modal.confirmar("Deseja sair da sua conta agora?", "Sair do Prioriza", "azul");
       if (!ok) return;
       await fazerLogout();
+    }
+
+    function atualizarUsuarioAutenticado(user) {
+      if (!user) return;
+      authUser = { ...(authUser || {}), ...user };
+      preencherContaLogada();
+    }
+
+    async function enviarAvatarPerfil(arquivo) {
+      if (!arquivo) return;
+      const formData = new FormData();
+      formData.append("arquivo", arquivo);
+      const btn = document.getElementById("btn-upload-avatar");
+      const btnRemover = document.getElementById("btn-remover-avatar");
+      const input = document.getElementById("input-avatar-upload");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Enviando...";
+      }
+      if (btnRemover) btnRemover.disabled = true;
+      try {
+        const res = await apiFetch(API + "/auth/profile/avatar", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.detail || "Não foi possível atualizar a foto de perfil.");
+        atualizarUsuarioAutenticado(data?.user);
+        await modal.alerta(data?.message || "Foto de perfil atualizada com sucesso.", "Perfil");
+      } catch (e) {
+        await modal.alerta(e.message || "Não foi possível atualizar a foto de perfil.", "Perfil");
+      } finally {
+        if (input) input.value = "";
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Atualizar foto";
+        }
+        if (btnRemover) btnRemover.disabled = false;
+      }
+    }
+
+    async function removerAvatarPerfil() {
+      if (!authUser?.avatar_url) return;
+      const ok = await modal.confirmar("Remover a foto de perfil atual?", "Remover foto", "vermelho");
+      if (!ok) return;
+      const btnRemover = document.getElementById("btn-remover-avatar");
+      if (btnRemover) {
+        btnRemover.disabled = true;
+        btnRemover.textContent = "Removendo...";
+      }
+      try {
+        const res = await apiFetch(API + "/auth/profile/avatar", {
+          method: "DELETE",
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.detail || "Não foi possível remover a foto de perfil.");
+        atualizarUsuarioAutenticado(data?.user);
+      } catch (e) {
+        await modal.alerta(e.message || "Não foi possível remover a foto de perfil.", "Perfil");
+      } finally {
+        if (btnRemover) {
+          btnRemover.disabled = false;
+          btnRemover.textContent = "Remover foto";
+        }
+      }
     }
 
     async function abrirPlaceholderAjustes(acao) {
@@ -10847,6 +10966,16 @@
         if (fechar) {
           fecharSubpaginaAjustes();
         }
+      });
+      document.getElementById("btn-upload-avatar")?.addEventListener("click", () => {
+        document.getElementById("input-avatar-upload")?.click();
+      });
+      document.getElementById("input-avatar-upload")?.addEventListener("change", async (ev) => {
+        const arquivo = ev.target?.files?.[0];
+        if (arquivo) await enviarAvatarPerfil(arquivo);
+      });
+      document.getElementById("btn-remover-avatar")?.addEventListener("click", async () => {
+        await removerAvatarPerfil();
       });
 
       document.getElementById("btn-ativar-notificacoes")?.addEventListener("click", ativarNotificacoesManual);
