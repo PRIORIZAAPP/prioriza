@@ -2882,8 +2882,9 @@
       }
       @media (min-width: 1100px) {
         #screen-ajustes .settings-native-shell {
-          max-width: 760px;
+          max-width: 880px;
           padding-inline: 8px;
+          min-height: auto;
         }
         #screen-ajustes .settings-ios-header h1 {
           font-size: 30px;
@@ -2892,7 +2893,63 @@
         #screen-ajustes .settings-group-card,
         #screen-ajustes .settings-detail-card,
         #screen-ajustes .settings-logout-row {
-          border-radius: 22px;
+          border-radius: 20px;
+        }
+        #screen-ajustes .settings-detail-view {
+          position: relative;
+          inset: auto;
+          z-index: auto;
+          padding: 0;
+          margin-top: 6px;
+          background: transparent;
+          opacity: 1;
+          transform: none;
+          pointer-events: auto;
+          transition: none;
+          overflow: visible;
+          overscroll-behavior: auto;
+        }
+        #screen-ajustes .settings-detail-view.is-open {
+          opacity: 1;
+          transform: none;
+        }
+        #screen-ajustes .settings-detail-header {
+          position: static;
+          top: auto;
+          padding: 0 2px 10px;
+          background: transparent;
+          backdrop-filter: none;
+        }
+        #screen-ajustes .settings-detail-card {
+          padding: 14px 16px;
+          box-shadow: 0 6px 16px rgba(15, 23, 42, 0.035);
+        }
+        #screen-ajustes .settings-detail-page {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        #screen-ajustes .settings-profile-detail-card {
+          gap: 6px;
+          padding-block: 16px;
+        }
+        #screen-ajustes .settings-body-copy {
+          gap: 6px;
+          margin-bottom: 10px;
+        }
+        #screen-ajustes .settings-detail-list,
+        #screen-ajustes .settings-placeholder-grid {
+          gap: 7px;
+        }
+        #screen-ajustes .settings-detail-item {
+          padding: 10px 12px;
+          border-radius: 14px;
+          background: #fbfdff;
+        }
+        #screen-ajustes .settings-soft-btn,
+        #screen-ajustes .settings-placeholder-btn {
+          min-height: 38px;
+          border-radius: 12px;
         }
       }
       #screen-ajustes .appearance-options {
@@ -7144,16 +7201,25 @@
       const main = document.getElementById("settings-main-view");
       const detail = document.getElementById("settings-detail-view");
       if (!main || !detail) return;
+      const desktop = window.matchMedia("(min-width: 1100px)").matches;
       const mostrandoDetalhe = !!settingsPageAtual;
       main.hidden = mostrandoDetalhe;
       if (mostrandoDetalhe) {
         detail.hidden = false;
-        requestAnimationFrame(() => detail.classList.add("is-open"));
+        if (desktop) {
+          detail.classList.add("is-open");
+        } else {
+          requestAnimationFrame(() => detail.classList.add("is-open"));
+        }
       } else {
         detail.classList.remove("is-open");
-        window.setTimeout(() => {
-          if (!settingsPageAtual) detail.hidden = true;
-        }, 180);
+        if (desktop) {
+          detail.hidden = true;
+        } else {
+          window.setTimeout(() => {
+            if (!settingsPageAtual) detail.hidden = true;
+          }, 180);
+        }
       }
       detail.querySelectorAll("[data-settings-page]").forEach((page) => {
         page.hidden = page.dataset.settingsPage !== settingsPageAtual;
@@ -7167,7 +7233,11 @@
       if (!detail || !page) return;
       settingsPageAtual = chave;
       atualizarTelaAjustes();
-      detail.scrollTo({ top: 0, behavior: "smooth" });
+      if (window.matchMedia("(min-width: 1100px)").matches) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        detail.scrollTo({ top: 0, behavior: "smooth" });
+      }
       if (chave === "privacidade") {
         carregarSessoesRecentes();
       }
