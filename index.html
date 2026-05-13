@@ -7097,6 +7097,13 @@
       if (avatarUrl) {
         el.classList.add("has-photo");
         el.innerHTML = `<img src="${textoSeguro(avatarUrl)}" alt="Foto de perfil de ${textoSeguro(nome || "usuário")}" loading="lazy" />`;
+        const img = el.querySelector("img");
+        if (img) {
+          img.addEventListener("error", () => {
+            el.classList.remove("has-photo");
+            el.textContent = iniciais;
+          }, { once: true });
+        }
         return;
       }
       el.classList.remove("has-photo");
