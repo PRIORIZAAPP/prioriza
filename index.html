@@ -6451,7 +6451,6 @@
                   <div id="conta-status" class="settings-note"></div>
                   <div class="settings-actions settings-placeholder-grid" style="margin-top:10px;">
                     <button class="settings-placeholder-btn" type="button" data-settings-open="privacidade">Ver sessões recentes</button>
-                    <button class="settings-placeholder-btn" type="button" data-settings-placeholder="Recuperação de conta">Recuperação de conta</button>
                   </div>
                 </div>
               </section>
@@ -6628,10 +6627,11 @@
                     <button class="settings-placeholder-btn" type="button" id="btn-atualizar-sessoes">Atualizar sessões</button>
                     <button class="settings-placeholder-btn" type="button" data-settings-open="google">Integrações conectadas</button>
                     <button class="settings-placeholder-btn" type="button" data-settings-open="conta">Segurança da conta</button>
-                    <button class="settings-placeholder-btn" type="button" data-settings-placeholder="Recursos futuros">Recursos futuros</button>
+                    <button class="settings-placeholder-btn" type="button" id="btn-recursos-futuros">Recursos futuros</button>
                   </div>
                   <div id="privacidade-sessoes-status" class="settings-note"></div>
                   <div id="privacidade-sessoes-lista" class="settings-detail-list" style="margin-top:10px;"></div>
+                  <div id="privacidade-recursos-futuros" class="settings-detail-list" style="margin-top:10px; display:none;"></div>
                 </div>
                 <section class="settings-detail-card admin-gestao" id="card-gestao-usuarios" hidden aria-hidden="true">
                   <div class="settings-section-head">
@@ -7329,6 +7329,38 @@
       } catch (e) {
         statusEl.textContent = e.message || "Não foi possível carregar as sessões recentes.";
       }
+    }
+
+    function alternarRecursosFuturos() {
+      const lista = document.getElementById("privacidade-recursos-futuros");
+      const btn = document.getElementById("btn-recursos-futuros");
+      if (!lista || !btn) return;
+      const aberto = lista.style.display !== "none";
+      if (aberto) {
+        lista.style.display = "none";
+        btn.textContent = "Recursos futuros";
+        return;
+      }
+      lista.innerHTML = `
+        <div class="settings-detail-item">
+          <strong>Biometria e desbloqueio rápido</strong>
+          <span>Fluxo pensado para reentrada mais prática em dispositivos compatíveis.</span>
+        </div>
+        <div class="settings-detail-item">
+          <strong>Sessões detalhadas</strong>
+          <span>Mais contexto sobre aparelho, navegador e histórico de acessos da conta.</span>
+        </div>
+        <div class="settings-detail-item">
+          <strong>Alertas inteligentes</strong>
+          <span>Resumos do dia, sugestões de foco e notificações mais contextuais.</span>
+        </div>
+        <div class="settings-detail-item">
+          <strong>Integrações expandidas</strong>
+          <span>Mais serviços conectados para centralizar rotina, agenda e execução.</span>
+        </div>
+      `;
+      lista.style.display = "";
+      btn.textContent = "Ocultar próximos recursos";
     }
 
     async function enviarFeedbackAjustes(categoria) {
@@ -11143,6 +11175,9 @@
       });
       document.getElementById("btn-atualizar-sessoes")?.addEventListener("click", async () => {
         await carregarSessoesRecentes();
+      });
+      document.getElementById("btn-recursos-futuros")?.addEventListener("click", () => {
+        alternarRecursosFuturos();
       });
       document.querySelectorAll("[data-feedback-category]").forEach((botao) => {
         botao.addEventListener("click", async () => {
