@@ -46,6 +46,7 @@ EMAIL_FROM = os.environ.get("EMAIL_FROM", "").strip()
 APP_URL = os.environ.get("APP_URL", "").strip()
 PASSWORD_RESET_EXP_MINUTES = int(os.environ.get("PASSWORD_RESET_EXP_MINUTES", "30"))
 AVATAR_MAX_BYTES = int(os.environ.get("AVATAR_MAX_BYTES", str(5 * 1024 * 1024)))
+FEEDBACK_TO = os.environ.get("FEEDBACK_TO", "").strip()
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 if not DATABASE_URL:
@@ -465,6 +466,60 @@ def _apagar_avatar_local(avatar_url: Optional[str]):
             arquivo.unlink()
     except Exception as e:
         print(f"[AVATAR] Aviso ao remover avatar antigo: {e}")
+
+
+def _extrair_email_simples(valor: str) -> str:
+    texto = (valor or "").strip()
+    if not texto:
+        return ""
+    encontrado = re.search(r"([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})", texto, flags=re.I)
+    return normalizar_email(encontrado.group(1)) if encontrado else ""
+
+
+def _destino_feedback_email() -> str:
+    for candidato in (FEEDBACK_TO, ADMIN_EMAIL, EMAIL_FROM):
+        email = _extrair_email_simples(candidato)
+        if validar_email(email):
+            return email
+    return ""
+
+
+def enviar_email_feedback(usuario: User, categoria: str, mensagem: str) -> bool:
+    destino = _destino_feedback_email()
+    if not destino or not RESEND_API_KEY or not EMAIL_FROM:
+        print("[FEEDBACK] Envio por e-mail indisponível: FEEDBACK_TO/ADMIN_EMAIL/EMAIL_FROM/RESEND_API_KEY ausente.")
+        return False
+
+    categoria_limpa = (categoria or "feedback").strip().capitalize()
+    remetente_nome = (usuario.nome or "").strip() or "Usuário PRIORIZA"
+    remetente_email = (usuario.email or "").strip() or "Sem e-mail"
+    html = f"""
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a">
+      <h2 style="margin:0 0 12px 0;">Novo {categoria_limpa} enviado pelo PRIORIZA</h2>
+      <p style="margin:0 0 6px 0;"><strong>Usuário:</strong> {remetente_nome}</p>
+      <p style="margin:0 0 14px 0;"><strong>E-mail:</strong> {remetente_email}</p>
+      <div style="padding:14px 16px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;white-space:pre-wrap;">{mensagem}</div>
+    </div>
+    """.strip()
+    payload = {
+        "from": EMAIL_FROM,
+        "to": [destino],
+        "subject": f"PRIORIZA · {categoria_limpa}",
+        "html": html,
+    }
+    headers = {
+        "Authorization": f"Bearer {RESEND_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    try:
+        resposta = requests.post("https://api.resend.com/emails", json=payload, headers=headers, timeout=20)
+        if resposta.ok:
+            return True
+        print(f"[FEEDBACK] Falha ao enviar via Resend: {resposta.status_code} {resposta.text}")
+        return False
+    except Exception as e:
+        print(f"[FEEDBACK] Erro ao enviar feedback: {e}")
+        return False
 
 
 def criar_token_acesso(user: User) -> str:
@@ -1666,6 +1721,63 @@ def auth_me(current_user: User = Depends(get_current_user)):
     return {"ok": True, "user": current_user.to_dict()}
 
 
+@app.post("/auth/change-password")
+async def auth_change_password(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="JSON inválido.")
+
+    senha_atual = str(payload.get("senha_atual") or "")
+    nova_senha = str(payload.get("nova_senha") or "")
+    confirmar_senha = str(payload.get("confirmar_senha") or "")
+
+    if not verificar_senha(senha_atual, current_user.senha_hash):
+        raise HTTPException(status_code=400, detail="A senha atual informada não confere.")
+    if len(nova_senha) < 6:
+        raise HTTPException(status_code=400, detail="A nova senha deve ter pelo menos 6 caracteres.")
+    if nova_senha != confirmar_senha:
+        raise HTTPException(status_code=400, detail="As senhas não coincidem.")
+    if verificar_senha(nova_senha, current_user.senha_hash):
+        raise HTTPException(status_code=400, detail="A nova senha precisa ser diferente da atual.")
+
+    current_user.senha_hash = hash_senha(nova_senha)
+    db.commit()
+    db.refresh(current_user)
+    return {"ok": True, "message": "Senha atualizada com sucesso.", "user": current_user.to_dict()}
+
+
+@app.get("/auth/sessions")
+def auth_sessions(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    token = get_token_from_request(request)
+    payload = decodificar_token(token) if token else {}
+    exp = payload.get("exp")
+    sessoes = db.query(UserAccessLog).filter(
+        UserAccessLog.user_id == current_user.id
+    ).order_by(UserAccessLog.acessado_em.desc(), UserAccessLog.id.desc()).limit(10).all()
+    return {
+        "ok": True,
+        "sessao_atual": {
+            "expira_em": datetime.fromtimestamp(exp, tz=UTC).isoformat() if exp else None,
+        },
+        "sessoes_recentes": [
+            {
+                "id": sessao.id,
+                "acessado_em": sessao.acessado_em.isoformat() if sessao.acessado_em else None,
+            }
+            for sessao in sessoes
+        ],
+    }
+
+
 @app.post("/auth/profile/avatar")
 async def auth_upload_avatar(
     arquivo: UploadFile = File(...),
@@ -1709,6 +1821,34 @@ def auth_remover_avatar(
     db.refresh(current_user)
     _apagar_avatar_local(avatar_anterior)
     return {"ok": True, "message": "Foto de perfil removida.", "user": current_user.to_dict()}
+
+
+@app.post("/feedback")
+async def enviar_feedback_app(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="JSON inválido.")
+
+    categoria = (payload.get("categoria") or "feedback").strip().lower()
+    mensagem = str(payload.get("mensagem") or "").strip()
+    if categoria not in ("feedback", "problema", "melhoria"):
+        categoria = "feedback"
+    if len(mensagem) < 8:
+        raise HTTPException(status_code=400, detail="Escreva uma mensagem um pouco mais detalhada.")
+
+    enviado = enviar_email_feedback(current_user, categoria, mensagem)
+    if not enviado:
+        print(f"[FEEDBACK] {categoria.upper()} de {current_user.email}: {mensagem}")
+
+    return {
+        "ok": True,
+        "message": "Recebemos sua mensagem. Obrigado por ajudar a evoluir o PRIORIZA.",
+    }
 
 
 @app.post("/auth/logout")
