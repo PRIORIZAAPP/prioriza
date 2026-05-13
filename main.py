@@ -12,7 +12,7 @@ from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -45,6 +45,7 @@ RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "").strip()
 EMAIL_FROM = os.environ.get("EMAIL_FROM", "").strip()
 APP_URL = os.environ.get("APP_URL", "").strip()
 PASSWORD_RESET_EXP_MINUTES = int(os.environ.get("PASSWORD_RESET_EXP_MINUTES", "30"))
+AVATAR_MAX_BYTES = int(os.environ.get("AVATAR_MAX_BYTES", str(5 * 1024 * 1024)))
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 if not DATABASE_URL:
@@ -113,8 +114,13 @@ class User(Base):
     ultimo_acesso = Column(DateTime, nullable=True)
     total_acessos = Column(Integer, default=0, nullable=False)
     is_admin = Column(Boolean, default=False, nullable=False)
+    avatar_url = Column(Text, nullable=True)
+    avatar_updated_at = Column(DateTime, nullable=True)
 
     def to_dict(self):
+        avatar_url = self.avatar_url
+        if avatar_url and self.avatar_updated_at:
+            avatar_url = f"{avatar_url}?v={int(self.avatar_updated_at.timestamp())}"
         return {
             "id": self.id,
             "nome": self.nome,
@@ -124,6 +130,8 @@ class User(Base):
             "ultimo_acesso": self.ultimo_acesso.isoformat() if self.ultimo_acesso else None,
             "total_acessos": int(self.total_acessos or 0),
             "is_admin": bool(self.is_admin),
+            "avatar_url": avatar_url,
+            "avatar_updated_at": self.avatar_updated_at.isoformat() if self.avatar_updated_at else None,
         }
 
 
@@ -418,6 +426,47 @@ def enviar_email_recuperacao_senha(email_destino: str, nome: str, token: str) ->
         return False
 
 
+def _nome_arquivo_avatar(user_id: int, extensao: str) -> str:
+    ts = datetime.now(UTC).strftime("%Y%m%d%H%M%S")
+    sufixo = secrets.token_hex(4)
+    return f"user_{user_id}_{ts}_{sufixo}{extensao}"
+
+
+def _extensao_avatar_segura(upload: UploadFile) -> str:
+    nome = (upload.filename or "").lower().strip()
+    if nome.endswith(".png"):
+        return ".png"
+    if nome.endswith(".webp"):
+        return ".webp"
+    if nome.endswith(".gif"):
+        return ".gif"
+    if nome.endswith(".jpeg") or nome.endswith(".jpg"):
+        return ".jpg"
+
+    content_type = (upload.content_type or "").lower().strip()
+    if content_type == "image/png":
+        return ".png"
+    if content_type == "image/webp":
+        return ".webp"
+    if content_type == "image/gif":
+        return ".gif"
+    if content_type in ("image/jpeg", "image/jpg"):
+        return ".jpg"
+    raise HTTPException(status_code=400, detail="Formato de imagem não suportado. Use JPG, PNG, WebP ou GIF.")
+
+
+def _apagar_avatar_local(avatar_url: Optional[str]):
+    caminho = (avatar_url or "").strip()
+    if not caminho.startswith("/static/avatars/"):
+        return
+    try:
+        arquivo = static_dir / "avatars" / Path(caminho).name
+        if arquivo.exists():
+            arquivo.unlink()
+    except Exception as e:
+        print(f"[AVATAR] Aviso ao remover avatar antigo: {e}")
+
+
 def criar_token_acesso(user: User) -> str:
     agora = datetime.now(UTC)
     payload = {
@@ -554,11 +603,11 @@ def _sql_tipo_coluna(nome_coluna: str) -> str:
         return "INTEGER"
     if nome_coluna in ("ativo", "is_admin", "sincronizado_google", "all_day"):
         return "BOOLEAN"
-    if nome_coluna in ("criado_em", "ultimo_acesso", "ultima_sync_google"):
+    if nome_coluna in ("criado_em", "ultimo_acesso", "ultima_sync_google", "avatar_updated_at"):
         return "TIMESTAMP" if not IS_SQLITE else "DATETIME"
     if nome_coluna in ("descricao", "local", "hora_fim", "tipo_evento", "origem_evento", "google_event_id"):
         return "VARCHAR"
-    if nome_coluna == "google_html_link":
+    if nome_coluna in ("google_html_link", "avatar_url"):
         return "TEXT"
     return "VARCHAR"
 
@@ -613,7 +662,7 @@ def preencher_nulos_coluna(nome_tabela: str, nome_coluna: str, valor_sql: str):
 def rodar_migracoes_automaticas():
     init_db()
 
-    for coluna in ("ultimo_acesso", "total_acessos", "is_admin"):
+    for coluna in ("ultimo_acesso", "total_acessos", "is_admin", "avatar_url", "avatar_updated_at"):
         garantir_coluna_tabela("users", coluna)
 
     for coluna in ("user_id", "token_hash", "expires_at", "used_at", "created_at"):
@@ -1370,6 +1419,8 @@ def excluir_tarefa_no_google(db: Session, tarefa: Tarefa, user: User):
 
 static_dir = BASE_DIR / "static"
 static_dir.mkdir(exist_ok=True)
+avatar_dir = static_dir / "avatars"
+avatar_dir.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 
@@ -1613,6 +1664,51 @@ async def auth_reset_password(request: Request, db: Session = Depends(get_db)):
 @app.get("/auth/me")
 def auth_me(current_user: User = Depends(get_current_user)):
     return {"ok": True, "user": current_user.to_dict()}
+
+
+@app.post("/auth/profile/avatar")
+async def auth_upload_avatar(
+    arquivo: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not arquivo:
+        raise HTTPException(status_code=400, detail="Selecione uma imagem para continuar.")
+
+    extensao = _extensao_avatar_segura(arquivo)
+    conteudo = await arquivo.read()
+    if not conteudo:
+        raise HTTPException(status_code=400, detail="A imagem enviada está vazia.")
+    if len(conteudo) > AVATAR_MAX_BYTES:
+        raise HTTPException(status_code=400, detail="A imagem excede o limite de 5 MB.")
+
+    nome_arquivo = _nome_arquivo_avatar(current_user.id, extensao)
+    destino = avatar_dir / nome_arquivo
+    destino.write_bytes(conteudo)
+
+    avatar_anterior = current_user.avatar_url
+    current_user.avatar_url = f"/static/avatars/{nome_arquivo}"
+    current_user.avatar_updated_at = datetime.now(UTC)
+    db.commit()
+    db.refresh(current_user)
+
+    _apagar_avatar_local(avatar_anterior)
+
+    return {"ok": True, "message": "Foto de perfil atualizada com sucesso.", "user": current_user.to_dict()}
+
+
+@app.delete("/auth/profile/avatar")
+def auth_remover_avatar(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    avatar_anterior = current_user.avatar_url
+    current_user.avatar_url = None
+    current_user.avatar_updated_at = None
+    db.commit()
+    db.refresh(current_user)
+    _apagar_avatar_local(avatar_anterior)
+    return {"ok": True, "message": "Foto de perfil removida.", "user": current_user.to_dict()}
 
 
 @app.post("/auth/logout")
