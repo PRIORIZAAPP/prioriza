@@ -1341,9 +1341,10 @@
         display: none;
         margin-bottom: 12px;
         border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        background: #f8fafc;
-        padding: 12px;
+        border-radius: 16px;
+        background: #ffffff;
+        padding: 14px;
+        box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
       }
       .checklist-form-wrap.open {
         display: block;
@@ -1353,17 +1354,87 @@
         align-items: center;
         justify-content: space-between;
         gap: 8px;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
       }
       .checklist-form-title {
-        font-size: 13px;
-        font-weight: 600;
+        font-size: 15px;
+        font-weight: 620;
         color: #111827;
       }
       .checklist-form-subtitle {
-        font-size: 11px;
+        font-size: 12px;
         color: #6b7280;
+        margin-top: 3px;
+      }
+      .form-kicker {
+        font-size: 11px;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        margin-bottom: 6px;
+      }
+      .form-main-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .form-main-stack > .btn-row {
         margin-top: 2px;
+      }
+      .form-more-options {
+        margin-top: 10px;
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        border-radius: 14px;
+        background: #fbfdff;
+        overflow: hidden;
+      }
+      .form-more-options summary {
+        list-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 11px 13px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 560;
+        color: #334155;
+      }
+      .form-more-options summary::-webkit-details-marker {
+        display: none;
+      }
+      .form-more-options summary::after {
+        content: "›";
+        font-size: 18px;
+        line-height: 1;
+        color: #94a3b8;
+        transform: rotate(90deg);
+        transition: transform 0.18s ease;
+      }
+      .form-more-options[open] summary::after {
+        transform: rotate(-90deg);
+      }
+      .form-more-body {
+        padding: 0 13px 13px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .form-more-note {
+        font-size: 12px;
+        line-height: 1.45;
+        color: #64748b;
+      }
+      .form-identity-agenda,
+      .form-identity-checklist {
+        padding: 9px 11px;
+        border-radius: 12px;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+      }
+      .form-identity-checklist {
+        background: linear-gradient(180deg, #fbfdff 0%, #f8fafc 100%);
       }
       .checklist-delete-btn {
         border-radius: 999px; border: none; padding: 4px 8px;
@@ -1377,23 +1448,28 @@
         .checklist-toolbar { align-items: stretch; }
         .btn-ghost-action { justify-content: center; width: 100%; }
       }
-      label { display: block; font-size: 11px; color: #4b5563; margin-bottom: 2px; }
+      label { display: block; font-size: 11px; color: #4b5563; margin-bottom: 4px; }
       input[type="text"], input[type="time"], input[type="number"],
       input[type="date"], textarea, select {
-        width: 100%; padding: 6px 8px; border-radius: 8px;
-        border: 1px solid #d1d5db; font-size: 12px;
-        background: #f9fafb; color: #111827;
+        width: 100%; padding: 9px 10px; border-radius: 10px;
+        border: 1px solid #d8dee8; font-size: 13px;
+        background: #fbfcfe; color: #111827;
       }
       textarea { resize: vertical; min-height: 50px; }
       input:focus, textarea:focus, select:focus {
         outline: none; border-color: var(--cor-tema);
         box-shadow: 0 0 0 1px rgba(var(--cor-tema-rgb), 0.28);
       }
-      .tag-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+      .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
       .checkbox-pill {
-        font-size: 11px; padding: 4px 8px; border-radius: 999px;
-        border: 1px solid #d1d5db; background: #f9fafb;
+        font-size: 11px; padding: 5px 9px; border-radius: 999px;
+        border: 1px solid #d8dee8; background: #ffffff;
         display: inline-flex; align-items: center; gap: 4px; cursor: pointer;
+      }
+      .checkbox-pill:has(input:checked) {
+        border-color: rgba(var(--cor-tema-rgb), 0.28);
+        background: rgba(var(--cor-tema-rgb), 0.08);
+        color: var(--cor-tema-escura);
       }
       .campo-em-breve { opacity: 0.45; pointer-events: none; }
       .badge-em-breve {
@@ -6138,68 +6214,80 @@
             <div id="agenda-form-wrap" class="checklist-form-wrap">
               <div class="checklist-form-header">
                 <div>
+                  <div class="form-kicker">Compromisso</div>
                   <div class="checklist-form-title">Adicionar compromisso</div>
+                  <div class="checklist-form-subtitle">Preencha só o essencial. O restante fica em mais opções.</div>
                 </div>
                 <button id="btn-fechar-form-agenda" class="btn-secondary" type="button">Fechar</button>
               </div>
 
               <form id="form-agenda">
-                <div>
-                  <label for="agenda-titulo">Título</label>
-                  <input id="agenda-titulo" type="text" placeholder="Ex: Reunião equipe, Fórum gestão..." required />
-                </div>
-                <div class="form-grid">
-                  <div><label for="agenda-data">Data</label><input id="agenda-data" type="date" /></div>
-                  <div><label for="agenda-hora">Hora início</label><input id="agenda-hora" type="time" value="08:00" /></div>
-                </div>
-                <div class="form-grid">
-                  <div><label for="agenda-duracao">Duração (min)</label><input id="agenda-duracao" type="number" value="60" min="10" step="5" /></div>
-                  <div>
-                    <label for="agenda-prioridade">Prioridade</label>
-                    <select id="agenda-prioridade">
-                      <option value="1">1 – Alta</option>
-                      <option value="2" selected>2 – Média</option>
-                      <option value="3">3 – Baixa</option>
-                    </select>
+                <div class="form-main-stack">
+                  <div class="form-identity-agenda">
+                    <div>
+                      <label for="agenda-titulo">Título</label>
+                      <input id="agenda-titulo" type="text" placeholder="Ex: Reunião equipe, Fórum gestão..." required />
+                    </div>
+                    <div class="form-grid" style="margin-top:8px">
+                      <div><label for="agenda-data">Data</label><input id="agenda-data" type="date" /></div>
+                      <div><label for="agenda-hora">Hora início</label><input id="agenda-hora" type="time" value="08:00" /></div>
+                    </div>
+                    <div class="form-grid" style="margin-bottom:0">
+                      <div><label for="agenda-duracao">Duração (min)</label><input id="agenda-duracao" type="number" value="60" min="10" step="5" /></div>
+                      <div></div>
+                    </div>
                   </div>
-                </div>
-                <div class="form-grid">
-                  <div>
-                    <label for="agenda-categoria">Categoria</label>
-                    <select id="agenda-categoria">
-                      <option value="PROFISSIONAL" selected>Profissional</option>
-                      <option value="PESSOAL">Pessoal</option>
-                    </select>
+                  <details class="form-more-options">
+                    <summary>Mais opções</summary>
+                    <div class="form-more-body">
+                      <div class="form-grid">
+                        <div>
+                          <label for="agenda-categoria">Categoria</label>
+                          <select id="agenda-categoria">
+                            <option value="PROFISSIONAL" selected>Profissional</option>
+                            <option value="PESSOAL">Pessoal</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label for="agenda-prioridade">Prioridade</label>
+                          <select id="agenda-prioridade">
+                            <option value="1">1 – Alta</option>
+                            <option value="2" selected>2 – Média</option>
+                            <option value="3">3 – Baixa</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="form-grid">
+                        <div id="agenda-local-wrap">
+                          <label for="agenda-local">Local / contexto (opcional)</label>
+                          <input id="agenda-local" type="text" placeholder="Ex: HGG, Escritório, Home office" />
+                        </div>
+                        <div>
+                          <label for="agenda-repetir">Frequência</label>
+                          <select id="agenda-repetir">
+                            <option value="NENHUMA" selected>Não repetir</option>
+                            <option value="DIARIA">Todos os dias</option>
+                            <option value="SEMANAL">Toda semana</option>
+                            <option value="MENSAL">Todo mês</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div id="agenda-locais-sugeridos" class="tag-row"></div>
+                      <div class="form-grid" style="margin-bottom:0">
+                        <div><label for="agenda-repetir-ate">Repetir até</label><input id="agenda-repetir-ate" type="date" disabled /></div>
+                        <div class="agenda-google-opcao">
+                          <label class="agenda-google-check" for="agenda-sincronizar-google">
+                            <input id="agenda-sincronizar-google" type="checkbox" />
+                            Enviar também para o Google Agenda
+                          </label>
+                          <div id="agenda-google-sync-ajuda" class="agenda-google-ajuda">Crie o mesmo compromisso no Google Agenda quando precisar sincronizar fora do PRIORIZA.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </details>
+                  <div class="btn-row">
+                    <button type="submit" id="btn-salvar-compromisso" class="btn-primary">Salvar</button>
                   </div>
-                  <div id="agenda-local-wrap">
-                    <label for="agenda-local">Local / contexto (opcional)</label>
-                    <input id="agenda-local" type="text" placeholder="Ex: HGG, Escritório, Home office" />
-                  </div>
-                </div>
-                <div>
-                  <div id="agenda-locais-sugeridos" class="tag-row"></div>
-                </div>
-                <div class="agenda-google-opcao">
-                  <label class="agenda-google-check" for="agenda-sincronizar-google">
-                    <input id="agenda-sincronizar-google" type="checkbox" />
-                    Enviar também para o Google Agenda
-                  </label>
-                  <div id="agenda-google-sync-ajuda" class="agenda-google-ajuda">Ative esta opção quando quiser criar o mesmo compromisso no Google Agenda além do PRIORIZA.</div>
-                </div>
-                <div class="form-grid" style="margin-top:6px">
-                  <div>
-                    <label for="agenda-repetir">Frequência</label>
-                    <select id="agenda-repetir">
-                      <option value="NENHUMA" selected>Não repetir</option>
-                      <option value="DIARIA">Diariamente</option>
-                      <option value="SEMANAL">Semanalmente</option>
-                      <option value="MENSAL">Mensalmente</option>
-                    </select>
-                  </div>
-                  <div><label for="agenda-repetir-ate">Repetir até</label><input id="agenda-repetir-ate" type="date" disabled /></div>
-                </div>
-                <div class="btn-row">
-                  <button type="submit" id="btn-salvar-compromisso" class="btn-primary">Salvar compromisso</button>
                 </div>
               </form>
             </div>
@@ -6262,46 +6350,54 @@
             <div id="checklist-form-wrap" class="checklist-form-wrap">
               <div class="checklist-form-header">
                 <div>
+                  <div class="form-kicker">Rotina recorrente</div>
                   <div class="checklist-form-title">Nova rotina</div>
-                  <div class="checklist-form-subtitle">Preencha os campos abaixo para adicionar um novo item ao checklist.</div>
+                  <div class="checklist-form-subtitle">Fluxo de execução recorrente, com o essencial primeiro.</div>
                 </div>
                 <button id="btn-fechar-form-checklist" class="btn-secondary" type="button">Fechar</button>
               </div>
 
               <form id="form-checklist">
-                <div><label for="chk-titulo">Título</label><input id="chk-titulo" type="text" placeholder="Ex: Revisar protocolo, Fechar relatório" required /></div>
-                <div class="form-grid">
-                  <div>
-                    <label for="chk-categoria">Categoria</label>
-                    <select id="chk-categoria">
-                      <option value="PROFISSIONAL" selected>Profissional</option>
-                      <option value="PESSOAL">Pessoal</option>
-                    </select>
+                <div class="form-main-stack">
+                  <div class="form-identity-checklist">
+                    <div><label for="chk-titulo">Título</label><input id="chk-titulo" type="text" placeholder="Ex: Revisar protocolo, Fechar relatório" required /></div>
+                    <div class="form-grid" style="margin-top:8px;margin-bottom:0">
+                      <div>
+                        <label for="chk-frequencia">Frequência</label>
+                        <select id="chk-frequencia">
+                          <option value="Único">Não repetir</option>
+                          <option value="Diária">Todos os dias</option>
+                          <option value="Semanal" selected>Toda semana</option>
+                          <option value="Mensal">Todo mês</option>
+                          <option value="Bimestral">A cada dois meses</option>
+                          <option value="Trimestral">A cada três meses</option>
+                          <option value="Semestral">A cada seis meses</option>
+                          <option value="Anual">Todo ano</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label for="chk-categoria">Categoria</label>
+                        <select id="chk-categoria">
+                          <option value="PROFISSIONAL" selected>Profissional</option>
+                          <option value="PESSOAL">Pessoal</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <label for="chk-frequencia">Frequência</label>
-                    <select id="chk-frequencia">
-                      <option value="Único">Único (esporádico)</option>
-                      <option value="Diária">Diária</option>
-                      <option value="Semanal" selected>Semanal</option>
-                      <option value="Mensal">Mensal</option>
-                      <option value="Bimestral">Bimestral</option>
-                      <option value="Trimestral">Trimestral</option>
-                      <option value="Semestral">Semestral</option>
-                      <option value="Anual">Anual</option>
-                    </select>
+                  <details class="form-more-options">
+                    <summary>Mais opções</summary>
+                    <div class="form-more-body">
+                      <div>
+                        <label for="chk-local">Local / contexto</label>
+                        <input id="chk-local" type="text" placeholder="Ex: HGG, Escritório" />
+                        <div id="chk-locais-sugeridos" class="tag-row"></div>
+                      </div>
+                      <div class="form-more-note">Use esse campo para contextualizar a rotina sem poluir o fluxo principal de execução.</div>
+                    </div>
+                  </details>
+                  <div class="btn-row">
+                    <button type="submit" id="btn-salvar-rotina" class="btn-primary">Salvar</button>
                   </div>
-                </div>
-                <div class="form-grid">
-                  <div>
-                    <label for="chk-local">Local / contexto</label>
-                    <input id="chk-local" type="text" placeholder="Ex: HGG, Escritório" />
-                    <div id="chk-locais-sugeridos" class="tag-row"></div>
-                  </div>
-                  <div></div>
-                </div>
-              <div class="btn-row">
-                  <button type="submit" id="btn-salvar-rotina" class="btn-primary">Salvar rotina</button>
                 </div>
               </form>
             </div>
