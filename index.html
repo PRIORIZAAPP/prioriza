@@ -2924,7 +2924,10 @@
           padding: 14px 16px;
           box-shadow: 0 6px 16px rgba(15, 23, 42, 0.035);
         }
-        #screen-ajustes .settings-detail-page {
+        #screen-ajustes .settings-detail-page[hidden] {
+          display: none !important;
+        }
+        #screen-ajustes .settings-detail-page:not([hidden]) {
           display: flex;
           flex-direction: column;
           gap: 10px;
