@@ -2895,30 +2895,38 @@
         #screen-ajustes .settings-logout-row {
           border-radius: 20px;
         }
+        #screen-ajustes .settings-native-shell.settings-detail-open {
+          min-height: calc(100dvh - 190px);
+          max-height: calc(100dvh - 190px);
+          overflow: hidden;
+        }
         #screen-ajustes .settings-detail-view {
-          position: relative;
-          inset: auto;
-          z-index: auto;
-          padding: 0;
-          margin-top: 6px;
-          background: transparent;
-          opacity: 1;
-          transform: none;
-          pointer-events: auto;
-          transition: none;
-          overflow: visible;
-          overscroll-behavior: auto;
+          position: absolute;
+          inset: 0;
+          z-index: 20;
+          padding: 2px 2px 8px;
+          margin-top: 0;
+          background: rgba(248, 250, 252, 0.98);
+          opacity: 0;
+          transform: translateX(22px);
+          pointer-events: none;
+          transition: transform 0.24s ease, opacity 0.22s ease;
+          overflow-y: auto;
+          overflow-x: hidden;
+          overscroll-behavior: contain;
+          border-radius: 24px;
         }
         #screen-ajustes .settings-detail-view.is-open {
           opacity: 1;
-          transform: none;
+          transform: translateX(0);
+          pointer-events: auto;
         }
         #screen-ajustes .settings-detail-header {
-          position: static;
-          top: auto;
+          position: sticky;
+          top: 0;
           padding: 0 2px 10px;
-          background: transparent;
-          backdrop-filter: none;
+          background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(248, 250, 252, 0.9) 100%);
+          backdrop-filter: blur(8px);
         }
         #screen-ajustes .settings-detail-card {
           padding: 14px 16px;
@@ -2953,6 +2961,24 @@
         #screen-ajustes .settings-placeholder-btn {
           min-height: 38px;
           border-radius: 12px;
+        }
+        #screen-ajustes .settings-profile-card,
+        #screen-ajustes .settings-link-row,
+        #screen-ajustes .settings-soft-btn,
+        #screen-ajustes .settings-placeholder-btn {
+          transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+        }
+        #screen-ajustes .settings-profile-card:hover {
+          background: rgba(250, 252, 255, 0.98);
+          border-color: rgba(var(--cor-tema-rgb), 0.16);
+        }
+        #screen-ajustes .settings-link-row:hover {
+          background: rgba(248, 250, 252, 0.88);
+        }
+        #screen-ajustes .settings-link-row:hover .settings-link-text,
+        #screen-ajustes .settings-link-row:hover .settings-link-icon,
+        #screen-ajustes .settings-link-row:hover .settings-chevron {
+          color: var(--cor-tema-escura);
         }
       }
       #screen-ajustes .appearance-options {
@@ -7203,26 +7229,20 @@
     function atualizarTelaAjustes() {
       const main = document.getElementById("settings-main-view");
       const detail = document.getElementById("settings-detail-view");
+      const shell = document.querySelector("#screen-ajustes .settings-native-shell");
       if (!main || !detail) return;
       const desktop = window.matchMedia("(min-width: 1100px)").matches;
       const mostrandoDetalhe = !!settingsPageAtual;
       main.hidden = mostrandoDetalhe;
+      shell?.classList.toggle("settings-detail-open", mostrandoDetalhe && desktop);
       if (mostrandoDetalhe) {
         detail.hidden = false;
-        if (desktop) {
-          detail.classList.add("is-open");
-        } else {
-          requestAnimationFrame(() => detail.classList.add("is-open"));
-        }
+        requestAnimationFrame(() => detail.classList.add("is-open"));
       } else {
         detail.classList.remove("is-open");
-        if (desktop) {
-          detail.hidden = true;
-        } else {
-          window.setTimeout(() => {
-            if (!settingsPageAtual) detail.hidden = true;
-          }, 180);
-        }
+        window.setTimeout(() => {
+          if (!settingsPageAtual) detail.hidden = true;
+        }, desktop ? 220 : 180);
       }
       detail.querySelectorAll("[data-settings-page]").forEach((page) => {
         page.hidden = page.dataset.settingsPage !== settingsPageAtual;
@@ -7236,11 +7256,7 @@
       if (!detail || !page) return;
       settingsPageAtual = chave;
       atualizarTelaAjustes();
-      if (window.matchMedia("(min-width: 1100px)").matches) {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        detail.scrollTo({ top: 0, behavior: "smooth" });
-      }
+      detail.scrollTo({ top: 0, behavior: "smooth" });
       if (chave === "privacidade") {
         carregarSessoesRecentes();
       }
