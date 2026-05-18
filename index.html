@@ -1471,6 +1471,83 @@
         background: rgba(var(--cor-tema-rgb), 0.08);
         color: var(--cor-tema-escura);
       }
+      #screen-financas .financas-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      #screen-financas .financas-hero {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      #screen-financas .financas-title {
+        margin: 0;
+        font-size: 26px;
+        line-height: 1.05;
+        letter-spacing: -0.04em;
+        color: #0f172a;
+      }
+      #screen-financas .financas-subtitle {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.5;
+        color: #64748b;
+      }
+      #screen-financas .financas-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      #screen-financas .financas-card {
+        border: 1px solid rgba(226, 232, 240, 0.92);
+        border-radius: 18px;
+        background: rgba(255,255,255,0.96);
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      #screen-financas .financas-label {
+        font-size: 12px;
+        line-height: 1.3;
+        color: #64748b;
+        font-weight: 600;
+      }
+      #screen-financas .financas-value {
+        font-size: 22px;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+        color: #0f172a;
+        font-weight: 650;
+      }
+      #screen-financas .financas-placeholder {
+        border: 1px solid rgba(226, 232, 240, 0.92);
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248, 250, 252, 0.92) 100%);
+        padding: 16px;
+      }
+      #screen-financas .financas-placeholder p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #64748b;
+      }
+      @media (max-width: 420px) {
+        #screen-financas .financas-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (min-width: 1100px) {
+        #screen-financas .financas-grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+        #screen-financas .financas-card,
+        #screen-financas .financas-placeholder {
+          border-radius: 20px;
+        }
+      }
       .campo-em-breve { opacity: 0.45; pointer-events: none; }
       .badge-em-breve {
         display: inline-block; font-size: 10px; background: #fef3c7;
@@ -6081,6 +6158,17 @@
               <span>Pessoal</span>
             </div>
 
+            <div class="nav-item" data-target="screen-financas">
+              <svg viewBox="0 0 256 256" fill="none" color="currentColor">
+                <rect x="32" y="64" width="192" height="128" rx="20" fill="currentColor" opacity="0.16"/>
+                <rect x="32" y="64" width="192" height="128" rx="20" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
+                <line x1="32" y1="100" x2="224" y2="100" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                <circle cx="86" cy="148" r="18" stroke="currentColor" stroke-width="14"/>
+                <path d="M144 146h40M144 174h28" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>
+              </svg>
+              <span>Finanças</span>
+            </div>
+
             <div class="nav-item" data-target="screen-notas">
               <svg viewBox="0 0 256 256" fill="none" color="currentColor">
                 <rect x="48" y="32" width="160" height="192" rx="8" fill="currentColor" opacity="0.2"/>
@@ -6492,6 +6580,48 @@
             <div id="pessoal-rotinas-box" class="pessoal-panel pessoal-panel--rotinas">
               <h3 id="pessoal-rotinas-title" style="margin:4px 0 8px 0;font-size:14px;color:#111827">Checklist pessoal</h3>
               <div id="pessoal-checklist"><small>Carregando...</small></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ ABA FINANÇAS ══ -->
+        <div class="screen" id="screen-financas">
+          <div class="card">
+            <div class="financas-shell">
+              <div class="card-header">
+                <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
+                  <rect x="32" y="64" width="192" height="128" rx="20" fill="currentColor" opacity="0.18"/>
+                  <rect x="32" y="64" width="192" height="128" rx="20" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
+                  <line x1="32" y1="100" x2="224" y2="100" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                  <circle cx="86" cy="148" r="18" stroke="currentColor" stroke-width="14"/>
+                  <path d="M144 146h40M144 174h28" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>
+                </svg>
+                <h2>Finanças</h2>
+              </div>
+              <div class="financas-hero">
+                <p class="financas-subtitle">Controle sua vida financeira de forma simples, visual e conectada com sua rotina.</p>
+              </div>
+              <div class="financas-grid">
+                <div class="financas-card">
+                  <span class="financas-label">Saldo previsto do mês</span>
+                  <strong class="financas-value">R$ 0,00</strong>
+                </div>
+                <div class="financas-card">
+                  <span class="financas-label">Entradas</span>
+                  <strong class="financas-value">R$ 0,00</strong>
+                </div>
+                <div class="financas-card">
+                  <span class="financas-label">Saídas</span>
+                  <strong class="financas-value">R$ 0,00</strong>
+                </div>
+                <div class="financas-card">
+                  <span class="financas-label">Próximas contas</span>
+                  <strong class="financas-value">R$ 0,00</strong>
+                </div>
+              </div>
+              <div class="financas-placeholder">
+                <p>Em breve você poderá cadastrar entradas, contas fixas, dívidas, metas e acompanhar sua previsão financeira do mês.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -7025,6 +7155,17 @@
               <polyline points="88,128 112,152 168,96" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span>Checklist</span>
+          </div>
+
+          <div class="nav-item" data-target="screen-financas">
+            <svg viewBox="0 0 256 256" fill="none" color="currentColor">
+              <rect x="32" y="64" width="192" height="128" rx="20" fill="currentColor" opacity="0.16"/>
+              <rect x="32" y="64" width="192" height="128" rx="20" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
+              <line x1="32" y1="100" x2="224" y2="100" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+              <circle cx="86" cy="148" r="18" stroke="currentColor" stroke-width="14"/>
+              <path d="M144 146h40M144 174h28" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>
+            </svg>
+            <span>Finanças</span>
           </div>
 
           <div class="nav-item" data-target="screen-notas">
