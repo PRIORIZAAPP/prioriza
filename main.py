@@ -242,6 +242,7 @@ class LancamentoFinanceiro(Base):
     valor = Column(Float, nullable=False)
     categoria = Column(String, nullable=False, index=True)
     descricao = Column(String, default="")
+    fonte_renda_id = Column(Integer, nullable=True, index=True)
     data = Column(String, nullable=False, index=True)  # YYYY-MM-DD
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     ativo = Column(Boolean, default=True, nullable=False)
@@ -254,9 +255,33 @@ class LancamentoFinanceiro(Base):
             "valor": float(self.valor or 0),
             "categoria": self.categoria or "",
             "descricao": self.descricao or "",
+            "fonte_renda_id": self.fonte_renda_id,
             "data": self.data,
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
             "ativo": bool(self.ativo),
+        }
+
+
+class FonteRendaFinanceira(Base):
+    __tablename__ = "fontes_renda_financeiras"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    nome = Column(String, nullable=False, index=True)
+    descricao = Column(Text, default="")
+    ativo = Column(Boolean, default=True, nullable=False)
+    criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    atualizado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "nome": self.nome or "",
+            "descricao": self.descricao or "",
+            "ativo": bool(self.ativo),
+            "criado_em": self.criado_em.isoformat() if self.criado_em else None,
+            "atualizado_em": self.atualizado_em.isoformat() if self.atualizado_em else None,
         }
 
 
@@ -425,6 +450,7 @@ class LancamentoFinanceiroCreate(BaseModel):
     valor: float = Field(..., gt=0)
     categoria: str = Field(..., min_length=1)
     descricao: str = ""
+    fonte_renda_id: Optional[int] = None
     data: str = Field(..., min_length=10)
 
 
@@ -435,9 +461,32 @@ class LancamentoFinanceiroOut(BaseModel):
     valor: float
     categoria: str
     descricao: str
+    fonte_renda_id: Optional[int] = None
+    fonte_renda_nome: Optional[str] = None
     data: str
     criado_em: Optional[str] = None
     ativo: bool = True
+
+
+class FonteRendaFinanceiraCreate(BaseModel):
+    nome: str = Field(..., min_length=1)
+    descricao: str = ""
+
+
+class FonteRendaFinanceiraUpdate(BaseModel):
+    nome: Optional[str] = None
+    descricao: Optional[str] = None
+
+
+class FonteRendaFinanceiraOut(BaseModel):
+    id: int
+    user_id: int
+    nome: str
+    descricao: str
+    ativo: bool = True
+    criado_em: Optional[str] = None
+    atualizado_em: Optional[str] = None
+    total_recebido_mes: float = 0
 
 
 class ContaFixaFinanceiraCreate(BaseModel):
@@ -827,6 +876,8 @@ def executar_sql_seguro(sql: str):
 def _sql_tipo_coluna(nome_coluna: str) -> str:
     if nome_coluna == "user_id":
         return "INTEGER"
+    if nome_coluna == "fonte_renda_id":
+        return "INTEGER"
     if nome_coluna == "total_acessos":
         return "INTEGER"
     if nome_coluna in ("ativo", "is_admin", "sincronizado_google", "all_day"):
@@ -933,6 +984,13 @@ def rodar_migracoes_automaticas():
     except Exception as e:
         print(f"[MIGRAÇÃO] Aviso ao criar lancamentos_financeiros: {e}")
 
+    garantir_coluna_tabela("lancamentos_financeiros", "fonte_renda_id")
+
+    try:
+        FonteRendaFinanceira.__table__.create(bind=engine, checkfirst=True)
+    except Exception as e:
+        print(f"[MIGRAÇÃO] Aviso ao criar fontes_renda_financeiras: {e}")
+
     try:
         ContaFixaFinanceira.__table__.create(bind=engine, checkfirst=True)
     except Exception as e:
@@ -1004,6 +1062,42 @@ def calcular_resumo_financeiro(db: Session, user_id: int, hoje_iso: Optional[str
         "saidas_mes": round(saidas_mes, 2),
         "saldo_mes": round(entradas_mes - saidas_mes, 2),
     }
+
+
+def montar_saida_lancamento_financeiro(
+    lancamento: LancamentoFinanceiro,
+    fonte: Optional[FonteRendaFinanceira] = None,
+) -> dict:
+    dados = lancamento.to_dict()
+    if fonte is not None:
+        dados["fonte_renda_nome"] = fonte.nome or ""
+    else:
+        dados["fonte_renda_nome"] = None
+    return dados
+
+
+def calcular_receitas_por_fonte_financeira(db: Session, user_id: int, referencia_iso: str) -> dict[int, float]:
+    ano_mes = (referencia_iso or "")[:7]
+    if not ano_mes:
+        return {}
+    itens = (
+        db.query(LancamentoFinanceiro)
+        .filter(
+            LancamentoFinanceiro.user_id == user_id,
+            LancamentoFinanceiro.ativo == True,
+            LancamentoFinanceiro.tipo == "receita",
+            LancamentoFinanceiro.fonte_renda_id.is_not(None),
+            LancamentoFinanceiro.data.like(f"{ano_mes}%"),
+        )
+        .all()
+    )
+    totais: dict[int, float] = {}
+    for item in itens:
+        fonte_id = int(item.fonte_renda_id or 0)
+        if fonte_id <= 0:
+            continue
+        totais[fonte_id] = round(float(totais.get(fonte_id, 0)) + float(item.valor or 0), 2)
+    return totais
 
 
 def calcular_despesas_por_categoria_financeira(
@@ -2540,6 +2634,7 @@ def criar_lancamento_financeiro(
     categoria = (payload.categoria or "").strip()
     descricao = (payload.descricao or "").strip()
     data_lancamento = (payload.data or "").strip()
+    fonte_renda_id = int(payload.fonte_renda_id or 0) if payload.fonte_renda_id else None
 
     if tipo not in {"receita", "despesa"}:
         raise HTTPException(status_code=400, detail="Tipo inválido. Use receita ou despesa.")
@@ -2549,6 +2644,23 @@ def criar_lancamento_financeiro(
         raise HTTPException(status_code=400, detail="Categoria obrigatória.")
     if not data_lancamento or not validar_data_iso(data_lancamento):
         raise HTTPException(status_code=400, detail="Data inválida.")
+    fonte = None
+    if tipo == "receita":
+        if not fonte_renda_id:
+            raise HTTPException(status_code=400, detail="Selecione uma fonte de renda para receitas.")
+        fonte = (
+            db.query(FonteRendaFinanceira)
+            .filter(
+                FonteRendaFinanceira.id == fonte_renda_id,
+                FonteRendaFinanceira.user_id == current_user.id,
+                FonteRendaFinanceira.ativo == True,
+            )
+            .first()
+        )
+        if not fonte:
+            raise HTTPException(status_code=400, detail="Fonte de renda inválida.")
+    else:
+        fonte_renda_id = None
 
     lancamento = LancamentoFinanceiro(
         user_id=current_user.id,
@@ -2556,13 +2668,14 @@ def criar_lancamento_financeiro(
         valor=round(float(payload.valor), 2),
         categoria=categoria,
         descricao=descricao,
+        fonte_renda_id=fonte_renda_id,
         data=data_lancamento,
         ativo=True,
     )
     db.add(lancamento)
     db.commit()
     db.refresh(lancamento)
-    return LancamentoFinanceiroOut(**lancamento.to_dict())
+    return LancamentoFinanceiroOut(**montar_saida_lancamento_financeiro(lancamento, fonte))
 
 
 @app.get("/financas/lancamentos", response_model=list[LancamentoFinanceiroOut])
@@ -2610,7 +2723,19 @@ def listar_lancamentos_financeiros(
         LancamentoFinanceiro.criado_em.desc(),
         LancamentoFinanceiro.id.desc(),
     ).all()
-    return [LancamentoFinanceiroOut(**item.to_dict()) for item in itens]
+    fontes_ids = [int(item.fonte_renda_id) for item in itens if item.fonte_renda_id]
+    fontes_map = {}
+    if fontes_ids:
+        fontes = (
+            db.query(FonteRendaFinanceira)
+            .filter(
+                FonteRendaFinanceira.user_id == current_user.id,
+                FonteRendaFinanceira.id.in_(fontes_ids),
+            )
+            .all()
+        )
+        fontes_map = {fonte.id: fonte for fonte in fontes}
+    return [LancamentoFinanceiroOut(**montar_saida_lancamento_financeiro(item, fontes_map.get(item.fonte_renda_id))) for item in itens]
 
 
 @app.get("/financas/resumo", response_model=ResumoFinanceiroOut)
@@ -2642,6 +2767,126 @@ def resumo_financeiro(
         saldo_mes=resumo_mes["saldo_mes"],
         despesas_por_categoria=despesas_por_categoria,
     )
+
+
+@app.post("/financas/fontes-renda", response_model=FonteRendaFinanceiraOut)
+def criar_fonte_renda_financeira(
+    payload: FonteRendaFinanceiraCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    nome = (payload.nome or "").strip()
+    descricao = (payload.descricao or "").strip()
+    if not nome:
+        raise HTTPException(status_code=400, detail="Nome obrigatório.")
+
+    fonte = FonteRendaFinanceira(
+        user_id=current_user.id,
+        nome=nome,
+        descricao=descricao,
+        ativo=True,
+        atualizado_em=datetime.now(UTC),
+    )
+    db.add(fonte)
+    db.commit()
+    db.refresh(fonte)
+    dados = fonte.to_dict()
+    dados["total_recebido_mes"] = 0
+    return FonteRendaFinanceiraOut(**dados)
+
+
+@app.get("/financas/fontes-renda", response_model=list[FonteRendaFinanceiraOut])
+def listar_fontes_renda_financeiras(
+    mes: Optional[int] = Query(None),
+    ano: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    hoje = date.today()
+    mes_ref = mes if mes is not None else hoje.month
+    ano_ref = ano if ano is not None else hoje.year
+    if not (1 <= mes_ref <= 12):
+        raise HTTPException(status_code=400, detail="Mês inválido.")
+    if not (2000 <= ano_ref <= 9999):
+        raise HTTPException(status_code=400, detail="Ano inválido.")
+
+    referencia = f"{ano_ref:04d}-{mes_ref:02d}-01"
+    totais_map = calcular_receitas_por_fonte_financeira(db, current_user.id, referencia)
+    fontes = (
+        db.query(FonteRendaFinanceira)
+        .filter(
+            FonteRendaFinanceira.user_id == current_user.id,
+            FonteRendaFinanceira.ativo == True,
+        )
+        .order_by(FonteRendaFinanceira.nome.asc(), FonteRendaFinanceira.id.desc())
+        .all()
+    )
+
+    saida = []
+    for fonte in fontes:
+        dados = fonte.to_dict()
+        dados["total_recebido_mes"] = round(float(totais_map.get(fonte.id, 0)), 2)
+        saida.append(FonteRendaFinanceiraOut(**dados))
+    return saida
+
+
+@app.put("/financas/fontes-renda/{fonte_id}", response_model=FonteRendaFinanceiraOut)
+def editar_fonte_renda_financeira(
+    fonte_id: int,
+    payload: FonteRendaFinanceiraUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    fonte = (
+        db.query(FonteRendaFinanceira)
+        .filter(
+            FonteRendaFinanceira.id == fonte_id,
+            FonteRendaFinanceira.user_id == current_user.id,
+            FonteRendaFinanceira.ativo == True,
+        )
+        .first()
+    )
+    if not fonte:
+        raise HTTPException(status_code=404, detail="Fonte de renda não encontrada.")
+
+    if payload.nome is not None:
+        nome = (payload.nome or "").strip()
+        if not nome:
+            raise HTTPException(status_code=400, detail="Nome obrigatório.")
+        fonte.nome = nome
+    if payload.descricao is not None:
+        fonte.descricao = (payload.descricao or "").strip()
+
+    fonte.atualizado_em = datetime.now(UTC)
+    db.commit()
+    db.refresh(fonte)
+    dados = fonte.to_dict()
+    dados["total_recebido_mes"] = 0
+    return FonteRendaFinanceiraOut(**dados)
+
+
+@app.delete("/financas/fontes-renda/{fonte_id}")
+def excluir_fonte_renda_financeira(
+    fonte_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    fonte = (
+        db.query(FonteRendaFinanceira)
+        .filter(
+            FonteRendaFinanceira.id == fonte_id,
+            FonteRendaFinanceira.user_id == current_user.id,
+            FonteRendaFinanceira.ativo == True,
+        )
+        .first()
+    )
+    if not fonte:
+        raise HTTPException(status_code=404, detail="Fonte de renda não encontrada.")
+
+    fonte.ativo = False
+    fonte.atualizado_em = datetime.now(UTC)
+    db.commit()
+    return {"ok": True}
 
 
 @app.post("/financas/contas-fixas", response_model=ContaFixaFinanceiraOut)
