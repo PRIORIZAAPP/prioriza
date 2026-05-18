@@ -7114,25 +7114,16 @@
                     <h3 class="financas-section-title">Contas fixas</h3>
                     <div class="financas-list-meta">Cadastre compromissos que se repetem todos os meses.</div>
                   </div>
-                  <input id="financas-contas-fixas-mes-referencia" class="financas-month-picker" type="month" />
                   <button id="btn-financas-nova-conta-fixa" class="btn-secondary financas-action-btn" type="button">Nova conta fixa</button>
                 </div>
                 <div class="financas-list-head" style="margin-top:2px;">
-                  <h3>Previsão de contas fixas do mês</h3>
+                  <h3>Total previsto do mês</h3>
                   <div id="financas-contas-fixas-previsao-meta" class="financas-list-meta">0 conta(s)</div>
                 </div>
                 <div class="financas-fixed-forecast financas-summary-rows">
                   <div class="financas-summary-row">
-                    <span class="financas-summary-row-label">Receitas fixas previstas</span>
-                    <strong id="financas-receitas-fixas-previstas" class="financas-summary-row-value">R$ 0,00</strong>
-                  </div>
-                  <div class="financas-summary-row">
-                    <span class="financas-summary-row-label">Despesas fixas previstas</span>
-                    <strong id="financas-despesas-fixas-previstas" class="financas-summary-row-value">R$ 0,00</strong>
-                  </div>
-                  <div class="financas-summary-row">
-                    <span class="financas-summary-row-label">Saldo fixo previsto</span>
-                    <strong id="financas-saldo-fixo-previsto" class="financas-summary-row-value">R$ 0,00</strong>
+                    <span class="financas-summary-row-label">Total previsto do mês</span>
+                    <strong id="financas-total-fixo-previsto" class="financas-summary-row-value">R$ 0,00</strong>
                   </div>
                 </div>
                 <div class="financas-list-head">
@@ -8430,17 +8421,13 @@
     function definirMesReferenciaFinancas(valor) {
       const normalizado = (valor || "").trim() || mesReferenciaAtualFinancas();
       const campoPrincipal = document.getElementById("financas-mes-referencia");
-      const campoContasFixas = document.getElementById("financas-contas-fixas-mes-referencia");
       if (campoPrincipal && campoPrincipal.value !== normalizado) campoPrincipal.value = normalizado;
-      if (campoContasFixas && campoContasFixas.value !== normalizado) campoContasFixas.value = normalizado;
       return normalizado;
     }
 
     function obterMesAnoSelecionadoFinancas() {
       const valor = definirMesReferenciaFinancas(
-        document.getElementById("financas-mes-referencia")?.value ||
-        document.getElementById("financas-contas-fixas-mes-referencia")?.value ||
-        mesReferenciaAtualFinancas()
+        document.getElementById("financas-mes-referencia")?.value || mesReferenciaAtualFinancas()
       );
       const [anoTexto, mesTexto] = valor.split("-");
       const ano = Number(anoTexto);
@@ -8535,9 +8522,7 @@
 
     function inicializarMesReferenciaFinancas() {
       definirMesReferenciaFinancas(
-        document.getElementById("financas-mes-referencia")?.value ||
-        document.getElementById("financas-contas-fixas-mes-referencia")?.value ||
-        mesReferenciaAtualFinancas()
+        document.getElementById("financas-mes-referencia")?.value || mesReferenciaAtualFinancas()
       );
     }
 
@@ -8736,22 +8721,15 @@
     }
 
     function aplicarPrevisaoContasFixasFinancas() {
-      const receitasEl = document.getElementById("financas-receitas-fixas-previstas");
-      const despesasEl = document.getElementById("financas-despesas-fixas-previstas");
-      const saldoEl = document.getElementById("financas-saldo-fixo-previsto");
+      const totalEl = document.getElementById("financas-total-fixo-previsto");
       const metaEl = document.getElementById("financas-contas-fixas-previsao-meta");
-      if (!receitasEl || !despesasEl || !saldoEl || !metaEl) return;
+      if (!totalEl || !metaEl) return;
 
-      const receitas = financasContasFixas
-        .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Receita")
-        .reduce((soma, item) => soma + Number(item.valor || 0), 0);
       const despesas = financasContasFixas
         .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa")
         .reduce((soma, item) => soma + Number(item.valor || 0), 0);
 
-      receitasEl.textContent = formatarMoedaFinancas(receitas);
-      despesasEl.textContent = formatarMoedaFinancas(despesas);
-      saldoEl.textContent = formatarMoedaFinancas(receitas - despesas);
+      totalEl.textContent = formatarMoedaFinancas(despesas);
       metaEl.textContent = `${financasContasFixas.length} conta(s)`;
     }
 
@@ -9148,11 +9126,6 @@
         if (ev.target?.id === "financas-confirm-sheet") fecharSheetConfirmacaoContaFixaFinancas();
       });
       document.getElementById("financas-mes-referencia")?.addEventListener("change", async (ev) => {
-        definirMesReferenciaFinancas(ev.target?.value || mesReferenciaAtualFinancas());
-        await carregarFinancasMesSelecionadoCompleto();
-        await carregarContasFixasFinancas();
-      });
-      document.getElementById("financas-contas-fixas-mes-referencia")?.addEventListener("change", async (ev) => {
         definirMesReferenciaFinancas(ev.target?.value || mesReferenciaAtualFinancas());
         await carregarFinancasMesSelecionadoCompleto();
         await carregarContasFixasFinancas();
