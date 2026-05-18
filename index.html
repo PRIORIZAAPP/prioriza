@@ -1476,6 +1476,15 @@
         flex-direction: column;
         gap: 14px;
       }
+      #screen-financas .financas-actions {
+        display: flex;
+        justify-content: flex-start;
+      }
+      #screen-financas .financas-action-btn {
+        min-height: 42px;
+        padding: 0 16px;
+        border-radius: 14px;
+      }
       #screen-financas .financas-hero {
         display: flex;
         flex-direction: column;
@@ -1534,8 +1543,185 @@
         line-height: 1.6;
         color: #64748b;
       }
+      #screen-financas .financas-day-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+      #screen-financas .financas-summary-card {
+        border: 1px solid rgba(226, 232, 240, 0.92);
+        border-radius: 16px;
+        background: rgba(255,255,255,0.98);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.035);
+        padding: 13px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      #screen-financas .financas-summary-label {
+        font-size: 12px;
+        line-height: 1.3;
+        color: #64748b;
+        font-weight: 600;
+      }
+      #screen-financas .financas-summary-value {
+        font-size: 20px;
+        line-height: 1.1;
+        color: #0f172a;
+        font-weight: 650;
+        letter-spacing: -0.03em;
+      }
+      #screen-financas .financas-list-shell {
+        border: 1px solid rgba(226, 232, 240, 0.92);
+        border-radius: 18px;
+        background: rgba(255,255,255,0.98);
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      #screen-financas .financas-list-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      #screen-financas .financas-list-head h3 {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.2;
+        color: #0f172a;
+      }
+      #screen-financas .financas-list-meta {
+        font-size: 12px;
+        line-height: 1.3;
+        color: #94a3b8;
+      }
+      #screen-financas .financas-empty {
+        font-size: 14px;
+        line-height: 1.5;
+        color: #64748b;
+      }
+      #screen-financas .financas-day-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      #screen-financas .financas-item {
+        border: 1px solid rgba(226, 232, 240, 0.88);
+        border-radius: 14px;
+        background: #fbfdff;
+        padding: 12px 13px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      #screen-financas .financas-item-main {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      #screen-financas .financas-item-title {
+        font-size: 15px;
+        line-height: 1.3;
+        color: #0f172a;
+        font-weight: 560;
+      }
+      #screen-financas .financas-item-meta {
+        font-size: 12px;
+        line-height: 1.4;
+        color: #64748b;
+      }
+      #screen-financas .financas-item-amount {
+        text-align: right;
+        font-size: 15px;
+        line-height: 1.2;
+        color: #0f172a;
+        font-weight: 640;
+        white-space: nowrap;
+      }
+      #screen-financas .financas-sheet {
+        position: fixed;
+        inset: 0;
+        z-index: 140;
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 16px;
+        background: rgba(15, 23, 42, 0.2);
+        backdrop-filter: blur(6px);
+      }
+      #screen-financas .financas-sheet.open {
+        display: flex;
+      }
+      #screen-financas .financas-sheet-panel {
+        width: min(100%, 520px);
+        border-radius: 22px 22px 18px 18px;
+        border: 1px solid rgba(226, 232, 240, 0.92);
+        background: rgba(255,255,255,0.98);
+        box-shadow: 0 20px 42px rgba(15, 23, 42, 0.14);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      #screen-financas .financas-sheet-handle {
+        width: 42px;
+        height: 4px;
+        border-radius: 999px;
+        background: #d8dee8;
+        margin: 0 auto 2px;
+      }
+      #screen-financas .financas-sheet-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      #screen-financas .financas-sheet-title {
+        font-size: 17px;
+        line-height: 1.2;
+        color: #0f172a;
+        font-weight: 620;
+      }
+      #screen-financas .financas-sheet-error {
+        min-height: 18px;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #dc2626;
+      }
+      #screen-financas .financas-type-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+      #screen-financas .financas-type-btn {
+        min-height: 40px;
+        border-radius: 12px;
+        border: 1px solid rgba(203, 213, 225, 0.9);
+        background: #ffffff;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 560;
+      }
+      #screen-financas .financas-type-btn.active {
+        border-color: rgba(var(--cor-tema-rgb), 0.26);
+        background: rgba(var(--cor-tema-rgb), 0.08);
+        color: var(--cor-tema-escura);
+      }
+      #screen-financas .financas-sheet-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
       @media (max-width: 420px) {
         #screen-financas .financas-grid {
+          grid-template-columns: 1fr;
+        }
+        #screen-financas .financas-day-grid {
           grid-template-columns: 1fr;
         }
       }
@@ -1546,6 +1732,12 @@
         #screen-financas .financas-card,
         #screen-financas .financas-placeholder {
           border-radius: 20px;
+        }
+        #screen-financas .financas-sheet {
+          align-items: center;
+        }
+        #screen-financas .financas-sheet-panel {
+          border-radius: 24px;
         }
       }
       .campo-em-breve { opacity: 0.45; pointer-events: none; }
@@ -6601,27 +6793,92 @@
               <div class="financas-hero">
                 <p class="financas-subtitle">Controle sua vida financeira de forma simples, visual e conectada com sua rotina.</p>
               </div>
-              <div class="financas-grid">
-                <div class="financas-card">
-                  <span class="financas-label">Saldo previsto do mês</span>
-                  <strong class="financas-value">R$ 0,00</strong>
+              <div class="financas-actions">
+                <button id="btn-financas-novo-lancamento" class="btn-primary financas-action-btn" type="button">Novo lançamento</button>
+              </div>
+              <div class="financas-day-grid">
+                <div class="financas-summary-card">
+                  <span class="financas-summary-label">Entradas hoje</span>
+                  <strong id="financas-entradas-hoje" class="financas-summary-value">R$ 0,00</strong>
                 </div>
-                <div class="financas-card">
-                  <span class="financas-label">Entradas</span>
-                  <strong class="financas-value">R$ 0,00</strong>
+                <div class="financas-summary-card">
+                  <span class="financas-summary-label">Saídas hoje</span>
+                  <strong id="financas-saidas-hoje" class="financas-summary-value">R$ 0,00</strong>
                 </div>
-                <div class="financas-card">
-                  <span class="financas-label">Saídas</span>
-                  <strong class="financas-value">R$ 0,00</strong>
+                <div class="financas-summary-card">
+                  <span class="financas-summary-label">Saldo do dia</span>
+                  <strong id="financas-saldo-dia" class="financas-summary-value">R$ 0,00</strong>
                 </div>
-                <div class="financas-card">
-                  <span class="financas-label">Próximas contas</span>
-                  <strong class="financas-value">R$ 0,00</strong>
+              </div>
+              <div class="financas-list-shell">
+                <div class="financas-list-head">
+                  <h3>Lançamentos de hoje</h3>
+                  <div id="financas-lista-meta" class="financas-list-meta">0 lançamento(s)</div>
+                </div>
+                <div id="financas-lista-hoje" class="financas-day-list">
+                  <div class="financas-empty">Nenhum lançamento registrado hoje.</div>
                 </div>
               </div>
               <div class="financas-placeholder">
                 <p>Em breve você poderá cadastrar entradas, contas fixas, dívidas, metas e acompanhar sua previsão financeira do mês.</p>
               </div>
+            </div>
+          </div>
+          <div id="financas-sheet" class="financas-sheet" hidden>
+            <div class="financas-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="financas-sheet-title">
+              <div class="financas-sheet-handle" aria-hidden="true"></div>
+              <div class="financas-sheet-head">
+                <div id="financas-sheet-title" class="financas-sheet-title">Novo lançamento</div>
+                <button id="btn-financas-fechar-sheet-topo" class="btn-secondary" type="button">Fechar</button>
+              </div>
+              <form id="form-financas-lancamento">
+                <div class="form-main-stack">
+                  <div>
+                    <label>Tipo</label>
+                    <div class="financas-type-row">
+                      <button class="financas-type-btn active" type="button" data-financas-tipo="Despesa">Despesa</button>
+                      <button class="financas-type-btn" type="button" data-financas-tipo="Receita">Receita</button>
+                    </div>
+                    <input id="financas-tipo" type="hidden" value="Despesa" />
+                  </div>
+                  <div class="form-grid">
+                    <div>
+                      <label for="financas-valor">Valor</label>
+                      <input id="financas-valor" type="number" min="0" step="0.01" inputmode="decimal" placeholder="R$ 0,00" required />
+                    </div>
+                    <div>
+                      <label for="financas-data">Data</label>
+                      <input id="financas-data" type="date" required />
+                    </div>
+                  </div>
+                  <div class="form-grid">
+                    <div>
+                      <label for="financas-categoria">Categoria</label>
+                      <select id="financas-categoria" required>
+                        <option value="">Selecione</option>
+                        <option value="Alimentação">Alimentação</option>
+                        <option value="Transporte">Transporte</option>
+                        <option value="Casa">Casa</option>
+                        <option value="Saúde">Saúde</option>
+                        <option value="Lazer">Lazer</option>
+                        <option value="Trabalho">Trabalho</option>
+                        <option value="Investimentos">Investimentos</option>
+                        <option value="Dívidas">Dívidas</option>
+                        <option value="Outros">Outros</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="financas-descricao">Descrição</label>
+                      <input id="financas-descricao" type="text" placeholder="Ex: café, gasolina, mercado" />
+                    </div>
+                  </div>
+                  <div id="financas-sheet-erro" class="financas-sheet-error"></div>
+                  <div class="financas-sheet-actions">
+                    <button id="btn-financas-cancelar" class="btn-secondary" type="button">Cancelar</button>
+                    <button id="btn-financas-salvar" class="btn-primary" type="submit">Salvar lançamento</button>
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
         </div>
@@ -7727,6 +7984,185 @@
     async function abrirPlaceholderAjustes(acao) {
       const alvo = acao || "Este recurso";
       await modal.alerta(`${alvo} está em preparação para uma próxima versão do PRIORIZA.`, "Em breve");
+    }
+
+    let financasLancamentosTemporarios = [];
+    let financasUiVinculada = false;
+
+    function formatarMoedaFinancas(valor) {
+      const numero = Number(valor || 0);
+      return numero.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function definirTipoLancamentoFinancas(tipo = "Despesa") {
+      const input = document.getElementById("financas-tipo");
+      if (input) input.value = tipo;
+      document.querySelectorAll("[data-financas-tipo]").forEach((botao) => {
+        botao.classList.toggle("active", botao.dataset.financasTipo === tipo);
+      });
+    }
+
+    function limparErroFinancas() {
+      const erro = document.getElementById("financas-sheet-erro");
+      if (erro) erro.textContent = "";
+    }
+
+    function definirErroFinancas(texto) {
+      const erro = document.getElementById("financas-sheet-erro");
+      if (erro) erro.textContent = texto || "";
+    }
+
+    function resetarFormularioFinancas() {
+      document.getElementById("form-financas-lancamento")?.reset();
+      const dataEl = document.getElementById("financas-data");
+      if (dataEl) dataEl.value = dataHojeISO();
+      definirTipoLancamentoFinancas("Despesa");
+      limparErroFinancas();
+    }
+
+    function abrirSheetFinancas() {
+      const sheet = document.getElementById("financas-sheet");
+      if (!sheet) return;
+      resetarFormularioFinancas();
+      sheet.hidden = false;
+      requestAnimationFrame(() => sheet.classList.add("open"));
+      const campoDescricao = document.getElementById("financas-descricao");
+      window.setTimeout(() => campoDescricao?.focus(), 60);
+    }
+
+    function fecharSheetFinancas() {
+      const sheet = document.getElementById("financas-sheet");
+      if (!sheet) return;
+      sheet.classList.remove("open");
+      window.setTimeout(() => {
+        if (!sheet.classList.contains("open")) sheet.hidden = true;
+      }, 180);
+      limparErroFinancas();
+    }
+
+    function renderizarFinancasHoje() {
+      const hoje = dataHojeISO();
+      const listaEl = document.getElementById("financas-lista-hoje");
+      const metaEl = document.getElementById("financas-lista-meta");
+      const entradasEl = document.getElementById("financas-entradas-hoje");
+      const saidasEl = document.getElementById("financas-saidas-hoje");
+      const saldoEl = document.getElementById("financas-saldo-dia");
+      if (!listaEl || !metaEl || !entradasEl || !saidasEl || !saldoEl) return;
+
+      const itensHoje = financasLancamentosTemporarios
+        .filter((item) => item.data === hoje)
+        .sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
+
+      const entradas = itensHoje
+        .filter((item) => item.tipo === "Receita")
+        .reduce((soma, item) => soma + Number(item.valor || 0), 0);
+      const saidas = itensHoje
+        .filter((item) => item.tipo === "Despesa")
+        .reduce((soma, item) => soma + Number(item.valor || 0), 0);
+      const saldo = entradas - saidas;
+
+      entradasEl.textContent = formatarMoedaFinancas(entradas);
+      saidasEl.textContent = formatarMoedaFinancas(saidas);
+      saldoEl.textContent = formatarMoedaFinancas(saldo);
+      metaEl.textContent = `${itensHoje.length} lançamento(s)`;
+
+      if (!itensHoje.length) {
+        listaEl.innerHTML = '<div class="financas-empty">Nenhum lançamento registrado hoje.</div>';
+        return;
+      }
+
+      listaEl.innerHTML = "";
+      itensHoje.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "financas-item";
+
+        const main = document.createElement("div");
+        main.className = "financas-item-main";
+
+        const titulo = document.createElement("div");
+        titulo.className = "financas-item-title";
+        titulo.textContent = (item.descricao || "").trim() || item.categoria || item.tipo;
+
+        const meta = document.createElement("div");
+        meta.className = "financas-item-meta";
+        meta.textContent = [item.categoria, item.tipo, formatarDataCurtaBR(item.data)].filter(Boolean).join(" · ");
+
+        const amount = document.createElement("div");
+        amount.className = "financas-item-amount";
+        amount.textContent = formatarMoedaFinancas(item.valor);
+
+        main.appendChild(titulo);
+        main.appendChild(meta);
+        row.appendChild(main);
+        row.appendChild(amount);
+        listaEl.appendChild(row);
+      });
+    }
+
+    function vincularFinancasUI() {
+      if (financasUiVinculada) return;
+      financasUiVinculada = true;
+
+      document.getElementById("btn-financas-novo-lancamento")?.addEventListener("click", abrirSheetFinancas);
+      document.getElementById("btn-financas-cancelar")?.addEventListener("click", fecharSheetFinancas);
+      document.getElementById("btn-financas-fechar-sheet-topo")?.addEventListener("click", fecharSheetFinancas);
+
+      document.querySelectorAll("[data-financas-tipo]").forEach((botao) => {
+        botao.addEventListener("click", () => definirTipoLancamentoFinancas(botao.dataset.financasTipo || "Despesa"));
+      });
+
+      document.getElementById("financas-sheet")?.addEventListener("click", (ev) => {
+        if (ev.target?.id === "financas-sheet") fecharSheetFinancas();
+      });
+
+      document.getElementById("form-financas-lancamento")?.addEventListener("submit", (ev) => {
+        ev.preventDefault();
+        limparErroFinancas();
+
+        const tipo = document.getElementById("financas-tipo")?.value || "";
+        const valor = Number(document.getElementById("financas-valor")?.value || 0);
+        const categoria = document.getElementById("financas-categoria")?.value || "";
+        const descricao = document.getElementById("financas-descricao")?.value.trim() || "";
+        const data = document.getElementById("financas-data")?.value || "";
+
+        if (!tipo) {
+          definirErroFinancas("Selecione o tipo do lançamento.");
+          return;
+        }
+        if (!(valor > 0)) {
+          definirErroFinancas("Informe um valor maior que zero.");
+          return;
+        }
+        if (!categoria) {
+          definirErroFinancas("Selecione uma categoria.");
+          return;
+        }
+        if (!data) {
+          definirErroFinancas("Informe a data do lançamento.");
+          return;
+        }
+
+        financasLancamentosTemporarios.push({
+          id: `fin_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          tipo,
+          valor,
+          categoria,
+          descricao,
+          data,
+          criadoEm: Date.now(),
+        });
+
+        renderizarFinancasHoje();
+        resetarFormularioFinancas();
+        fecharSheetFinancas();
+      });
+
+      document.addEventListener("keydown", (ev) => {
+        if (ev.key === "Escape") fecharSheetFinancas();
+      });
+
+      resetarFormularioFinancas();
+      renderizarFinancasHoje();
     }
 
     function formatarDataHoraAdmin(iso) {
@@ -11762,6 +12198,7 @@
       carregarChecklistGeral();
       carregarPessoalLista();
       carregarNotas();
+      vincularFinancasUI();
       initUniversalMic();
 
       // ── NOTIFICAÇÕES ─────────────────────────────────────────────
@@ -11781,6 +12218,7 @@
       await aplicarTema(temaSalvo);
       bindAuthEvents();
       bindOnboardingEvents();
+      vincularFinancasUI();
 
       if (detectarTokenResetSenha()) {
         showAuthScreen("reset");
