@@ -260,6 +260,39 @@ class LancamentoFinanceiro(Base):
         }
 
 
+class ContaFixaFinanceira(Base):
+    __tablename__ = "contas_fixas_financeiras"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    nome = Column(String, nullable=False)
+    valor = Column(Float, nullable=False)
+    categoria = Column(String, nullable=False, index=True)
+    tipo = Column(String, nullable=False, index=True)
+    dia_vencimento = Column(Integer, nullable=False, index=True)
+    frequencia = Column(String, default="mensal", nullable=False)
+    observacao = Column(Text, default="")
+    ativo = Column(Boolean, default=True, nullable=False)
+    criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    atualizado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "nome": self.nome or "",
+            "valor": float(self.valor or 0),
+            "categoria": self.categoria or "",
+            "tipo": (self.tipo or "").lower(),
+            "dia_vencimento": int(self.dia_vencimento or 0),
+            "frequencia": self.frequencia or "mensal",
+            "observacao": self.observacao or "",
+            "ativo": bool(self.ativo),
+            "criado_em": self.criado_em.isoformat() if self.criado_em else None,
+            "atualizado_em": self.atualizado_em.isoformat() if self.atualizado_em else None,
+        }
+
+
 class Note(Base):
     __tablename__ = "notes"
 
@@ -376,6 +409,39 @@ class LancamentoFinanceiroOut(BaseModel):
     data: str
     criado_em: Optional[str] = None
     ativo: bool = True
+
+
+class ContaFixaFinanceiraCreate(BaseModel):
+    nome: str = Field(..., min_length=1)
+    valor: float = Field(..., gt=0)
+    categoria: str = Field(..., min_length=1)
+    tipo: str = Field(..., min_length=1)
+    dia_vencimento: int = Field(..., ge=1, le=31)
+    observacao: str = ""
+
+
+class ContaFixaFinanceiraUpdate(BaseModel):
+    nome: Optional[str] = None
+    valor: Optional[float] = None
+    categoria: Optional[str] = None
+    tipo: Optional[str] = None
+    dia_vencimento: Optional[int] = None
+    observacao: Optional[str] = None
+
+
+class ContaFixaFinanceiraOut(BaseModel):
+    id: int
+    user_id: int
+    nome: str
+    valor: float
+    categoria: str
+    tipo: str
+    dia_vencimento: int
+    frequencia: str
+    observacao: str
+    ativo: bool = True
+    criado_em: Optional[str] = None
+    atualizado_em: Optional[str] = None
 
 
 class ResumoFinanceiroOut(BaseModel):
@@ -822,6 +888,11 @@ def rodar_migracoes_automaticas():
     except Exception as e:
         print(f"[MIGRAÇÃO] Aviso ao criar lancamentos_financeiros: {e}")
 
+    try:
+        ContaFixaFinanceira.__table__.create(bind=engine, checkfirst=True)
+    except Exception as e:
+        print(f"[MIGRAÇÃO] Aviso ao criar contas_fixas_financeiras: {e}")
+
     for tabela in ("tarefas", "checklist", "notes", "push_subscriptions", "google_calendar_tokens"):
         try:
             with engine.connect() as conn:
@@ -911,6 +982,25 @@ def calcular_despesas_por_categoria_financeira(
         totais[chave] = round(totais.get(chave, 0) + float(item.valor or 0), 2)
 
     return dict(sorted(totais.items(), key=lambda entry: entry[1], reverse=True))
+
+
+def calcular_previsao_contas_fixas(db: Session, user_id: int) -> dict[str, float]:
+    contas = (
+        db.query(ContaFixaFinanceira)
+        .filter(
+            ContaFixaFinanceira.user_id == user_id,
+            ContaFixaFinanceira.ativo == True,
+        )
+        .all()
+    )
+
+    receitas = sum(float(item.valor or 0) for item in contas if normalizar_tipo_financeiro(item.tipo) == "receita")
+    despesas = sum(float(item.valor or 0) for item in contas if normalizar_tipo_financeiro(item.tipo) == "despesa")
+    return {
+        "receitas_fixas_previstas": round(receitas, 2),
+        "despesas_fixas_previstas": round(despesas, 2),
+        "saldo_fixo_previsto": round(receitas - despesas, 2),
+    }
 
 
 def resolver_referencia_financeira(
@@ -2473,6 +2563,139 @@ def resumo_financeiro(
         saldo_mes=resumo_mes["saldo_mes"],
         despesas_por_categoria=despesas_por_categoria,
     )
+
+
+@app.post("/financas/contas-fixas", response_model=ContaFixaFinanceiraOut)
+def criar_conta_fixa_financeira(
+    payload: ContaFixaFinanceiraCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    nome = (payload.nome or "").strip()
+    categoria = (payload.categoria or "").strip()
+    observacao = (payload.observacao or "").strip()
+    tipo = normalizar_tipo_financeiro(payload.tipo)
+
+    if not nome:
+        raise HTTPException(status_code=400, detail="Nome obrigatório.")
+    if not categoria:
+        raise HTTPException(status_code=400, detail="Categoria obrigatória.")
+    if tipo not in {"receita", "despesa"}:
+        raise HTTPException(status_code=400, detail="Tipo inválido. Use receita ou despesa.")
+    if not (payload.valor and float(payload.valor) > 0):
+        raise HTTPException(status_code=400, detail="Informe um valor maior que zero.")
+    if not (1 <= int(payload.dia_vencimento) <= 31):
+        raise HTTPException(status_code=400, detail="Dia de vencimento inválido.")
+
+    conta = ContaFixaFinanceira(
+        user_id=current_user.id,
+        nome=nome,
+        valor=round(float(payload.valor), 2),
+        categoria=categoria,
+        tipo=tipo,
+        dia_vencimento=int(payload.dia_vencimento),
+        frequencia="mensal",
+        observacao=observacao,
+        ativo=True,
+        atualizado_em=datetime.now(UTC),
+    )
+    db.add(conta)
+    db.commit()
+    db.refresh(conta)
+    return ContaFixaFinanceiraOut(**conta.to_dict())
+
+
+@app.get("/financas/contas-fixas", response_model=list[ContaFixaFinanceiraOut])
+def listar_contas_fixas_financeiras(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    contas = (
+        db.query(ContaFixaFinanceira)
+        .filter(
+            ContaFixaFinanceira.user_id == current_user.id,
+            ContaFixaFinanceira.ativo == True,
+        )
+        .order_by(ContaFixaFinanceira.tipo.asc(), ContaFixaFinanceira.dia_vencimento.asc(), ContaFixaFinanceira.nome.asc(), ContaFixaFinanceira.id.desc())
+        .all()
+    )
+    return [ContaFixaFinanceiraOut(**conta.to_dict()) for conta in contas]
+
+
+@app.put("/financas/contas-fixas/{conta_id}", response_model=ContaFixaFinanceiraOut)
+def editar_conta_fixa_financeira(
+    conta_id: int,
+    payload: ContaFixaFinanceiraUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    conta = (
+        db.query(ContaFixaFinanceira)
+        .filter(
+            ContaFixaFinanceira.id == conta_id,
+            ContaFixaFinanceira.user_id == current_user.id,
+            ContaFixaFinanceira.ativo == True,
+        )
+        .first()
+    )
+    if not conta:
+        raise HTTPException(status_code=404, detail="Conta fixa não encontrada.")
+
+    if payload.nome is not None:
+        nome = (payload.nome or "").strip()
+        if not nome:
+            raise HTTPException(status_code=400, detail="Nome obrigatório.")
+        conta.nome = nome
+    if payload.categoria is not None:
+        categoria = (payload.categoria or "").strip()
+        if not categoria:
+            raise HTTPException(status_code=400, detail="Categoria obrigatória.")
+        conta.categoria = categoria
+    if payload.tipo is not None:
+        tipo = normalizar_tipo_financeiro(payload.tipo)
+        if tipo not in {"receita", "despesa"}:
+            raise HTTPException(status_code=400, detail="Tipo inválido. Use receita ou despesa.")
+        conta.tipo = tipo
+    if payload.valor is not None:
+        if not (float(payload.valor) > 0):
+            raise HTTPException(status_code=400, detail="Informe um valor maior que zero.")
+        conta.valor = round(float(payload.valor), 2)
+    if payload.dia_vencimento is not None:
+        dia_vencimento = int(payload.dia_vencimento)
+        if not (1 <= dia_vencimento <= 31):
+            raise HTTPException(status_code=400, detail="Dia de vencimento inválido.")
+        conta.dia_vencimento = dia_vencimento
+    if payload.observacao is not None:
+        conta.observacao = (payload.observacao or "").strip()
+
+    conta.atualizado_em = datetime.now(UTC)
+    db.commit()
+    db.refresh(conta)
+    return ContaFixaFinanceiraOut(**conta.to_dict())
+
+
+@app.delete("/financas/contas-fixas/{conta_id}")
+def excluir_conta_fixa_financeira(
+    conta_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    conta = (
+        db.query(ContaFixaFinanceira)
+        .filter(
+            ContaFixaFinanceira.id == conta_id,
+            ContaFixaFinanceira.user_id == current_user.id,
+            ContaFixaFinanceira.ativo == True,
+        )
+        .first()
+    )
+    if not conta:
+        raise HTTPException(status_code=404, detail="Conta fixa não encontrada.")
+
+    conta.ativo = False
+    conta.atualizado_em = datetime.now(UTC)
+    db.commit()
+    return {"ok": True}
 
 
 # ============================================================
