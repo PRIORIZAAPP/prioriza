@@ -1571,6 +1571,57 @@
         font-weight: 650;
         letter-spacing: -0.03em;
       }
+      #screen-financas .financas-month-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      #screen-financas .financas-month-head h3,
+      #screen-financas .financas-section-title {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.2;
+        color: #0f172a;
+      }
+      #screen-financas .financas-month-picker {
+        min-width: 164px;
+        max-width: 100%;
+      }
+      #screen-financas .financas-month-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+      #screen-financas .financas-category-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      #screen-financas .financas-category-item {
+        border: 1px solid rgba(226, 232, 240, 0.88);
+        border-radius: 14px;
+        background: #fbfdff;
+        padding: 11px 13px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      #screen-financas .financas-category-name {
+        font-size: 14px;
+        line-height: 1.35;
+        color: #0f172a;
+        font-weight: 560;
+      }
+      #screen-financas .financas-category-amount {
+        font-size: 14px;
+        line-height: 1.2;
+        color: #0f172a;
+        font-weight: 620;
+        white-space: nowrap;
+      }
       #screen-financas .financas-list-shell {
         border: 1px solid rgba(226, 232, 240, 0.92);
         border-radius: 18px;
@@ -1722,6 +1773,9 @@
           grid-template-columns: 1fr;
         }
         #screen-financas .financas-day-grid {
+          grid-template-columns: 1fr;
+        }
+        #screen-financas .financas-month-grid {
           grid-template-columns: 1fr;
         }
       }
@@ -6811,12 +6865,50 @@
                 </div>
               </div>
               <div class="financas-list-shell">
+                <div class="financas-month-head">
+                  <h3>Resumo do mês</h3>
+                  <input id="financas-mes-referencia" class="financas-month-picker" type="month" />
+                </div>
+                <div class="financas-month-grid">
+                  <div class="financas-summary-card">
+                    <span class="financas-summary-label">Entradas do mês</span>
+                    <strong id="financas-entradas-mes" class="financas-summary-value">R$ 0,00</strong>
+                  </div>
+                  <div class="financas-summary-card">
+                    <span class="financas-summary-label">Saídas do mês</span>
+                    <strong id="financas-saidas-mes" class="financas-summary-value">R$ 0,00</strong>
+                  </div>
+                  <div class="financas-summary-card">
+                    <span class="financas-summary-label">Saldo do mês</span>
+                    <strong id="financas-saldo-mes" class="financas-summary-value">R$ 0,00</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="financas-list-shell">
                 <div class="financas-list-head">
                   <h3>Lançamentos de hoje</h3>
                   <div id="financas-lista-meta" class="financas-list-meta">0 lançamento(s)</div>
                 </div>
                 <div id="financas-lista-hoje" class="financas-day-list">
                   <div class="financas-empty">Nenhum lançamento registrado hoje.</div>
+                </div>
+              </div>
+              <div class="financas-list-shell">
+                <div class="financas-list-head">
+                  <h3>Lançamentos do mês</h3>
+                  <div id="financas-lista-mes-meta" class="financas-list-meta">0 lançamento(s)</div>
+                </div>
+                <div id="financas-lista-mes" class="financas-day-list">
+                  <div class="financas-empty">Nenhum lançamento registrado neste mês.</div>
+                </div>
+              </div>
+              <div class="financas-list-shell">
+                <div class="financas-list-head">
+                  <h3>Gastos por categoria</h3>
+                  <div id="financas-categorias-meta" class="financas-list-meta">0 categoria(s)</div>
+                </div>
+                <div id="financas-categorias-lista" class="financas-category-list">
+                  <div class="financas-empty">Nenhum lançamento registrado neste mês.</div>
                 </div>
               </div>
               <div class="financas-placeholder">
@@ -7989,10 +8081,30 @@
     let financasLancamentosTemporarios = [];
     let financasUiVinculada = false;
     let financasCarregandoAgora = false;
+    let financasLancamentosMesSelecionado = [];
+    let financasResumoMesSelecionado = null;
 
     function formatarMoedaFinancas(valor) {
       const numero = Number(valor || 0);
       return numero.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function mesReferenciaAtualFinancas() {
+      const hoje = new Date();
+      return `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
+    }
+
+    function obterMesAnoSelecionadoFinancas() {
+      const campo = document.getElementById("financas-mes-referencia");
+      const valor = (campo?.value || "").trim();
+      const [anoTexto, mesTexto] = valor.split("-");
+      const ano = Number(anoTexto);
+      const mes = Number(mesTexto);
+      if (!ano || !mes) {
+        const agora = new Date();
+        return { ano: agora.getFullYear(), mes: agora.getMonth() + 1, valor: mesReferenciaAtualFinancas() };
+      }
+      return { ano, mes, valor };
     }
 
     function normalizarTipoFinancasUI(tipo) {
@@ -8026,6 +8138,11 @@
       limparErroFinancas();
     }
 
+    function inicializarMesReferenciaFinancas() {
+      const campo = document.getElementById("financas-mes-referencia");
+      if (campo && !campo.value) campo.value = mesReferenciaAtualFinancas();
+    }
+
     function abrirSheetFinancas() {
       const sheet = document.getElementById("financas-sheet");
       if (!sheet) return;
@@ -8054,6 +8171,52 @@
       entradasEl.textContent = formatarMoedaFinancas(resumo.entradas_hoje || 0);
       saidasEl.textContent = formatarMoedaFinancas(resumo.saidas_hoje || 0);
       saldoEl.textContent = formatarMoedaFinancas(resumo.saldo_dia || 0);
+    }
+
+    function aplicarResumoFinancasMes(resumo = {}) {
+      const entradasEl = document.getElementById("financas-entradas-mes");
+      const saidasEl = document.getElementById("financas-saidas-mes");
+      const saldoEl = document.getElementById("financas-saldo-mes");
+      if (!entradasEl || !saidasEl || !saldoEl) return;
+      entradasEl.textContent = formatarMoedaFinancas(resumo.entradas_mes || 0);
+      saidasEl.textContent = formatarMoedaFinancas(resumo.saidas_mes || 0);
+      saldoEl.textContent = formatarMoedaFinancas(resumo.saldo_mes || 0);
+    }
+
+    function renderizarListaGenericaFinancas(listaEl, metaEl, itens = [], mensagemVazia = "Nenhum lançamento registrado.") {
+      if (!listaEl || !metaEl) return;
+      metaEl.textContent = `${itens.length} lançamento(s)`;
+      if (!itens.length) {
+        listaEl.innerHTML = `<div class="financas-empty">${mensagemVazia}</div>`;
+        return;
+      }
+
+      listaEl.innerHTML = "";
+      itens.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "financas-item";
+
+        const main = document.createElement("div");
+        main.className = "financas-item-main";
+
+        const titulo = document.createElement("div");
+        titulo.className = "financas-item-title";
+        titulo.textContent = (item.descricao || "").trim() || item.categoria || item.tipo;
+
+        const meta = document.createElement("div");
+        meta.className = "financas-item-meta";
+        meta.textContent = [item.categoria, normalizarTipoFinancasUI(item.tipo), formatarDataCurtaBR(item.data)].filter(Boolean).join(" · ");
+
+        const amount = document.createElement("div");
+        amount.className = "financas-item-amount";
+        amount.textContent = formatarMoedaFinancas(item.valor);
+
+        main.appendChild(titulo);
+        main.appendChild(meta);
+        row.appendChild(main);
+        row.appendChild(amount);
+        listaEl.appendChild(row);
+      });
     }
 
     function renderizarFinancasHoje(mensagemErro = "") {
@@ -8090,36 +8253,56 @@
         return;
       }
 
-      if (!itensHoje.length) {
-        listaEl.innerHTML = '<div class="financas-empty">Nenhum lançamento registrado hoje.</div>';
+      renderizarListaGenericaFinancas(listaEl, metaEl, itensHoje, "Nenhum lançamento registrado hoje.");
+    }
+
+    function renderizarFinancasMes(mensagemErro = "") {
+      const listaEl = document.getElementById("financas-lista-mes");
+      const metaEl = document.getElementById("financas-lista-mes-meta");
+      const categoriasEl = document.getElementById("financas-categorias-lista");
+      const categoriasMetaEl = document.getElementById("financas-categorias-meta");
+      if (!listaEl || !metaEl || !categoriasEl || !categoriasMetaEl) return;
+
+      aplicarResumoFinancasMes(financasResumoMesSelecionado || {});
+
+      if (mensagemErro) {
+        listaEl.innerHTML = `<div class="financas-empty">${mensagemErro}</div>`;
+        categoriasEl.innerHTML = `<div class="financas-empty">${mensagemErro}</div>`;
+        metaEl.textContent = "0 lançamento(s)";
+        categoriasMetaEl.textContent = "0 categoria(s)";
         return;
       }
 
-      listaEl.innerHTML = "";
-      itensHoje.forEach((item) => {
+      const itens = [...financasLancamentosMesSelecionado].sort((a, b) => {
+        const dataB = new Date(b.criado_em || b.criadoEm || 0).getTime() || Number(b.criadoEm || 0);
+        const dataA = new Date(a.criado_em || a.criadoEm || 0).getTime() || Number(a.criadoEm || 0);
+        return dataB - dataA;
+      });
+      renderizarListaGenericaFinancas(listaEl, metaEl, itens, "Nenhum lançamento registrado neste mês.");
+
+      const categorias = Object.entries(financasResumoMesSelecionado?.despesas_por_categoria || {});
+      categoriasMetaEl.textContent = `${categorias.length} categoria(s)`;
+      if (!categorias.length) {
+        categoriasEl.innerHTML = '<div class="financas-empty">Nenhum lançamento registrado neste mês.</div>';
+        return;
+      }
+
+      categoriasEl.innerHTML = "";
+      categorias.forEach(([categoria, valor]) => {
         const row = document.createElement("div");
-        row.className = "financas-item";
+        row.className = "financas-category-item";
 
-        const main = document.createElement("div");
-        main.className = "financas-item-main";
-
-        const titulo = document.createElement("div");
-        titulo.className = "financas-item-title";
-        titulo.textContent = (item.descricao || "").trim() || item.categoria || item.tipo;
-
-        const meta = document.createElement("div");
-        meta.className = "financas-item-meta";
-        meta.textContent = [item.categoria, normalizarTipoFinancasUI(item.tipo), formatarDataCurtaBR(item.data)].filter(Boolean).join(" · ");
+        const nome = document.createElement("div");
+        nome.className = "financas-category-name";
+        nome.textContent = categoria;
 
         const amount = document.createElement("div");
-        amount.className = "financas-item-amount";
-        amount.textContent = formatarMoedaFinancas(item.valor);
+        amount.className = "financas-category-amount";
+        amount.textContent = formatarMoedaFinancas(valor);
 
-        main.appendChild(titulo);
-        main.appendChild(meta);
-        row.appendChild(main);
+        row.appendChild(nome);
         row.appendChild(amount);
-        listaEl.appendChild(row);
+        categoriasEl.appendChild(row);
       });
     }
 
@@ -8131,6 +8314,17 @@
       return resumo;
     }
 
+    async function carregarResumoFinancasMesSelecionado() {
+      const { mes, ano } = obterMesAnoSelecionadoFinancas();
+      const params = new URLSearchParams({ mes: String(mes), ano: String(ano) });
+      const resposta = await fetch(API + "/financas/resumo?" + params.toString());
+      if (!resposta.ok) throw new Error("resumo_mensal_financas_indisponivel");
+      const resumo = await resposta.json();
+      financasResumoMesSelecionado = resumo || null;
+      renderizarFinancasMes();
+      return resumo;
+    }
+
     async function carregarLancamentosFinancasHoje() {
       const params = new URLSearchParams({ data: dataHojeISO() });
       const resposta = await fetch(API + "/financas/lancamentos?" + params.toString());
@@ -8139,6 +8333,17 @@
       financasLancamentosTemporarios = Array.isArray(itens) ? itens : [];
       renderizarFinancasHoje();
       return financasLancamentosTemporarios;
+    }
+
+    async function carregarLancamentosFinancasMesSelecionado() {
+      const { mes, ano } = obterMesAnoSelecionadoFinancas();
+      const params = new URLSearchParams({ mes: String(mes), ano: String(ano) });
+      const resposta = await fetch(API + "/financas/lancamentos?" + params.toString());
+      if (!resposta.ok) throw new Error("lancamentos_mensais_financas_indisponiveis");
+      const itens = await resposta.json();
+      financasLancamentosMesSelecionado = Array.isArray(itens) ? itens : [];
+      renderizarFinancasMes();
+      return financasLancamentosMesSelecionado;
     }
 
     async function carregarFinancasHojeCompleto() {
@@ -8157,6 +8362,23 @@
       }
     }
 
+    async function carregarFinancasMesSelecionadoCompleto() {
+      try {
+        await Promise.all([
+          carregarResumoFinancasMesSelecionado(),
+          carregarLancamentosFinancasMesSelecionado(),
+        ]);
+      } catch (erro) {
+        console.warn("[FINANCAS] Falha ao carregar visão mensal:", erro);
+        renderizarFinancasMes("Não foi possível carregar seus lançamentos agora.");
+      }
+    }
+
+    async function carregarFinancasPainelCompleto() {
+      await carregarFinancasHojeCompleto();
+      await carregarFinancasMesSelecionadoCompleto();
+    }
+
     function vincularFinancasUI() {
       if (financasUiVinculada) return;
       financasUiVinculada = true;
@@ -8171,6 +8393,9 @@
 
       document.getElementById("financas-sheet")?.addEventListener("click", (ev) => {
         if (ev.target?.id === "financas-sheet") fecharSheetFinancas();
+      });
+      document.getElementById("financas-mes-referencia")?.addEventListener("change", async () => {
+        await carregarFinancasMesSelecionadoCompleto();
       });
 
       document.getElementById("form-financas-lancamento")?.addEventListener("submit", async (ev) => {
@@ -8224,7 +8449,7 @@
             return;
           }
 
-          await carregarFinancasHojeCompleto();
+          await carregarFinancasPainelCompleto();
           resetarFormularioFinancas();
           fecharSheetFinancas();
         } catch (erro) {
@@ -8237,8 +8462,10 @@
         if (ev.key === "Escape") fecharSheetFinancas();
       });
 
+      inicializarMesReferenciaFinancas();
       resetarFormularioFinancas();
       renderizarFinancasHoje();
+      renderizarFinancasMes();
     }
 
     function formatarDataHoraAdmin(iso) {
@@ -11953,7 +12180,7 @@
         }
         if (id === "screen-financas") {
           setTimeout(() => {
-            carregarFinancasHojeCompleto();
+            carregarFinancasPainelCompleto();
           }, 40);
         }
       }
@@ -12280,7 +12507,7 @@
       carregarPessoalLista();
       carregarNotas();
       vincularFinancasUI();
-      await carregarFinancasHojeCompleto();
+      await carregarFinancasPainelCompleto();
       initUniversalMic();
 
       // ── NOTIFICAÇÕES ─────────────────────────────────────────────
