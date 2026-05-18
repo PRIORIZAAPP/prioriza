@@ -1746,6 +1746,82 @@
         flex-direction: column;
         gap: 6px;
       }
+      #screen-financas .financas-source-section-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      #screen-financas .financas-source-copy {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      #screen-financas .financas-source-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      #screen-financas .financas-source-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 9px 0;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.72);
+      }
+      #screen-financas .financas-source-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+      #screen-financas .financas-source-main {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      #screen-financas .financas-source-name {
+        font-size: 13px;
+        line-height: 1.25;
+        color: #0f172a;
+        font-weight: 560;
+      }
+      #screen-financas .financas-source-meta {
+        font-size: 11px;
+        line-height: 1.35;
+        color: #64748b;
+      }
+      #screen-financas .financas-source-amount {
+        font-size: 13px;
+        line-height: 1.2;
+        font-weight: 640;
+        color: #0f172a;
+        white-space: nowrap;
+      }
+      #screen-financas .financas-source-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      #screen-financas .financas-source-action-btn {
+        min-width: 34px;
+        min-height: 34px;
+        padding: 0 8px;
+        border-radius: 10px;
+        font-size: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #screen-financas .financas-source-action-btn svg {
+        width: 16px;
+        height: 16px;
+      }
+      #screen-financas .financas-source-field[hidden] {
+        display: none !important;
+      }
       #screen-financas .financas-fixed-list {
         display: flex;
         flex-direction: column;
@@ -1964,6 +2040,17 @@
         }
         #screen-financas .financas-item-amount {
           font-size: 14px;
+        }
+        #screen-financas .financas-source-name,
+        #screen-financas .financas-source-amount {
+          font-size: 14px;
+        }
+        #screen-financas .financas-source-action-btn {
+          min-width: auto;
+          min-height: 34px;
+          padding: 0 12px;
+          font-size: 12px;
+          gap: 6px;
         }
         #screen-financas .financas-sheet {
           align-items: center;
@@ -7108,6 +7195,15 @@
                   </div>
                 </div>
               </div>
+              <div class="financas-list-shell financas-compact-section">
+                <div class="financas-list-head">
+                  <h3>Entradas por fonte</h3>
+                  <div id="financas-fontes-meta" class="financas-list-meta">0 fonte(s)</div>
+                </div>
+                <div id="financas-fontes-resumo-lista" class="financas-source-list">
+                  <div class="financas-empty">Nenhuma fonte de renda cadastrada.</div>
+                </div>
+              </div>
               <div class="financas-list-shell">
                 <div class="financas-fixed-section-head">
                   <div class="financas-fixed-section-copy">
@@ -7132,6 +7228,18 @@
                 </div>
                 <div id="financas-contas-fixas-lista" class="financas-fixed-list">
                   <div class="financas-empty">Nenhuma conta fixa cadastrada.</div>
+                </div>
+              </div>
+              <div class="financas-list-shell">
+                <div class="financas-source-section-head">
+                  <div class="financas-source-copy">
+                    <h3 class="financas-section-title">Fontes de renda</h3>
+                    <div class="financas-list-meta">Cadastre origens separadas para suas receitas mensais.</div>
+                  </div>
+                  <button id="btn-financas-nova-fonte-renda" class="btn-secondary financas-action-btn" type="button">Nova fonte</button>
+                </div>
+                <div id="financas-fontes-renda-lista" class="financas-source-list">
+                  <div class="financas-empty">Nenhuma fonte de renda cadastrada.</div>
                 </div>
               </div>
               <div class="financas-list-shell financas-compact-section">
@@ -7193,10 +7301,45 @@
                       <input id="financas-descricao" type="text" placeholder="Ex: café, gasolina, mercado" />
                     </div>
                   </div>
+                  <div id="financas-fonte-renda-field" class="financas-source-field form-grid" hidden>
+                    <div>
+                      <label for="financas-fonte-renda">Fonte de renda</label>
+                      <select id="financas-fonte-renda">
+                        <option value="">Selecione</option>
+                      </select>
+                    </div>
+                  </div>
                   <div id="financas-sheet-erro" class="financas-sheet-error"></div>
                   <div class="financas-sheet-actions">
                     <button id="btn-financas-cancelar" class="btn-secondary" type="button">Cancelar</button>
                     <button id="btn-financas-salvar" class="btn-primary" type="submit">Salvar lançamento</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div id="financas-source-sheet" class="financas-sheet financas-fixed-sheet" hidden>
+            <div class="financas-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="financas-source-sheet-title">
+              <div class="financas-sheet-handle" aria-hidden="true"></div>
+              <div class="financas-sheet-head">
+                <div id="financas-source-sheet-title" class="financas-sheet-title">Nova fonte de renda</div>
+                <button id="btn-financas-fechar-source-sheet-topo" class="btn-secondary" type="button">Fechar</button>
+              </div>
+              <form id="form-financas-fonte-renda">
+                <input id="financas-fonte-renda-id" type="hidden" value="" />
+                <div class="form-main-stack">
+                  <div>
+                    <label for="financas-fonte-renda-nome">Nome da fonte</label>
+                    <input id="financas-fonte-renda-nome" type="text" placeholder="Ex: salário, plantões, serviços extras" required />
+                  </div>
+                  <div>
+                    <label for="financas-fonte-renda-descricao">Descrição</label>
+                    <input id="financas-fonte-renda-descricao" type="text" placeholder="Opcional" />
+                  </div>
+                  <div id="financas-source-sheet-erro" class="financas-sheet-error"></div>
+                  <div class="financas-sheet-actions">
+                    <button id="btn-financas-cancelar-source-sheet" class="btn-secondary" type="button">Cancelar</button>
+                    <button id="btn-financas-salvar-fonte-renda" class="btn-primary" type="submit">Salvar fonte</button>
                   </div>
                 </div>
               </form>
@@ -8406,6 +8549,7 @@
     let financasLancamentosMesSelecionado = [];
     let financasResumoMesSelecionado = null;
     let financasContasFixas = [];
+    let financasFontesRenda = [];
     let financasContaFixaConfirmacaoAtual = null;
 
     function formatarMoedaFinancas(valor) {
@@ -8458,6 +8602,14 @@
       document.querySelectorAll("[data-financas-tipo]").forEach((botao) => {
         botao.classList.toggle("active", botao.dataset.financasTipo === tipo);
       });
+      const campoFonte = document.getElementById("financas-fonte-renda-field");
+      const selectFonte = document.getElementById("financas-fonte-renda");
+      const ehReceita = tipo === "Receita";
+      if (campoFonte) campoFonte.hidden = !ehReceita;
+      if (selectFonte) {
+        selectFonte.required = ehReceita;
+        if (!ehReceita) selectFonte.value = "";
+      }
     }
 
     function limparErroFinancas() {
@@ -8475,7 +8627,45 @@
       const dataEl = document.getElementById("financas-data");
       if (dataEl) dataEl.value = dataHojeISO();
       definirTipoLancamentoFinancas("Despesa");
+      preencherSelectFonteRendaFinancas();
       limparErroFinancas();
+    }
+
+    function limparErroFonteRendaFinancas() {
+      const erro = document.getElementById("financas-source-sheet-erro");
+      if (erro) erro.textContent = "";
+    }
+
+    function definirErroFonteRendaFinancas(texto) {
+      const erro = document.getElementById("financas-source-sheet-erro");
+      if (erro) erro.textContent = texto || "";
+    }
+
+    function preencherSelectFonteRendaFinancas() {
+      const select = document.getElementById("financas-fonte-renda");
+      if (!select) return;
+      const valorAtual = select.value || "";
+      select.innerHTML = '<option value="">Selecione</option>';
+      financasFontesRenda.forEach((fonte) => {
+        const opt = document.createElement("option");
+        opt.value = String(fonte.id);
+        opt.textContent = fonte.nome || "Fonte";
+        select.appendChild(opt);
+      });
+      if ([...select.options].some((opt) => opt.value === valorAtual)) {
+        select.value = valorAtual;
+      }
+    }
+
+    function resetarFormularioFonteRendaFinancas() {
+      document.getElementById("form-financas-fonte-renda")?.reset();
+      const idEl = document.getElementById("financas-fonte-renda-id");
+      if (idEl) idEl.value = "";
+      const titulo = document.getElementById("financas-source-sheet-title");
+      if (titulo) titulo.textContent = "Nova fonte de renda";
+      const botaoSalvar = document.getElementById("btn-financas-salvar-fonte-renda");
+      if (botaoSalvar) botaoSalvar.textContent = "Salvar fonte";
+      limparErroFonteRendaFinancas();
     }
 
     function limparErroContaFixaFinancas() {
@@ -8544,6 +8734,37 @@
         if (!sheet.classList.contains("open")) sheet.hidden = true;
       }, 180);
       limparErroFinancas();
+    }
+
+    function abrirSheetFonteRendaFinancas(fonte = null) {
+      const sheet = document.getElementById("financas-source-sheet");
+      if (!sheet) return;
+      resetarFormularioFonteRendaFinancas();
+      if (fonte) {
+        const idEl = document.getElementById("financas-fonte-renda-id");
+        const nomeEl = document.getElementById("financas-fonte-renda-nome");
+        const descEl = document.getElementById("financas-fonte-renda-descricao");
+        const tituloEl = document.getElementById("financas-source-sheet-title");
+        const salvarEl = document.getElementById("btn-financas-salvar-fonte-renda");
+        if (idEl) idEl.value = String(fonte.id || "");
+        if (nomeEl) nomeEl.value = fonte.nome || "";
+        if (descEl) descEl.value = fonte.descricao || "";
+        if (tituloEl) tituloEl.textContent = "Editar fonte de renda";
+        if (salvarEl) salvarEl.textContent = "Salvar alterações";
+      }
+      sheet.hidden = false;
+      requestAnimationFrame(() => sheet.classList.add("open"));
+      window.setTimeout(() => document.getElementById("financas-fonte-renda-nome")?.focus(), 60);
+    }
+
+    function fecharSheetFonteRendaFinancas() {
+      const sheet = document.getElementById("financas-source-sheet");
+      if (!sheet) return;
+      sheet.classList.remove("open");
+      window.setTimeout(() => {
+        if (!sheet.classList.contains("open")) sheet.hidden = true;
+      }, 180);
+      limparErroFonteRendaFinancas();
     }
 
     function abrirSheetContaFixaFinancas(conta = null) {
@@ -8718,6 +8939,109 @@
 
     function renderizarFinancasMes(mensagemErro = "") {
       aplicarResumoFinancasMes(financasResumoMesSelecionado || {});
+    }
+
+    function renderizarFontesRendaFinancas(mensagemErro = "") {
+      const listaResumoEl = document.getElementById("financas-fontes-resumo-lista");
+      const metaResumoEl = document.getElementById("financas-fontes-meta");
+      const listaEl = document.getElementById("financas-fontes-renda-lista");
+      if (!listaResumoEl || !metaResumoEl || !listaEl) return;
+
+      if (mensagemErro) {
+        listaResumoEl.innerHTML = `<div class="financas-empty">${mensagemErro}</div>`;
+        listaEl.innerHTML = `<div class="financas-empty">${mensagemErro}</div>`;
+        metaResumoEl.textContent = "0 fonte(s)";
+        return;
+      }
+
+      metaResumoEl.textContent = `${financasFontesRenda.length} fonte(s)`;
+      if (!financasFontesRenda.length) {
+        listaResumoEl.innerHTML = '<div class="financas-empty">Nenhuma fonte de renda cadastrada.</div>';
+        listaEl.innerHTML = '<div class="financas-empty">Nenhuma fonte de renda cadastrada.</div>';
+        preencherSelectFonteRendaFinancas();
+        return;
+      }
+
+      listaResumoEl.innerHTML = "";
+      listaEl.innerHTML = "";
+      financasFontesRenda.forEach((fonte) => {
+        const total = formatarMoedaFinancas(fonte.total_recebido_mes || 0);
+
+        const resumoRow = document.createElement("div");
+        resumoRow.className = "financas-source-item";
+        resumoRow.innerHTML = `
+          <div class="financas-source-main">
+            <div class="financas-source-name">${fonte.nome || "Fonte"}</div>
+          </div>
+          <div class="financas-source-amount">${total}</div>
+        `;
+        listaResumoEl.appendChild(resumoRow);
+
+        const row = document.createElement("div");
+        row.className = "financas-source-item";
+
+        const main = document.createElement("div");
+        main.className = "financas-source-main";
+
+        const nome = document.createElement("div");
+        nome.className = "financas-source-name";
+        nome.textContent = fonte.nome || "Fonte";
+
+        const meta = document.createElement("div");
+        meta.className = "financas-source-meta";
+        meta.textContent = fonte.descricao || "Sem descrição";
+
+        const amount = document.createElement("div");
+        amount.className = "financas-source-amount";
+        amount.textContent = total;
+
+        const actions = document.createElement("div");
+        actions.className = "financas-source-actions";
+
+        const btnEditar = document.createElement("button");
+        btnEditar.className = "btn-secondary financas-source-action-btn";
+        btnEditar.type = "button";
+        btnEditar.title = "Editar fonte de renda";
+        btnEditar.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/>
+          </svg>
+          <span>Editar</span>
+        `;
+        btnEditar.setAttribute("aria-label", "Editar fonte de renda");
+        btnEditar.addEventListener("click", () => abrirSheetFonteRendaFinancas(fonte));
+
+        const btnExcluir = document.createElement("button");
+        btnExcluir.className = "btn-secondary financas-source-action-btn";
+        btnExcluir.type = "button";
+        btnExcluir.title = "Excluir fonte de renda";
+        btnExcluir.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 6h18"/>
+            <path d="M8 6V4h8v2"/>
+            <path d="M19 6l-1 14H6L5 6"/>
+          </svg>
+          <span>Excluir</span>
+        `;
+        btnExcluir.setAttribute("aria-label", "Excluir fonte de renda");
+        btnExcluir.addEventListener("click", async () => {
+          const confirmar = await modal.confirmar("Deseja excluir esta fonte de renda?", "Fontes de renda", "vermelho");
+          if (confirmar === false) return;
+          await excluirFonteRendaFinancas(fonte.id);
+        });
+
+        main.appendChild(nome);
+        main.appendChild(meta);
+        actions.appendChild(btnEditar);
+        actions.appendChild(btnExcluir);
+        row.appendChild(main);
+        row.appendChild(amount);
+        row.appendChild(actions);
+        listaEl.appendChild(row);
+      });
+
+      preencherSelectFonteRendaFinancas();
     }
 
     function aplicarPrevisaoContasFixasFinancas() {
@@ -8940,10 +9264,27 @@
       }
     }
 
+    async function carregarFontesRendaFinancas() {
+      try {
+        const { mes, ano } = obterMesAnoSelecionadoFinancas();
+        const params = new URLSearchParams({ mes: String(mes), ano: String(ano) });
+        const resposta = await fetch(API + "/financas/fontes-renda?" + params.toString());
+        if (!resposta.ok) throw new Error("fontes_renda_indisponiveis");
+        const itens = await resposta.json();
+        financasFontesRenda = Array.isArray(itens) ? itens : [];
+        renderizarFontesRendaFinancas();
+      } catch (erro) {
+        console.warn("[FINANCAS] Falha ao carregar fontes de renda:", erro);
+        financasFontesRenda = [];
+        renderizarFontesRendaFinancas("Não foi possível carregar suas fontes de renda agora.");
+      }
+    }
+
     async function carregarFinancasPainelCompleto() {
       await carregarFinancasHojeCompleto();
       await carregarFinancasMesSelecionadoCompleto();
       await carregarContasFixasFinancas();
+      await carregarFontesRendaFinancas();
     }
 
     async function confirmarContaFixaFinancas() {
@@ -9096,13 +9437,65 @@
       }
     }
 
+    async function salvarFonteRendaFinancas() {
+      limparErroFonteRendaFinancas();
+      const fonteId = document.getElementById("financas-fonte-renda-id")?.value || "";
+      const nome = document.getElementById("financas-fonte-renda-nome")?.value.trim() || "";
+      const descricao = document.getElementById("financas-fonte-renda-descricao")?.value.trim() || "";
+      if (!nome) {
+        definirErroFonteRendaFinancas("Informe o nome da fonte de renda.");
+        return;
+      }
+
+      const url = fonteId ? `${API}/financas/fontes-renda/${fonteId}` : API + "/financas/fontes-renda";
+      const method = fonteId ? "PUT" : "POST";
+      try {
+        const resposta = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nome, descricao }),
+        });
+        if (!resposta.ok) {
+          let mensagem = "Não foi possível salvar a fonte de renda agora.";
+          try {
+            const erro = await resposta.json();
+            if (erro?.detail) mensagem = String(erro.detail);
+          } catch {}
+          definirErroFonteRendaFinancas(mensagem);
+          return;
+        }
+        await carregarFontesRendaFinancas();
+        resetarFormularioFonteRendaFinancas();
+        fecharSheetFonteRendaFinancas();
+      } catch (erro) {
+        console.warn("[FINANCAS] Falha ao salvar fonte de renda:", erro);
+        definirErroFonteRendaFinancas("Não foi possível salvar a fonte de renda agora.");
+      }
+    }
+
+    async function excluirFonteRendaFinancas(fonteId) {
+      try {
+        const resposta = await fetch(`${API}/financas/fontes-renda/${fonteId}`, { method: "DELETE" });
+        if (!resposta.ok) {
+          const erro = await resposta.json().catch(() => ({}));
+          throw new Error(erro?.detail || "Não foi possível excluir a fonte de renda.");
+        }
+        await carregarFontesRendaFinancas();
+      } catch (erro) {
+        await modal.alerta(erro.message || "Não foi possível excluir a fonte de renda agora.", "Fontes de renda");
+      }
+    }
+
     function vincularFinancasUI() {
       if (financasUiVinculada) return;
       financasUiVinculada = true;
 
       document.getElementById("btn-financas-novo-lancamento")?.addEventListener("click", abrirSheetFinancas);
+      document.getElementById("btn-financas-nova-fonte-renda")?.addEventListener("click", () => abrirSheetFonteRendaFinancas());
       document.getElementById("btn-financas-cancelar")?.addEventListener("click", fecharSheetFinancas);
       document.getElementById("btn-financas-fechar-sheet-topo")?.addEventListener("click", fecharSheetFinancas);
+      document.getElementById("btn-financas-cancelar-source-sheet")?.addEventListener("click", fecharSheetFonteRendaFinancas);
+      document.getElementById("btn-financas-fechar-source-sheet-topo")?.addEventListener("click", fecharSheetFonteRendaFinancas);
       document.getElementById("btn-financas-nova-conta-fixa")?.addEventListener("click", () => abrirSheetContaFixaFinancas());
       document.getElementById("btn-financas-cancelar-fixed-sheet")?.addEventListener("click", fecharSheetContaFixaFinancas);
       document.getElementById("btn-financas-fechar-fixed-sheet-topo")?.addEventListener("click", fecharSheetContaFixaFinancas);
@@ -9122,6 +9515,9 @@
       document.getElementById("financas-fixed-sheet")?.addEventListener("click", (ev) => {
         if (ev.target?.id === "financas-fixed-sheet") fecharSheetContaFixaFinancas();
       });
+      document.getElementById("financas-source-sheet")?.addEventListener("click", (ev) => {
+        if (ev.target?.id === "financas-source-sheet") fecharSheetFonteRendaFinancas();
+      });
       document.getElementById("financas-confirm-sheet")?.addEventListener("click", (ev) => {
         if (ev.target?.id === "financas-confirm-sheet") fecharSheetConfirmacaoContaFixaFinancas();
       });
@@ -9139,6 +9535,7 @@
         const valor = Number(document.getElementById("financas-valor")?.value || 0);
         const categoria = document.getElementById("financas-categoria")?.value || "";
         const descricao = document.getElementById("financas-descricao")?.value.trim() || "";
+        const fonteRendaId = document.getElementById("financas-fonte-renda")?.value || "";
         const data = document.getElementById("financas-data")?.value || "";
 
         if (!tipo) {
@@ -9157,12 +9554,17 @@
           definirErroFinancas("Informe a data do lançamento.");
           return;
         }
+        if (normalizarTipoFinancasUI(tipo) === "Receita" && !fonteRendaId) {
+          definirErroFinancas("Selecione uma fonte de renda.");
+          return;
+        }
 
         const payload = {
           tipo,
           valor,
           categoria,
           descricao,
+          fonte_renda_id: normalizarTipoFinancasUI(tipo) === "Receita" ? Number(fonteRendaId) : null,
           data,
         };
 
@@ -9202,6 +9604,10 @@
         ev.preventDefault();
         await salvarContaFixaFinancas();
       });
+      document.getElementById("form-financas-fonte-renda")?.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        await salvarFonteRendaFinancas();
+      });
       document.getElementById("form-financas-confirmar-conta-fixa")?.addEventListener("submit", async (ev) => {
         ev.preventDefault();
         await confirmarContaFixaFinancas();
@@ -9209,11 +9615,13 @@
 
       inicializarMesReferenciaFinancas();
       resetarFormularioFinancas();
+      resetarFormularioFonteRendaFinancas();
       resetarFormularioContaFixaFinancas();
       resetarFormularioConfirmacaoContaFixaFinancas();
       renderizarFinancasHoje();
       renderizarFinancasMes();
       renderizarContasFixasFinancas();
+      renderizarFontesRendaFinancas();
     }
 
     function formatarDataHoraAdmin(iso) {
