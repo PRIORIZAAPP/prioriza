@@ -20,7 +20,8 @@ from google.auth.transport.requests import Request as GoogleAuthRequest
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, create_engine, inspect, text
+from pydantic import BaseModel, Field
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, Text, create_engine, inspect, text
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -232,6 +233,33 @@ class ChecklistItem(Base):
         return d
 
 
+class LancamentoFinanceiro(Base):
+    __tablename__ = "lancamentos_financeiros"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    tipo = Column(String, nullable=False, index=True)
+    valor = Column(Float, nullable=False)
+    categoria = Column(String, nullable=False, index=True)
+    descricao = Column(String, default="")
+    data = Column(String, nullable=False, index=True)  # YYYY-MM-DD
+    criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    ativo = Column(Boolean, default=True, nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "tipo": (self.tipo or "").lower(),
+            "valor": float(self.valor or 0),
+            "categoria": self.categoria or "",
+            "descricao": self.descricao or "",
+            "data": self.data,
+            "criado_em": self.criado_em.isoformat() if self.criado_em else None,
+            "ativo": bool(self.ativo),
+        }
+
+
 class Note(Base):
     __tablename__ = "notes"
 
@@ -324,6 +352,39 @@ class PasswordResetToken(Base):
     expires_at = Column(DateTime, nullable=False)
     used_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+
+
+# ============================================================
+# SCHEMAS
+# ============================================================
+
+class LancamentoFinanceiroCreate(BaseModel):
+    tipo: str = Field(..., min_length=1)
+    valor: float = Field(..., gt=0)
+    categoria: str = Field(..., min_length=1)
+    descricao: str = ""
+    data: str = Field(..., min_length=10)
+
+
+class LancamentoFinanceiroOut(BaseModel):
+    id: int
+    user_id: int
+    tipo: str
+    valor: float
+    categoria: str
+    descricao: str
+    data: str
+    criado_em: Optional[str] = None
+    ativo: bool = True
+
+
+class ResumoFinanceiroOut(BaseModel):
+    entradas_hoje: float
+    saidas_hoje: float
+    saldo_dia: float
+    entradas_mes: float
+    saidas_mes: float
+    saldo_mes: float
 
 
 # ============================================================
@@ -755,6 +816,11 @@ def rodar_migracoes_automaticas():
     except Exception as e:
         print(f"[MIGRAÇÃO] Aviso ao criar user_access_logs: {e}")
 
+    try:
+        LancamentoFinanceiro.__table__.create(bind=engine, checkfirst=True)
+    except Exception as e:
+        print(f"[MIGRAÇÃO] Aviso ao criar lancamentos_financeiros: {e}")
+
     for tabela in ("tarefas", "checklist", "notes", "push_subscriptions", "google_calendar_tokens"):
         try:
             with engine.connect() as conn:
@@ -778,6 +844,58 @@ def validar_data_iso(data_str: str) -> bool:
         return True
     except Exception:
         return False
+
+
+def normalizar_tipo_financeiro(tipo: str) -> str:
+    valor = unicodedata.normalize("NFKD", (tipo or "").strip()).encode("ascii", "ignore").decode("utf-8").lower()
+    if valor in {"receita", "entrada"}:
+        return "receita"
+    if valor in {"despesa", "saida", "saída"}:
+        return "despesa"
+    return ""
+
+
+def calcular_resumo_financeiro(db: Session, user_id: int, hoje_iso: Optional[str] = None) -> dict[str, float]:
+    hoje = hoje_iso if hoje_iso and validar_data_iso(hoje_iso) else date.today().isoformat()
+    ano_mes = hoje[:7]
+
+    itens = (
+        db.query(LancamentoFinanceiro)
+        .filter(
+            LancamentoFinanceiro.user_id == user_id,
+            LancamentoFinanceiro.ativo == True,
+            LancamentoFinanceiro.data.like(f"{ano_mes}%"),
+        )
+        .all()
+    )
+
+    entradas_hoje = sum(float(i.valor or 0) for i in itens if i.data == hoje and normalizar_tipo_financeiro(i.tipo) == "receita")
+    saidas_hoje = sum(float(i.valor or 0) for i in itens if i.data == hoje and normalizar_tipo_financeiro(i.tipo) == "despesa")
+    entradas_mes = sum(float(i.valor or 0) for i in itens if normalizar_tipo_financeiro(i.tipo) == "receita")
+    saidas_mes = sum(float(i.valor or 0) for i in itens if normalizar_tipo_financeiro(i.tipo) == "despesa")
+
+    return {
+        "entradas_hoje": round(entradas_hoje, 2),
+        "saidas_hoje": round(saidas_hoje, 2),
+        "saldo_dia": round(entradas_hoje - saidas_hoje, 2),
+        "entradas_mes": round(entradas_mes, 2),
+        "saidas_mes": round(saidas_mes, 2),
+        "saldo_mes": round(entradas_mes - saidas_mes, 2),
+    }
+
+
+def resolver_referencia_financeira(
+    data: Optional[str] = None,
+    mes: Optional[int] = None,
+    ano: Optional[int] = None,
+) -> str:
+    if data and validar_data_iso(data):
+        return data.strip()
+
+    hoje = date.today()
+    mes_ref = mes if isinstance(mes, int) and 1 <= mes <= 12 else hoje.month
+    ano_ref = ano if isinstance(ano, int) and 2000 <= ano <= 9999 else hoje.year
+    return f"{ano_ref:04d}-{mes_ref:02d}-01"
 
 
 def validar_hora(hora_str: str) -> bool:
@@ -2208,6 +2326,112 @@ def resumo(data_ref: str = Query(None, description="Data de referência YYYY-MM-
         "chk_feitos": len(chk_feitos),
         "notas_pendentes": notas_pendentes,
     }
+
+
+# ============================================================
+# FINANÇAS
+# ============================================================
+
+@app.post("/financas/lancamentos", response_model=LancamentoFinanceiroOut)
+def criar_lancamento_financeiro(
+    payload: LancamentoFinanceiroCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    tipo = normalizar_tipo_financeiro(payload.tipo)
+    categoria = (payload.categoria or "").strip()
+    descricao = (payload.descricao or "").strip()
+    data_lancamento = (payload.data or "").strip()
+
+    if tipo not in {"receita", "despesa"}:
+        raise HTTPException(status_code=400, detail="Tipo inválido. Use receita ou despesa.")
+    if not (payload.valor and float(payload.valor) > 0):
+        raise HTTPException(status_code=400, detail="Informe um valor maior que zero.")
+    if not categoria:
+        raise HTTPException(status_code=400, detail="Categoria obrigatória.")
+    if not data_lancamento or not validar_data_iso(data_lancamento):
+        raise HTTPException(status_code=400, detail="Data inválida.")
+
+    lancamento = LancamentoFinanceiro(
+        user_id=current_user.id,
+        tipo=tipo,
+        valor=round(float(payload.valor), 2),
+        categoria=categoria,
+        descricao=descricao,
+        data=data_lancamento,
+        ativo=True,
+    )
+    db.add(lancamento)
+    db.commit()
+    db.refresh(lancamento)
+    return LancamentoFinanceiroOut(**lancamento.to_dict())
+
+
+@app.get("/financas/lancamentos", response_model=list[LancamentoFinanceiroOut])
+def listar_lancamentos_financeiros(
+    data: Optional[str] = Query(None),
+    mes: Optional[int] = Query(None),
+    ano: Optional[int] = Query(None),
+    tipo: Optional[str] = Query(None),
+    categoria: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    query = db.query(LancamentoFinanceiro).filter(
+        LancamentoFinanceiro.user_id == current_user.id,
+        LancamentoFinanceiro.ativo == True,
+    )
+
+    data_filtro = (data or "").strip()
+    if data_filtro:
+        if not validar_data_iso(data_filtro):
+            raise HTTPException(status_code=400, detail="Filtro de data inválido.")
+        query = query.filter(LancamentoFinanceiro.data == data_filtro)
+    elif mes is not None or ano is not None:
+        if mes is not None and not (1 <= mes <= 12):
+            raise HTTPException(status_code=400, detail="Mês inválido.")
+        if ano is not None and not (2000 <= ano <= 9999):
+            raise HTTPException(status_code=400, detail="Ano inválido.")
+        hoje = date.today()
+        mes_ref = mes if mes is not None else hoje.month
+        ano_ref = ano if ano is not None else hoje.year
+        query = query.filter(LancamentoFinanceiro.data.like(f"{ano_ref:04d}-{mes_ref:02d}%"))
+
+    tipo_normalizado = normalizar_tipo_financeiro(tipo or "")
+    if tipo:
+        if tipo_normalizado not in {"receita", "despesa"}:
+            raise HTTPException(status_code=400, detail="Filtro de tipo inválido.")
+        query = query.filter(LancamentoFinanceiro.tipo == tipo_normalizado)
+
+    categoria_filtro = (categoria or "").strip()
+    if categoria_filtro:
+        query = query.filter(LancamentoFinanceiro.categoria == categoria_filtro)
+
+    itens = query.order_by(
+        LancamentoFinanceiro.data.desc(),
+        LancamentoFinanceiro.criado_em.desc(),
+        LancamentoFinanceiro.id.desc(),
+    ).all()
+    return [LancamentoFinanceiroOut(**item.to_dict()) for item in itens]
+
+
+@app.get("/financas/resumo", response_model=ResumoFinanceiroOut)
+def resumo_financeiro(
+    data: Optional[str] = Query(None),
+    mes: Optional[int] = Query(None),
+    ano: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if data and not validar_data_iso(data):
+        raise HTTPException(status_code=400, detail="Filtro de data inválido.")
+    if mes is not None and not (1 <= mes <= 12):
+        raise HTTPException(status_code=400, detail="Mês inválido.")
+    if ano is not None and not (2000 <= ano <= 9999):
+        raise HTTPException(status_code=400, detail="Ano inválido.")
+
+    referencia = resolver_referencia_financeira(data=data, mes=mes, ano=ano)
+    return ResumoFinanceiroOut(**calcular_resumo_financeiro(db, current_user.id, referencia))
 
 
 # ============================================================
