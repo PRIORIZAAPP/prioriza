@@ -1474,7 +1474,7 @@
       #screen-financas .financas-shell {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
       }
       #screen-financas .financas-topbar {
         display: flex;
@@ -1496,9 +1496,10 @@
         flex-wrap: wrap;
       }
       #screen-financas .financas-action-btn {
-        min-height: 38px;
-        padding: 0 14px;
-        border-radius: 14px;
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 12px;
+        font-size: 13px;
       }
       #screen-financas .financas-title {
         margin: 0;
@@ -1512,6 +1513,9 @@
         font-size: 12px;
         line-height: 1.35;
         color: #64748b;
+      }
+      #screen-financas .financas-desktop-add-label {
+        display: inline;
       }
       #screen-financas .financas-inline-title {
         margin: 0;
@@ -1539,7 +1543,7 @@
       #screen-financas .financas-summary-row-label {
         font-size: 12px;
         line-height: 1.35;
-        color: #64748b;
+        color: #475569;
       }
       #screen-financas .financas-summary-row-value {
         font-size: 14px;
@@ -1645,17 +1649,17 @@
       }
       #screen-financas .financas-list-shell {
         border: 1px solid rgba(226, 232, 240, 0.92);
-        border-radius: 18px;
+        border-radius: 16px;
         background: rgba(255,255,255,0.98);
-        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.03);
-        padding: 12px;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.025);
+        padding: 10px 12px;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
       }
       #screen-financas .financas-list-shell.financas-compact-section {
-        padding: 10px 12px;
-        gap: 8px;
+        padding: 8px 12px;
+        gap: 6px;
       }
       #screen-financas .financas-list-head {
         display: flex;
@@ -1682,17 +1686,22 @@
       #screen-financas .financas-day-list {
         display: flex;
         flex-direction: column;
-        gap: 7px;
+        gap: 0;
       }
       #screen-financas .financas-item {
-        border: 1px solid rgba(226, 232, 240, 0.88);
-        border-radius: 14px;
-        background: #fbfdff;
-        padding: 10px 12px;
+        border: none;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.72);
+        border-radius: 0;
+        background: transparent;
+        padding: 9px 0;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 10px;
+      }
+      #screen-financas .financas-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
       }
       #screen-financas .financas-item-main {
         min-width: 0;
@@ -1701,7 +1710,7 @@
         gap: 2px;
       }
       #screen-financas .financas-item-title {
-        font-size: 14px;
+        font-size: 13px;
         line-height: 1.25;
         color: #0f172a;
         font-weight: 560;
@@ -1713,11 +1722,29 @@
       }
       #screen-financas .financas-item-amount {
         text-align: right;
-        font-size: 14px;
+        font-size: 13px;
         line-height: 1.2;
         color: #0f172a;
         font-weight: 640;
         white-space: nowrap;
+      }
+      #screen-financas .financas-fixed-section-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      #screen-financas .financas-fixed-section-copy {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      #screen-financas .financas-fixed-forecast {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
       }
       #screen-financas .financas-fixed-list {
         display: flex;
@@ -1925,9 +1952,18 @@
         #screen-financas .financas-action-btn {
           margin-left: auto;
         }
+        #screen-financas .financas-list-shell {
+          border-radius: 18px;
+        }
         #screen-financas .financas-card,
         #screen-financas .financas-placeholder {
           border-radius: 20px;
+        }
+        #screen-financas .financas-item-title {
+          font-size: 14px;
+        }
+        #screen-financas .financas-item-amount {
+          font-size: 14px;
         }
         #screen-financas .financas-sheet {
           align-items: center;
@@ -1982,6 +2018,18 @@
           padding: 0 12px;
           font-size: 12px;
           gap: 6px;
+        }
+      }
+      @media (max-width: 640px) {
+        #screen-financas .financas-topbar-main {
+          align-items: flex-start;
+        }
+        #screen-financas .financas-action-btn {
+          min-width: 34px;
+          padding: 0 11px;
+        }
+        #screen-financas .financas-desktop-add-label {
+          display: none;
         }
       }
       .campo-em-breve { opacity: 0.45; pointer-events: none; }
@@ -7027,7 +7075,7 @@
               <div class="financas-topbar">
                 <div class="financas-topbar-main">
                   <h2 class="financas-title">Finanças</h2>
-                  <button id="btn-financas-novo-lancamento" class="btn-primary financas-action-btn" type="button">Novo lançamento</button>
+                  <button id="btn-financas-novo-lancamento" class="btn-primary financas-action-btn" type="button">+ <span class="financas-desktop-add-label">Novo</span></button>
                 </div>
                 <p class="financas-subtitle">Controle simples da sua vida financeira.</p>
               </div>
@@ -7060,46 +7108,33 @@
                   </div>
                 </div>
               </div>
-              <div class="financas-list-shell financas-compact-section">
-                <div class="financas-list-head">
-                  <h3>Lançamentos de hoje</h3>
-                  <div id="financas-lista-meta" class="financas-list-meta">0 lançamento(s)</div>
-                </div>
-                <div id="financas-lista-hoje" class="financas-day-list">
-                  <div class="financas-empty">Nenhum lançamento registrado hoje.</div>
-                </div>
-              </div>
               <div class="financas-list-shell">
-                <div class="financas-actions-row">
-                  <div>
+                <div class="financas-fixed-section-head">
+                  <div class="financas-fixed-section-copy">
                     <h3 class="financas-section-title">Contas fixas</h3>
                     <div class="financas-list-meta">Cadastre compromissos que se repetem todos os meses.</div>
                   </div>
                   <input id="financas-contas-fixas-mes-referencia" class="financas-month-picker" type="month" />
                   <button id="btn-financas-nova-conta-fixa" class="btn-secondary financas-action-btn" type="button">Nova conta fixa</button>
                 </div>
-              </div>
-              <div class="financas-list-shell">
-                <div class="financas-list-head">
+                <div class="financas-list-head" style="margin-top:2px;">
                   <h3>Previsão de contas fixas do mês</h3>
                   <div id="financas-contas-fixas-previsao-meta" class="financas-list-meta">0 conta(s)</div>
                 </div>
-                <div class="financas-month-grid">
-                  <div class="financas-summary-card">
-                    <span class="financas-summary-label">Receitas fixas previstas</span>
-                    <strong id="financas-receitas-fixas-previstas" class="financas-summary-value">R$ 0,00</strong>
+                <div class="financas-fixed-forecast financas-summary-rows">
+                  <div class="financas-summary-row">
+                    <span class="financas-summary-row-label">Receitas fixas previstas</span>
+                    <strong id="financas-receitas-fixas-previstas" class="financas-summary-row-value">R$ 0,00</strong>
                   </div>
-                  <div class="financas-summary-card">
-                    <span class="financas-summary-label">Despesas fixas previstas</span>
-                    <strong id="financas-despesas-fixas-previstas" class="financas-summary-value">R$ 0,00</strong>
+                  <div class="financas-summary-row">
+                    <span class="financas-summary-row-label">Despesas fixas previstas</span>
+                    <strong id="financas-despesas-fixas-previstas" class="financas-summary-row-value">R$ 0,00</strong>
                   </div>
-                  <div class="financas-summary-card">
-                    <span class="financas-summary-label">Saldo fixo previsto</span>
-                    <strong id="financas-saldo-fixo-previsto" class="financas-summary-value">R$ 0,00</strong>
+                  <div class="financas-summary-row">
+                    <span class="financas-summary-row-label">Saldo fixo previsto</span>
+                    <strong id="financas-saldo-fixo-previsto" class="financas-summary-row-value">R$ 0,00</strong>
                   </div>
                 </div>
-              </div>
-              <div class="financas-list-shell">
                 <div class="financas-list-head">
                   <h3>Lista de contas fixas</h3>
                   <div id="financas-contas-fixas-meta" class="financas-list-meta">0 conta(s)</div>
@@ -7108,8 +7143,14 @@
                   <div class="financas-empty">Nenhuma conta fixa cadastrada.</div>
                 </div>
               </div>
-              <div class="financas-placeholder">
-                <p>Em breve você poderá evoluir seu controle financeiro com metas, dívidas, patrimônio e automações inteligentes conectadas à sua rotina.</p>
+              <div class="financas-list-shell financas-compact-section">
+                <div class="financas-list-head">
+                  <h3>Lançamentos de hoje</h3>
+                  <div id="financas-lista-meta" class="financas-list-meta">0 lançamento(s)</div>
+                </div>
+                <div id="financas-lista-hoje" class="financas-day-list">
+                  <div class="financas-empty">Nenhum lançamento registrado hoje.</div>
+                </div>
               </div>
             </div>
           </div>
