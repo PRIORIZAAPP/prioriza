@@ -293,6 +293,35 @@ class ContaFixaFinanceira(Base):
         }
 
 
+class ContaFixaStatusMensal(Base):
+    __tablename__ = "contas_fixas_status_mensal"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    conta_fixa_id = Column(Integer, nullable=False, index=True)
+    mes = Column(Integer, nullable=False, index=True)
+    ano = Column(Integer, nullable=False, index=True)
+    status = Column(String, nullable=False, index=True)
+    lancamento_id = Column(Integer, nullable=True, index=True)
+    data_confirmacao = Column(String, nullable=True)
+    criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    atualizado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "conta_fixa_id": self.conta_fixa_id,
+            "mes": int(self.mes or 0),
+            "ano": int(self.ano or 0),
+            "status": self.status or "pendente",
+            "lancamento_id": self.lancamento_id,
+            "data_confirmacao": self.data_confirmacao,
+            "criado_em": self.criado_em.isoformat() if self.criado_em else None,
+            "atualizado_em": self.atualizado_em.isoformat() if self.atualizado_em else None,
+        }
+
+
 class Note(Base):
     __tablename__ = "notes"
 
@@ -429,6 +458,19 @@ class ContaFixaFinanceiraUpdate(BaseModel):
     observacao: Optional[str] = None
 
 
+class ContaFixaFinanceiraConfirmar(BaseModel):
+    mes: int = Field(..., ge=1, le=12)
+    ano: int = Field(..., ge=2000, le=9999)
+    data_pagamento: str = Field(..., min_length=10)
+    valor_pago: Optional[float] = None
+    observacao: str = ""
+
+
+class ContaFixaFinanceiraDesfazer(BaseModel):
+    mes: int = Field(..., ge=1, le=12)
+    ano: int = Field(..., ge=2000, le=9999)
+
+
 class ContaFixaFinanceiraOut(BaseModel):
     id: int
     user_id: int
@@ -442,6 +484,9 @@ class ContaFixaFinanceiraOut(BaseModel):
     ativo: bool = True
     criado_em: Optional[str] = None
     atualizado_em: Optional[str] = None
+    status_mensal: str = "pendente"
+    lancamento_id: Optional[int] = None
+    data_confirmacao: Optional[str] = None
 
 
 class ResumoFinanceiroOut(BaseModel):
@@ -893,6 +938,11 @@ def rodar_migracoes_automaticas():
     except Exception as e:
         print(f"[MIGRAÇÃO] Aviso ao criar contas_fixas_financeiras: {e}")
 
+    try:
+        ContaFixaStatusMensal.__table__.create(bind=engine, checkfirst=True)
+    except Exception as e:
+        print(f"[MIGRAÇÃO] Aviso ao criar contas_fixas_status_mensal: {e}")
+
     for tabela in ("tarefas", "checklist", "notes", "push_subscriptions", "google_calendar_tokens"):
         try:
             with engine.connect() as conn:
@@ -1001,6 +1051,35 @@ def calcular_previsao_contas_fixas(db: Session, user_id: int) -> dict[str, float
         "despesas_fixas_previstas": round(despesas, 2),
         "saldo_fixo_previsto": round(receitas - despesas, 2),
     }
+
+
+def obter_status_mensal_contas_fixas(
+    db: Session,
+    user_id: int,
+    mes: int,
+    ano: int,
+) -> dict[int, ContaFixaStatusMensal]:
+    itens = (
+        db.query(ContaFixaStatusMensal)
+        .filter(
+            ContaFixaStatusMensal.user_id == user_id,
+            ContaFixaStatusMensal.mes == mes,
+            ContaFixaStatusMensal.ano == ano,
+        )
+        .all()
+    )
+    return {item.conta_fixa_id: item for item in itens}
+
+
+def montar_saida_conta_fixa(
+    conta: ContaFixaFinanceira,
+    status_row: Optional[ContaFixaStatusMensal] = None,
+) -> dict[str, Any]:
+    saida = conta.to_dict()
+    saida["status_mensal"] = (status_row.status if status_row else "pendente") or "pendente"
+    saida["lancamento_id"] = status_row.lancamento_id if status_row else None
+    saida["data_confirmacao"] = status_row.data_confirmacao if status_row else None
+    return saida
 
 
 def resolver_referencia_financeira(
@@ -2607,9 +2686,19 @@ def criar_conta_fixa_financeira(
 
 @app.get("/financas/contas-fixas", response_model=list[ContaFixaFinanceiraOut])
 def listar_contas_fixas_financeiras(
+    mes: Optional[int] = Query(None),
+    ano: Optional[int] = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    hoje = date.today()
+    mes_ref = mes if mes is not None else hoje.month
+    ano_ref = ano if ano is not None else hoje.year
+    if not (1 <= mes_ref <= 12):
+        raise HTTPException(status_code=400, detail="Mês inválido.")
+    if not (2000 <= ano_ref <= 9999):
+        raise HTTPException(status_code=400, detail="Ano inválido.")
+
     contas = (
         db.query(ContaFixaFinanceira)
         .filter(
@@ -2619,7 +2708,8 @@ def listar_contas_fixas_financeiras(
         .order_by(ContaFixaFinanceira.tipo.asc(), ContaFixaFinanceira.dia_vencimento.asc(), ContaFixaFinanceira.nome.asc(), ContaFixaFinanceira.id.desc())
         .all()
     )
-    return [ContaFixaFinanceiraOut(**conta.to_dict()) for conta in contas]
+    status_map = obter_status_mensal_contas_fixas(db, current_user.id, mes_ref, ano_ref)
+    return [ContaFixaFinanceiraOut(**montar_saida_conta_fixa(conta, status_map.get(conta.id))) for conta in contas]
 
 
 @app.put("/financas/contas-fixas/{conta_id}", response_model=ContaFixaFinanceiraOut)
@@ -2671,7 +2761,7 @@ def editar_conta_fixa_financeira(
     conta.atualizado_em = datetime.now(UTC)
     db.commit()
     db.refresh(conta)
-    return ContaFixaFinanceiraOut(**conta.to_dict())
+    return ContaFixaFinanceiraOut(**montar_saida_conta_fixa(conta))
 
 
 @app.delete("/financas/contas-fixas/{conta_id}")
@@ -2696,6 +2786,141 @@ def excluir_conta_fixa_financeira(
     conta.atualizado_em = datetime.now(UTC)
     db.commit()
     return {"ok": True}
+
+
+@app.post("/financas/contas-fixas/{conta_id}/confirmar")
+def confirmar_conta_fixa_financeira(
+    conta_id: int,
+    payload: ContaFixaFinanceiraConfirmar,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    conta = (
+        db.query(ContaFixaFinanceira)
+        .filter(
+            ContaFixaFinanceira.id == conta_id,
+            ContaFixaFinanceira.user_id == current_user.id,
+            ContaFixaFinanceira.ativo == True,
+        )
+        .first()
+    )
+    if not conta:
+        raise HTTPException(status_code=404, detail="Conta fixa não encontrada.")
+    if not validar_data_iso(payload.data_pagamento):
+        raise HTTPException(status_code=400, detail="Data de confirmação inválida.")
+
+    status_existente = (
+        db.query(ContaFixaStatusMensal)
+        .filter(
+            ContaFixaStatusMensal.user_id == current_user.id,
+            ContaFixaStatusMensal.conta_fixa_id == conta.id,
+            ContaFixaStatusMensal.mes == payload.mes,
+            ContaFixaStatusMensal.ano == payload.ano,
+        )
+        .first()
+    )
+    if status_existente and status_existente.status in {"pago", "recebido"}:
+        raise HTTPException(status_code=400, detail="Esta conta fixa já foi confirmada neste mês.")
+
+    valor_confirmado = round(float(payload.valor_pago if payload.valor_pago is not None else conta.valor), 2)
+    if not (valor_confirmado > 0):
+        raise HTTPException(status_code=400, detail="Informe um valor maior que zero.")
+
+    status_destino = "recebido" if normalizar_tipo_financeiro(conta.tipo) == "receita" else "pago"
+    descricao = conta.nome or "Conta fixa"
+    if payload.observacao and payload.observacao.strip():
+        descricao = f"{descricao} - {payload.observacao.strip()}"
+
+    lancamento = LancamentoFinanceiro(
+        user_id=current_user.id,
+        tipo=normalizar_tipo_financeiro(conta.tipo),
+        valor=valor_confirmado,
+        categoria=conta.categoria,
+        descricao=descricao,
+        data=payload.data_pagamento.strip(),
+        ativo=True,
+    )
+    db.add(lancamento)
+    db.flush()
+
+    if not status_existente:
+        status_existente = ContaFixaStatusMensal(
+            user_id=current_user.id,
+            conta_fixa_id=conta.id,
+            mes=payload.mes,
+            ano=payload.ano,
+            status=status_destino,
+            lancamento_id=lancamento.id,
+            data_confirmacao=payload.data_pagamento.strip(),
+            atualizado_em=datetime.now(UTC),
+        )
+        db.add(status_existente)
+    else:
+        status_existente.status = status_destino
+        status_existente.lancamento_id = lancamento.id
+        status_existente.data_confirmacao = payload.data_pagamento.strip()
+        status_existente.atualizado_em = datetime.now(UTC)
+
+    conta.atualizado_em = datetime.now(UTC)
+    db.commit()
+    db.refresh(conta)
+    return {
+        "ok": True,
+        "status_mensal": status_destino,
+        "lancamento_id": lancamento.id,
+        "data_confirmacao": payload.data_pagamento.strip(),
+        "conta": montar_saida_conta_fixa(conta, status_existente),
+    }
+
+
+@app.post("/financas/contas-fixas/{conta_id}/desfazer-confirmacao")
+def desfazer_confirmacao_conta_fixa_financeira(
+    conta_id: int,
+    payload: ContaFixaFinanceiraDesfazer,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    conta = (
+        db.query(ContaFixaFinanceira)
+        .filter(
+            ContaFixaFinanceira.id == conta_id,
+            ContaFixaFinanceira.user_id == current_user.id,
+            ContaFixaFinanceira.ativo == True,
+        )
+        .first()
+    )
+    if not conta:
+        raise HTTPException(status_code=404, detail="Conta fixa não encontrada.")
+
+    status_row = (
+        db.query(ContaFixaStatusMensal)
+        .filter(
+            ContaFixaStatusMensal.user_id == current_user.id,
+            ContaFixaStatusMensal.conta_fixa_id == conta.id,
+            ContaFixaStatusMensal.mes == payload.mes,
+            ContaFixaStatusMensal.ano == payload.ano,
+        )
+        .first()
+    )
+    if not status_row:
+        raise HTTPException(status_code=404, detail="Esta conta fixa ainda não foi confirmada neste mês.")
+
+    if status_row.lancamento_id:
+        lancamento = (
+            db.query(LancamentoFinanceiro)
+            .filter(
+                LancamentoFinanceiro.id == status_row.lancamento_id,
+                LancamentoFinanceiro.user_id == current_user.id,
+            )
+            .first()
+        )
+        if lancamento:
+            lancamento.ativo = False
+
+    db.delete(status_row)
+    conta.atualizado_em = datetime.now(UTC)
+    db.commit()
+    return {"ok": True, "status_mensal": "pendente"}
 
 
 # ============================================================
