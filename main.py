@@ -385,6 +385,7 @@ class ResumoFinanceiroOut(BaseModel):
     entradas_mes: float
     saidas_mes: float
     saldo_mes: float
+    despesas_por_categoria: dict[str, float] = {}
 
 
 # ============================================================
@@ -882,6 +883,34 @@ def calcular_resumo_financeiro(db: Session, user_id: int, hoje_iso: Optional[str
         "saidas_mes": round(saidas_mes, 2),
         "saldo_mes": round(entradas_mes - saidas_mes, 2),
     }
+
+
+def calcular_despesas_por_categoria_financeira(
+    db: Session,
+    user_id: int,
+    referencia_iso: Optional[str] = None,
+) -> dict[str, float]:
+    referencia = referencia_iso if referencia_iso and validar_data_iso(referencia_iso) else date.today().isoformat()
+    ano_mes = referencia[:7]
+    itens = (
+        db.query(LancamentoFinanceiro)
+        .filter(
+            LancamentoFinanceiro.user_id == user_id,
+            LancamentoFinanceiro.ativo == True,
+            LancamentoFinanceiro.data.like(f"{ano_mes}%"),
+        )
+        .order_by(LancamentoFinanceiro.data.desc(), LancamentoFinanceiro.criado_em.desc(), LancamentoFinanceiro.id.desc())
+        .all()
+    )
+
+    totais: dict[str, float] = {}
+    for item in itens:
+        if normalizar_tipo_financeiro(item.tipo) != "despesa":
+            continue
+        chave = (item.categoria or "Outros").strip() or "Outros"
+        totais[chave] = round(totais.get(chave, 0) + float(item.valor or 0), 2)
+
+    return dict(sorted(totais.items(), key=lambda entry: entry[1], reverse=True))
 
 
 def resolver_referencia_financeira(
@@ -2431,7 +2460,19 @@ def resumo_financeiro(
         raise HTTPException(status_code=400, detail="Ano inválido.")
 
     referencia = resolver_referencia_financeira(data=data, mes=mes, ano=ano)
-    return ResumoFinanceiroOut(**calcular_resumo_financeiro(db, current_user.id, referencia))
+    resumo_hoje = calcular_resumo_financeiro(db, current_user.id, date.today().isoformat())
+    resumo_mes = calcular_resumo_financeiro(db, current_user.id, referencia)
+    despesas_por_categoria = calcular_despesas_por_categoria_financeira(db, current_user.id, referencia)
+
+    return ResumoFinanceiroOut(
+        entradas_hoje=resumo_hoje["entradas_hoje"],
+        saidas_hoje=resumo_hoje["saidas_hoje"],
+        saldo_dia=resumo_hoje["saldo_dia"],
+        entradas_mes=resumo_mes["entradas_mes"],
+        saidas_mes=resumo_mes["saidas_mes"],
+        saldo_mes=resumo_mes["saldo_mes"],
+        despesas_por_categoria=despesas_por_categoria,
+    )
 
 
 # ============================================================
