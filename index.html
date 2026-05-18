@@ -1712,7 +1712,10 @@
         background: #fbfdff;
         padding: 10px 12px;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-columns: auto minmax(0, 1fr) auto auto;
+        grid-template-areas:
+          "status title amount actions"
+          "status meta meta actions";
         align-items: center;
         gap: 10px;
       }
@@ -1720,56 +1723,57 @@
         border-color: rgba(34, 197, 94, 0.18);
         background: rgba(34, 197, 94, 0.05);
       }
-      #screen-financas .financas-fixed-top {
-        min-width: 0;
-        display: flex;
+      #screen-financas .financas-fixed-status-toggle {
+        grid-area: status;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        border: 1.5px solid rgba(203, 213, 225, 0.95);
+        background: rgba(255,255,255,0.98);
+        color: transparent;
+        display: inline-flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 10px;
+        justify-content: center;
+        padding: 0;
+        transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
       }
-      #screen-financas .financas-fixed-copy {
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
+      #screen-financas .financas-fixed-status-toggle svg {
+        width: 15px;
+        height: 15px;
+      }
+      #screen-financas .financas-fixed-status-toggle.is-confirmed {
+        border-color: rgba(34, 197, 94, 0.3);
+        background: rgba(34, 197, 94, 0.16);
+        color: #15803d;
+      }
+      #screen-financas .financas-fixed-status-toggle:active {
+        transform: scale(0.96);
       }
       #screen-financas .financas-fixed-title {
+        grid-area: title;
+        min-width: 0;
         font-size: 14px;
         line-height: 1.25;
         color: #0f172a;
         font-weight: 580;
       }
+      #screen-financas .financas-fixed-meta-wrap {
+        grid-area: meta;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
       #screen-financas .financas-fixed-meta,
-      #screen-financas .financas-fixed-due {
+      #screen-financas .financas-fixed-due,
+      #screen-financas .financas-fixed-separator {
         font-size: 11px;
         line-height: 1.35;
         color: #64748b;
       }
-      #screen-financas .financas-fixed-status {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        width: fit-content;
-        min-height: 28px;
-        padding: 0 10px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 600;
-        border: 1px solid rgba(203, 213, 225, 0.9);
-        color: #475569;
-        background: rgba(248, 250, 252, 0.96);
-      }
-      #screen-financas .financas-fixed-status.pago,
-      #screen-financas .financas-fixed-status.recebido {
-        border-color: rgba(var(--cor-tema-rgb), 0.22);
-        color: var(--cor-tema-escura);
-        background: rgba(var(--cor-tema-rgb), 0.1);
-      }
-      #screen-financas .financas-fixed-status,
-      #screen-financas .financas-fixed-confirmation {
-        display: none;
-      }
       #screen-financas .financas-fixed-amount {
+        grid-area: amount;
         text-align: right;
         font-size: 14px;
         line-height: 1.2;
@@ -1778,6 +1782,7 @@
         white-space: nowrap;
       }
       #screen-financas .financas-fixed-actions {
+        grid-area: actions;
         display: flex;
         align-items: center;
         gap: 6px;
@@ -1904,31 +1909,38 @@
           border-radius: 24px;
         }
         #screen-financas .financas-fixed-item {
-          grid-template-columns: minmax(0, 1fr);
+          grid-template-columns: auto minmax(220px, 1.8fr) minmax(110px, auto) minmax(110px, auto) auto auto;
+          grid-template-areas: "status title due category amount actions";
           padding: 13px 14px;
-          gap: 10px;
+          gap: 12px;
           border-radius: 16px;
           background: #fbfdff;
         }
-        #screen-financas .financas-fixed-top {
-          align-items: flex-start;
-          gap: 12px;
+        #screen-financas .financas-fixed-status-toggle {
+          width: 30px;
+          height: 30px;
         }
         #screen-financas .financas-fixed-title {
           font-size: 15px;
           line-height: 1.3;
         }
-        #screen-financas .financas-fixed-meta,
+        #screen-financas .financas-fixed-meta-wrap {
+          display: contents;
+        }
         #screen-financas .financas-fixed-due {
+          grid-area: due;
+        }
+        #screen-financas .financas-fixed-meta {
+          grid-area: category;
+        }
+        #screen-financas .financas-fixed-meta,
+        #screen-financas .financas-fixed-due,
+        #screen-financas .financas-fixed-separator {
           font-size: 12px;
           line-height: 1.45;
         }
-        #screen-financas .financas-fixed-status,
-        #screen-financas .financas-fixed-confirmation {
-          display: inline-flex;
-        }
-        #screen-financas .financas-fixed-confirmation {
-          color: #64748b;
+        #screen-financas .financas-fixed-separator {
+          display: none;
         }
         #screen-financas .financas-fixed-amount {
           font-size: 15px;
@@ -8783,50 +8795,55 @@
         const confirmado = statusMensal === "pago" || statusMensal === "recebido";
         row.classList.toggle("is-confirmed", confirmado);
 
-        const top = document.createElement("div");
-        top.className = "financas-fixed-top";
-
-        const copy = document.createElement("div");
-        copy.className = "financas-fixed-copy";
+        const btnStatus = document.createElement("button");
+        btnStatus.className = "financas-fixed-status-toggle";
+        btnStatus.type = "button";
+        btnStatus.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+        `;
+        if (confirmado) {
+          btnStatus.classList.add("is-confirmed");
+          btnStatus.title = "Desfazer confirmação";
+          btnStatus.setAttribute("aria-label", "Desfazer confirmação");
+          btnStatus.addEventListener("click", async () => {
+            const ok = await modal.confirmar("Deseja desfazer esta confirmação?", "Contas fixas", "vermelho");
+            if (!ok) return;
+            await desfazerConfirmacaoContaFixaFinancas(conta);
+          });
+        } else {
+          btnStatus.title = normalizarTipoFinancasUI(conta.tipo) === "Receita" ? "Marcar como recebida" : "Marcar como paga";
+          btnStatus.setAttribute("aria-label", normalizarTipoFinancasUI(conta.tipo) === "Receita" ? "Marcar como recebida" : "Marcar como paga");
+          btnStatus.addEventListener("click", () => abrirSheetConfirmacaoContaFixaFinancas(conta));
+        }
 
         const titulo = document.createElement("div");
         titulo.className = "financas-fixed-title";
         titulo.textContent = conta.nome || "Conta fixa";
 
-        const meta = document.createElement("div");
-        meta.className = "financas-fixed-meta";
-        meta.textContent = `dia ${Number(conta.dia_vencimento || 0)} · ${conta.categoria || "Outros"}`;
+        const metaWrap = document.createElement("div");
+        metaWrap.className = "financas-fixed-meta-wrap";
 
         const due = document.createElement("div");
         due.className = "financas-fixed-due";
-        due.textContent = `Vence dia ${Number(conta.dia_vencimento || 0)}`;
+        due.textContent = `dia ${Number(conta.dia_vencimento || 0)}`;
 
-        const status = document.createElement("div");
-        status.className = `financas-fixed-status ${statusMensal}`;
-        status.textContent =
-          statusMensal === "recebido"
-            ? "Recebido"
-            : statusMensal === "pago"
-              ? "Pago"
-              : "Pendente";
+        const separator = document.createElement("div");
+        separator.className = "financas-fixed-separator";
+        separator.textContent = "·";
 
-        const confirmacao = document.createElement("div");
-        confirmacao.className = "financas-fixed-confirmation";
-        confirmacao.textContent = conta.data_confirmacao
-          ? `Confirmado em ${formatarDataCurtaBR(conta.data_confirmacao)}`
-          : "Aguardando confirmação neste mês";
+        const meta = document.createElement("div");
+        meta.className = "financas-fixed-meta";
+        meta.textContent = conta.categoria || "Outros";
 
         const amount = document.createElement("div");
         amount.className = "financas-fixed-amount";
         amount.textContent = formatarMoedaFinancas(conta.valor);
 
-        copy.appendChild(titulo);
-        copy.appendChild(meta);
-        copy.appendChild(due);
-        copy.appendChild(status);
-        copy.appendChild(confirmacao);
-        top.appendChild(copy);
-        top.appendChild(amount);
+        metaWrap.appendChild(due);
+        metaWrap.appendChild(separator);
+        metaWrap.appendChild(meta);
 
         const actions = document.createElement("div");
         actions.className = "financas-fixed-actions";
@@ -8863,42 +8880,12 @@
           if (confirmar === false) return;
           await excluirContaFixaFinancas(conta.id);
         });
-
-        const btnStatus = document.createElement("button");
-        btnStatus.className = "btn-primary financas-fixed-action-btn";
-        btnStatus.type = "button";
-        if (confirmado) {
-          btnStatus.classList.add("is-confirmed");
-          btnStatus.title = "Desfazer confirmação";
-          btnStatus.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M20 6 9 17l-5-5"/>
-            </svg>
-            <span>Desfazer</span>
-          `;
-          btnStatus.setAttribute("aria-label", "Desfazer confirmação");
-          btnStatus.addEventListener("click", async () => {
-            const ok = await modal.confirmar("Deseja desfazer esta confirmação?", "Contas fixas", "vermelho");
-            if (!ok) return;
-            await desfazerConfirmacaoContaFixaFinancas(conta);
-          });
-        } else {
-          const rotulo = normalizarTipoFinancasUI(conta.tipo) === "Receita" ? "Receber" : "Pagar";
-          btnStatus.title = normalizarTipoFinancasUI(conta.tipo) === "Receita" ? "Marcar como recebida" : "Marcar como paga";
-          btnStatus.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M20 6 9 17l-5-5"/>
-            </svg>
-            <span>${rotulo}</span>
-          `;
-          btnStatus.setAttribute("aria-label", normalizarTipoFinancasUI(conta.tipo) === "Receita" ? "Marcar como recebida" : "Marcar como paga");
-          btnStatus.addEventListener("click", () => abrirSheetConfirmacaoContaFixaFinancas(conta));
-        }
-
-        actions.appendChild(btnStatus);
         actions.appendChild(btnEditar);
         actions.appendChild(btnExcluir);
-        row.appendChild(top);
+        row.appendChild(btnStatus);
+        row.appendChild(titulo);
+        row.appendChild(metaWrap);
+        row.appendChild(amount);
         row.appendChild(actions);
         listaEl.appendChild(row);
       });
