@@ -7988,10 +7988,16 @@
 
     let financasLancamentosTemporarios = [];
     let financasUiVinculada = false;
+    let financasCarregandoAgora = false;
 
     function formatarMoedaFinancas(valor) {
       const numero = Number(valor || 0);
       return numero.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function normalizarTipoFinancasUI(tipo) {
+      const valor = String(tipo || "").trim().toLowerCase();
+      return valor === "receita" ? "Receita" : "Despesa";
     }
 
     function definirTipoLancamentoFinancas(tipo = "Despesa") {
@@ -8040,31 +8046,49 @@
       limparErroFinancas();
     }
 
-    function renderizarFinancasHoje() {
-      const hoje = dataHojeISO();
-      const listaEl = document.getElementById("financas-lista-hoje");
-      const metaEl = document.getElementById("financas-lista-meta");
+    function aplicarResumoFinancasHoje(resumo = {}) {
       const entradasEl = document.getElementById("financas-entradas-hoje");
       const saidasEl = document.getElementById("financas-saidas-hoje");
       const saldoEl = document.getElementById("financas-saldo-dia");
-      if (!listaEl || !metaEl || !entradasEl || !saidasEl || !saldoEl) return;
+      if (!entradasEl || !saidasEl || !saldoEl) return;
+      entradasEl.textContent = formatarMoedaFinancas(resumo.entradas_hoje || 0);
+      saidasEl.textContent = formatarMoedaFinancas(resumo.saidas_hoje || 0);
+      saldoEl.textContent = formatarMoedaFinancas(resumo.saldo_dia || 0);
+    }
+
+    function renderizarFinancasHoje(mensagemErro = "") {
+      const hoje = dataHojeISO();
+      const listaEl = document.getElementById("financas-lista-hoje");
+      const metaEl = document.getElementById("financas-lista-meta");
+      if (!listaEl || !metaEl) return;
 
       const itensHoje = financasLancamentosTemporarios
         .filter((item) => item.data === hoje)
-        .sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
+        .sort((a, b) => {
+          const dataB = new Date(b.criado_em || b.criadoEm || 0).getTime() || Number(b.criadoEm || 0);
+          const dataA = new Date(a.criado_em || a.criadoEm || 0).getTime() || Number(a.criadoEm || 0);
+          return dataB - dataA;
+        });
 
       const entradas = itensHoje
-        .filter((item) => item.tipo === "Receita")
+        .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Receita")
         .reduce((soma, item) => soma + Number(item.valor || 0), 0);
       const saidas = itensHoje
-        .filter((item) => item.tipo === "Despesa")
+        .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa")
         .reduce((soma, item) => soma + Number(item.valor || 0), 0);
       const saldo = entradas - saidas;
 
-      entradasEl.textContent = formatarMoedaFinancas(entradas);
-      saidasEl.textContent = formatarMoedaFinancas(saidas);
-      saldoEl.textContent = formatarMoedaFinancas(saldo);
+      aplicarResumoFinancasHoje({
+        entradas_hoje: entradas,
+        saidas_hoje: saidas,
+        saldo_dia: saldo,
+      });
       metaEl.textContent = `${itensHoje.length} lançamento(s)`;
+
+      if (mensagemErro) {
+        listaEl.innerHTML = `<div class="financas-empty">${mensagemErro}</div>`;
+        return;
+      }
 
       if (!itensHoje.length) {
         listaEl.innerHTML = '<div class="financas-empty">Nenhum lançamento registrado hoje.</div>';
@@ -8085,7 +8109,7 @@
 
         const meta = document.createElement("div");
         meta.className = "financas-item-meta";
-        meta.textContent = [item.categoria, item.tipo, formatarDataCurtaBR(item.data)].filter(Boolean).join(" · ");
+        meta.textContent = [item.categoria, normalizarTipoFinancasUI(item.tipo), formatarDataCurtaBR(item.data)].filter(Boolean).join(" · ");
 
         const amount = document.createElement("div");
         amount.className = "financas-item-amount";
@@ -8097,6 +8121,40 @@
         row.appendChild(amount);
         listaEl.appendChild(row);
       });
+    }
+
+    async function carregarResumoFinancasHoje() {
+      const resposta = await fetch(API + "/financas/resumo");
+      if (!resposta.ok) throw new Error("resumo_financas_indisponivel");
+      const resumo = await resposta.json();
+      aplicarResumoFinancasHoje(resumo || {});
+      return resumo;
+    }
+
+    async function carregarLancamentosFinancasHoje() {
+      const params = new URLSearchParams({ data: dataHojeISO() });
+      const resposta = await fetch(API + "/financas/lancamentos?" + params.toString());
+      if (!resposta.ok) throw new Error("lancamentos_financas_indisponiveis");
+      const itens = await resposta.json();
+      financasLancamentosTemporarios = Array.isArray(itens) ? itens : [];
+      renderizarFinancasHoje();
+      return financasLancamentosTemporarios;
+    }
+
+    async function carregarFinancasHojeCompleto() {
+      if (financasCarregandoAgora) return;
+      financasCarregandoAgora = true;
+      try {
+        await Promise.all([
+          carregarResumoFinancasHoje(),
+          carregarLancamentosFinancasHoje(),
+        ]);
+      } catch (erro) {
+        console.warn("[FINANCAS] Falha ao carregar lançamentos:", erro);
+        renderizarFinancasHoje("Não foi possível carregar seus lançamentos agora.");
+      } finally {
+        financasCarregandoAgora = false;
+      }
     }
 
     function vincularFinancasUI() {
@@ -8115,7 +8173,7 @@
         if (ev.target?.id === "financas-sheet") fecharSheetFinancas();
       });
 
-      document.getElementById("form-financas-lancamento")?.addEventListener("submit", (ev) => {
+      document.getElementById("form-financas-lancamento")?.addEventListener("submit", async (ev) => {
         ev.preventDefault();
         limparErroFinancas();
 
@@ -8142,19 +8200,37 @@
           return;
         }
 
-        financasLancamentosTemporarios.push({
-          id: `fin_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        const payload = {
           tipo,
           valor,
           categoria,
           descricao,
           data,
-          criadoEm: Date.now(),
-        });
+        };
 
-        renderizarFinancasHoje();
-        resetarFormularioFinancas();
-        fecharSheetFinancas();
+        try {
+          const resposta = await fetch(API + "/financas/lancamentos", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!resposta.ok) {
+            let mensagem = "Não foi possível salvar o lançamento agora.";
+            try {
+              const erro = await resposta.json();
+              if (erro?.detail) mensagem = String(erro.detail);
+            } catch {}
+            definirErroFinancas(mensagem);
+            return;
+          }
+
+          await carregarFinancasHojeCompleto();
+          resetarFormularioFinancas();
+          fecharSheetFinancas();
+        } catch (erro) {
+          console.warn("[FINANCAS] Falha ao salvar lançamento:", erro);
+          definirErroFinancas("Não foi possível salvar o lançamento agora.");
+        }
       });
 
       document.addEventListener("keydown", (ev) => {
@@ -11875,6 +11951,11 @@
             setTimeout(carregarGestaoUsuariosAdmin, 120);
           }
         }
+        if (id === "screen-financas") {
+          setTimeout(() => {
+            carregarFinancasHojeCompleto();
+          }, 40);
+        }
       }
       window.__abrirTelaApp = abrirTela;
       navItems.forEach(item=>{
@@ -12199,6 +12280,7 @@
       carregarPessoalLista();
       carregarNotas();
       vincularFinancasUI();
+      await carregarFinancasHojeCompleto();
       initUniversalMic();
 
       // ── NOTIFICAÇÕES ─────────────────────────────────────────────
