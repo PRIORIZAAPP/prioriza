@@ -1480,6 +1480,13 @@
         display: flex;
         justify-content: flex-start;
       }
+      #screen-financas .financas-actions-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
       #screen-financas .financas-action-btn {
         min-height: 42px;
         padding: 0 16px;
@@ -1694,6 +1701,62 @@
         font-weight: 640;
         white-space: nowrap;
       }
+      #screen-financas .financas-fixed-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      #screen-financas .financas-fixed-item {
+        border: 1px solid rgba(226, 232, 240, 0.88);
+        border-radius: 16px;
+        background: #fbfdff;
+        padding: 13px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      #screen-financas .financas-fixed-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      #screen-financas .financas-fixed-copy {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      #screen-financas .financas-fixed-title {
+        font-size: 15px;
+        line-height: 1.3;
+        color: #0f172a;
+        font-weight: 580;
+      }
+      #screen-financas .financas-fixed-meta,
+      #screen-financas .financas-fixed-due {
+        font-size: 12px;
+        line-height: 1.45;
+        color: #64748b;
+      }
+      #screen-financas .financas-fixed-amount {
+        text-align: right;
+        font-size: 15px;
+        line-height: 1.2;
+        color: #0f172a;
+        font-weight: 640;
+        white-space: nowrap;
+      }
+      #screen-financas .financas-fixed-actions {
+        display: flex;
+        gap: 8px;
+      }
+      #screen-financas .financas-fixed-action-btn {
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 11px;
+        font-size: 12px;
+      }
       #screen-financas .financas-sheet {
         position: fixed;
         inset: 0;
@@ -1718,6 +1781,9 @@
         display: flex;
         flex-direction: column;
         gap: 12px;
+      }
+      #screen-financas .financas-fixed-sheet {
+        z-index: 142;
       }
       #screen-financas .financas-sheet-handle {
         width: 42px;
@@ -6911,8 +6977,46 @@
                   <div class="financas-empty">Nenhum lançamento registrado neste mês.</div>
                 </div>
               </div>
+              <div class="financas-list-shell">
+                <div class="financas-actions-row">
+                  <div>
+                    <h3 class="financas-section-title">Contas fixas</h3>
+                    <div class="financas-list-meta">Cadastre compromissos que se repetem todos os meses.</div>
+                  </div>
+                  <button id="btn-financas-nova-conta-fixa" class="btn-secondary financas-action-btn" type="button">Nova conta fixa</button>
+                </div>
+              </div>
+              <div class="financas-list-shell">
+                <div class="financas-list-head">
+                  <h3>Previsão de contas fixas do mês</h3>
+                  <div id="financas-contas-fixas-previsao-meta" class="financas-list-meta">0 conta(s)</div>
+                </div>
+                <div class="financas-month-grid">
+                  <div class="financas-summary-card">
+                    <span class="financas-summary-label">Receitas fixas previstas</span>
+                    <strong id="financas-receitas-fixas-previstas" class="financas-summary-value">R$ 0,00</strong>
+                  </div>
+                  <div class="financas-summary-card">
+                    <span class="financas-summary-label">Despesas fixas previstas</span>
+                    <strong id="financas-despesas-fixas-previstas" class="financas-summary-value">R$ 0,00</strong>
+                  </div>
+                  <div class="financas-summary-card">
+                    <span class="financas-summary-label">Saldo fixo previsto</span>
+                    <strong id="financas-saldo-fixo-previsto" class="financas-summary-value">R$ 0,00</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="financas-list-shell">
+                <div class="financas-list-head">
+                  <h3>Lista de contas fixas</h3>
+                  <div id="financas-contas-fixas-meta" class="financas-list-meta">0 conta(s)</div>
+                </div>
+                <div id="financas-contas-fixas-lista" class="financas-fixed-list">
+                  <div class="financas-empty">Nenhuma conta fixa cadastrada.</div>
+                </div>
+              </div>
               <div class="financas-placeholder">
-                <p>Em breve você poderá cadastrar entradas, contas fixas, dívidas, metas e acompanhar sua previsão financeira do mês.</p>
+                <p>Em breve você poderá evoluir seu controle financeiro com metas, dívidas, patrimônio e automações inteligentes conectadas à sua rotina.</p>
               </div>
             </div>
           </div>
@@ -6968,6 +7072,68 @@
                   <div class="financas-sheet-actions">
                     <button id="btn-financas-cancelar" class="btn-secondary" type="button">Cancelar</button>
                     <button id="btn-financas-salvar" class="btn-primary" type="submit">Salvar lançamento</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div id="financas-fixed-sheet" class="financas-sheet financas-fixed-sheet" hidden>
+            <div class="financas-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="financas-fixed-sheet-title">
+              <div class="financas-sheet-handle" aria-hidden="true"></div>
+              <div class="financas-sheet-head">
+                <div id="financas-fixed-sheet-title" class="financas-sheet-title">Nova conta fixa</div>
+                <button id="btn-financas-fechar-fixed-sheet-topo" class="btn-secondary" type="button">Fechar</button>
+              </div>
+              <form id="form-financas-conta-fixa">
+                <input id="financas-conta-fixa-id" type="hidden" value="" />
+                <div class="form-main-stack">
+                  <div>
+                    <label for="financas-conta-fixa-nome">Nome</label>
+                    <input id="financas-conta-fixa-nome" type="text" placeholder="Ex: aluguel, internet, salário" required />
+                  </div>
+                  <div>
+                    <label>Tipo</label>
+                    <div class="financas-type-row">
+                      <button class="financas-type-btn active" type="button" data-financas-fixa-tipo="Despesa">Despesa</button>
+                      <button class="financas-type-btn" type="button" data-financas-fixa-tipo="Receita">Receita</button>
+                    </div>
+                    <input id="financas-conta-fixa-tipo" type="hidden" value="Despesa" />
+                  </div>
+                  <div class="form-grid">
+                    <div>
+                      <label for="financas-conta-fixa-valor">Valor</label>
+                      <input id="financas-conta-fixa-valor" type="number" min="0" step="0.01" inputmode="decimal" placeholder="R$ 0,00" required />
+                    </div>
+                    <div>
+                      <label for="financas-conta-fixa-dia">Dia de vencimento</label>
+                      <input id="financas-conta-fixa-dia" type="number" min="1" max="31" placeholder="1 a 31" required />
+                    </div>
+                  </div>
+                  <div class="form-grid">
+                    <div>
+                      <label for="financas-conta-fixa-categoria">Categoria</label>
+                      <select id="financas-conta-fixa-categoria" required>
+                        <option value="">Selecione</option>
+                        <option value="Alimentação">Alimentação</option>
+                        <option value="Transporte">Transporte</option>
+                        <option value="Casa">Casa</option>
+                        <option value="Saúde">Saúde</option>
+                        <option value="Lazer">Lazer</option>
+                        <option value="Trabalho">Trabalho</option>
+                        <option value="Investimentos">Investimentos</option>
+                        <option value="Dívidas">Dívidas</option>
+                        <option value="Outros">Outros</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="financas-conta-fixa-observacao">Observação</label>
+                      <input id="financas-conta-fixa-observacao" type="text" placeholder="Opcional" />
+                    </div>
+                  </div>
+                  <div id="financas-fixed-sheet-erro" class="financas-sheet-error"></div>
+                  <div class="financas-sheet-actions">
+                    <button id="btn-financas-cancelar-fixed-sheet" class="btn-secondary" type="button">Cancelar</button>
+                    <button id="btn-financas-salvar-conta-fixa" class="btn-primary" type="submit">Salvar conta fixa</button>
                   </div>
                 </div>
               </form>
@@ -8083,6 +8249,7 @@
     let financasCarregandoAgora = false;
     let financasLancamentosMesSelecionado = [];
     let financasResumoMesSelecionado = null;
+    let financasContasFixas = [];
 
     function formatarMoedaFinancas(valor) {
       const numero = Number(valor || 0);
@@ -8112,6 +8279,14 @@
       return valor === "receita" ? "Receita" : "Despesa";
     }
 
+    function definirTipoContaFixaFinancas(tipo = "Despesa") {
+      const input = document.getElementById("financas-conta-fixa-tipo");
+      if (input) input.value = tipo;
+      document.querySelectorAll("[data-financas-fixa-tipo]").forEach((botao) => {
+        botao.classList.toggle("active", botao.dataset.financasFixaTipo === tipo);
+      });
+    }
+
     function definirTipoLancamentoFinancas(tipo = "Despesa") {
       const input = document.getElementById("financas-tipo");
       if (input) input.value = tipo;
@@ -8138,6 +8313,28 @@
       limparErroFinancas();
     }
 
+    function limparErroContaFixaFinancas() {
+      const erro = document.getElementById("financas-fixed-sheet-erro");
+      if (erro) erro.textContent = "";
+    }
+
+    function definirErroContaFixaFinancas(texto) {
+      const erro = document.getElementById("financas-fixed-sheet-erro");
+      if (erro) erro.textContent = texto || "";
+    }
+
+    function resetarFormularioContaFixaFinancas() {
+      document.getElementById("form-financas-conta-fixa")?.reset();
+      const idEl = document.getElementById("financas-conta-fixa-id");
+      if (idEl) idEl.value = "";
+      definirTipoContaFixaFinancas("Despesa");
+      const titulo = document.getElementById("financas-fixed-sheet-title");
+      if (titulo) titulo.textContent = "Nova conta fixa";
+      const botaoSalvar = document.getElementById("btn-financas-salvar-conta-fixa");
+      if (botaoSalvar) botaoSalvar.textContent = "Salvar conta fixa";
+      limparErroContaFixaFinancas();
+    }
+
     function inicializarMesReferenciaFinancas() {
       const campo = document.getElementById("financas-mes-referencia");
       if (campo && !campo.value) campo.value = mesReferenciaAtualFinancas();
@@ -8161,6 +8358,44 @@
         if (!sheet.classList.contains("open")) sheet.hidden = true;
       }, 180);
       limparErroFinancas();
+    }
+
+    function abrirSheetContaFixaFinancas(conta = null) {
+      const sheet = document.getElementById("financas-fixed-sheet");
+      if (!sheet) return;
+      resetarFormularioContaFixaFinancas();
+      if (conta) {
+        const idEl = document.getElementById("financas-conta-fixa-id");
+        const nomeEl = document.getElementById("financas-conta-fixa-nome");
+        const valorEl = document.getElementById("financas-conta-fixa-valor");
+        const categoriaEl = document.getElementById("financas-conta-fixa-categoria");
+        const diaEl = document.getElementById("financas-conta-fixa-dia");
+        const obsEl = document.getElementById("financas-conta-fixa-observacao");
+        const tituloEl = document.getElementById("financas-fixed-sheet-title");
+        const botaoSalvar = document.getElementById("btn-financas-salvar-conta-fixa");
+        if (idEl) idEl.value = String(conta.id || "");
+        if (nomeEl) nomeEl.value = conta.nome || "";
+        if (valorEl) valorEl.value = String(Number(conta.valor || 0));
+        if (categoriaEl) categoriaEl.value = conta.categoria || "";
+        if (diaEl) diaEl.value = String(Number(conta.dia_vencimento || 1));
+        if (obsEl) obsEl.value = conta.observacao || "";
+        definirTipoContaFixaFinancas(normalizarTipoFinancasUI(conta.tipo));
+        if (tituloEl) tituloEl.textContent = "Editar conta fixa";
+        if (botaoSalvar) botaoSalvar.textContent = "Salvar alterações";
+      }
+      sheet.hidden = false;
+      requestAnimationFrame(() => sheet.classList.add("open"));
+      window.setTimeout(() => document.getElementById("financas-conta-fixa-nome")?.focus(), 60);
+    }
+
+    function fecharSheetContaFixaFinancas() {
+      const sheet = document.getElementById("financas-fixed-sheet");
+      if (!sheet) return;
+      sheet.classList.remove("open");
+      window.setTimeout(() => {
+        if (!sheet.classList.contains("open")) sheet.hidden = true;
+      }, 180);
+      limparErroContaFixaFinancas();
     }
 
     function aplicarResumoFinancasHoje(resumo = {}) {
@@ -8306,6 +8541,105 @@
       });
     }
 
+    function aplicarPrevisaoContasFixasFinancas() {
+      const receitasEl = document.getElementById("financas-receitas-fixas-previstas");
+      const despesasEl = document.getElementById("financas-despesas-fixas-previstas");
+      const saldoEl = document.getElementById("financas-saldo-fixo-previsto");
+      const metaEl = document.getElementById("financas-contas-fixas-previsao-meta");
+      if (!receitasEl || !despesasEl || !saldoEl || !metaEl) return;
+
+      const receitas = financasContasFixas
+        .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Receita")
+        .reduce((soma, item) => soma + Number(item.valor || 0), 0);
+      const despesas = financasContasFixas
+        .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa")
+        .reduce((soma, item) => soma + Number(item.valor || 0), 0);
+
+      receitasEl.textContent = formatarMoedaFinancas(receitas);
+      despesasEl.textContent = formatarMoedaFinancas(despesas);
+      saldoEl.textContent = formatarMoedaFinancas(receitas - despesas);
+      metaEl.textContent = `${financasContasFixas.length} conta(s)`;
+    }
+
+    function renderizarContasFixasFinancas(mensagemErro = "") {
+      const listaEl = document.getElementById("financas-contas-fixas-lista");
+      const metaEl = document.getElementById("financas-contas-fixas-meta");
+      if (!listaEl || !metaEl) return;
+
+      aplicarPrevisaoContasFixasFinancas();
+
+      if (mensagemErro) {
+        listaEl.innerHTML = `<div class="financas-empty">${mensagemErro}</div>`;
+        metaEl.textContent = "0 conta(s)";
+        return;
+      }
+
+      metaEl.textContent = `${financasContasFixas.length} conta(s)`;
+      if (!financasContasFixas.length) {
+        listaEl.innerHTML = '<div class="financas-empty">Nenhuma conta fixa cadastrada.</div>';
+        return;
+      }
+
+      listaEl.innerHTML = "";
+      financasContasFixas.forEach((conta) => {
+        const row = document.createElement("div");
+        row.className = "financas-fixed-item";
+
+        const top = document.createElement("div");
+        top.className = "financas-fixed-top";
+
+        const copy = document.createElement("div");
+        copy.className = "financas-fixed-copy";
+
+        const titulo = document.createElement("div");
+        titulo.className = "financas-fixed-title";
+        titulo.textContent = conta.nome || "Conta fixa";
+
+        const meta = document.createElement("div");
+        meta.className = "financas-fixed-meta";
+        meta.textContent = [conta.categoria, normalizarTipoFinancasUI(conta.tipo)].filter(Boolean).join(" · ");
+
+        const due = document.createElement("div");
+        due.className = "financas-fixed-due";
+        due.textContent = `Vence dia ${Number(conta.dia_vencimento || 0)}`;
+
+        const amount = document.createElement("div");
+        amount.className = "financas-fixed-amount";
+        amount.textContent = formatarMoedaFinancas(conta.valor);
+
+        copy.appendChild(titulo);
+        copy.appendChild(meta);
+        copy.appendChild(due);
+        top.appendChild(copy);
+        top.appendChild(amount);
+
+        const actions = document.createElement("div");
+        actions.className = "financas-fixed-actions";
+
+        const btnEditar = document.createElement("button");
+        btnEditar.className = "btn-secondary financas-fixed-action-btn";
+        btnEditar.type = "button";
+        btnEditar.textContent = "Editar";
+        btnEditar.addEventListener("click", () => abrirSheetContaFixaFinancas(conta));
+
+        const btnExcluir = document.createElement("button");
+        btnExcluir.className = "btn-secondary financas-fixed-action-btn";
+        btnExcluir.type = "button";
+        btnExcluir.textContent = "Excluir";
+        btnExcluir.addEventListener("click", async () => {
+          const confirmar = await modal.confirmar("Deseja excluir esta conta fixa?", "Contas fixas", "vermelho");
+          if (confirmar === false) return;
+          await excluirContaFixaFinancas(conta.id);
+        });
+
+        actions.appendChild(btnEditar);
+        actions.appendChild(btnExcluir);
+        row.appendChild(top);
+        row.appendChild(actions);
+        listaEl.appendChild(row);
+      });
+    }
+
     async function carregarResumoFinancasHoje() {
       const resposta = await fetch(API + "/financas/resumo");
       if (!resposta.ok) throw new Error("resumo_financas_indisponivel");
@@ -8374,9 +8708,104 @@
       }
     }
 
+    async function carregarContasFixasFinancas() {
+      try {
+        const resposta = await fetch(API + "/financas/contas-fixas");
+        if (!resposta.ok) throw new Error("contas_fixas_indisponiveis");
+        const itens = await resposta.json();
+        financasContasFixas = Array.isArray(itens) ? itens : [];
+        renderizarContasFixasFinancas();
+      } catch (erro) {
+        console.warn("[FINANCAS] Falha ao carregar contas fixas:", erro);
+        financasContasFixas = [];
+        renderizarContasFixasFinancas("Não foi possível carregar suas contas fixas agora.");
+      }
+    }
+
     async function carregarFinancasPainelCompleto() {
       await carregarFinancasHojeCompleto();
       await carregarFinancasMesSelecionadoCompleto();
+      await carregarContasFixasFinancas();
+    }
+
+    async function salvarContaFixaFinancas() {
+      limparErroContaFixaFinancas();
+      const contaId = document.getElementById("financas-conta-fixa-id")?.value || "";
+      const nome = document.getElementById("financas-conta-fixa-nome")?.value.trim() || "";
+      const tipo = document.getElementById("financas-conta-fixa-tipo")?.value || "";
+      const valor = Number(document.getElementById("financas-conta-fixa-valor")?.value || 0);
+      const categoria = document.getElementById("financas-conta-fixa-categoria")?.value || "";
+      const diaVencimento = Number(document.getElementById("financas-conta-fixa-dia")?.value || 0);
+      const observacao = document.getElementById("financas-conta-fixa-observacao")?.value.trim() || "";
+
+      if (!nome) {
+        definirErroContaFixaFinancas("Informe o nome da conta fixa.");
+        return;
+      }
+      if (!tipo) {
+        definirErroContaFixaFinancas("Selecione o tipo da conta fixa.");
+        return;
+      }
+      if (!(valor > 0)) {
+        definirErroContaFixaFinancas("Informe um valor maior que zero.");
+        return;
+      }
+      if (!categoria) {
+        definirErroContaFixaFinancas("Selecione uma categoria.");
+        return;
+      }
+      if (!(diaVencimento >= 1 && diaVencimento <= 31)) {
+        definirErroContaFixaFinancas("Informe um dia de vencimento entre 1 e 31.");
+        return;
+      }
+
+      const payload = {
+        nome,
+        tipo,
+        valor,
+        categoria,
+        dia_vencimento: diaVencimento,
+        observacao,
+      };
+
+      const url = contaId ? `${API}/financas/contas-fixas/${contaId}` : API + "/financas/contas-fixas";
+      const method = contaId ? "PUT" : "POST";
+
+      try {
+        const resposta = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!resposta.ok) {
+          let mensagem = "Não foi possível salvar a conta fixa agora.";
+          try {
+            const erro = await resposta.json();
+            if (erro?.detail) mensagem = String(erro.detail);
+          } catch {}
+          definirErroContaFixaFinancas(mensagem);
+          return;
+        }
+        await carregarContasFixasFinancas();
+        resetarFormularioContaFixaFinancas();
+        fecharSheetContaFixaFinancas();
+      } catch (erro) {
+        console.warn("[FINANCAS] Falha ao salvar conta fixa:", erro);
+        definirErroContaFixaFinancas("Não foi possível salvar a conta fixa agora.");
+      }
+    }
+
+    async function excluirContaFixaFinancas(contaId) {
+      try {
+        const resposta = await fetch(`${API}/financas/contas-fixas/${contaId}`, { method: "DELETE" });
+        if (!resposta.ok) {
+          const erro = await resposta.json().catch(() => ({}));
+          throw new Error(erro?.detail || "Não foi possível excluir a conta fixa.");
+        }
+        await carregarContasFixasFinancas();
+      } catch (erro) {
+        await modal.alerta(erro.message || "Não foi possível excluir a conta fixa agora.", "Contas fixas");
+      }
     }
 
     function vincularFinancasUI() {
@@ -8386,13 +8815,22 @@
       document.getElementById("btn-financas-novo-lancamento")?.addEventListener("click", abrirSheetFinancas);
       document.getElementById("btn-financas-cancelar")?.addEventListener("click", fecharSheetFinancas);
       document.getElementById("btn-financas-fechar-sheet-topo")?.addEventListener("click", fecharSheetFinancas);
+      document.getElementById("btn-financas-nova-conta-fixa")?.addEventListener("click", () => abrirSheetContaFixaFinancas());
+      document.getElementById("btn-financas-cancelar-fixed-sheet")?.addEventListener("click", fecharSheetContaFixaFinancas);
+      document.getElementById("btn-financas-fechar-fixed-sheet-topo")?.addEventListener("click", fecharSheetContaFixaFinancas);
 
       document.querySelectorAll("[data-financas-tipo]").forEach((botao) => {
         botao.addEventListener("click", () => definirTipoLancamentoFinancas(botao.dataset.financasTipo || "Despesa"));
       });
+      document.querySelectorAll("[data-financas-fixa-tipo]").forEach((botao) => {
+        botao.addEventListener("click", () => definirTipoContaFixaFinancas(botao.dataset.financasFixaTipo || "Despesa"));
+      });
 
       document.getElementById("financas-sheet")?.addEventListener("click", (ev) => {
         if (ev.target?.id === "financas-sheet") fecharSheetFinancas();
+      });
+      document.getElementById("financas-fixed-sheet")?.addEventListener("click", (ev) => {
+        if (ev.target?.id === "financas-fixed-sheet") fecharSheetContaFixaFinancas();
       });
       document.getElementById("financas-mes-referencia")?.addEventListener("change", async () => {
         await carregarFinancasMesSelecionadoCompleto();
@@ -8459,13 +8897,22 @@
       });
 
       document.addEventListener("keydown", (ev) => {
-        if (ev.key === "Escape") fecharSheetFinancas();
+        if (ev.key === "Escape") {
+          fecharSheetFinancas();
+          fecharSheetContaFixaFinancas();
+        }
+      });
+      document.getElementById("form-financas-conta-fixa")?.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        await salvarContaFixaFinancas();
       });
 
       inicializarMesReferenciaFinancas();
       resetarFormularioFinancas();
+      resetarFormularioContaFixaFinancas();
       renderizarFinancasHoje();
       renderizarFinancasMes();
+      renderizarContasFixasFinancas();
     }
 
     function formatarDataHoraAdmin(iso) {
