@@ -1739,6 +1739,26 @@
         line-height: 1.45;
         color: #64748b;
       }
+      #screen-financas .financas-fixed-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: fit-content;
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 1px solid rgba(203, 213, 225, 0.9);
+        color: #475569;
+        background: rgba(248, 250, 252, 0.96);
+      }
+      #screen-financas .financas-fixed-status.pago,
+      #screen-financas .financas-fixed-status.recebido {
+        border-color: rgba(var(--cor-tema-rgb), 0.22);
+        color: var(--cor-tema-escura);
+        background: rgba(var(--cor-tema-rgb), 0.1);
+      }
       #screen-financas .financas-fixed-amount {
         text-align: right;
         font-size: 15px;
@@ -1749,6 +1769,7 @@
       }
       #screen-financas .financas-fixed-actions {
         display: flex;
+        flex-wrap: wrap;
         gap: 8px;
       }
       #screen-financas .financas-fixed-action-btn {
@@ -6983,6 +7004,7 @@
                     <h3 class="financas-section-title">Contas fixas</h3>
                     <div class="financas-list-meta">Cadastre compromissos que se repetem todos os meses.</div>
                   </div>
+                  <input id="financas-contas-fixas-mes-referencia" class="financas-month-picker" type="month" />
                   <button id="btn-financas-nova-conta-fixa" class="btn-secondary financas-action-btn" type="button">Nova conta fixa</button>
                 </div>
               </div>
@@ -7134,6 +7156,37 @@
                   <div class="financas-sheet-actions">
                     <button id="btn-financas-cancelar-fixed-sheet" class="btn-secondary" type="button">Cancelar</button>
                     <button id="btn-financas-salvar-conta-fixa" class="btn-primary" type="submit">Salvar conta fixa</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div id="financas-confirm-sheet" class="financas-sheet financas-fixed-sheet" hidden>
+            <div class="financas-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="financas-confirm-sheet-title">
+              <div class="financas-sheet-handle" aria-hidden="true"></div>
+              <div class="financas-sheet-head">
+                <div id="financas-confirm-sheet-title" class="financas-sheet-title">Confirmar conta fixa</div>
+                <button id="btn-financas-fechar-confirm-sheet-topo" class="btn-secondary" type="button">Fechar</button>
+              </div>
+              <form id="form-financas-confirmar-conta-fixa">
+                <input id="financas-confirm-conta-id" type="hidden" value="" />
+                <div class="form-main-stack">
+                  <div>
+                    <label for="financas-confirm-data">Data</label>
+                    <input id="financas-confirm-data" type="date" required />
+                  </div>
+                  <div>
+                    <label for="financas-confirm-valor">Valor</label>
+                    <input id="financas-confirm-valor" type="number" min="0" step="0.01" inputmode="decimal" placeholder="R$ 0,00" required />
+                  </div>
+                  <div>
+                    <label for="financas-confirm-observacao">Observação</label>
+                    <input id="financas-confirm-observacao" type="text" placeholder="Opcional" />
+                  </div>
+                  <div id="financas-confirm-sheet-erro" class="financas-sheet-error"></div>
+                  <div class="financas-sheet-actions">
+                    <button id="btn-financas-cancelar-confirm-sheet" class="btn-secondary" type="button">Cancelar</button>
+                    <button id="btn-financas-salvar-confirm-sheet" class="btn-primary" type="submit">Confirmar</button>
                   </div>
                 </div>
               </form>
@@ -8250,6 +8303,7 @@
     let financasLancamentosMesSelecionado = [];
     let financasResumoMesSelecionado = null;
     let financasContasFixas = [];
+    let financasContaFixaConfirmacaoAtual = null;
 
     function formatarMoedaFinancas(valor) {
       const numero = Number(valor || 0);
@@ -8261,9 +8315,21 @@
       return `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
     }
 
+    function definirMesReferenciaFinancas(valor) {
+      const normalizado = (valor || "").trim() || mesReferenciaAtualFinancas();
+      const campoPrincipal = document.getElementById("financas-mes-referencia");
+      const campoContasFixas = document.getElementById("financas-contas-fixas-mes-referencia");
+      if (campoPrincipal && campoPrincipal.value !== normalizado) campoPrincipal.value = normalizado;
+      if (campoContasFixas && campoContasFixas.value !== normalizado) campoContasFixas.value = normalizado;
+      return normalizado;
+    }
+
     function obterMesAnoSelecionadoFinancas() {
-      const campo = document.getElementById("financas-mes-referencia");
-      const valor = (campo?.value || "").trim();
+      const valor = definirMesReferenciaFinancas(
+        document.getElementById("financas-mes-referencia")?.value ||
+        document.getElementById("financas-contas-fixas-mes-referencia")?.value ||
+        mesReferenciaAtualFinancas()
+      );
       const [anoTexto, mesTexto] = valor.split("-");
       const ano = Number(anoTexto);
       const mes = Number(mesTexto);
@@ -8335,9 +8401,32 @@
       limparErroContaFixaFinancas();
     }
 
+    function limparErroConfirmacaoContaFixaFinancas() {
+      const erro = document.getElementById("financas-confirm-sheet-erro");
+      if (erro) erro.textContent = "";
+    }
+
+    function definirErroConfirmacaoContaFixaFinancas(texto) {
+      const erro = document.getElementById("financas-confirm-sheet-erro");
+      if (erro) erro.textContent = texto || "";
+    }
+
+    function resetarFormularioConfirmacaoContaFixaFinancas() {
+      document.getElementById("form-financas-confirmar-conta-fixa")?.reset();
+      const contaIdEl = document.getElementById("financas-confirm-conta-id");
+      if (contaIdEl) contaIdEl.value = "";
+      const dataEl = document.getElementById("financas-confirm-data");
+      if (dataEl) dataEl.value = dataHojeISO();
+      financasContaFixaConfirmacaoAtual = null;
+      limparErroConfirmacaoContaFixaFinancas();
+    }
+
     function inicializarMesReferenciaFinancas() {
-      const campo = document.getElementById("financas-mes-referencia");
-      if (campo && !campo.value) campo.value = mesReferenciaAtualFinancas();
+      definirMesReferenciaFinancas(
+        document.getElementById("financas-mes-referencia")?.value ||
+        document.getElementById("financas-contas-fixas-mes-referencia")?.value ||
+        mesReferenciaAtualFinancas()
+      );
     }
 
     function abrirSheetFinancas() {
@@ -8396,6 +8485,48 @@
         if (!sheet.classList.contains("open")) sheet.hidden = true;
       }, 180);
       limparErroContaFixaFinancas();
+    }
+
+    function abrirSheetConfirmacaoContaFixaFinancas(conta) {
+      const sheet = document.getElementById("financas-confirm-sheet");
+      if (!sheet || !conta) return;
+      resetarFormularioConfirmacaoContaFixaFinancas();
+      financasContaFixaConfirmacaoAtual = conta;
+      const idEl = document.getElementById("financas-confirm-conta-id");
+      const dataEl = document.getElementById("financas-confirm-data");
+      const valorEl = document.getElementById("financas-confirm-valor");
+      const tituloEl = document.getElementById("financas-confirm-sheet-title");
+      const botaoEl = document.getElementById("btn-financas-salvar-confirm-sheet");
+      const { ano, mes } = obterMesAnoSelecionadoFinancas();
+      if (idEl) idEl.value = String(conta.id || "");
+      if (dataEl) {
+        const hoje = new Date();
+        const mesmoMes = hoje.getFullYear() === ano && (hoje.getMonth() + 1) === mes;
+        if (mesmoMes) {
+          dataEl.value = dataHojeISO();
+        } else {
+          const ultimoDiaMes = new Date(ano, mes, 0).getDate();
+          const dia = Math.min(Number(conta.dia_vencimento || 1), ultimoDiaMes);
+          dataEl.value = `${ano}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+        }
+      }
+      if (valorEl) valorEl.value = String(Number(conta.valor || 0));
+      const acao = normalizarTipoFinancasUI(conta.tipo) === "Receita" ? "recebimento" : "pagamento";
+      if (tituloEl) tituloEl.textContent = `Confirmar ${acao}`;
+      if (botaoEl) botaoEl.textContent = "Confirmar";
+      sheet.hidden = false;
+      requestAnimationFrame(() => sheet.classList.add("open"));
+      window.setTimeout(() => valorEl?.focus(), 60);
+    }
+
+    function fecharSheetConfirmacaoContaFixaFinancas() {
+      const sheet = document.getElementById("financas-confirm-sheet");
+      if (!sheet) return;
+      sheet.classList.remove("open");
+      window.setTimeout(() => {
+        if (!sheet.classList.contains("open")) sheet.hidden = true;
+      }, 180);
+      limparErroConfirmacaoContaFixaFinancas();
     }
 
     function aplicarResumoFinancasHoje(resumo = {}) {
@@ -8603,6 +8734,22 @@
         due.className = "financas-fixed-due";
         due.textContent = `Vence dia ${Number(conta.dia_vencimento || 0)}`;
 
+        const status = document.createElement("div");
+        const statusMensal = String(conta.status_mensal || "pendente").toLowerCase();
+        status.className = `financas-fixed-status ${statusMensal}`;
+        status.textContent =
+          statusMensal === "recebido"
+            ? "Recebido"
+            : statusMensal === "pago"
+              ? "Pago"
+              : "Pendente";
+
+        const confirmacao = document.createElement("div");
+        confirmacao.className = "financas-fixed-due";
+        confirmacao.textContent = conta.data_confirmacao
+          ? `Confirmado em ${formatarDataCurtaBR(conta.data_confirmacao)}`
+          : "Aguardando confirmação neste mês";
+
         const amount = document.createElement("div");
         amount.className = "financas-fixed-amount";
         amount.textContent = formatarMoedaFinancas(conta.valor);
@@ -8610,6 +8757,8 @@
         copy.appendChild(titulo);
         copy.appendChild(meta);
         copy.appendChild(due);
+        copy.appendChild(status);
+        copy.appendChild(confirmacao);
         top.appendChild(copy);
         top.appendChild(amount);
 
@@ -8632,6 +8781,22 @@
           await excluirContaFixaFinancas(conta.id);
         });
 
+        const btnStatus = document.createElement("button");
+        btnStatus.className = "btn-primary financas-fixed-action-btn";
+        btnStatus.type = "button";
+        if (statusMensal === "pago" || statusMensal === "recebido") {
+          btnStatus.textContent = "Desfazer";
+          btnStatus.addEventListener("click", async () => {
+            const ok = await modal.confirmar("Deseja desfazer esta confirmação?", "Contas fixas", "vermelho");
+            if (!ok) return;
+            await desfazerConfirmacaoContaFixaFinancas(conta);
+          });
+        } else {
+          btnStatus.textContent = normalizarTipoFinancasUI(conta.tipo) === "Receita" ? "Marcar como recebida" : "Marcar como paga";
+          btnStatus.addEventListener("click", () => abrirSheetConfirmacaoContaFixaFinancas(conta));
+        }
+
+        actions.appendChild(btnStatus);
         actions.appendChild(btnEditar);
         actions.appendChild(btnExcluir);
         row.appendChild(top);
@@ -8710,7 +8875,9 @@
 
     async function carregarContasFixasFinancas() {
       try {
-        const resposta = await fetch(API + "/financas/contas-fixas");
+        const { mes, ano } = obterMesAnoSelecionadoFinancas();
+        const params = new URLSearchParams({ mes: String(mes), ano: String(ano) });
+        const resposta = await fetch(API + "/financas/contas-fixas?" + params.toString());
         if (!resposta.ok) throw new Error("contas_fixas_indisponiveis");
         const itens = await resposta.json();
         financasContasFixas = Array.isArray(itens) ? itens : [];
@@ -8726,6 +8893,76 @@
       await carregarFinancasHojeCompleto();
       await carregarFinancasMesSelecionadoCompleto();
       await carregarContasFixasFinancas();
+    }
+
+    async function confirmarContaFixaFinancas() {
+      limparErroConfirmacaoContaFixaFinancas();
+      const conta = financasContaFixaConfirmacaoAtual;
+      const contaId = document.getElementById("financas-confirm-conta-id")?.value || "";
+      const dataPagamento = document.getElementById("financas-confirm-data")?.value || "";
+      const valorPago = Number(document.getElementById("financas-confirm-valor")?.value || 0);
+      const observacao = document.getElementById("financas-confirm-observacao")?.value.trim() || "";
+      const { mes, ano } = obterMesAnoSelecionadoFinancas();
+
+      if (!conta || !contaId) {
+        definirErroConfirmacaoContaFixaFinancas("Conta fixa inválida.");
+        return;
+      }
+      if (!dataPagamento) {
+        definirErroConfirmacaoContaFixaFinancas("Informe a data de confirmação.");
+        return;
+      }
+      if (!(valorPago > 0)) {
+        definirErroConfirmacaoContaFixaFinancas("Informe um valor maior que zero.");
+        return;
+      }
+
+      try {
+        const resposta = await fetch(`${API}/financas/contas-fixas/${contaId}/confirmar`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mes,
+            ano,
+            data_pagamento: dataPagamento,
+            valor_pago: valorPago,
+            observacao: observacao,
+          }),
+        });
+        if (!resposta.ok) {
+          let mensagem = "Não foi possível confirmar esta conta fixa agora.";
+          try {
+            const erro = await resposta.json();
+            if (erro?.detail) mensagem = String(erro.detail);
+          } catch {}
+          definirErroConfirmacaoContaFixaFinancas(mensagem);
+          return;
+        }
+        await carregarFinancasPainelCompleto();
+        resetarFormularioConfirmacaoContaFixaFinancas();
+        fecharSheetConfirmacaoContaFixaFinancas();
+      } catch (erro) {
+        console.warn("[FINANCAS] Falha ao confirmar conta fixa:", erro);
+        definirErroConfirmacaoContaFixaFinancas("Não foi possível confirmar esta conta fixa agora.");
+      }
+    }
+
+    async function desfazerConfirmacaoContaFixaFinancas(conta) {
+      const { mes, ano } = obterMesAnoSelecionadoFinancas();
+      try {
+        const resposta = await fetch(`${API}/financas/contas-fixas/${conta.id}/desfazer-confirmacao`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mes, ano }),
+        });
+        if (!resposta.ok) {
+          const erro = await resposta.json().catch(() => ({}));
+          throw new Error(erro?.detail || "Não foi possível desfazer a confirmação.");
+        }
+        await carregarFinancasPainelCompleto();
+      } catch (erro) {
+        await modal.alerta(erro.message || "Não foi possível desfazer a confirmação agora.", "Contas fixas");
+      }
     }
 
     async function salvarContaFixaFinancas() {
@@ -8818,6 +9055,8 @@
       document.getElementById("btn-financas-nova-conta-fixa")?.addEventListener("click", () => abrirSheetContaFixaFinancas());
       document.getElementById("btn-financas-cancelar-fixed-sheet")?.addEventListener("click", fecharSheetContaFixaFinancas);
       document.getElementById("btn-financas-fechar-fixed-sheet-topo")?.addEventListener("click", fecharSheetContaFixaFinancas);
+      document.getElementById("btn-financas-cancelar-confirm-sheet")?.addEventListener("click", fecharSheetConfirmacaoContaFixaFinancas);
+      document.getElementById("btn-financas-fechar-confirm-sheet-topo")?.addEventListener("click", fecharSheetConfirmacaoContaFixaFinancas);
 
       document.querySelectorAll("[data-financas-tipo]").forEach((botao) => {
         botao.addEventListener("click", () => definirTipoLancamentoFinancas(botao.dataset.financasTipo || "Despesa"));
@@ -8832,8 +9071,18 @@
       document.getElementById("financas-fixed-sheet")?.addEventListener("click", (ev) => {
         if (ev.target?.id === "financas-fixed-sheet") fecharSheetContaFixaFinancas();
       });
-      document.getElementById("financas-mes-referencia")?.addEventListener("change", async () => {
+      document.getElementById("financas-confirm-sheet")?.addEventListener("click", (ev) => {
+        if (ev.target?.id === "financas-confirm-sheet") fecharSheetConfirmacaoContaFixaFinancas();
+      });
+      document.getElementById("financas-mes-referencia")?.addEventListener("change", async (ev) => {
+        definirMesReferenciaFinancas(ev.target?.value || mesReferenciaAtualFinancas());
         await carregarFinancasMesSelecionadoCompleto();
+        await carregarContasFixasFinancas();
+      });
+      document.getElementById("financas-contas-fixas-mes-referencia")?.addEventListener("change", async (ev) => {
+        definirMesReferenciaFinancas(ev.target?.value || mesReferenciaAtualFinancas());
+        await carregarFinancasMesSelecionadoCompleto();
+        await carregarContasFixasFinancas();
       });
 
       document.getElementById("form-financas-lancamento")?.addEventListener("submit", async (ev) => {
@@ -8900,16 +9149,22 @@
         if (ev.key === "Escape") {
           fecharSheetFinancas();
           fecharSheetContaFixaFinancas();
+          fecharSheetConfirmacaoContaFixaFinancas();
         }
       });
       document.getElementById("form-financas-conta-fixa")?.addEventListener("submit", async (ev) => {
         ev.preventDefault();
         await salvarContaFixaFinancas();
       });
+      document.getElementById("form-financas-confirmar-conta-fixa")?.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        await confirmarContaFixaFinancas();
+      });
 
       inicializarMesReferenciaFinancas();
       resetarFormularioFinancas();
       resetarFormularioContaFixaFinancas();
+      resetarFormularioConfirmacaoContaFixaFinancas();
       renderizarFinancasHoje();
       renderizarFinancasMes();
       renderizarContasFixasFinancas();
