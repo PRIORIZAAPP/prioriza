@@ -1340,31 +1340,28 @@
       .checklist-form-wrap {
         position: fixed;
         inset: 0;
-        z-index: 138;
+        z-index: 140;
         display: none;
-        align-items: center;
+        align-items: flex-end;
         justify-content: center;
-        padding: 20px;
+        padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 0px));
         background: rgba(15, 23, 42, 0.2);
         backdrop-filter: blur(6px);
         -webkit-backdrop-filter: blur(6px);
-        overflow: hidden;
       }
       .checklist-form-wrap.open {
         display: flex;
       }
       .checklist-form-panel {
-        width: min(100%, 560px);
+        width: min(100%, 520px);
         border-radius: 22px 22px 18px 18px;
         border: 1px solid rgba(226, 232, 240, 0.92);
-        background: rgba(255,255,255,0.985);
+        background: rgba(255,255,255,0.98);
         box-shadow: 0 20px 42px rgba(15, 23, 42, 0.14);
         padding: 16px;
         display: flex;
         flex-direction: column;
         gap: 12px;
-        max-height: min(82vh, 760px);
-        overflow-y: auto;
       }
       .checklist-form-handle {
         width: 42px;
@@ -1460,11 +1457,14 @@
       .form-identity-checklist {
         background: linear-gradient(180deg, #fbfdff 0%, #f8fafc 100%);
       }
-      .checklist-form-wrap .btn-row {
-        justify-content: flex-end;
+      .checklist-form-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
       }
       @media (min-width: 1100px) {
         .checklist-form-wrap {
+          align-items: center;
           padding: 24px;
         }
         .checklist-form-panel {
@@ -1472,13 +1472,8 @@
         }
       }
       @media (max-width: 640px) {
-        .checklist-form-wrap {
-          padding: 18px 14px;
-        }
         .checklist-form-panel {
-          width: min(100%, 480px);
-          max-height: min(78vh, 700px);
-          border-radius: 24px;
+          width: min(100%, 520px);
         }
       }
       .checklist-delete-btn {
@@ -6994,7 +6989,8 @@
                         </div>
                       </div>
                     </details>
-                    <div class="btn-row">
+                    <div class="checklist-form-actions">
+                      <button id="btn-cancelar-form-agenda" class="btn-secondary" type="button">Cancelar</button>
                       <button type="submit" id="btn-salvar-compromisso" class="btn-primary">Salvar</button>
                     </div>
                   </div>
@@ -7105,7 +7101,8 @@
                         </div>
                       </div>
                     </details>
-                    <div class="btn-row">
+                    <div class="checklist-form-actions">
+                      <button id="btn-cancelar-form-checklist" class="btn-secondary" type="button">Cancelar</button>
                       <button type="submit" id="btn-salvar-rotina" class="btn-primary">Salvar</button>
                     </div>
                   </div>
@@ -13491,6 +13488,7 @@
 
       document.getElementById("btn-toggle-form-checklist")?.addEventListener("click", () => toggleFormChecklist());
       document.getElementById("btn-fechar-form-checklist")?.addEventListener("click", () => toggleFormChecklist(false));
+      document.getElementById("btn-cancelar-form-checklist")?.addEventListener("click", () => toggleFormChecklist(false));
       document.getElementById("checklist-form-wrap")?.addEventListener("click", (ev) => {
         if (ev.target?.id === "checklist-form-wrap") toggleFormChecklist(false);
       });
@@ -13503,6 +13501,7 @@
       document.getElementById("btn-toggle-form-agenda")?.addEventListener("click", () => toggleFormAgenda());
       document.getElementById("btn-toggle-form-financas")?.addEventListener("click", abrirSheetFinancas);
       document.getElementById("btn-fechar-form-agenda")?.addEventListener("click", () => toggleFormAgenda(false));
+      document.getElementById("btn-cancelar-form-agenda")?.addEventListener("click", () => toggleFormAgenda(false));
       document.getElementById("agenda-form-wrap")?.addEventListener("click", (ev) => {
         if (ev.target?.id === "agenda-form-wrap") toggleFormAgenda(false);
       });
