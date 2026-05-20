@@ -2115,6 +2115,9 @@
           min-width: 34px;
           padding: 0 11px;
         }
+        #screen-financas #btn-financas-novo-lancamento {
+          display: none;
+        }
         #screen-financas .financas-desktop-add-label {
           display: none;
         }
@@ -6453,12 +6456,14 @@
       }
 
       .fab-add-agenda,
-      .fab-add-checklist {
+      .fab-add-checklist,
+      .fab-add-financas {
         display: none !important;
       }
 
       .app-shell[data-active-screen="screen-agenda"] .fab-add-agenda,
-      .app-shell[data-active-screen="screen-checklist"] .fab-add-checklist {
+      .app-shell[data-active-screen="screen-checklist"] .fab-add-checklist,
+      .app-shell[data-active-screen="screen-financas"] .fab-add-financas {
         display: inline-flex !important;
       }
 
@@ -6731,11 +6736,10 @@
 
             <div class="nav-item" data-target="screen-financas">
               <svg viewBox="0 0 256 256" fill="none" color="currentColor">
-                <rect x="32" y="64" width="192" height="128" rx="20" fill="currentColor" opacity="0.16"/>
-                <rect x="32" y="64" width="192" height="128" rx="20" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
-                <line x1="32" y1="100" x2="224" y2="100" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-                <circle cx="86" cy="148" r="18" stroke="currentColor" stroke-width="14"/>
-                <path d="M144 146h40M144 174h28" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>
+                <circle cx="128" cy="128" r="88" fill="currentColor" opacity="0.18"/>
+                <circle cx="128" cy="128" r="88" stroke="currentColor" stroke-width="16"/>
+                <path d="M154 94c-9-10-23-14-37-11c-15 3-26 14-26 27c0 15 13 24 37 29c24 5 37 14 37 29c0 13-11 24-26 27c-14 3-28-1-37-11" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="128" y1="66" x2="128" y2="190" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
               </svg>
               <span>Finanças</span>
             </div>
@@ -7928,6 +7932,14 @@
         <span id="btn-toggle-form-checklist-text" class="sr-only">Nova rotina</span>
       </button>
 
+      <button id="btn-toggle-form-financas" class="fab-add fab-add-financas" type="button" aria-label="Novo lançamento" title="Novo lançamento">
+        <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+          <line x1="128" y1="64" x2="128" y2="192" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+          <line x1="64" y1="128" x2="192" y2="128" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+        </svg>
+        <span id="btn-toggle-form-financas-text" class="sr-only">Novo lançamento</span>
+      </button>
+
       <!-- BOTTOM NAV -->
       <div class="bottom-nav-wrapper">
         <div class="bottom-nav">
@@ -7973,11 +7985,10 @@
 
           <div class="nav-item" data-target="screen-financas">
             <svg viewBox="0 0 256 256" fill="none" color="currentColor">
-              <rect x="32" y="64" width="192" height="128" rx="20" fill="currentColor" opacity="0.16"/>
-              <rect x="32" y="64" width="192" height="128" rx="20" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
-              <line x1="32" y1="100" x2="224" y2="100" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-              <circle cx="86" cy="148" r="18" stroke="currentColor" stroke-width="14"/>
-              <path d="M144 146h40M144 174h28" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>
+              <circle cx="128" cy="128" r="88" fill="currentColor" opacity="0.18"/>
+              <circle cx="128" cy="128" r="88" stroke="currentColor" stroke-width="16"/>
+              <path d="M154 94c-9-10-23-14-37-11c-15 3-26 14-26 27c0 15 13 24 37 29c24 5 37 14 37 29c0 13-11 24-26 27c-14 3-28-1-37-11" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="128" y1="66" x2="128" y2="190" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
             </svg>
             <span>Finanças</span>
           </div>
@@ -13299,15 +13310,11 @@
       function atualizarVisibilidadeFabsDesktop(telaAtivaId) {
         const btnAgenda = document.getElementById("btn-toggle-form-agenda");
         const btnChecklist = document.getElementById("btn-toggle-form-checklist");
-        const desktop = typeof emLayoutDesktop === "function" ? emLayoutDesktop() : window.innerWidth >= 1100;
-        if (!btnAgenda || !btnChecklist) return;
-        if (!desktop) {
-          btnAgenda.hidden = false;
-          btnChecklist.hidden = false;
-          return;
-        }
+        const btnFinancas = document.getElementById("btn-toggle-form-financas");
+        if (!btnAgenda || !btnChecklist || !btnFinancas) return;
         btnAgenda.hidden = telaAtivaId !== "screen-agenda";
         btnChecklist.hidden = telaAtivaId !== "screen-checklist";
+        btnFinancas.hidden = telaAtivaId !== "screen-financas";
       }
 
       function abrirTela(id, opts = {}) {
@@ -13441,6 +13448,7 @@
       });
 
       document.getElementById("btn-toggle-form-agenda")?.addEventListener("click", () => toggleFormAgenda());
+      document.getElementById("btn-toggle-form-financas")?.addEventListener("click", abrirSheetFinancas);
       document.getElementById("btn-fechar-form-agenda")?.addEventListener("click", () => toggleFormAgenda(false));
       document.getElementById("agenda-repetir")?.addEventListener("change", atualizarCampoRecorrenciaAgenda);
       document.getElementById("agenda-categoria")?.addEventListener("change", atualizarCategoriaAgendaUI);
