@@ -1338,33 +1338,54 @@
         color: var(--cor-tema-escura);
       }
       .checklist-form-wrap {
+        position: fixed;
+        inset: 0;
+        z-index: 138;
         display: none;
-        margin-bottom: 12px;
-        border: 1px solid #e5e7eb;
-        border-radius: 16px;
-        background: #ffffff;
-        padding: 14px;
-        box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+        align-items: flex-end;
+        justify-content: center;
+        padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+        background: rgba(15, 23, 42, 0.2);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
       }
       .checklist-form-wrap.open {
-        display: block;
+        display: flex;
+      }
+      .checklist-form-panel {
+        width: min(100%, 560px);
+        border-radius: 22px 22px 18px 18px;
+        border: 1px solid rgba(226, 232, 240, 0.92);
+        background: rgba(255,255,255,0.985);
+        box-shadow: 0 20px 42px rgba(15, 23, 42, 0.14);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .checklist-form-handle {
+        width: 42px;
+        height: 4px;
+        border-radius: 999px;
+        background: #d8dee8;
+        margin: 0 auto 2px;
       }
       .checklist-form-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 8px;
-        margin-bottom: 12px;
+        margin-bottom: 2px;
       }
       .checklist-form-title {
-        font-size: 15px;
-        font-weight: 620;
+        font-size: 17px;
+        font-weight: 700;
         color: #111827;
       }
       .checklist-form-subtitle {
         font-size: 12px;
         color: #6b7280;
-        margin-top: 3px;
+        margin-top: 4px;
       }
       .form-kicker {
         font-size: 11px;
@@ -1435,6 +1456,18 @@
       }
       .form-identity-checklist {
         background: linear-gradient(180deg, #fbfdff 0%, #f8fafc 100%);
+      }
+      .checklist-form-wrap .btn-row {
+        justify-content: flex-end;
+      }
+      @media (min-width: 1100px) {
+        .checklist-form-wrap {
+          align-items: center;
+          padding: 24px;
+        }
+        .checklist-form-panel {
+          border-radius: 24px;
+        }
       }
       .checklist-delete-btn {
         border-radius: 999px; border: none; padding: 4px 8px;
@@ -1934,7 +1967,7 @@
         display: none;
         align-items: flex-end;
         justify-content: center;
-        padding: 16px;
+        padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 0px));
         background: rgba(15, 23, 42, 0.2);
         backdrop-filter: blur(6px);
       }
@@ -6874,85 +6907,87 @@
               </div>
             </div>
 
-            <div id="agenda-form-wrap" class="checklist-form-wrap">
-              <div class="checklist-form-header">
-                <div>
-                  <div class="form-kicker">Compromisso</div>
-                  <div class="checklist-form-title">Adicionar compromisso</div>
-                  <div class="checklist-form-subtitle">Preencha só o essencial. O restante fica em mais opções.</div>
+            <div id="agenda-form-wrap" class="checklist-form-wrap" hidden>
+              <div class="checklist-form-panel" role="dialog" aria-modal="true" aria-labelledby="agenda-form-title">
+                <div class="checklist-form-handle" aria-hidden="true"></div>
+                <div class="checklist-form-header">
+                  <div>
+                    <div id="agenda-form-title" class="checklist-form-title">Novo compromisso</div>
+                    <div class="checklist-form-subtitle">Só o essencial primeiro.</div>
+                  </div>
+                  <button id="btn-fechar-form-agenda" class="btn-secondary" type="button">Fechar</button>
                 </div>
-                <button id="btn-fechar-form-agenda" class="btn-secondary" type="button">Fechar</button>
-              </div>
 
-              <form id="form-agenda">
-                <div class="form-main-stack">
-                  <div class="form-identity-agenda">
-                    <div>
-                      <label for="agenda-titulo">Título</label>
-                      <input id="agenda-titulo" type="text" placeholder="Ex: Reunião equipe, Fórum gestão..." required />
-                    </div>
-                    <div class="form-grid" style="margin-top:8px">
-                      <div><label for="agenda-data">Data</label><input id="agenda-data" type="date" /></div>
-                      <div><label for="agenda-hora">Hora início</label><input id="agenda-hora" type="time" value="08:00" /></div>
-                    </div>
-                    <div class="form-grid" style="margin-bottom:0">
-                      <div><label for="agenda-duracao">Duração (min)</label><input id="agenda-duracao" type="number" value="60" min="10" step="5" /></div>
-                      <div></div>
-                    </div>
-                  </div>
-                  <details class="form-more-options">
-                    <summary>Mais opções</summary>
-                    <div class="form-more-body">
-                      <div class="form-grid">
-                        <div>
-                          <label for="agenda-categoria">Categoria</label>
-                          <select id="agenda-categoria">
-                            <option value="PROFISSIONAL" selected>Profissional</option>
-                            <option value="PESSOAL">Pessoal</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label for="agenda-prioridade">Prioridade</label>
-                          <select id="agenda-prioridade">
-                            <option value="1">1 – Alta</option>
-                            <option value="2" selected>2 – Média</option>
-                            <option value="3">3 – Baixa</option>
-                          </select>
-                        </div>
+                <form id="form-agenda">
+                  <div class="form-main-stack">
+                    <div class="form-identity-agenda">
+                      <div>
+                        <label for="agenda-titulo">Título</label>
+                        <input id="agenda-titulo" type="text" placeholder="Ex: Reunião equipe, Fórum gestão..." required />
                       </div>
-                      <div class="form-grid">
-                        <div id="agenda-local-wrap">
-                          <label for="agenda-local">Local / contexto (opcional)</label>
-                          <input id="agenda-local" type="text" placeholder="Ex: HGG, Escritório, Home office" />
-                        </div>
-                        <div>
-                          <label for="agenda-repetir">Frequência</label>
-                          <select id="agenda-repetir">
-                            <option value="NENHUMA" selected>Não repetir</option>
-                            <option value="DIARIA">Todos os dias</option>
-                            <option value="SEMANAL">Toda semana</option>
-                            <option value="MENSAL">Todo mês</option>
-                          </select>
-                        </div>
+                      <div class="form-grid" style="margin-top:8px">
+                        <div><label for="agenda-data">Data</label><input id="agenda-data" type="date" /></div>
+                        <div><label for="agenda-hora">Hora início</label><input id="agenda-hora" type="time" value="08:00" /></div>
                       </div>
-                      <div id="agenda-locais-sugeridos" class="tag-row"></div>
                       <div class="form-grid" style="margin-bottom:0">
-                        <div><label for="agenda-repetir-ate">Repetir até</label><input id="agenda-repetir-ate" type="date" disabled /></div>
-                        <div class="agenda-google-opcao">
-                          <label class="agenda-google-check" for="agenda-sincronizar-google">
-                            <input id="agenda-sincronizar-google" type="checkbox" />
-                            Enviar também para o Google Agenda
-                          </label>
-                          <div id="agenda-google-sync-ajuda" class="agenda-google-ajuda">Crie o mesmo compromisso no Google Agenda quando precisar sincronizar fora do PRIORIZA.</div>
-                        </div>
+                        <div><label for="agenda-duracao">Duração (min)</label><input id="agenda-duracao" type="number" value="60" min="10" step="5" /></div>
+                        <div></div>
                       </div>
                     </div>
-                  </details>
-                  <div class="btn-row">
-                    <button type="submit" id="btn-salvar-compromisso" class="btn-primary">Salvar</button>
+                    <details class="form-more-options">
+                      <summary>Mais opções</summary>
+                      <div class="form-more-body">
+                        <div class="form-grid">
+                          <div>
+                            <label for="agenda-categoria">Categoria</label>
+                            <select id="agenda-categoria">
+                              <option value="PROFISSIONAL" selected>Profissional</option>
+                              <option value="PESSOAL">Pessoal</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label for="agenda-prioridade">Prioridade</label>
+                            <select id="agenda-prioridade">
+                              <option value="1">1 – Alta</option>
+                              <option value="2" selected>2 – Média</option>
+                              <option value="3">3 – Baixa</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="form-grid">
+                          <div id="agenda-local-wrap">
+                            <label for="agenda-local">Local / contexto</label>
+                            <input id="agenda-local" type="text" placeholder="Ex: HGG, Escritório, Home office" />
+                          </div>
+                          <div>
+                            <label for="agenda-repetir">Frequência</label>
+                            <select id="agenda-repetir">
+                              <option value="NENHUMA" selected>Não repetir</option>
+                              <option value="DIARIA">Todos os dias</option>
+                              <option value="SEMANAL">Toda semana</option>
+                              <option value="MENSAL">Todo mês</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div id="agenda-locais-sugeridos" class="tag-row"></div>
+                        <div class="form-grid" style="margin-bottom:0">
+                          <div><label for="agenda-repetir-ate">Repetir até</label><input id="agenda-repetir-ate" type="date" disabled /></div>
+                          <div class="agenda-google-opcao">
+                            <label class="agenda-google-check" for="agenda-sincronizar-google">
+                              <input id="agenda-sincronizar-google" type="checkbox" />
+                              Enviar também para o Google Agenda
+                            </label>
+                            <div id="agenda-google-sync-ajuda" class="agenda-google-ajuda">Sincronize também fora do PRIORIZA quando precisar.</div>
+                          </div>
+                        </div>
+                      </div>
+                    </details>
+                    <div class="btn-row">
+                      <button type="submit" id="btn-salvar-compromisso" class="btn-primary">Salvar</button>
+                    </div>
                   </div>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
 
             <div id="calendar-container" class="calendar-wrapper">
@@ -7010,59 +7045,60 @@
               <div class="checklist-toolbar-info">Crie novas rotinas sem poluir a tela. O formulário só aparece quando necessário.</div>
             </div>
 
-            <div id="checklist-form-wrap" class="checklist-form-wrap">
-              <div class="checklist-form-header">
-                <div>
-                  <div class="form-kicker">Rotina recorrente</div>
-                  <div class="checklist-form-title">Nova rotina</div>
-                  <div class="checklist-form-subtitle">Fluxo de execução recorrente, com o essencial primeiro.</div>
+            <div id="checklist-form-wrap" class="checklist-form-wrap" hidden>
+              <div class="checklist-form-panel" role="dialog" aria-modal="true" aria-labelledby="checklist-form-title">
+                <div class="checklist-form-handle" aria-hidden="true"></div>
+                <div class="checklist-form-header">
+                  <div>
+                    <div id="checklist-form-title" class="checklist-form-title">Nova rotina</div>
+                    <div class="checklist-form-subtitle">Essencial primeiro.</div>
+                  </div>
+                  <button id="btn-fechar-form-checklist" class="btn-secondary" type="button">Fechar</button>
                 </div>
-                <button id="btn-fechar-form-checklist" class="btn-secondary" type="button">Fechar</button>
-              </div>
 
-              <form id="form-checklist">
-                <div class="form-main-stack">
-                  <div class="form-identity-checklist">
-                    <div><label for="chk-titulo">Título</label><input id="chk-titulo" type="text" placeholder="Ex: Revisar protocolo, Fechar relatório" required /></div>
-                    <div class="form-grid" style="margin-top:8px;margin-bottom:0">
-                      <div>
-                        <label for="chk-frequencia">Frequência</label>
-                        <select id="chk-frequencia">
-                          <option value="Único">Não repetir</option>
-                          <option value="Diária">Todos os dias</option>
-                          <option value="Semanal" selected>Toda semana</option>
-                          <option value="Mensal">Todo mês</option>
-                          <option value="Bimestral">A cada dois meses</option>
-                          <option value="Trimestral">A cada três meses</option>
-                          <option value="Semestral">A cada seis meses</option>
-                          <option value="Anual">Todo ano</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label for="chk-categoria">Categoria</label>
-                        <select id="chk-categoria">
-                          <option value="PROFISSIONAL" selected>Profissional</option>
-                          <option value="PESSOAL">Pessoal</option>
-                        </select>
+                <form id="form-checklist">
+                  <div class="form-main-stack">
+                    <div class="form-identity-checklist">
+                      <div><label for="chk-titulo">Título</label><input id="chk-titulo" type="text" placeholder="Ex: Revisar protocolo, Fechar relatório" required /></div>
+                      <div class="form-grid" style="margin-top:8px;margin-bottom:0">
+                        <div>
+                          <label for="chk-frequencia">Frequência</label>
+                          <select id="chk-frequencia">
+                            <option value="Único">Não repetir</option>
+                            <option value="Diária">Todos os dias</option>
+                            <option value="Semanal" selected>Toda semana</option>
+                            <option value="Mensal">Todo mês</option>
+                            <option value="Bimestral">A cada dois meses</option>
+                            <option value="Trimestral">A cada três meses</option>
+                            <option value="Semestral">A cada seis meses</option>
+                            <option value="Anual">Todo ano</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label for="chk-categoria">Categoria</label>
+                          <select id="chk-categoria">
+                            <option value="PROFISSIONAL" selected>Profissional</option>
+                            <option value="PESSOAL">Pessoal</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <details class="form-more-options">
-                    <summary>Mais opções</summary>
-                    <div class="form-more-body">
-                      <div>
-                        <label for="chk-local">Local / contexto</label>
-                        <input id="chk-local" type="text" placeholder="Ex: HGG, Escritório" />
-                        <div id="chk-locais-sugeridos" class="tag-row"></div>
+                    <details class="form-more-options">
+                      <summary>Mais opções</summary>
+                      <div class="form-more-body">
+                        <div>
+                          <label for="chk-local">Local / contexto</label>
+                          <input id="chk-local" type="text" placeholder="Ex: HGG, Escritório" />
+                          <div id="chk-locais-sugeridos" class="tag-row"></div>
+                        </div>
                       </div>
-                      <div class="form-more-note">Use esse campo para contextualizar a rotina sem poluir o fluxo principal de execução.</div>
+                    </details>
+                    <div class="btn-row">
+                      <button type="submit" id="btn-salvar-rotina" class="btn-primary">Salvar</button>
                     </div>
-                  </details>
-                  <div class="btn-row">
-                    <button type="submit" id="btn-salvar-rotina" class="btn-primary">Salvar</button>
                   </div>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
             <div class="filtros-row">
               <div class="filtro-select">
@@ -12202,6 +12238,7 @@
       const btnText = document.getElementById("btn-toggle-form-checklist-text");
       if (!wrap || !btn || !btnText) return;
       const abrir = forceOpen === null ? !wrap.classList.contains("open") : !!forceOpen;
+      wrap.hidden = !abrir;
       wrap.classList.toggle("open", abrir);
       btn.classList.toggle("is-open", abrir);
       btn.setAttribute("aria-expanded", abrir ? "true" : "false");
@@ -12229,6 +12266,7 @@
       const btnText = document.getElementById("btn-toggle-form-agenda-text");
       if (!wrap || !btn || !btnText) return;
       const abrir = forceOpen === null ? !wrap.classList.contains("open") : !!forceOpen;
+      wrap.hidden = !abrir;
       wrap.classList.toggle("open", abrir);
       btn.classList.toggle("is-open", abrir);
       btn.setAttribute("aria-expanded", abrir ? "true" : "false");
@@ -13441,6 +13479,9 @@
 
       document.getElementById("btn-toggle-form-checklist")?.addEventListener("click", () => toggleFormChecklist());
       document.getElementById("btn-fechar-form-checklist")?.addEventListener("click", () => toggleFormChecklist(false));
+      document.getElementById("checklist-form-wrap")?.addEventListener("click", (ev) => {
+        if (ev.target?.id === "checklist-form-wrap") toggleFormChecklist(false);
+      });
       document.getElementById("btn-add-dia-agenda")?.addEventListener("click", () => abrirFormularioAgendaNaData(calendarioDiaSelecionadoISO));
       document.getElementById("btn-ver-agenda-completa-home")?.addEventListener("click", () => abrirTela("screen-agenda"));
       document.getElementById("chk-titulo")?.addEventListener("keydown", (ev) => {
@@ -13450,6 +13491,9 @@
       document.getElementById("btn-toggle-form-agenda")?.addEventListener("click", () => toggleFormAgenda());
       document.getElementById("btn-toggle-form-financas")?.addEventListener("click", abrirSheetFinancas);
       document.getElementById("btn-fechar-form-agenda")?.addEventListener("click", () => toggleFormAgenda(false));
+      document.getElementById("agenda-form-wrap")?.addEventListener("click", (ev) => {
+        if (ev.target?.id === "agenda-form-wrap") toggleFormAgenda(false);
+      });
       document.getElementById("agenda-repetir")?.addEventListener("change", atualizarCampoRecorrenciaAgenda);
       document.getElementById("agenda-categoria")?.addEventListener("change", atualizarCategoriaAgendaUI);
       document.getElementById("chk-categoria")?.addEventListener("change", atualizarCategoriaChecklistUI);
