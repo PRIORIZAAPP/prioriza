@@ -268,6 +268,7 @@ class FonteRendaFinanceira(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, nullable=False, index=True)
     nome = Column(String, nullable=False, index=True)
+    valor_base = Column(Float, default=0, nullable=False)
     descricao = Column(Text, default="")
     ativo = Column(Boolean, default=True, nullable=False)
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
@@ -278,6 +279,7 @@ class FonteRendaFinanceira(Base):
             "id": self.id,
             "user_id": self.user_id,
             "nome": self.nome or "",
+            "valor_base": float(self.valor_base or 0),
             "descricao": self.descricao or "",
             "ativo": bool(self.ativo),
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
@@ -470,11 +472,13 @@ class LancamentoFinanceiroOut(BaseModel):
 
 class FonteRendaFinanceiraCreate(BaseModel):
     nome: str = Field(..., min_length=1)
+    valor_base: float = Field(..., gt=0)
     descricao: str = ""
 
 
 class FonteRendaFinanceiraUpdate(BaseModel):
     nome: Optional[str] = None
+    valor_base: Optional[float] = None
     descricao: Optional[str] = None
 
 
@@ -482,6 +486,7 @@ class FonteRendaFinanceiraOut(BaseModel):
     id: int
     user_id: int
     nome: str
+    valor_base: float = 0
     descricao: str
     ativo: bool = True
     criado_em: Optional[str] = None
@@ -878,6 +883,8 @@ def _sql_tipo_coluna(nome_coluna: str) -> str:
         return "INTEGER"
     if nome_coluna == "fonte_renda_id":
         return "INTEGER"
+    if nome_coluna == "valor_base":
+        return "REAL" if IS_SQLITE else "DOUBLE PRECISION"
     if nome_coluna == "total_acessos":
         return "INTEGER"
     if nome_coluna in ("ativo", "is_admin", "sincronizado_google", "all_day"):
@@ -894,6 +901,8 @@ def _sql_tipo_coluna(nome_coluna: str) -> str:
 def _sql_default_coluna(nome_coluna: str) -> str:
     if nome_coluna == "user_id":
         return ""
+    if nome_coluna == "valor_base":
+        return "0"
     if nome_coluna == "total_acessos":
         return " DEFAULT 0"
     if nome_coluna == "is_admin":
@@ -990,6 +999,7 @@ def rodar_migracoes_automaticas():
         FonteRendaFinanceira.__table__.create(bind=engine, checkfirst=True)
     except Exception as e:
         print(f"[MIGRAÇÃO] Aviso ao criar fontes_renda_financeiras: {e}")
+    garantir_coluna_tabela("fontes_renda_financeiras", "valor_base")
 
     try:
         ContaFixaFinanceira.__table__.create(bind=engine, checkfirst=True)
@@ -2776,13 +2786,17 @@ def criar_fonte_renda_financeira(
     current_user: User = Depends(get_current_user),
 ):
     nome = (payload.nome or "").strip()
+    valor_base = round(float(payload.valor_base or 0), 2)
     descricao = (payload.descricao or "").strip()
     if not nome:
         raise HTTPException(status_code=400, detail="Nome obrigatório.")
+    if valor_base <= 0:
+        raise HTTPException(status_code=400, detail="Informe um valor base maior que zero.")
 
     fonte = FonteRendaFinanceira(
         user_id=current_user.id,
         nome=nome,
+        valor_base=valor_base,
         descricao=descricao,
         ativo=True,
         atualizado_em=datetime.now(UTC),
@@ -2854,6 +2868,11 @@ def editar_fonte_renda_financeira(
         if not nome:
             raise HTTPException(status_code=400, detail="Nome obrigatório.")
         fonte.nome = nome
+    if payload.valor_base is not None:
+        valor_base = round(float(payload.valor_base or 0), 2)
+        if valor_base <= 0:
+            raise HTTPException(status_code=400, detail="Informe um valor base maior que zero.")
+        fonte.valor_base = valor_base
     if payload.descricao is not None:
         fonte.descricao = (payload.descricao or "").strip()
 
