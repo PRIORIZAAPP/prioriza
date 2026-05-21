@@ -2830,6 +2830,85 @@
         line-height: 1.4;
         color: #92400e;
       }
+      #screen-financas .financas-health-card {
+        padding-bottom: 14px;
+      }
+      #screen-financas .financas-health-head {
+        margin-bottom: 8px;
+      }
+      #screen-financas .financas-gauge-shell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding-top: 2px;
+      }
+      #screen-financas .financas-gauge-wrap {
+        position: relative;
+        width: 190px;
+        height: 108px;
+        overflow: hidden;
+      }
+      #screen-financas .financas-gauge-arc {
+        position: absolute;
+        inset: 0;
+        width: 190px;
+        height: 190px;
+        border-radius: 999px;
+        background:
+          conic-gradient(from 180deg,
+            #ef4444 0deg 58deg,
+            #f59e0b 58deg 122deg,
+            #22c55e 122deg 180deg,
+            transparent 180deg 360deg);
+        -webkit-mask: radial-gradient(circle at center, transparent 0 52%, #000 53% 68%, transparent 69%);
+        mask: radial-gradient(circle at center, transparent 0 52%, #000 53% 68%, transparent 69%);
+      }
+      #screen-financas .financas-gauge-needle {
+        position: absolute;
+        left: 50%;
+        bottom: 12px;
+        width: 3px;
+        height: 78px;
+        border-radius: 999px;
+        background: #0f172a;
+        transform-origin: 50% calc(100% - 6px);
+        transform: translateX(-50%) rotate(-50deg);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+        transition: transform .32s ease;
+      }
+      #screen-financas .financas-gauge-center {
+        position: absolute;
+        left: 50%;
+        bottom: 8px;
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        background: #ffffff;
+        border: 3px solid #0f172a;
+        transform: translateX(-50%);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+      }
+      #screen-financas .financas-gauge-status {
+        font-size: 24px;
+        line-height: 1;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        color: #0f172a;
+      }
+      #screen-financas .financas-gauge-status.warning {
+        color: #c2410c;
+      }
+      #screen-financas .financas-gauge-status.danger {
+        color: #b91c1c;
+      }
+      #screen-financas .financas-gauge-copy {
+        max-width: 240px;
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.45;
+        color: #64748b;
+      }
       #screen-financas .financas-source-item {
         padding: 9px 0;
       }
@@ -2975,6 +3054,20 @@
         }
         #screen-financas .financas-line-chart-svg {
           height: 150px;
+        }
+        #screen-financas .financas-gauge-wrap {
+          width: 168px;
+          height: 96px;
+        }
+        #screen-financas .financas-gauge-arc {
+          width: 168px;
+          height: 168px;
+        }
+        #screen-financas .financas-gauge-needle {
+          height: 68px;
+        }
+        #screen-financas .financas-gauge-status {
+          font-size: 21px;
         }
       }
       .campo-em-breve { opacity: 0.45; pointer-events: none; }
@@ -8220,6 +8313,24 @@
                   </div>
                 </div>
                 <div class="financas-side-column">
+                  <div class="financas-premium-card financas-health-card">
+                    <div class="financas-card-header financas-health-head">
+                      <div>
+                        <h3 class="financas-card-title">Saúde financeira</h3>
+                        <div class="financas-card-subtitle">Sinal rápido da pressão do mês.</div>
+                      </div>
+                    </div>
+                    <div class="financas-gauge-shell">
+                      <div class="financas-gauge-wrap">
+                        <div class="financas-gauge-arc"></div>
+                        <div id="financas-gauge-needle" class="financas-gauge-needle"></div>
+                        <div class="financas-gauge-center"></div>
+                      </div>
+                      <div id="financas-gauge-status" class="financas-gauge-status">Equilíbrio</div>
+                      <div id="financas-gauge-copy" class="financas-gauge-copy">Suas despesas e dívidas estão sob controle neste mês.</div>
+                    </div>
+                  </div>
+
                   <div class="financas-premium-card financas-side-balance">
                     <div class="financas-card-header">
                       <div>
@@ -9975,6 +10086,9 @@
 
       const metaTextoEl = document.getElementById("financas-meta-texto");
       const metaBarraEl = document.getElementById("financas-meta-barra");
+      const gaugeNeedleEl = document.getElementById("financas-gauge-needle");
+      const gaugeStatusEl = document.getElementById("financas-gauge-status");
+      const gaugeCopyEl = document.getElementById("financas-gauge-copy");
       if (metaTextoEl) {
         if (contexto.saldoPrevisto < 0) {
           metaTextoEl.textContent = `Faltam ${formatarMoedaFinancas(Math.abs(contexto.saldoPrevisto))} para encerrar o mês com saldo positivo.`;
@@ -9986,6 +10100,30 @@
         const denominador = Math.max(contexto.receitasPlanejadas, 1);
         const percentual = Math.min(100, Math.max(6, Math.round((Math.max(contexto.saldoPrevisto, 0) / denominador) * 100)));
         metaBarraEl.style.width = `${percentual}%`;
+      }
+
+      const pressao = contexto.receitasPlanejadas > 0
+        ? (contexto.saidasMes + contexto.dividasEmAberto) / contexto.receitasPlanejadas
+        : (contexto.saidasMes + contexto.dividasEmAberto) > 0 ? 1.3 : 0;
+      const pressaoNormalizada = Math.max(0, Math.min(1, pressao));
+      const angulo = -90 + (pressaoNormalizada * 180);
+      if (gaugeNeedleEl) {
+        gaugeNeedleEl.style.transform = `translateX(-50%) rotate(${angulo}deg)`;
+      }
+      if (gaugeStatusEl && gaugeCopyEl) {
+        gaugeStatusEl.classList.remove("warning", "danger");
+        if (pressao <= 0.68) {
+          gaugeStatusEl.textContent = "Saudável";
+          gaugeCopyEl.textContent = "Suas despesas e dívidas estão bem abaixo das receitas do mês.";
+        } else if (pressao <= 1) {
+          gaugeStatusEl.textContent = "Atenção";
+          gaugeStatusEl.classList.add("warning");
+          gaugeCopyEl.textContent = "Seu mês está apertado. Vale acompanhar gastos e vencimentos mais de perto.";
+        } else {
+          gaugeStatusEl.textContent = "Pressão";
+          gaugeStatusEl.classList.add("danger");
+          gaugeCopyEl.textContent = "Suas despesas e dívidas já ultrapassam a receita planejada para este mês.";
+        }
       }
 
       renderizarCategoriaChartFinancas(contexto.despesasCategoria);
