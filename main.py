@@ -2688,6 +2688,92 @@ def criar_lancamento_financeiro(
     return LancamentoFinanceiroOut(**montar_saida_lancamento_financeiro(lancamento, fonte))
 
 
+@app.put("/financas/lancamentos/{lancamento_id}", response_model=LancamentoFinanceiroOut)
+def editar_lancamento_financeiro(
+    lancamento_id: int,
+    payload: LancamentoFinanceiroCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    lancamento = (
+        db.query(LancamentoFinanceiro)
+        .filter(
+            LancamentoFinanceiro.id == lancamento_id,
+            LancamentoFinanceiro.user_id == current_user.id,
+            LancamentoFinanceiro.ativo == True,
+        )
+        .first()
+    )
+    if not lancamento:
+        raise HTTPException(status_code=404, detail="Lançamento não encontrado.")
+
+    tipo = normalizar_tipo_financeiro(payload.tipo)
+    categoria = (payload.categoria or "").strip()
+    descricao = (payload.descricao or "").strip()
+    data_lancamento = (payload.data or "").strip()
+    fonte_renda_id = int(payload.fonte_renda_id or 0) if payload.fonte_renda_id else None
+
+    if tipo not in {"receita", "despesa"}:
+        raise HTTPException(status_code=400, detail="Tipo inválido. Use receita ou despesa.")
+    if not (payload.valor and float(payload.valor) > 0):
+        raise HTTPException(status_code=400, detail="Informe um valor maior que zero.")
+    if not categoria:
+        raise HTTPException(status_code=400, detail="Categoria obrigatória.")
+    if not data_lancamento or not validar_data_iso(data_lancamento):
+        raise HTTPException(status_code=400, detail="Data inválida.")
+
+    fonte = None
+    if tipo == "receita":
+        if not fonte_renda_id:
+            raise HTTPException(status_code=400, detail="Selecione uma fonte de renda para receitas.")
+        fonte = (
+            db.query(FonteRendaFinanceira)
+            .filter(
+                FonteRendaFinanceira.id == fonte_renda_id,
+                FonteRendaFinanceira.user_id == current_user.id,
+                FonteRendaFinanceira.ativo == True,
+            )
+            .first()
+        )
+        if not fonte:
+            raise HTTPException(status_code=400, detail="Fonte de renda inválida.")
+    else:
+        fonte_renda_id = None
+
+    lancamento.tipo = tipo
+    lancamento.valor = round(float(payload.valor), 2)
+    lancamento.categoria = categoria
+    lancamento.descricao = descricao
+    lancamento.fonte_renda_id = fonte_renda_id
+    lancamento.data = data_lancamento
+    db.commit()
+    db.refresh(lancamento)
+    return LancamentoFinanceiroOut(**montar_saida_lancamento_financeiro(lancamento, fonte))
+
+
+@app.delete("/financas/lancamentos/{lancamento_id}")
+def excluir_lancamento_financeiro(
+    lancamento_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    lancamento = (
+        db.query(LancamentoFinanceiro)
+        .filter(
+            LancamentoFinanceiro.id == lancamento_id,
+            LancamentoFinanceiro.user_id == current_user.id,
+            LancamentoFinanceiro.ativo == True,
+        )
+        .first()
+    )
+    if not lancamento:
+        raise HTTPException(status_code=404, detail="Lançamento não encontrado.")
+
+    lancamento.ativo = False
+    db.commit()
+    return {"ok": True}
+
+
 @app.get("/financas/lancamentos", response_model=list[LancamentoFinanceiroOut])
 def listar_lancamentos_financeiros(
     data: Optional[str] = Query(None),
