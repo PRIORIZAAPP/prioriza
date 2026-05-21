@@ -902,7 +902,7 @@ def _sql_default_coluna(nome_coluna: str) -> str:
     if nome_coluna == "user_id":
         return ""
     if nome_coluna == "valor_base":
-        return "0"
+        return " DEFAULT 0"
     if nome_coluna == "total_acessos":
         return " DEFAULT 0"
     if nome_coluna == "is_admin":
