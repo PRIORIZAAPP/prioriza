@@ -7514,6 +7514,10 @@
                     <input id="financas-fonte-renda-nome" type="text" placeholder="Ex: salário, plantões, serviços extras" required />
                   </div>
                   <div>
+                    <label for="financas-fonte-renda-valor-base">Valor base mensal</label>
+                    <input id="financas-fonte-renda-valor-base" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="R$ 0,00" required />
+                  </div>
+                  <div>
                     <label for="financas-fonte-renda-descricao">Descrição</label>
                     <input id="financas-fonte-renda-descricao" type="text" placeholder="Opcional" />
                   </div>
@@ -8931,11 +8935,13 @@
       if (fonte) {
         const idEl = document.getElementById("financas-fonte-renda-id");
         const nomeEl = document.getElementById("financas-fonte-renda-nome");
+        const valorEl = document.getElementById("financas-fonte-renda-valor-base");
         const descEl = document.getElementById("financas-fonte-renda-descricao");
         const tituloEl = document.getElementById("financas-source-sheet-title");
         const salvarEl = document.getElementById("btn-financas-salvar-fonte-renda");
         if (idEl) idEl.value = String(fonte.id || "");
         if (nomeEl) nomeEl.value = fonte.nome || "";
+        if (valorEl) valorEl.value = String(Number(fonte.valor_base || 0));
         if (descEl) descEl.value = fonte.descricao || "";
         if (tituloEl) tituloEl.textContent = "Editar fonte de renda";
         if (salvarEl) salvarEl.textContent = "Salvar alterações";
@@ -9162,7 +9168,8 @@
       listaResumoEl.innerHTML = "";
       listaEl.innerHTML = "";
       financasFontesRenda.forEach((fonte) => {
-        const total = formatarMoedaFinancas(fonte.total_recebido_mes || 0);
+        const valorBase = formatarMoedaFinancas(fonte.valor_base || 0);
+        const totalRecebido = formatarMoedaFinancas(fonte.total_recebido_mes || 0);
 
         const resumoRow = document.createElement("div");
         resumoRow.className = "financas-source-item";
@@ -9170,7 +9177,7 @@
           <div class="financas-source-main">
             <div class="financas-source-name">${fonte.nome || "Fonte"}</div>
           </div>
-          <div class="financas-source-amount">${total}</div>
+          <div class="financas-source-amount">${valorBase}</div>
         `;
         listaResumoEl.appendChild(resumoRow);
 
@@ -9186,11 +9193,13 @@
 
         const meta = document.createElement("div");
         meta.className = "financas-source-meta";
-        meta.textContent = fonte.descricao || "Sem descrição";
+        meta.textContent = fonte.total_recebido_mes
+          ? `Recebido no mês: ${totalRecebido}`
+          : (fonte.descricao || "Base mensal");
 
         const amount = document.createElement("div");
         amount.className = "financas-source-amount";
-        amount.textContent = total;
+        amount.textContent = valorBase;
 
         const actions = document.createElement("div");
         actions.className = "financas-source-actions";
@@ -9638,9 +9647,14 @@
       limparErroFonteRendaFinancas();
       const fonteId = document.getElementById("financas-fonte-renda-id")?.value || "";
       const nome = document.getElementById("financas-fonte-renda-nome")?.value.trim() || "";
+      const valorBase = Number(document.getElementById("financas-fonte-renda-valor-base")?.value || 0);
       const descricao = document.getElementById("financas-fonte-renda-descricao")?.value.trim() || "";
       if (!nome) {
         definirErroFonteRendaFinancas("Informe o nome da fonte de renda.");
+        return;
+      }
+      if (!(valorBase > 0)) {
+        definirErroFonteRendaFinancas("Informe um valor base maior que zero.");
         return;
       }
 
@@ -9650,7 +9664,7 @@
         const resposta = await fetch(url, {
           method,
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nome, descricao }),
+          body: JSON.stringify({ nome, valor_base: valorBase, descricao }),
         });
         if (!resposta.ok) {
           let mensagem = "Não foi possível salvar a fonte de renda agora.";
