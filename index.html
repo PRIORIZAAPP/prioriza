@@ -1554,7 +1554,7 @@
       #screen-financas .financas-topbar {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 4px;
       }
       #screen-financas .financas-topbar-main {
         display: flex;
@@ -1578,16 +1578,16 @@
       }
       #screen-financas .financas-title {
         margin: 0;
-        font-size: 22px;
+        font-size: 21px;
         line-height: 1.06;
         letter-spacing: -0.04em;
         color: #0f172a;
       }
       #screen-financas .financas-subtitle {
         margin: 0;
-        font-size: 12px;
-        line-height: 1.35;
-        color: #64748b;
+        font-size: 11px;
+        line-height: 1.3;
+        color: #5f6f86;
       }
       #screen-financas .financas-desktop-add-label {
         display: inline;
@@ -1630,6 +1630,87 @@
       }
       #screen-financas .financas-summary-row-value.negative {
         color: #b91c1c;
+      }
+      #screen-financas .financas-overview-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+        gap: 12px;
+        align-items: start;
+      }
+      #screen-financas .financas-overview-panel {
+        border: 1px solid rgba(226, 232, 240, 0.88);
+        border-radius: 16px;
+        background: rgba(255,255,255,0.98);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.025);
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      #screen-financas .financas-overview-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      #screen-financas .financas-overview-title {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.15;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #64748b;
+      }
+      #screen-financas .financas-overview-panel .financas-month-picker {
+        min-width: 146px;
+        font-size: 12px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+      }
+      #screen-financas .financas-source-list.financas-source-compact {
+        gap: 0;
+      }
+      #screen-financas .financas-source-list.financas-source-compact .financas-source-item {
+        padding: 7px 0;
+      }
+      #screen-financas .financas-source-list.financas-source-compact .financas-source-name {
+        font-size: 14px;
+        font-weight: 560;
+        color: #0f172a;
+      }
+      #screen-financas .financas-balance-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      #screen-financas .financas-balance-hero {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.72);
+      }
+      #screen-financas .financas-balance-kicker {
+        font-size: 11px;
+        line-height: 1.2;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #94a3b8;
+      }
+      #screen-financas .financas-balance-amount {
+        font-size: 28px;
+        line-height: 1;
+        letter-spacing: -0.04em;
+        color: #0f172a;
+        font-weight: 700;
+      }
+      #screen-financas .financas-balance-amount.negative {
+        color: #b91c1c;
+      }
+      #screen-financas .financas-balance-caption {
+        font-size: 11px;
+        line-height: 1.35;
+        color: #64748b;
       }
       #screen-financas .financas-grid {
         display: grid;
@@ -1900,20 +1981,20 @@
       #screen-financas .financas-fixed-list {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 6px;
       }
       #screen-financas .financas-fixed-item {
         border: 1px solid rgba(226, 232, 240, 0.88);
         border-radius: 14px;
         background: #fbfdff;
-        padding: 10px 12px;
+        padding: 8px 10px;
         display: grid;
         grid-template-columns: auto minmax(0, 1fr) auto auto;
         grid-template-areas:
           "status title amount actions"
           "status meta meta actions";
         align-items: center;
-        gap: 10px;
+        gap: 8px;
       }
       #screen-financas .financas-fixed-item.is-confirmed {
         border-color: rgba(34, 197, 94, 0.18);
@@ -1948,7 +2029,7 @@
       #screen-financas .financas-fixed-title {
         grid-area: title;
         min-width: 0;
-        font-size: 14px;
+        font-size: 13px;
         line-height: 1.25;
         color: #0f172a;
         font-weight: 580;
@@ -1971,7 +2052,7 @@
       #screen-financas .financas-fixed-amount {
         grid-area: amount;
         text-align: right;
-        font-size: 14px;
+        font-size: 12px;
         line-height: 1.2;
         color: #0f172a;
         font-weight: 640;
@@ -1985,8 +2066,8 @@
       }
       #screen-financas .financas-fixed-action-btn {
         min-width: 34px;
-        min-height: 34px;
-        padding: 0 8px;
+        min-height: 30px;
+        padding: 0 7px;
         border-radius: 10px;
         font-size: 0;
         display: inline-flex;
@@ -2098,7 +2179,7 @@
           flex-wrap: nowrap;
         }
         #screen-financas .financas-topbar .financas-subtitle {
-          max-width: 520px;
+          max-width: 420px;
         }
         #screen-financas .financas-action-btn {
           margin-left: auto;
@@ -2131,11 +2212,11 @@
           border-radius: 24px;
         }
         #screen-financas .financas-fixed-item {
-          grid-template-columns: auto minmax(220px, 1.8fr) minmax(110px, auto) minmax(110px, auto) auto auto;
+          grid-template-columns: auto minmax(180px, 1.35fr) minmax(72px, auto) minmax(88px, auto) minmax(82px, auto) auto;
           grid-template-areas: "status title due category amount actions";
-          padding: 13px 14px;
-          gap: 12px;
-          border-radius: 16px;
+          padding: 8px 10px;
+          gap: 8px;
+          border-radius: 14px;
           background: #fbfdff;
         }
         #screen-financas .financas-fixed-status-toggle {
@@ -2143,8 +2224,8 @@
           height: 30px;
         }
         #screen-financas .financas-fixed-title {
-          font-size: 15px;
-          line-height: 1.3;
+          font-size: 13px;
+          line-height: 1.25;
         }
         #screen-financas .financas-fixed-meta-wrap {
           display: contents;
@@ -2165,21 +2246,24 @@
           display: none;
         }
         #screen-financas .financas-fixed-amount {
-          font-size: 15px;
+          font-size: 12px;
         }
         #screen-financas .financas-fixed-actions {
-          flex-wrap: wrap;
+          flex-wrap: nowrap;
           gap: 8px;
         }
         #screen-financas .financas-fixed-action-btn {
           min-width: auto;
-          min-height: 34px;
-          padding: 0 12px;
-          font-size: 12px;
-          gap: 6px;
+          min-height: 30px;
+          padding: 0 7px;
+          font-size: 0;
+          gap: 4px;
         }
       }
       @media (max-width: 640px) {
+        #screen-financas .financas-overview-grid {
+          grid-template-columns: 1fr;
+        }
         #screen-financas .financas-topbar-main {
           align-items: flex-start;
         }
@@ -2192,6 +2276,9 @@
         }
         #screen-financas .financas-desktop-add-label {
           display: none;
+        }
+        #screen-financas .financas-balance-amount {
+          font-size: 24px;
         }
         #screen-financas .financas-sheet,
         .checklist-form-wrap {
@@ -7256,42 +7343,46 @@
                 </div>
                 <p class="financas-subtitle">Controle simples da sua vida financeira.</p>
               </div>
-              <div class="financas-list-shell financas-compact-section">
-                <div class="financas-list-head">
-                  <h3>Hoje</h3>
-                </div>
-                <div class="financas-summary-row">
-                  <span class="financas-summary-row-label">Gastos do dia</span>
-                  <strong id="financas-gastos-hoje" class="financas-summary-row-value">R$ 0,00</strong>
-                </div>
-              </div>
-              <div class="financas-list-shell financas-compact-section financas-month-shell">
-                <div class="financas-month-head">
-                  <h3>Resumo do mês</h3>
-                  <input id="financas-mes-referencia" class="financas-month-picker" type="month" />
-                </div>
-                <div class="financas-summary-rows">
-                  <div class="financas-summary-row">
-                    <span class="financas-summary-row-label">Entradas do mês</span>
-                    <strong id="financas-entradas-mes" class="financas-summary-row-value">R$ 0,00</strong>
+              <div class="financas-overview-grid">
+                <div class="financas-overview-panel">
+                  <div class="financas-overview-head">
+                    <h3 class="financas-overview-title">Receita</h3>
+                    <div id="financas-fontes-meta" class="financas-list-meta">0 fonte(s)</div>
                   </div>
-                  <div class="financas-summary-row">
-                    <span class="financas-summary-row-label">Saídas do mês</span>
-                    <strong id="financas-saidas-mes" class="financas-summary-row-value">R$ 0,00</strong>
-                  </div>
-                  <div class="financas-summary-row">
-                    <span class="financas-summary-row-label">Saldo do mês</span>
-                    <strong id="financas-saldo-mes" class="financas-summary-row-value">R$ 0,00</strong>
+                  <div id="financas-fontes-resumo-lista" class="financas-source-list financas-source-compact">
+                    <div class="financas-empty">Nenhuma fonte de renda cadastrada.</div>
                   </div>
                 </div>
-              </div>
-              <div class="financas-list-shell financas-compact-section">
-                <div class="financas-list-head">
-                  <h3>Entradas por fonte</h3>
-                  <div id="financas-fontes-meta" class="financas-list-meta">0 fonte(s)</div>
-                </div>
-                <div id="financas-fontes-resumo-lista" class="financas-source-list">
-                  <div class="financas-empty">Nenhuma fonte de renda cadastrada.</div>
+                <div class="financas-overview-panel financas-month-shell">
+                  <div class="financas-overview-head">
+                    <h3 class="financas-overview-title">Saldo</h3>
+                    <input id="financas-mes-referencia" class="financas-month-picker" type="month" />
+                  </div>
+                  <div class="financas-balance-stack">
+                    <div class="financas-balance-hero">
+                      <span class="financas-balance-kicker">Final previsto</span>
+                      <strong id="financas-saldo-previsto" class="financas-balance-amount">R$ 0,00</strong>
+                      <span class="financas-balance-caption">Receitas do mês menos contas fixas previstas.</span>
+                    </div>
+                    <div class="financas-summary-rows">
+                      <div class="financas-summary-row">
+                        <span class="financas-summary-row-label">Saldo atual</span>
+                        <strong id="financas-saldo-mes" class="financas-summary-row-value">R$ 0,00</strong>
+                      </div>
+                      <div class="financas-summary-row">
+                        <span class="financas-summary-row-label">Entradas do mês</span>
+                        <strong id="financas-entradas-mes" class="financas-summary-row-value">R$ 0,00</strong>
+                      </div>
+                      <div class="financas-summary-row">
+                        <span class="financas-summary-row-label">Saídas lançadas</span>
+                        <strong id="financas-saidas-mes" class="financas-summary-row-value">R$ 0,00</strong>
+                      </div>
+                      <div class="financas-summary-row">
+                        <span class="financas-summary-row-label">Gastos do dia</span>
+                        <strong id="financas-gastos-hoje" class="financas-summary-row-value">R$ 0,00</strong>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="financas-list-shell">
@@ -8954,11 +9045,20 @@
       const entradasEl = document.getElementById("financas-entradas-mes");
       const saidasEl = document.getElementById("financas-saidas-mes");
       const saldoEl = document.getElementById("financas-saldo-mes");
+      const saldoPrevistoEl = document.getElementById("financas-saldo-previsto");
       if (!entradasEl || !saidasEl || !saldoEl) return;
       entradasEl.textContent = formatarMoedaFinancas(resumo.entradas_mes || 0);
       saidasEl.textContent = formatarMoedaFinancas(resumo.saidas_mes || 0);
       saldoEl.textContent = formatarMoedaFinancas(resumo.saldo_mes || 0);
       saldoEl.classList.toggle("negative", Number(resumo.saldo_mes || 0) < 0);
+      if (saldoPrevistoEl) {
+        const totalFixo = financasContasFixas
+          .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa")
+          .reduce((soma, item) => soma + Number(item.valor || 0), 0);
+        const previsto = Number(resumo.entradas_mes || 0) - totalFixo;
+        saldoPrevistoEl.textContent = formatarMoedaFinancas(previsto);
+        saldoPrevistoEl.classList.toggle("negative", previsto < 0);
+      }
     }
 
     function renderizarListaGenericaFinancas(listaEl, metaEl, itens = [], mensagemVazia = "Nenhum lançamento registrado.") {
