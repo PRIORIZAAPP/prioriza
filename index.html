@@ -2883,43 +2883,43 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 10px;
-        padding-top: 2px;
+        gap: 8px;
+        padding-top: 0;
       }
       #screen-financas .financas-gauge-wrap {
         position: relative;
-        width: 190px;
-        height: 108px;
+        width: 170px;
+        height: 92px;
         overflow: hidden;
       }
       #screen-financas .financas-gauge-arc {
         position: absolute;
         inset: 0;
-        width: 190px;
-        height: 190px;
+        width: 170px;
+        height: 170px;
         border-radius: 999px;
         background:
           conic-gradient(from 270deg,
-            #ef4444 0deg,
-            #f97316 42deg,
-            #f59e0b 84deg,
-            #84cc16 128deg,
-            #22c55e 180deg,
+            rgba(248, 113, 113, 0.92) 0deg,
+            rgba(251, 146, 60, 0.88) 42deg,
+            rgba(250, 204, 21, 0.82) 84deg,
+            rgba(163, 230, 53, 0.84) 128deg,
+            rgba(74, 222, 128, 0.88) 180deg,
             transparent 180deg 360deg);
-        -webkit-mask: radial-gradient(circle at center, transparent 0 54%, #000 55% 69%, transparent 70%);
-        mask: radial-gradient(circle at center, transparent 0 54%, #000 55% 69%, transparent 70%);
+        -webkit-mask: radial-gradient(circle at center, transparent 0 60%, #000 61% 70%, transparent 71%);
+        mask: radial-gradient(circle at center, transparent 0 60%, #000 61% 70%, transparent 71%);
       }
       #screen-financas .financas-gauge-needle {
         position: absolute;
         left: 50%;
-        bottom: 11px;
-        width: 10px;
-        height: 96px;
+        bottom: 10px;
+        width: 4px;
+        height: 78px;
         border-radius: 999px;
-        background: linear-gradient(180deg, rgba(15, 23, 42, 0.08) 0%, #0f172a 22%, #172033 100%);
-        transform-origin: 50% calc(100% - 10px);
+        background: linear-gradient(180deg, rgba(71, 85, 105, 0.12) 0%, rgba(51, 65, 85, 0.84) 30%, rgba(51, 65, 85, 0.96) 100%);
+        transform-origin: 50% calc(100% - 8px);
         transform: translateX(-50%) rotate(-50deg);
-        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+        box-shadow: 0 5px 14px rgba(15, 23, 42, 0.08);
         transition: transform .32s ease;
       }
       #screen-financas .financas-gauge-needle::after {
@@ -2927,43 +2927,43 @@
         position: absolute;
         left: 50%;
         top: -6px;
-        width: 18px;
-        height: 24px;
-        background: #0f172a;
+        width: 9px;
+        height: 18px;
+        background: rgba(30, 41, 59, 0.92);
         transform: translateX(-50%);
-        clip-path: polygon(50% 0%, 78% 16%, 94% 40%, 90% 66%, 72% 88%, 50% 100%, 28% 88%, 10% 66%, 6% 40%, 22% 16%);
-        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.14);
+        border-radius: 999px 999px 999px 999px / 78% 78% 36% 36%;
+        box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
       }
       #screen-financas .financas-gauge-center {
         position: absolute;
         left: 50%;
-        bottom: 9px;
-        width: 20px;
-        height: 20px;
+        bottom: 8px;
+        width: 14px;
+        height: 14px;
         border-radius: 999px;
         background: #ffffff;
-        border: 3px solid rgba(15, 23, 42, 0.88);
+        border: 2px solid rgba(51, 65, 85, 0.72);
         transform: translateX(-50%);
-        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+        box-shadow: 0 5px 14px rgba(15, 23, 42, 0.08);
       }
       #screen-financas .financas-gauge-status {
-        font-size: 24px;
+        font-size: 20px;
         line-height: 1;
-        font-weight: 700;
+        font-weight: 680;
         letter-spacing: -0.04em;
         color: #0f172a;
       }
       #screen-financas .financas-gauge-status.warning {
-        color: #c2410c;
+        color: #b45309;
       }
       #screen-financas .financas-gauge-status.danger {
         color: #b91c1c;
       }
       #screen-financas .financas-gauge-copy {
-        max-width: 240px;
+        max-width: 220px;
         text-align: center;
-        font-size: 12px;
-        line-height: 1.45;
+        font-size: 11px;
+        line-height: 1.4;
         color: #64748b;
       }
       #screen-financas .financas-mobile-top {
@@ -8678,7 +8678,7 @@
                     </span>
                   </div>
                   <div id="financas-kpi-receitas" class="financas-kpi-value">R$ 0,00</div>
-                  <div id="financas-kpi-receitas-aux" class="financas-kpi-meta">Renda planejada para o mês.</div>
+                  <div id="financas-kpi-receitas-aux" class="financas-kpi-meta">Receitas consolidadas do mês.</div>
                 </button>
                 <button id="financas-kpi-card-saidas" class="financas-kpi-card danger financas-kpi-button" type="button">
                   <div class="financas-kpi-top">
@@ -8704,7 +8704,7 @@
                     </span>
                   </div>
                   <div id="financas-kpi-resultado" class="financas-kpi-value">R$ 0,00</div>
-                  <div id="financas-kpi-resultado-aux" class="financas-kpi-meta">Resultado previsto com base no mês.</div>
+                  <div id="financas-kpi-resultado-aux" class="financas-kpi-meta">Receitas do mês menos despesas do mês.</div>
                 </button>
                 <button id="financas-kpi-card-hoje" class="financas-kpi-card warning financas-kpi-button" type="button">
                   <div class="financas-kpi-top">
@@ -8850,7 +8850,7 @@
                     <div class="financas-card-header">
                       <div>
                         <h3 class="financas-card-title">Saldo do mês</h3>
-                        <div class="financas-card-subtitle">Previsto e realizado no mesmo quadro.</div>
+                        <div class="financas-card-subtitle">Visão separada entre previsto, realizado e pressão do mês.</div>
                       </div>
                       <div class="financas-card-chip">Mês ativo</div>
                     </div>
@@ -8866,11 +8866,11 @@
                           <strong id="financas-saldo-mes" class="financas-summary-row-value">R$ 0,00</strong>
                         </div>
                         <div class="financas-summary-row">
-                          <span class="financas-summary-row-label">Entradas lançadas</span>
+                          <span class="financas-summary-row-label">Receitas realizadas</span>
                           <strong id="financas-entradas-mes" class="financas-summary-row-value">R$ 0,00</strong>
                         </div>
                         <div class="financas-summary-row">
-                          <span class="financas-summary-row-label">Saídas lançadas</span>
+                          <span class="financas-summary-row-label">Saídas realizadas</span>
                           <strong id="financas-saidas-mes" class="financas-summary-row-value">R$ 0,00</strong>
                         </div>
                         <div class="financas-summary-row">
@@ -10399,8 +10399,13 @@
       const saidasAvulsasMes = lancamentosAvulsosDespesa.reduce((soma, item) => soma + Number(item.valor || 0), 0);
       const contasDespesa = financasContasFixas.filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa");
       const despesasFixas = contasDespesa.reduce((soma, item) => soma + Number(item.valor || 0), 0);
+      const despesasFixasConfirmadas = contasDespesa
+        .filter((item) => obterStatusContaFixaFinancas(item).confirmado)
+        .reduce((soma, item) => soma + Number(item.valor || 0), 0);
       const saidasMes = despesasFixas + saidasAvulsasMes;
-      const saldoMes = Number(entradasMes - saidasMes);
+      const saidasRealizadasMes = despesasFixasConfirmadas + saidasAvulsasMes;
+      const saldoAtual = Number(entradasMes - saidasRealizadasMes);
+      const resultadoMes = Number(receitasMesPainel - saidasMes);
       const saldoPrevisto = receitasPlanejadas - despesasFixas;
       const dividas = financasContasFixas.filter((item) => {
         const categoria = classificarCategoriaDespesaFinancas(item);
@@ -10426,9 +10431,12 @@
         receitasMesPainel,
         receitasSemFonte,
         saidasMes,
-        saldoMes,
+        saidasRealizadasMes,
+        saldoAtual,
+        resultadoMes,
         saldoPrevisto,
         despesasFixas,
+        despesasFixasConfirmadas,
         saidasAvulsasMes,
         lancamentosAvulsosDespesa,
         dividas,
@@ -10741,9 +10749,9 @@
       } else if (tipo === "resultado") {
         titleEl.textContent = "Resultado do mês";
         subtitleEl.textContent = "Leitura consolidada entre o realizado e o previsto.";
-        lista.appendChild(criarLinhaDetalheKpiFinancas("Receitas do mês", "Entradas registradas", formatarMoedaFinancas(contexto.entradasMes)));
+        lista.appendChild(criarLinhaDetalheKpiFinancas("Receitas do mês", "Receitas consolidadas no painel", formatarMoedaFinancas(contexto.receitasMesPainel)));
         lista.appendChild(criarLinhaDetalheKpiFinancas("Despesas do mês", "Lista única de despesas e dívidas", formatarMoedaFinancas(contexto.saidasMes)));
-        lista.appendChild(criarLinhaDetalheKpiFinancas("Saldo atual", "Receitas menos saídas deste mês", formatarMoedaFinancas(contexto.saldoMes)));
+        lista.appendChild(criarLinhaDetalheKpiFinancas("Saldo atual", "Entradas realizadas menos saídas realizadas", formatarMoedaFinancas(contexto.saldoAtual)));
         lista.appendChild(criarLinhaDetalheKpiFinancas("Saldo previsto", "Fontes de renda menos despesas recorrentes", formatarMoedaFinancas(contexto.saldoPrevisto)));
       } else if (tipo === "hoje") {
         titleEl.textContent = "Gastos do dia";
@@ -10894,17 +10902,17 @@
           texto: `Você tem ${contexto.dividasAbertas.length} pendência(s), somando ${formatarMoedaFinancas(contexto.dividasEmAberto)}.`,
         });
       }
-      if (contexto.saldoMes < 0) {
+      if (contexto.resultadoMes < 0) {
         itens.push({
           tipo: "danger",
           titulo: "Mês no negativo",
-          texto: `As saídas lançadas estão ${formatarMoedaFinancas(Math.abs(contexto.saldoMes))} acima das entradas realizadas.`,
+          texto: `As despesas do mês estão ${formatarMoedaFinancas(Math.abs(contexto.resultadoMes))} acima das receitas do mês.`,
         });
       } else {
         itens.push({
           tipo: "neutral",
           titulo: "Mês em equilíbrio",
-          texto: `Seu saldo realizado está positivo em ${formatarMoedaFinancas(contexto.saldoMes)}.`,
+          texto: `Seu resultado do mês está positivo em ${formatarMoedaFinancas(contexto.resultadoMes)}.`,
         });
       }
       if (contexto.receitasPlanejadas > contexto.entradasMes) {
@@ -11021,10 +11029,10 @@
       const lancamentosEl = document.getElementById("financas-mobile-lancamentos");
       if (!saldoAtualEl || !resultadoEl || !lancamentosMetaEl || !lancamentosEl) return;
 
-      saldoAtualEl.textContent = formatarMoedaFinancas(contexto.saldoMes || 0);
-      saldoAtualEl.classList.toggle("negative", Number(contexto.saldoMes || 0) < 0);
-      resultadoEl.textContent = formatarMoedaFinancas(contexto.saldoPrevisto || 0);
-      resultadoEl.classList.toggle("negative", Number(contexto.saldoPrevisto || 0) < 0);
+      saldoAtualEl.textContent = formatarMoedaFinancas(contexto.saldoAtual || 0);
+      saldoAtualEl.classList.toggle("negative", Number(contexto.saldoAtual || 0) < 0);
+      resultadoEl.textContent = formatarMoedaFinancas(contexto.resultadoMes || 0);
+      resultadoEl.classList.toggle("negative", Number(contexto.resultadoMes || 0) < 0);
 
       if (gastosHojeEl) gastosHojeEl.textContent = formatarMoedaFinancas(contexto.gastosHoje || 0);
       if (gastosCopyEl) {
@@ -11128,30 +11136,30 @@
       const saidasTotais = contexto.saidasMes;
       definirTexto("financas-kpi-saidas", formatarMoedaFinancas(saidasTotais));
       definirTexto("financas-kpi-saidas-aux", `${financasContasFixas.filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa").length} despesa(s) recorrente(s) e ${contexto.lancamentosAvulsosDespesa.length} gasto(s) avulso(s).`);
-      definirTexto("financas-kpi-resultado", formatarMoedaFinancas(contexto.saldoMes));
-      definirTexto("financas-kpi-resultado-aux", contexto.saldoMes < 0 ? "As saídas do mês estão acima das receitas lançadas." : "O mês segue com folga nas receitas registradas.");
+      definirTexto("financas-kpi-resultado", formatarMoedaFinancas(contexto.resultadoMes));
+      definirTexto("financas-kpi-resultado-aux", contexto.resultadoMes < 0 ? "As despesas do mês estão acima das receitas do mês." : "As receitas do mês ainda cobrem as despesas previstas.");
       definirTexto("financas-kpi-hoje", formatarMoedaFinancas(contexto.gastosHoje));
       definirTexto("financas-kpi-hoje-aux", `${financasLancamentosTemporarios.filter((item) => item.data === dataHojeISO() && normalizarTipoFinancasUI(item.tipo) === "Despesa").length} gasto(s) registrado(s) hoje.`);
 
       const resultadoCard = document.getElementById("financas-kpi-resultado-card");
       if (resultadoCard) {
         resultadoCard.classList.remove("result-positive", "result-negative", "neutral");
-        resultadoCard.classList.add(contexto.saldoMes < 0 ? "result-negative" : "result-positive");
+        resultadoCard.classList.add(contexto.resultadoMes < 0 ? "result-negative" : "result-positive");
       }
       const resultadoEl = document.getElementById("financas-kpi-resultado");
-      resultadoEl?.classList.toggle("negative", contexto.saldoMes < 0);
+      resultadoEl?.classList.toggle("negative", contexto.resultadoMes < 0);
 
       definirTexto("financas-resumo-receitas", formatarMoedaFinancas(contexto.receitasMesPainel));
       definirTexto("financas-resumo-despesas", formatarMoedaFinancas(contexto.saidasMes));
       definirTexto("financas-resumo-dividas-pagas", formatarMoedaFinancas(contexto.gastosHoje));
-      definirTexto("financas-resumo-resultado", formatarMoedaFinancas(contexto.saldoMes));
-      document.getElementById("financas-resumo-resultado")?.classList.toggle("negative", contexto.saldoMes < 0);
+      definirTexto("financas-resumo-resultado", formatarMoedaFinancas(contexto.resultadoMes));
+      document.getElementById("financas-resumo-resultado")?.classList.toggle("negative", contexto.resultadoMes < 0);
 
-      const baseReceita = Math.max(contexto.receitasMesPainel || 0, contexto.saidasMes || 0, contexto.gastosHoje || 0, Math.abs(contexto.saldoMes || 0), 1);
+      const baseReceita = Math.max(contexto.receitasMesPainel || 0, contexto.saidasMes || 0, contexto.gastosHoje || 0, Math.abs(contexto.resultadoMes || 0), 1);
       const pctReceita = Math.min(100, Math.round((contexto.receitasMesPainel / baseReceita) * 100));
       const pctDespesa = Math.min(100, Math.round((contexto.saidasMes / baseReceita) * 100));
       const pctDivida = Math.min(100, Math.round((contexto.gastosHoje / baseReceita) * 100));
-      const pctResultado = Math.min(100, Math.round((Math.abs(contexto.saldoMes) / baseReceita) * 100));
+      const pctResultado = Math.min(100, Math.round((Math.abs(contexto.resultadoMes) / baseReceita) * 100));
       const barraReceita = document.getElementById("financas-bar-receitas");
       const barraDespesas = document.getElementById("financas-bar-despesas");
       const barraDividas = document.getElementById("financas-bar-dividas");
@@ -11164,9 +11172,9 @@
       const alertaEl = document.getElementById("financas-alerta-mes");
       if (alertaEl) {
         alertaEl.className = "financas-alert-banner";
-        if (contexto.saldoMes < 0) {
+        if (contexto.resultadoMes < 0) {
           alertaEl.classList.add("danger");
-          alertaEl.textContent = `Atenção: você gastou ${formatarMoedaFinancas(Math.abs(contexto.saldoMes))} a mais do que recebeu neste mês.`;
+          alertaEl.textContent = `Atenção: suas despesas do mês estão ${formatarMoedaFinancas(Math.abs(contexto.resultadoMes))} acima das receitas do mês.`;
         } else if (contexto.dividasEmAberto > 0) {
           alertaEl.classList.add("warning");
           alertaEl.textContent = `Você ainda tem ${formatarMoedaFinancas(contexto.dividasEmAberto)} em parcelamentos e cartões para acompanhar neste mês.`;
@@ -11181,22 +11189,20 @@
       const gaugeStatusEl = document.getElementById("financas-gauge-status");
       const gaugeCopyEl = document.getElementById("financas-gauge-copy");
       if (metaTextoEl) {
-        if (contexto.saldoMes < 0) {
-          metaTextoEl.textContent = `Faltam ${formatarMoedaFinancas(Math.abs(contexto.saldoMes))} em receitas para encerrar o mês no azul.`;
+        if (contexto.resultadoMes < 0) {
+          metaTextoEl.textContent = `Faltam ${formatarMoedaFinancas(Math.abs(contexto.resultadoMes))} para fechar o mês no azul.`;
         } else {
-          metaTextoEl.textContent = `Se mantiver este ritmo, você fecha o mês com folga de ${formatarMoedaFinancas(contexto.saldoMes)}.`;
+          metaTextoEl.textContent = `Se mantiver este ritmo, o mês fecha com folga de ${formatarMoedaFinancas(contexto.resultadoMes)}.`;
         }
       }
       if (metaBarraEl) {
-        const denominador = Math.max(contexto.entradasMes, contexto.receitasPlanejadas, 1);
-        const percentual = Math.min(100, Math.max(6, Math.round((Math.max(contexto.saldoMes, 0) / denominador) * 100)));
+        const denominador = Math.max(contexto.receitasMesPainel, contexto.receitasPlanejadas, 1);
+        const percentual = Math.min(100, Math.max(6, Math.round((Math.max(contexto.resultadoMes, 0) / denominador) * 100)));
         metaBarraEl.style.width = `${percentual}%`;
       }
 
-      const baseSaude = Math.max(contexto.entradasMes, contexto.receitasPlanejadas, 0);
-      const pressao = baseSaude > 0
-        ? contexto.saidasMes / baseSaude
-        : (contexto.saidasMes + contexto.dividasEmAberto) > 0 ? 1.3 : 0;
+      const baseSaude = Math.max(contexto.receitasMesPainel, contexto.receitasPlanejadas, 0);
+      const pressao = baseSaude > 0 ? (contexto.saidasMes / baseSaude) : (contexto.saidasMes > 0 ? 1.3 : 0);
       const pressaoNormalizada = Math.max(0, Math.min(1, pressao));
       const angulo = -90 + (pressaoNormalizada * 180);
       if (gaugeNeedleEl) {
@@ -11204,17 +11210,20 @@
       }
       if (gaugeStatusEl && gaugeCopyEl) {
         gaugeStatusEl.classList.remove("warning", "danger");
-        if (pressao <= 0.68) {
+        const percentualComprometido = Math.round(pressao * 100);
+        if (pressao <= 0.60) {
           gaugeStatusEl.textContent = "Saudável";
-          gaugeCopyEl.textContent = "Suas saídas do mês estão bem abaixo das receitas registradas.";
-        } else if (pressao <= 1) {
+          gaugeCopyEl.textContent = `Suas despesas representam ${percentualComprometido}% da receita mensal.`;
+        } else if (pressao <= 0.85) {
           gaugeStatusEl.textContent = "Atenção";
           gaugeStatusEl.classList.add("warning");
-          gaugeCopyEl.textContent = "Seu mês está mais apertado. Vale acompanhar vencimentos e gastos diários de perto.";
+          gaugeCopyEl.textContent = contexto.dividasEmAberto > 0
+            ? `Os parcelamentos e cartões estão comprometendo ${percentualComprometido}% da renda deste mês.`
+            : `Suas saídas já comprometem ${percentualComprometido}% da receita mensal.`;
         } else {
-          gaugeStatusEl.textContent = "Pressão";
+          gaugeStatusEl.textContent = "Crítico";
           gaugeStatusEl.classList.add("danger");
-          gaugeCopyEl.textContent = "As saídas deste mês já ultrapassam a receita registrada até aqui.";
+          gaugeCopyEl.textContent = `Sua operação já consome ${percentualComprometido}% da receita mensal.`;
         }
       }
 
@@ -11537,8 +11546,9 @@
       if (!entradasEl || !saidasEl || !saldoEl) return;
       entradasEl.textContent = formatarMoedaFinancas(resumo.entradas_mes || 0);
       saidasEl.textContent = formatarMoedaFinancas(resumo.saidas_mes || 0);
-      saldoEl.textContent = formatarMoedaFinancas(resumo.saldo_mes || 0);
-      saldoEl.classList.toggle("negative", Number(resumo.saldo_mes || 0) < 0);
+      const contexto = obterContextoFinanceiroMes();
+      saldoEl.textContent = formatarMoedaFinancas(contexto.saldoAtual || 0);
+      saldoEl.classList.toggle("negative", Number(contexto.saldoAtual || 0) < 0);
       if (saldoPrevistoEl) {
         const totalRendaBase = financasFontesRenda
           .reduce((soma, item) => soma + Number(item.valor_base || 0), 0);
@@ -12103,7 +12113,8 @@
             receitas_planejadas: contexto.receitasPlanejadas,
             entradas_lancadas: contexto.entradasMes,
             saidas_lancadas: contexto.saidasMes,
-            saldo_atual: contexto.saldoMes,
+            saldo_atual: contexto.saldoAtual,
+            resultado_mes: contexto.resultadoMes,
             saldo_previsto: contexto.saldoPrevisto,
             dividas_em_aberto: contexto.dividasEmAberto,
           },
