@@ -2543,6 +2543,32 @@
         flex-wrap: wrap;
         margin-left: auto;
       }
+      #screen-financas .financas-view-switch {
+        display: inline-grid;
+        grid-auto-flow: column;
+        gap: 4px;
+        padding: 4px;
+        border-radius: 999px;
+        background: rgba(241,245,249,0.94);
+        border: 1px solid rgba(226,232,240,0.92);
+      }
+      #screen-financas .financas-view-btn {
+        min-height: 28px;
+        padding: 0 10px;
+        border: none;
+        background: transparent;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        cursor: pointer;
+        transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+      }
+      #screen-financas .financas-view-btn.active {
+        background: #ffffff;
+        color: #0f172a;
+        box-shadow: 0 6px 14px rgba(15,23,42,0.06);
+      }
       #screen-financas .financas-summary-inline {
         display: flex;
         align-items: center;
@@ -3330,6 +3356,88 @@
       #screen-financas .financas-source-action-btn svg {
         width: 14px;
         height: 14px;
+      }
+      #screen-financas .financas-fixed-list-premium {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      #screen-financas .financas-fixed-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      #screen-financas .financas-fixed-group-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #334155;
+        padding: 0 2px;
+      }
+      #screen-financas .financas-fixed-group-total {
+        color: #94a3b8;
+        margin-left: 8px;
+        font-weight: 600;
+      }
+      #screen-financas .financas-fixed-item.synthetic {
+        background: linear-gradient(180deg, rgba(248,250,252,0.9) 0%, rgba(255,255,255,0.96) 100%);
+      }
+      #screen-financas .financas-fixed-item.synthetic .financas-fixed-actions {
+        display: none;
+      }
+      #screen-financas .financas-fixed-item.synthetic .financas-fixed-status-toggle {
+        opacity: 0.45;
+        pointer-events: none;
+      }
+      #screen-financas .financas-projecao-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      #screen-financas .financas-projecao-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+        gap: 10px;
+      }
+      #screen-financas .financas-projecao-card {
+        border: 1px solid rgba(226,232,240,0.9);
+        border-radius: 16px;
+        padding: 11px 12px;
+        background: rgba(248,250,252,0.72);
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        cursor: pointer;
+        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+      }
+      #screen-financas .financas-projecao-card:hover {
+        transform: translateY(-1px);
+        border-color: rgba(var(--cor-tema-rgb), 0.18);
+        box-shadow: 0 12px 24px rgba(15,23,42,0.05);
+        background: rgba(255,255,255,0.95);
+      }
+      #screen-financas .financas-projecao-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #7b8ca3;
+      }
+      #screen-financas .financas-projecao-value {
+        font-size: 20px;
+        line-height: 1;
+        font-weight: 720;
+        letter-spacing: -0.05em;
+        color: #0f172a;
+      }
+      #screen-financas .financas-projecao-value.negative {
+        color: #c62828;
+      }
+      #screen-financas .financas-projecao-meta {
+        font-size: 11px;
+        color: #64748b;
+        line-height: 1.4;
       }
       #screen-financas .financas-item {
         padding: 9px 0;
@@ -8635,7 +8743,7 @@
                         <div class="financas-progress-track"><div id="financas-bar-despesas" class="financas-progress-fill danger" style="width:0%"></div></div>
                       </div>
                       <div class="financas-resumo-metric warning">
-                        <div class="financas-resumo-label">Dívidas pagas</div>
+                        <div class="financas-resumo-label">Gastos diários</div>
                         <div id="financas-resumo-dividas-pagas" class="financas-resumo-value">R$ 0,00</div>
                         <div class="financas-progress-track"><div id="financas-bar-dividas" class="financas-progress-fill warning" style="width:0%"></div></div>
                       </div>
@@ -8651,47 +8759,33 @@
                   <div class="financas-premium-card">
                     <div class="financas-card-header">
                       <div>
-                        <h3 class="financas-card-title">Contas fixas</h3>
-                        <div class="financas-card-subtitle">Compromissos que se repetem todos os meses.</div>
+                        <h3 class="financas-card-title">Despesas e dívidas</h3>
+                        <div class="financas-card-subtitle">Sua operação financeira organizada por categoria.</div>
                       </div>
                       <div class="financas-header-actions">
-                        <div id="financas-contas-fixas-meta" class="financas-card-chip">0 conta(s)</div>
-                        <button id="btn-financas-nova-conta-fixa" class="btn-secondary financas-action-btn" type="button">Nova conta fixa</button>
+                        <div id="financas-contas-fixas-meta" class="financas-card-chip">0 item(ns)</div>
+                        <div class="financas-view-switch" id="financas-despesas-view-switch">
+                          <button class="financas-view-btn active" type="button" data-financas-view="mensal">Mensal</button>
+                          <button class="financas-view-btn" type="button" data-financas-view="semestral">Semestral</button>
+                          <button class="financas-view-btn" type="button" data-financas-view="anual">Anual</button>
+                        </div>
+                        <button id="btn-financas-nova-conta-fixa" class="btn-secondary financas-action-btn" type="button">Nova despesa</button>
                       </div>
                     </div>
                     <div class="financas-summary-inline">
-                      <span>Total previsto do mês</span>
+                      <span>Total do mês</span>
                       <div class="financas-summary-inline-side">
-                        <span id="financas-contas-fixas-previsao-meta" class="financas-inline-meta">0 conta(s)</span>
+                        <span id="financas-contas-fixas-previsao-meta" class="financas-inline-meta">0 categoria(s)</span>
                         <strong id="financas-total-fixo-previsto">R$ 0,00</strong>
                       </div>
                     </div>
-                    <div id="financas-contas-fixas-lista" class="financas-fixed-list financas-fixed-list-premium">
+                    <div id="financas-despesas-mensal-wrap">
+                      <div id="financas-contas-fixas-lista" class="financas-fixed-list financas-fixed-list-premium">
+                        <div class="financas-empty">Nenhuma despesa cadastrada.</div>
+                      </div>
+                    </div>
+                    <div id="financas-despesas-projecao" class="financas-projecao-wrap" hidden>
                       <div class="financas-empty">Nenhuma conta fixa cadastrada.</div>
-                    </div>
-                  </div>
-
-                  <div class="financas-premium-card">
-                    <div class="financas-card-header">
-                      <div>
-                        <h3 class="financas-card-title">Lista de dívidas</h3>
-                        <div class="financas-card-subtitle">Pendências e compromissos com maior pressão no mês.</div>
-                      </div>
-                      <div id="financas-dividas-meta" class="financas-card-chip">0 dívida(s)</div>
-                    </div>
-                    <div class="financas-debt-table-wrap">
-                      <div class="financas-debt-table">
-                        <div class="financas-debt-head">
-                          <span>Credor</span>
-                          <span>Valor</span>
-                          <span>Em aberto</span>
-                          <span>Vencimento</span>
-                          <span>Status</span>
-                        </div>
-                        <div id="financas-dividas-lista" class="financas-debt-body">
-                          <div class="financas-empty">Nenhuma dívida identificada neste mês.</div>
-                        </div>
-                      </div>
                     </div>
                   </div>
 
@@ -8748,7 +8842,7 @@
                         <div class="financas-gauge-center"></div>
                       </div>
                       <div id="financas-gauge-status" class="financas-gauge-status">Equilíbrio</div>
-                      <div id="financas-gauge-copy" class="financas-gauge-copy">Suas despesas e dívidas estão sob controle neste mês.</div>
+                      <div id="financas-gauge-copy" class="financas-gauge-copy">Suas saídas estão sob controle neste mês.</div>
                     </div>
                   </div>
 
@@ -8855,15 +8949,12 @@
                       <label for="financas-categoria">Categoria</label>
                       <select id="financas-categoria" required>
                         <option value="">Selecione</option>
-                        <option value="Alimentação">Alimentação</option>
-                        <option value="Transporte">Transporte</option>
-                        <option value="Casa">Casa</option>
-                        <option value="Saúde">Saúde</option>
-                        <option value="Lazer">Lazer</option>
-                        <option value="Trabalho">Trabalho</option>
-                        <option value="Investimentos">Investimentos</option>
-                        <option value="Dívidas">Dívidas</option>
+                        <option value="Despesas essenciais">Despesas essenciais</option>
+                        <option value="Despesas diversas">Despesas diversas</option>
+                        <option value="Parcelamentos">Parcelamentos</option>
+                        <option value="Cartões">Cartões</option>
                         <option value="Outros">Outros</option>
+                        <option value="Receita">Receita</option>
                       </select>
                     </div>
                     <div>
@@ -8956,14 +9047,10 @@
                       <label for="financas-conta-fixa-categoria">Categoria</label>
                       <select id="financas-conta-fixa-categoria" required>
                         <option value="">Selecione</option>
-                        <option value="Alimentação">Alimentação</option>
-                        <option value="Transporte">Transporte</option>
-                        <option value="Casa">Casa</option>
-                        <option value="Saúde">Saúde</option>
-                        <option value="Lazer">Lazer</option>
-                        <option value="Trabalho">Trabalho</option>
-                        <option value="Investimentos">Investimentos</option>
-                        <option value="Dívidas">Dívidas</option>
+                        <option value="Despesas essenciais">Despesas essenciais</option>
+                        <option value="Despesas diversas">Despesas diversas</option>
+                        <option value="Parcelamentos">Parcelamentos</option>
+                        <option value="Cartões">Cartões</option>
                         <option value="Outros">Outros</option>
                       </select>
                     </div>
@@ -9057,7 +9144,7 @@
                     </svg>
                   </span>
                   <strong>Receita</strong>
-                  <span>Entrada recebida com fonte definida.</span>
+                  <span>Entrada de dinheiro para o mês atual.</span>
                 </button>
                 <button class="financas-quick-action" type="button" data-financas-quick="divida">
                   <span class="financas-quick-icon danger">
@@ -9066,18 +9153,8 @@
                       <path d="M7 12h6"></path>
                     </svg>
                   </span>
-                  <strong>Dívida</strong>
-                  <span>Compromisso recorrente em aberto.</span>
-                </button>
-                <button class="financas-quick-action" type="button" data-financas-quick="despesa">
-                  <span class="financas-quick-icon neutral">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <path d="M12 5v14"></path>
-                      <path d="m19 12-7 7-7-7"></path>
-                    </svg>
-                  </span>
-                  <strong>Despesa</strong>
-                  <span>Lançamento manual com mais contexto.</span>
+                  <strong>Dívida / despesa</strong>
+                  <span>Compromisso a pagar, recorrente ou avulso.</span>
                 </button>
               </div>
               <div class="financas-sheet-actions">
@@ -10208,6 +10285,7 @@
     let financasHistoricoResumo = [];
     let financasFontesVisiveis = false;
     let financasKpiDetailAtual = "";
+    let financasVisaoDespesas = "mensal";
 
     function formatarMoedaFinancas(valor) {
       const numero = Number(valor || 0);
@@ -10257,6 +10335,14 @@
       return ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"][indice] || "";
     }
 
+    function textoSemAcentosFinancas(valor = "") {
+      return String(valor || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .toLowerCase();
+    }
+
     function formatarMesAnoHumanoFinancas(valor = "") {
       const [anoTxt, mesTxt] = String(valor || "").split("-");
       const ano = Number(anoTxt);
@@ -10301,12 +10387,17 @@
       const resumo = financasResumoMesSelecionado || {};
       const receitasPlanejadas = financasFontesRenda.reduce((soma, item) => soma + Number(item.valor_base || 0), 0);
       const entradasMes = Number(resumo.entradas_mes || 0);
-      const saidasMes = Number(resumo.saidas_mes || 0);
-      const saldoMes = Number(resumo.saldo_mes || (entradasMes - saidasMes));
+      const lancamentosAvulsosDespesa = obterLancamentosDespesaAvulsosMesFinancas();
+      const saidasAvulsasMes = lancamentosAvulsosDespesa.reduce((soma, item) => soma + Number(item.valor || 0), 0);
       const contasDespesa = financasContasFixas.filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa");
       const despesasFixas = contasDespesa.reduce((soma, item) => soma + Number(item.valor || 0), 0);
+      const saidasMes = despesasFixas + saidasAvulsasMes;
+      const saldoMes = Number(entradasMes - saidasMes);
       const saldoPrevisto = receitasPlanejadas - despesasFixas;
-      const dividas = financasContasFixas.filter((item) => String(item.categoria || "").trim().toLowerCase() === "dívidas");
+      const dividas = financasContasFixas.filter((item) => {
+        const categoria = classificarCategoriaDespesaFinancas(item);
+        return categoria === "Parcelamentos" || categoria === "Cartões";
+      });
       const dividasPagas = dividas
         .filter((item) => obterStatusContaFixaFinancas(item).confirmado)
         .reduce((soma, item) => soma + Number(item.valor || 0), 0);
@@ -10328,6 +10419,8 @@
         saldoMes,
         saldoPrevisto,
         despesasFixas,
+        saidasAvulsasMes,
+        lancamentosAvulsosDespesa,
         dividas,
         dividasPagas,
         dividasAbertas,
@@ -10352,6 +10445,191 @@
           return true;
         })
         .sort((a, b) => Number(a.item?.dia_vencimento || 0) - Number(b.item?.dia_vencimento || 0));
+    }
+
+    const FINANCAS_CATEGORIAS_DESPESA = [
+      "Despesas essenciais",
+      "Despesas diversas",
+      "Parcelamentos",
+      "Cartões",
+      "Outros",
+    ];
+
+    function classificarCategoriaDespesaFinancas(item = {}) {
+      const categoriaOriginal = String(item.categoria || "").trim();
+      if (FINANCAS_CATEGORIAS_DESPESA.includes(categoriaOriginal)) return categoriaOriginal;
+      const categoria = textoSemAcentosFinancas(categoriaOriginal);
+      const nome = textoSemAcentosFinancas(item.nome || item.descricao || "");
+      if (categoria.includes("divid")) {
+        if (
+          nome.includes("cartao") || nome.includes("nubank") || nome.includes("inter") ||
+          nome.includes("visa") || nome.includes("master")
+        ) return "Cartões";
+        if (
+          nome.includes("parcel") || nome.includes("consor") || nome.includes("financi") ||
+          nome.includes("emprest") || nome.includes("credito")
+        ) return "Parcelamentos";
+        return "Outros";
+      }
+      if (categoria.includes("aliment") || categoria.includes("transporte") || categoria.includes("casa") || categoria.includes("saude") || categoria.includes("trabalho")) {
+        return "Despesas essenciais";
+      }
+      if (categoria.includes("lazer") || categoria.includes("outros")) {
+        return "Despesas diversas";
+      }
+      if (categoria.includes("invest")) {
+        return "Outros";
+      }
+      return "Outros";
+    }
+
+    function obterLancamentosDespesaAvulsosMesFinancas() {
+      const idsConfirmados = new Set(
+        financasContasFixas
+          .map((item) => Number(item.lancamento_id || 0))
+          .filter((id) => id > 0)
+      );
+      return financasLancamentosMesSelecionado.filter((item) => {
+        if (normalizarTipoFinancasUI(item.tipo) !== "Despesa") return false;
+        return !idsConfirmados.has(Number(item.id || 0));
+      });
+    }
+
+    function obterLinhasDespesasMensaisFinancas() {
+      const grupos = new Map(FINANCAS_CATEGORIAS_DESPESA.map((nome) => [nome, []]));
+      const contasDespesa = financasContasFixas
+        .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa")
+        .sort((a, b) => Number(a.dia_vencimento || 0) - Number(b.dia_vencimento || 0) || String(a.nome || "").localeCompare(String(b.nome || ""), "pt-BR"));
+
+      contasDespesa.forEach((conta) => {
+        const categoria = classificarCategoriaDespesaFinancas(conta);
+        grupos.get(categoria)?.push({
+          id: `conta-${conta.id}`,
+          kind: "conta",
+          categoria,
+          titulo: conta.nome || "Despesa",
+          valor: Number(conta.valor || 0),
+          due: `dia ${Number(conta.dia_vencimento || 0)}`,
+          status: obterStatusContaFixaFinancas(conta),
+          conta,
+        });
+      });
+
+      const avulsos = obterLancamentosDespesaAvulsosMesFinancas();
+      const totalAvulso = avulsos.reduce((soma, item) => soma + Number(item.valor || 0), 0);
+      if (totalAvulso > 0) {
+        const hoje = avulsos
+          .map((item) => item.data)
+          .filter(Boolean)
+          .sort()
+          .pop();
+        grupos.get("Despesas diversas")?.push({
+          id: "gastos-diarios",
+          kind: "diario",
+          categoria: "Despesas diversas",
+          titulo: "Gastos diários",
+          valor: totalAvulso,
+          due: hoje ? `até ${formatarDataCurtaBR(hoje)}` : "mês atual",
+          status: { chave: "pendente", label: "Aberto", confirmado: false },
+          itens: avulsos,
+        });
+      }
+      return grupos;
+    }
+
+    function calcularTotaisCategoriaMesFinancas() {
+      const grupos = obterLinhasDespesasMensaisFinancas();
+      return FINANCAS_CATEGORIAS_DESPESA
+        .map((categoria) => ({
+          categoria,
+          total: (grupos.get(categoria) || []).reduce((soma, item) => soma + Number(item.valor || 0), 0),
+        }))
+        .filter((item) => item.total > 0);
+    }
+
+    function obterResumoProjecaoFinancas() {
+      const { mes, ano } = obterMesAnoSelecionadoFinancas();
+      const totaisCategoriaMes = calcularTotaisCategoriaMesFinancas();
+      const receitasBase = financasFontesRenda.reduce((soma, item) => soma + Number(item.valor_base || 0), 0);
+      const resumoAtual = {
+        ano,
+        mes,
+        label: formatarMesAnoHumanoFinancas(`${ano}-${String(mes).padStart(2, "0")}`),
+        receitas: Number(financasResumoMesSelecionado?.entradas_mes || 0),
+        despesas: totaisCategoriaMes.reduce((soma, item) => soma + Number(item.total || 0), 0),
+        categorias: totaisCategoriaMes,
+      };
+      resumoAtual.resultado = resumoAtual.receitas - resumoAtual.despesas;
+
+      const montarMesFuturo = (offset) => {
+        const data = new Date(ano, mes - 1 + offset, 1);
+        const categorias = FINANCAS_CATEGORIAS_DESPESA.map((categoria) => ({
+          categoria,
+          total: (categoria === "Despesas diversas") ? 0 : (calcularTotaisCategoriaMesFinancas().find((item) => item.categoria === categoria)?.total || 0),
+        })).filter((item) => item.total > 0 || item.categoria === "Despesas diversas");
+        const despesas = categorias.reduce((soma, item) => soma + Number(item.total || 0), 0);
+        return {
+          ano: data.getFullYear(),
+          mes: data.getMonth() + 1,
+          label: `${nomeMesCurtoFinancas(data.getMonth())}/${String(data.getFullYear()).slice(-2)}`,
+          receitas: receitasBase,
+          despesas,
+          resultado: receitasBase - despesas,
+          categorias,
+        };
+      };
+
+      return {
+        mensal: [resumoAtual],
+        semestral: Array.from({ length: 6 }, (_, index) => montarMesFuturo(index)),
+        anual: Array.from({ length: 12 }, (_, index) => montarMesFuturo(index)),
+      };
+    }
+
+    function atualizarBotoesVisaoDespesasFinancas() {
+      document.querySelectorAll("[data-financas-view]").forEach((botao) => {
+        botao.classList.toggle("active", botao.dataset.financasView === financasVisaoDespesas);
+      });
+      const wrapMensal = document.getElementById("financas-despesas-mensal-wrap");
+      const wrapProjecao = document.getElementById("financas-despesas-projecao");
+      if (wrapMensal) wrapMensal.hidden = financasVisaoDespesas !== "mensal";
+      if (wrapProjecao) wrapProjecao.hidden = financasVisaoDespesas === "mensal";
+    }
+
+    function abrirMesEspecificoFinancas(ano, mes) {
+      definirMesReferenciaFinancas(`${ano}-${String(mes).padStart(2, "0")}`);
+      financasVisaoDespesas = "mensal";
+      atualizarBotoesVisaoDespesasFinancas();
+      carregarFinancasMesSelecionadoCompleto();
+      carregarContasFixasFinancas();
+      carregarFontesRendaFinancas();
+    }
+
+    function renderizarProjecaoDespesasFinancas() {
+      const wrap = document.getElementById("financas-despesas-projecao");
+      if (!wrap) return;
+      const chave = financasVisaoDespesas === "anual" ? "anual" : "semestral";
+      const dados = obterResumoProjecaoFinancas()[chave];
+      if (!dados.length) {
+        wrap.innerHTML = '<div class="financas-empty">Sem dados suficientes para a projeção.</div>';
+        return;
+      }
+      const grid = document.createElement("div");
+      grid.className = "financas-projecao-grid";
+      dados.forEach((item) => {
+        const card = document.createElement("button");
+        card.className = "financas-projecao-card";
+        card.type = "button";
+        card.innerHTML = `
+          <span class="financas-projecao-label">${item.label}</span>
+          <strong class="financas-projecao-value ${item.resultado < 0 ? "negative" : ""}">${formatarMoedaFinancas(item.resultado)}</strong>
+          <span class="financas-projecao-meta">${formatarMoedaFinancas(item.receitas)} de receitas · ${formatarMoedaFinancas(item.despesas)} para pagar</span>
+        `;
+        card.addEventListener("click", () => abrirMesEspecificoFinancas(item.ano, item.mes));
+        grid.appendChild(card);
+      });
+      wrap.innerHTML = "";
+      wrap.appendChild(grid);
     }
 
     function definirTexto(id, valor) {
@@ -10397,43 +10675,39 @@
 
       if (tipo === "receitas") {
         titleEl.textContent = "Receitas";
-        subtitleEl.textContent = "Fontes que compõem sua receita planejada do mês.";
-        if (!financasFontesRenda.length) {
-          lista.innerHTML = '<div class="financas-empty">Nenhuma fonte de renda cadastrada.</div>';
+        subtitleEl.textContent = "Entradas lançadas neste mês.";
+        const receitas = financasLancamentosMesSelecionado
+          .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Receita")
+          .sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0));
+        if (!receitas.length) {
+          lista.innerHTML = '<div class="financas-empty">Nenhuma receita registrada neste mês.</div>';
         } else {
-          financasFontesRenda.forEach((fonte) => {
+          receitas.forEach((item) => {
             lista.appendChild(
               criarLinhaDetalheKpiFinancas(
-                fonte.nome || "Fonte",
-                fonte.descricao || "Base mensal",
-                formatarMoedaFinancas(fonte.valor_base || 0)
+                item.descricao || "Receita",
+                `${item.fonte_renda_nome || "Entrada avulsa"} · ${formatarDataCurtaBR(item.data)}`,
+                formatarMoedaFinancas(item.valor || 0)
               )
             );
           });
         }
       } else if (tipo === "saidas") {
         titleEl.textContent = "Saídas do mês";
-        subtitleEl.textContent = "Despesas lançadas somadas às dívidas em aberto.";
-        const despesas = financasLancamentosMesSelecionado
-          .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa")
-          .sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0));
-        if (!despesas.length && !contexto.dividasAbertas.length) {
+        subtitleEl.textContent = "Tudo o que precisa sair do caixa neste mês.";
+        const grupos = obterLinhasDespesasMensaisFinancas();
+        const linhas = FINANCAS_CATEGORIAS_DESPESA.flatMap((categoria) => grupos.get(categoria) || []);
+        if (!linhas.length) {
           lista.innerHTML = '<div class="financas-empty">Nenhuma saída registrada para detalhar.</div>';
         } else {
-          despesas.forEach((item) => {
+          linhas
+            .slice()
+            .sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0))
+            .forEach((item) => {
             lista.appendChild(
               criarLinhaDetalheKpiFinancas(
-                item.descricao || item.categoria || "Despesa",
-                `${item.categoria || "Outros"} · ${formatarDataCurtaBR(item.data)}`,
-                formatarMoedaFinancas(item.valor || 0)
-              )
-            );
-          });
-          contexto.dividasAbertas.forEach((item) => {
-            lista.appendChild(
-              criarLinhaDetalheKpiFinancas(
-                item.nome || "Dívida",
-                `Em aberto · dia ${Number(item.dia_vencimento || 0)}`,
+                item.titulo || "Despesa",
+                `${item.categoria} · ${item.due || "mês atual"}`,
                 formatarMoedaFinancas(item.valor || 0)
               )
             );
@@ -10441,11 +10715,11 @@
         }
       } else if (tipo === "resultado") {
         titleEl.textContent = "Resultado do mês";
-        subtitleEl.textContent = "Comparação entre receita planejada, saídas e saldo previsto.";
-        lista.appendChild(criarLinhaDetalheKpiFinancas("Receita planejada", "Fontes de renda cadastradas", formatarMoedaFinancas(contexto.receitasPlanejadas)));
-        lista.appendChild(criarLinhaDetalheKpiFinancas("Despesas lançadas", "Saídas realizadas até agora", formatarMoedaFinancas(contexto.saidasMes)));
-        lista.appendChild(criarLinhaDetalheKpiFinancas("Dívidas em aberto", "Pendências ainda não confirmadas", formatarMoedaFinancas(contexto.dividasEmAberto)));
-        lista.appendChild(criarLinhaDetalheKpiFinancas("Saldo previsto", "Receita menos contas fixas", formatarMoedaFinancas(contexto.saldoPrevisto)));
+        subtitleEl.textContent = "Leitura consolidada entre o realizado e o previsto.";
+        lista.appendChild(criarLinhaDetalheKpiFinancas("Receitas do mês", "Entradas registradas", formatarMoedaFinancas(contexto.entradasMes)));
+        lista.appendChild(criarLinhaDetalheKpiFinancas("Despesas do mês", "Lista única de despesas e dívidas", formatarMoedaFinancas(contexto.saidasMes)));
+        lista.appendChild(criarLinhaDetalheKpiFinancas("Saldo atual", "Receitas menos saídas deste mês", formatarMoedaFinancas(contexto.saldoMes)));
+        lista.appendChild(criarLinhaDetalheKpiFinancas("Saldo previsto", "Fontes de renda menos despesas recorrentes", formatarMoedaFinancas(contexto.saldoPrevisto)));
       } else if (tipo === "hoje") {
         titleEl.textContent = "Gastos do dia";
         subtitleEl.textContent = "Despesas registradas na data de hoje.";
@@ -10791,7 +11065,8 @@
         definirTipoLancamentoFinancas("Despesa");
         if (tituloEl) tituloEl.textContent = modo === "uso-diario" ? "Uso diário" : "Nova despesa";
         if (botaoSalvarEl) botaoSalvarEl.textContent = modo === "uso-diario" ? "Salvar gasto" : "Salvar despesa";
-        if (categoriaEl && modo === "divida") categoriaEl.value = "Dívidas";
+        if (categoriaEl && modo === "uso-diario") categoriaEl.value = "Despesas diversas";
+        if (categoriaEl && modo === "divida") categoriaEl.value = "Outros";
       }
       const valorEl = document.getElementById("financas-valor");
       window.setTimeout(() => valorEl?.focus(), 70);
@@ -10804,9 +11079,9 @@
       const categoriaEl = document.getElementById("financas-conta-fixa-categoria");
       const tituloEl = document.getElementById("financas-fixed-sheet-title");
       const botaoSalvarEl = document.getElementById("btn-financas-salvar-conta-fixa");
-      if (categoriaEl) categoriaEl.value = "Dívidas";
-      if (tituloEl) tituloEl.textContent = "Nova dívida fixa";
-      if (botaoSalvarEl) botaoSalvarEl.textContent = "Salvar dívida";
+      if (categoriaEl) categoriaEl.value = "";
+      if (tituloEl) tituloEl.textContent = "Nova despesa ou dívida";
+      if (botaoSalvarEl) botaoSalvarEl.textContent = "Salvar despesa";
       const nomeEl = document.getElementById("financas-conta-fixa-nome");
       window.setTimeout(() => nomeEl?.focus(), 70);
     }
@@ -10823,35 +11098,35 @@
       const contexto = obterContextoFinanceiroMes();
       const { valor } = obterMesAnoSelecionadoFinancas();
       definirTexto("financas-month-label", formatarMesAnoHumanoFinancas(valor));
-      definirTexto("financas-kpi-receitas", formatarMoedaFinancas(contexto.receitasPlanejadas));
-      definirTexto("financas-kpi-receitas-aux", `Entradas lançadas: ${formatarMoedaFinancas(contexto.entradasMes)}`);
-      const saidasTotais = contexto.saidasMes + contexto.dividasEmAberto;
+      definirTexto("financas-kpi-receitas", formatarMoedaFinancas(contexto.entradasMes));
+      definirTexto("financas-kpi-receitas-aux", `${financasLancamentosMesSelecionado.filter((item) => normalizarTipoFinancasUI(item.tipo) === "Receita").length} receita(s) lançada(s).`);
+      const saidasTotais = contexto.saidasMes;
       definirTexto("financas-kpi-saidas", formatarMoedaFinancas(saidasTotais));
-      definirTexto("financas-kpi-saidas-aux", `${financasLancamentosMesSelecionado.filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa").length} despesa(s) e ${contexto.dividasAbertas.length} dívida(s).`);
-      definirTexto("financas-kpi-resultado", formatarMoedaFinancas(contexto.saldoPrevisto));
-      definirTexto("financas-kpi-resultado-aux", contexto.saldoPrevisto < 0 ? "Previsão indica falta no fechamento do mês." : "Previsão confortável para o fechamento.");
+      definirTexto("financas-kpi-saidas-aux", `${financasContasFixas.filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa").length} despesa(s) recorrente(s) e ${contexto.lancamentosAvulsosDespesa.length} gasto(s) avulso(s).`);
+      definirTexto("financas-kpi-resultado", formatarMoedaFinancas(contexto.saldoMes));
+      definirTexto("financas-kpi-resultado-aux", contexto.saldoMes < 0 ? "As saídas do mês estão acima das receitas lançadas." : "O mês segue com folga nas receitas registradas.");
       definirTexto("financas-kpi-hoje", formatarMoedaFinancas(contexto.gastosHoje));
       definirTexto("financas-kpi-hoje-aux", `${financasLancamentosTemporarios.filter((item) => item.data === dataHojeISO() && normalizarTipoFinancasUI(item.tipo) === "Despesa").length} gasto(s) registrado(s) hoje.`);
 
       const resultadoCard = document.getElementById("financas-kpi-resultado-card");
       if (resultadoCard) {
         resultadoCard.classList.remove("result-positive", "result-negative", "neutral");
-        resultadoCard.classList.add(contexto.saldoPrevisto < 0 ? "result-negative" : "result-positive");
+        resultadoCard.classList.add(contexto.saldoMes < 0 ? "result-negative" : "result-positive");
       }
       const resultadoEl = document.getElementById("financas-kpi-resultado");
-      resultadoEl?.classList.toggle("negative", contexto.saldoPrevisto < 0);
+      resultadoEl?.classList.toggle("negative", contexto.saldoMes < 0);
 
-      definirTexto("financas-resumo-receitas", formatarMoedaFinancas(contexto.receitasPlanejadas));
+      definirTexto("financas-resumo-receitas", formatarMoedaFinancas(contexto.entradasMes));
       definirTexto("financas-resumo-despesas", formatarMoedaFinancas(contexto.saidasMes));
-      definirTexto("financas-resumo-dividas-pagas", formatarMoedaFinancas(contexto.dividasPagas));
-      definirTexto("financas-resumo-resultado", formatarMoedaFinancas(contexto.saldoPrevisto));
-      document.getElementById("financas-resumo-resultado")?.classList.toggle("negative", contexto.saldoPrevisto < 0);
+      definirTexto("financas-resumo-dividas-pagas", formatarMoedaFinancas(contexto.gastosHoje));
+      definirTexto("financas-resumo-resultado", formatarMoedaFinancas(contexto.saldoMes));
+      document.getElementById("financas-resumo-resultado")?.classList.toggle("negative", contexto.saldoMes < 0);
 
-      const baseReceita = Math.max(contexto.receitasPlanejadas || 0, contexto.saidasMes || 0, contexto.dividasPagas || 0, Math.abs(contexto.saldoPrevisto || 0), 1);
-      const pctReceita = Math.min(100, Math.round((contexto.receitasPlanejadas / baseReceita) * 100));
+      const baseReceita = Math.max(contexto.entradasMes || 0, contexto.saidasMes || 0, contexto.gastosHoje || 0, Math.abs(contexto.saldoMes || 0), 1);
+      const pctReceita = Math.min(100, Math.round((contexto.entradasMes / baseReceita) * 100));
       const pctDespesa = Math.min(100, Math.round((contexto.saidasMes / baseReceita) * 100));
-      const pctDivida = Math.min(100, Math.round((contexto.dividasPagas / baseReceita) * 100));
-      const pctResultado = Math.min(100, Math.round((Math.abs(contexto.saldoPrevisto) / baseReceita) * 100));
+      const pctDivida = Math.min(100, Math.round((contexto.gastosHoje / baseReceita) * 100));
+      const pctResultado = Math.min(100, Math.round((Math.abs(contexto.saldoMes) / baseReceita) * 100));
       const barraReceita = document.getElementById("financas-bar-receitas");
       const barraDespesas = document.getElementById("financas-bar-despesas");
       const barraDividas = document.getElementById("financas-bar-dividas");
@@ -10864,12 +11139,12 @@
       const alertaEl = document.getElementById("financas-alerta-mes");
       if (alertaEl) {
         alertaEl.className = "financas-alert-banner";
-        if (contexto.saldoPrevisto < 0) {
+        if (contexto.saldoMes < 0) {
           alertaEl.classList.add("danger");
-          alertaEl.textContent = `Atenção: você precisa cobrir ${formatarMoedaFinancas(Math.abs(contexto.saldoPrevisto))} para fechar o mês no azul.`;
+          alertaEl.textContent = `Atenção: você gastou ${formatarMoedaFinancas(Math.abs(contexto.saldoMes))} a mais do que recebeu neste mês.`;
         } else if (contexto.dividasEmAberto > 0) {
           alertaEl.classList.add("warning");
-          alertaEl.textContent = `Você ainda tem ${formatarMoedaFinancas(contexto.dividasEmAberto)} em dívidas pendentes neste mês.`;
+          alertaEl.textContent = `Você ainda tem ${formatarMoedaFinancas(contexto.dividasEmAberto)} em parcelamentos e cartões para acompanhar neste mês.`;
         } else {
           alertaEl.textContent = "Tudo equilibrado por aqui. Seu panorama do mês está saudável.";
         }
@@ -10881,20 +11156,21 @@
       const gaugeStatusEl = document.getElementById("financas-gauge-status");
       const gaugeCopyEl = document.getElementById("financas-gauge-copy");
       if (metaTextoEl) {
-        if (contexto.saldoPrevisto < 0) {
-          metaTextoEl.textContent = `Faltam ${formatarMoedaFinancas(Math.abs(contexto.saldoPrevisto))} para encerrar o mês com saldo positivo.`;
+        if (contexto.saldoMes < 0) {
+          metaTextoEl.textContent = `Faltam ${formatarMoedaFinancas(Math.abs(contexto.saldoMes))} em receitas para encerrar o mês no azul.`;
         } else {
-          metaTextoEl.textContent = `Se mantiver este ritmo, você fecha o mês com folga de ${formatarMoedaFinancas(contexto.saldoPrevisto)}.`;
+          metaTextoEl.textContent = `Se mantiver este ritmo, você fecha o mês com folga de ${formatarMoedaFinancas(contexto.saldoMes)}.`;
         }
       }
       if (metaBarraEl) {
-        const denominador = Math.max(contexto.receitasPlanejadas, 1);
-        const percentual = Math.min(100, Math.max(6, Math.round((Math.max(contexto.saldoPrevisto, 0) / denominador) * 100)));
+        const denominador = Math.max(contexto.entradasMes, contexto.receitasPlanejadas, 1);
+        const percentual = Math.min(100, Math.max(6, Math.round((Math.max(contexto.saldoMes, 0) / denominador) * 100)));
         metaBarraEl.style.width = `${percentual}%`;
       }
 
-      const pressao = contexto.receitasPlanejadas > 0
-        ? (contexto.saidasMes + contexto.dividasEmAberto) / contexto.receitasPlanejadas
+      const baseSaude = Math.max(contexto.entradasMes, contexto.receitasPlanejadas, 0);
+      const pressao = baseSaude > 0
+        ? contexto.saidasMes / baseSaude
         : (contexto.saidasMes + contexto.dividasEmAberto) > 0 ? 1.3 : 0;
       const pressaoNormalizada = Math.max(0, Math.min(1, pressao));
       const angulo = -90 + (pressaoNormalizada * 180);
@@ -10905,20 +11181,19 @@
         gaugeStatusEl.classList.remove("warning", "danger");
         if (pressao <= 0.68) {
           gaugeStatusEl.textContent = "Saudável";
-          gaugeCopyEl.textContent = "Suas despesas e dívidas estão bem abaixo das receitas do mês.";
+          gaugeCopyEl.textContent = "Suas saídas do mês estão bem abaixo das receitas registradas.";
         } else if (pressao <= 1) {
           gaugeStatusEl.textContent = "Atenção";
           gaugeStatusEl.classList.add("warning");
-          gaugeCopyEl.textContent = "Seu mês está apertado. Vale acompanhar gastos e vencimentos mais de perto.";
+          gaugeCopyEl.textContent = "Seu mês está mais apertado. Vale acompanhar vencimentos e gastos diários de perto.";
         } else {
           gaugeStatusEl.textContent = "Pressão";
           gaugeStatusEl.classList.add("danger");
-          gaugeCopyEl.textContent = "Suas despesas e dívidas já ultrapassam a receita planejada para este mês.";
+          gaugeCopyEl.textContent = "As saídas deste mês já ultrapassam a receita registrada até aqui.";
         }
       }
 
       renderizarCategoriaChartFinancas(contexto.despesasCategoria);
-      renderizarDividasFinancas();
       renderizarInsightsFinancas();
       renderizarEvolucaoFinanceiraFinancas();
       renderizarMobileFinancas();
@@ -10940,11 +11215,19 @@
       });
       const campoFonte = document.getElementById("financas-fonte-renda-field");
       const selectFonte = document.getElementById("financas-fonte-renda");
+      const selectCategoria = document.getElementById("financas-categoria");
+      const campoCategoria = selectCategoria?.closest("div");
       const ehReceita = tipo === "Receita";
       if (campoFonte) campoFonte.hidden = !ehReceita;
+      if (campoCategoria) campoCategoria.hidden = ehReceita;
       if (selectFonte) {
         selectFonte.required = ehReceita;
         if (!ehReceita) selectFonte.value = "";
+      }
+      if (selectCategoria) {
+        selectCategoria.required = !ehReceita;
+        if (ehReceita) selectCategoria.value = "Receita";
+        else if (!selectCategoria.value || selectCategoria.value === "Receita") selectCategoria.value = "Despesas diversas";
       }
     }
 
@@ -11477,13 +11760,18 @@
       const totalEl = document.getElementById("financas-total-fixo-previsto");
       const metaEl = document.getElementById("financas-contas-fixas-previsao-meta");
       if (!totalEl || !metaEl) return;
-
-      const despesas = financasContasFixas
-        .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa")
-        .reduce((soma, item) => soma + Number(item.valor || 0), 0);
+      const grupos = obterLinhasDespesasMensaisFinancas();
+      let despesas = 0;
+      let categoriasAtivas = 0;
+      FINANCAS_CATEGORIAS_DESPESA.forEach((categoria) => {
+        const itens = grupos.get(categoria) || [];
+        const subtotal = itens.reduce((soma, item) => soma + Number(item.valor || 0), 0);
+        if (subtotal > 0) categoriasAtivas += 1;
+        despesas += subtotal;
+      });
 
       totalEl.textContent = formatarMoedaFinancas(despesas);
-      metaEl.textContent = `${financasContasFixas.length} conta(s)`;
+      metaEl.textContent = `${categoriasAtivas} categoria(s)`;
     }
 
     function renderizarContasFixasFinancas(mensagemErro = "") {
@@ -11493,123 +11781,154 @@
 
       aplicarPrevisaoContasFixasFinancas();
       aplicarResumoFinancasMes(financasResumoMesSelecionado || {});
+      atualizarBotoesVisaoDespesasFinancas();
 
       if (mensagemErro) {
         listaEl.innerHTML = `<div class="financas-empty">${mensagemErro}</div>`;
-        metaEl.textContent = "0 conta(s)";
+        metaEl.textContent = "0 item(ns)";
         return;
       }
 
-      metaEl.textContent = `${financasContasFixas.length} conta(s)`;
-      if (!financasContasFixas.length) {
-        listaEl.innerHTML = '<div class="financas-empty">Nenhuma conta fixa cadastrada.</div>';
+      const grupos = obterLinhasDespesasMensaisFinancas();
+      const categoriasComItens = FINANCAS_CATEGORIAS_DESPESA.filter((categoria) => (grupos.get(categoria) || []).length > 0);
+      const totalItens = categoriasComItens.reduce((soma, categoria) => soma + (grupos.get(categoria) || []).length, 0);
+      metaEl.textContent = `${totalItens} item(ns)`;
+      const previsaoMetaEl = document.getElementById("financas-contas-fixas-previsao-meta");
+      if (previsaoMetaEl) previsaoMetaEl.textContent = `${categoriasComItens.length} categoria(s)`;
+
+      if (!categoriasComItens.length) {
+        listaEl.innerHTML = '<div class="financas-empty">Nenhuma despesa cadastrada.</div>';
+        renderizarProjecaoDespesasFinancas();
         return;
       }
 
       listaEl.innerHTML = "";
-      financasContasFixas.forEach((conta) => {
-        const row = document.createElement("div");
-        row.className = "financas-fixed-item";
-        const statusInfo = obterStatusContaFixaFinancas(conta);
-        const confirmado = statusInfo.confirmado;
-        row.classList.toggle("is-confirmed", confirmado);
+      categoriasComItens.forEach((categoria) => {
+        const itens = grupos.get(categoria) || [];
+        const grupoEl = document.createElement("div");
+        grupoEl.className = "financas-fixed-group";
+        const totalGrupo = itens.reduce((soma, item) => soma + Number(item.valor || 0), 0);
+        grupoEl.innerHTML = `<div class="financas-fixed-group-title">${categoria}<span class="financas-fixed-group-total">${formatarMoedaFinancas(totalGrupo)}</span></div>`;
 
-        const btnStatus = document.createElement("button");
-        btnStatus.className = "financas-fixed-status-toggle";
-        btnStatus.type = "button";
-        btnStatus.innerHTML = `
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M20 6 9 17l-5-5"/>
-          </svg>
-        `;
-        if (confirmado) {
-          btnStatus.classList.add("is-confirmed");
-          btnStatus.title = "Desfazer confirmação";
-          btnStatus.setAttribute("aria-label", "Desfazer confirmação");
-          btnStatus.addEventListener("click", async () => {
-            const ok = await modal.confirmar("Deseja desfazer esta confirmação?", "Contas fixas", "vermelho");
-            if (!ok) return;
-            await desfazerConfirmacaoContaFixaFinancas(conta);
-          });
-        } else {
-          btnStatus.title = normalizarTipoFinancasUI(conta.tipo) === "Receita" ? "Marcar como recebida" : "Marcar como paga";
-          btnStatus.setAttribute("aria-label", normalizarTipoFinancasUI(conta.tipo) === "Receita" ? "Marcar como recebida" : "Marcar como paga");
-          btnStatus.addEventListener("click", () => abrirSheetConfirmacaoContaFixaFinancas(conta));
-        }
+        itens.forEach((item) => {
+          const row = document.createElement("div");
+          row.className = "financas-fixed-item";
+          if (item.kind === "diario") row.classList.add("synthetic");
+          const confirmado = !!item.status?.confirmado;
+          row.classList.toggle("is-confirmed", confirmado);
 
-        const titulo = document.createElement("div");
-        titulo.className = "financas-fixed-title";
-        titulo.textContent = conta.nome || "Conta fixa";
+          const btnStatus = document.createElement("button");
+          btnStatus.className = "financas-fixed-status-toggle";
+          btnStatus.type = "button";
+          btnStatus.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+          `;
 
-        const metaWrap = document.createElement("div");
-        metaWrap.className = "financas-fixed-meta-wrap";
+          const titulo = document.createElement("div");
+          titulo.className = "financas-fixed-title";
+          titulo.textContent = item.titulo || "Despesa";
 
-        const due = document.createElement("div");
-        due.className = "financas-fixed-due";
-        due.textContent = `dia ${Number(conta.dia_vencimento || 0)}`;
+          const metaWrap = document.createElement("div");
+          metaWrap.className = "financas-fixed-meta-wrap";
 
-        const separator = document.createElement("div");
-        separator.className = "financas-fixed-separator";
-        separator.textContent = "·";
+          const due = document.createElement("div");
+          due.className = "financas-fixed-due";
+          due.textContent = item.due || "mês atual";
 
-        const meta = document.createElement("div");
-        meta.className = "financas-fixed-meta";
-        meta.textContent = conta.categoria || "Outros";
+          const separator = document.createElement("div");
+          separator.className = "financas-fixed-separator";
+          separator.textContent = "·";
 
-        const amount = document.createElement("div");
-        amount.className = "financas-fixed-amount";
-        amount.textContent = formatarMoedaFinancas(conta.valor);
+          const meta = document.createElement("div");
+          meta.className = "financas-fixed-meta";
+          meta.textContent = categoria;
 
-        const badge = criarBadgeFinancas(statusInfo.chave === "pago" ? "pago" : statusInfo.chave, statusInfo.label);
-        badge.classList.add("financas-fixed-status-badge");
+          const amount = document.createElement("div");
+          amount.className = "financas-fixed-amount";
+          amount.textContent = formatarMoedaFinancas(item.valor);
 
-        metaWrap.appendChild(due);
-        metaWrap.appendChild(separator);
-        metaWrap.appendChild(meta);
+          const badge = criarBadgeFinancas(item.status?.chave === "pago" ? "pago" : item.status?.chave, item.status?.label || "Pendente");
+          badge.classList.add("financas-fixed-status-badge");
 
-        const actions = document.createElement("div");
-        actions.className = "financas-fixed-actions";
+          metaWrap.appendChild(due);
+          metaWrap.appendChild(separator);
+          metaWrap.appendChild(meta);
 
-        const btnEditar = document.createElement("button");
-        btnEditar.className = "btn-secondary financas-fixed-action-btn";
-        btnEditar.type = "button";
-        btnEditar.title = "Editar conta fixa";
-        btnEditar.innerHTML = `
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 20h9"/>
-            <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/>
-          </svg>
-        `;
-        btnEditar.setAttribute("aria-label", "Editar conta fixa");
-        btnEditar.addEventListener("click", () => abrirSheetContaFixaFinancas(conta));
+          const actions = document.createElement("div");
+          actions.className = "financas-fixed-actions";
 
-        const btnExcluir = document.createElement("button");
-        btnExcluir.className = "btn-secondary financas-fixed-action-btn";
-        btnExcluir.type = "button";
-        btnExcluir.title = "Excluir conta fixa";
-        btnExcluir.innerHTML = `
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M3 6h18"/>
-            <path d="M8 6V4h8v2"/>
-            <path d="M19 6l-1 14H6L5 6"/>
-          </svg>
-        `;
-        btnExcluir.setAttribute("aria-label", "Excluir conta fixa");
-        btnExcluir.addEventListener("click", async () => {
-          const confirmar = await modal.confirmar("Deseja excluir esta conta fixa?", "Contas fixas", "vermelho");
-          if (confirmar === false) return;
-          await excluirContaFixaFinancas(conta.id);
+          if (item.kind === "conta") {
+            if (confirmado) {
+              btnStatus.classList.add("is-confirmed");
+              btnStatus.title = "Desfazer confirmação";
+              btnStatus.setAttribute("aria-label", "Desfazer confirmação");
+              btnStatus.addEventListener("click", async () => {
+                const ok = await modal.confirmar("Deseja desfazer esta confirmação?", "Despesas e dívidas", "vermelho");
+                if (!ok) return;
+                await desfazerConfirmacaoContaFixaFinancas(item.conta);
+              });
+            } else {
+              btnStatus.title = "Marcar como pago";
+              btnStatus.setAttribute("aria-label", "Marcar como pago");
+              btnStatus.addEventListener("click", () => abrirSheetConfirmacaoContaFixaFinancas(item.conta));
+            }
+
+            const btnEditar = document.createElement("button");
+            btnEditar.className = "btn-secondary financas-fixed-action-btn";
+            btnEditar.type = "button";
+            btnEditar.title = "Editar despesa";
+            btnEditar.innerHTML = `
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 20h9"/>
+                <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/>
+              </svg>
+            `;
+            btnEditar.setAttribute("aria-label", "Editar despesa");
+            btnEditar.addEventListener("click", () => abrirSheetContaFixaFinancas(item.conta));
+
+            const btnExcluir = document.createElement("button");
+            btnExcluir.className = "btn-secondary financas-fixed-action-btn";
+            btnExcluir.type = "button";
+            btnExcluir.title = "Excluir despesa";
+            btnExcluir.innerHTML = `
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6h18"/>
+                <path d="M8 6V4h8v2"/>
+                <path d="M19 6l-1 14H6L5 6"/>
+              </svg>
+            `;
+            btnExcluir.setAttribute("aria-label", "Excluir despesa");
+            btnExcluir.addEventListener("click", async () => {
+              const confirmar = await modal.confirmar("Deseja excluir esta despesa?", "Despesas e dívidas", "vermelho");
+              if (confirmar === false) return;
+              await excluirContaFixaFinancas(item.conta.id);
+            });
+            actions.appendChild(btnEditar);
+            actions.appendChild(btnExcluir);
+          } else {
+            btnStatus.title = "Ver gastos do mês";
+            btnStatus.setAttribute("aria-label", "Ver gastos do mês");
+            btnStatus.addEventListener("click", () => abrirDetalheKpiFinancas("hoje"));
+            badge.textContent = "Consolidado";
+            badge.className = "financas-badge pendente financas-fixed-status-badge";
+            row.addEventListener("click", () => abrirDetalheKpiFinancas("saidas"));
+          }
+
+          row.appendChild(btnStatus);
+          row.appendChild(titulo);
+          row.appendChild(metaWrap);
+          row.appendChild(amount);
+          row.appendChild(badge);
+          row.appendChild(actions);
+          grupoEl.appendChild(row);
         });
-        actions.appendChild(btnEditar);
-        actions.appendChild(btnExcluir);
-        row.appendChild(btnStatus);
-        row.appendChild(titulo);
-        row.appendChild(metaWrap);
-        row.appendChild(amount);
-        row.appendChild(badge);
-        row.appendChild(actions);
-        listaEl.appendChild(row);
+
+        listaEl.appendChild(grupoEl);
       });
+
+      renderizarProjecaoDespesasFinancas();
     }
 
     async function carregarResumoFinancasHoje() {
@@ -12070,6 +12389,13 @@
         await carregarFinancasMesSelecionadoCompleto();
         await carregarContasFixasFinancas();
         await carregarFontesRendaFinancas();
+      });
+      document.querySelectorAll("[data-financas-view]").forEach((botao) => {
+        botao.addEventListener("click", () => {
+          financasVisaoDespesas = botao.dataset.financasView || "mensal";
+          atualizarBotoesVisaoDespesasFinancas();
+          renderizarProjecaoDespesasFinancas();
+        });
       });
       document.querySelectorAll("[data-financas-quick]").forEach((botao) => {
         botao.addEventListener("click", () => {
