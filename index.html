@@ -3307,47 +3307,65 @@
         grid-template-columns: 40px minmax(0, 1fr) 66px 100px 98px 74px 56px;
         grid-template-areas:
           "status title due category amount badge actions";
-        padding: 10px 12px;
-        border-radius: 15px;
-        background: rgba(248,250,252,0.66);
+        min-height: 50px;
+        padding: 7px 14px;
+        border-radius: 0;
+        background: transparent;
         align-items: center;
         column-gap: 10px;
+        border-bottom: 1px solid rgba(241, 245, 249, 0.92);
+        transition: background .16s ease;
+      }
+      #screen-financas .financas-fixed-item:hover {
+        background: rgba(248, 250, 252, 0.76);
       }
       #screen-financas .financas-fixed-item.is-confirmed {
-        background: linear-gradient(180deg, rgba(243, 252, 246, 0.96) 0%, rgba(255,255,255,0.96) 100%);
+        background: rgba(240, 253, 244, 0.72);
       }
       #screen-financas .financas-fixed-title {
-        font-size: 13px;
+        font-size: 12px;
+        font-weight: 600;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
       #screen-financas .financas-fixed-due,
       #screen-financas .financas-fixed-meta {
-        font-size: 11px;
+        font-size: 10.5px;
         justify-self: center;
         text-align: center;
+        color: #64748b;
       }
       #screen-financas .financas-fixed-amount {
-        font-size: 13px;
+        font-size: 12px;
+        font-weight: 650;
         justify-self: center;
         text-align: center;
       }
       #screen-financas .financas-fixed-status-badge {
         grid-area: badge;
         justify-self: center;
+        min-height: 20px;
+        padding: 0 7px;
+        font-size: 10px;
+        font-weight: 600;
       }
       #screen-financas .financas-fixed-actions {
-        gap: 4px;
+        gap: 2px;
         justify-self: end;
         min-width: 0;
         display: inline-grid;
         grid-auto-flow: column;
+        opacity: 0.72;
+        transition: opacity .16s ease;
+      }
+      #screen-financas .financas-fixed-item:hover .financas-fixed-actions {
+        opacity: 1;
       }
       #screen-financas .financas-fixed-action-btn,
       #screen-financas .financas-source-action-btn {
-        min-height: 28px;
-        min-width: 28px;
+        min-height: 26px;
+        min-width: 26px;
         padding: 0;
         font-size: 0;
         border-radius: 8px;
@@ -3360,34 +3378,50 @@
       #screen-financas .financas-fixed-list-premium {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 0;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.9);
+        overflow: hidden;
       }
       #screen-financas .financas-fixed-group {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 0;
+      }
+      #screen-financas .financas-fixed-group + .financas-fixed-group {
+        border-top: 1px solid rgba(226, 232, 240, 0.82);
       }
       #screen-financas .financas-fixed-group-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 38px;
+        padding: 0 14px;
+        border-bottom: 1px solid rgba(241, 245, 249, 0.92);
         font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
+        font-weight: 650;
+        letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: #334155;
-        padding: 0 2px;
+        color: #1f2937;
+        background: rgba(248, 250, 252, 0.84);
       }
       #screen-financas .financas-fixed-group-total {
-        color: #94a3b8;
-        margin-left: 8px;
+        color: #64748b;
+        margin-left: 12px;
         font-weight: 600;
+        letter-spacing: 0;
+        text-transform: none;
       }
       #screen-financas .financas-fixed-item.synthetic {
-        background: linear-gradient(180deg, rgba(248,250,252,0.9) 0%, rgba(255,255,255,0.96) 100%);
+        background: rgba(248, 250, 252, 0.62);
       }
       #screen-financas .financas-fixed-item.synthetic .financas-fixed-actions {
         display: none;
       }
       #screen-financas .financas-fixed-item.synthetic .financas-fixed-status-toggle {
-        opacity: 0.45;
+        opacity: 0.5;
         pointer-events: none;
       }
       #screen-financas .financas-projecao-wrap {
@@ -3479,6 +3513,7 @@
             "status badge actions";
           grid-template-columns: auto minmax(0, 1fr) auto;
           align-items: start;
+          padding: 9px 12px;
         }
         #screen-financas .financas-fixed-due,
         #screen-financas .financas-fixed-meta,
@@ -3489,6 +3524,7 @@
         }
         #screen-financas .financas-fixed-actions {
           justify-self: end;
+          opacity: 1;
         }
       }
       @media (max-width: 640px) {
@@ -8969,6 +9005,10 @@
                         <option value="">Selecione</option>
                       </select>
                     </div>
+                    <div id="financas-fonte-renda-extra-field" hidden>
+                      <label for="financas-fonte-renda-extra">Nome do extra</label>
+                      <input id="financas-fonte-renda-extra" type="text" placeholder="Ex: processo, reembolso, venda avulsa" />
+                    </div>
                   </div>
                   <div id="financas-sheet-erro" class="financas-sheet-error"></div>
                   <div class="financas-sheet-actions">
@@ -11249,6 +11289,8 @@
       });
       const campoFonte = document.getElementById("financas-fonte-renda-field");
       const selectFonte = document.getElementById("financas-fonte-renda");
+      const campoFonteExtra = document.getElementById("financas-fonte-renda-extra-field");
+      const inputFonteExtra = document.getElementById("financas-fonte-renda-extra");
       const selectCategoria = document.getElementById("financas-categoria");
       const campoCategoria = selectCategoria?.closest("div");
       const ehReceita = tipo === "Receita";
@@ -11262,6 +11304,24 @@
         selectCategoria.required = !ehReceita;
         if (ehReceita) selectCategoria.value = "Receita";
         else if (!selectCategoria.value || selectCategoria.value === "Receita") selectCategoria.value = "Despesas diversas";
+      }
+      if (!ehReceita && campoFonteExtra) {
+        campoFonteExtra.hidden = true;
+        if (inputFonteExtra) inputFonteExtra.value = "";
+      }
+      atualizarCampoFonteExtraFinancas();
+    }
+
+    function atualizarCampoFonteExtraFinancas() {
+      const selectFonte = document.getElementById("financas-fonte-renda");
+      const campoFonteExtra = document.getElementById("financas-fonte-renda-extra-field");
+      const inputFonteExtra = document.getElementById("financas-fonte-renda-extra");
+      if (!campoFonteExtra || !selectFonte) return;
+      const ativo = selectFonte.value === "__extra__";
+      campoFonteExtra.hidden = !ativo;
+      if (inputFonteExtra) {
+        inputFonteExtra.required = ativo;
+        if (!ativo) inputFonteExtra.value = "";
       }
     }
 
@@ -11287,6 +11347,7 @@
       if (botaoSalvarEl) botaoSalvarEl.textContent = "Salvar lançamento";
       definirTipoLancamentoFinancas("Despesa");
       preencherSelectFonteRendaFinancas();
+      atualizarCampoFonteExtraFinancas();
       limparErroFinancas();
     }
 
@@ -11311,9 +11372,14 @@
         opt.textContent = fonte.nome || "Fonte";
         select.appendChild(opt);
       });
+      const optExtra = document.createElement("option");
+      optExtra.value = "__extra__";
+      optExtra.textContent = "Extra / avulsa";
+      select.appendChild(optExtra);
       if ([...select.options].some((opt) => opt.value === valorAtual)) {
         select.value = valorAtual;
       }
+      atualizarCampoFonteExtraFinancas();
     }
 
     function resetarFormularioFonteRendaFinancas() {
@@ -11387,6 +11453,7 @@
         const categoriaEl = document.getElementById("financas-categoria");
         const descricaoEl = document.getElementById("financas-descricao");
         const fonteEl = document.getElementById("financas-fonte-renda");
+        const fonteExtraEl = document.getElementById("financas-fonte-renda-extra");
         const tituloEl = document.getElementById("financas-sheet-title");
         const botaoSalvarEl = document.getElementById("btn-financas-salvar");
         if (idEl) idEl.value = String(lancamento.id || "");
@@ -11396,7 +11463,16 @@
         if (categoriaEl) categoriaEl.value = lancamento.categoria || "";
         if (descricaoEl) descricaoEl.value = lancamento.descricao || "";
         preencherSelectFonteRendaFinancas();
-        if (fonteEl) fonteEl.value = lancamento.fonte_renda_id ? String(lancamento.fonte_renda_id) : "";
+        if (fonteEl) {
+          if (normalizarTipoFinancasUI(lancamento.tipo) === "Receita" && !lancamento.fonte_renda_id) {
+            fonteEl.value = "__extra__";
+            if (fonteExtraEl) fonteExtraEl.value = lancamento.descricao || "";
+            if (descricaoEl) descricaoEl.value = "";
+          } else {
+            fonteEl.value = lancamento.fonte_renda_id ? String(lancamento.fonte_renda_id) : "";
+          }
+        }
+        atualizarCampoFonteExtraFinancas();
         if (tituloEl) tituloEl.textContent = "Editar lançamento";
         if (botaoSalvarEl) botaoSalvarEl.textContent = "Salvar alterações";
       }
@@ -12426,6 +12502,7 @@
         await carregarContasFixasFinancas();
         await carregarFontesRendaFinancas();
       });
+      document.getElementById("financas-fonte-renda")?.addEventListener("change", atualizarCampoFonteExtraFinancas);
       document.querySelectorAll("[data-financas-view]").forEach((botao) => {
         botao.addEventListener("click", () => {
           financasVisaoDespesas = botao.dataset.financasView || "mensal";
@@ -12451,9 +12528,15 @@
         const tipo = document.getElementById("financas-tipo")?.value || "";
         const valor = Number(document.getElementById("financas-valor")?.value || 0);
         const categoria = document.getElementById("financas-categoria")?.value || "";
-        const descricao = document.getElementById("financas-descricao")?.value.trim() || "";
+        const descricaoBase = document.getElementById("financas-descricao")?.value.trim() || "";
         const fonteRendaId = document.getElementById("financas-fonte-renda")?.value || "";
+        const fonteRendaExtra = document.getElementById("financas-fonte-renda-extra")?.value.trim() || "";
         const data = document.getElementById("financas-data")?.value || "";
+        const ehReceita = normalizarTipoFinancasUI(tipo) === "Receita";
+        const ehFonteExtra = ehReceita && fonteRendaId === "__extra__";
+        const descricao = ehFonteExtra
+          ? [fonteRendaExtra, descricaoBase].filter(Boolean).join(" · ")
+          : descricaoBase;
 
         if (!tipo) {
           definirErroFinancas("Selecione o tipo do lançamento.");
@@ -12471,8 +12554,12 @@
           definirErroFinancas("Informe a data do lançamento.");
           return;
         }
-        if (normalizarTipoFinancasUI(tipo) === "Receita" && !fonteRendaId) {
+        if (ehReceita && !fonteRendaId) {
           definirErroFinancas("Selecione uma fonte de renda.");
+          return;
+        }
+        if (ehFonteExtra && !fonteRendaExtra) {
+          definirErroFinancas("Informe o nome do extra.");
           return;
         }
 
@@ -12481,7 +12568,7 @@
           valor,
           categoria,
           descricao,
-          fonte_renda_id: normalizarTipoFinancasUI(tipo) === "Receita" ? Number(fonteRendaId) : null,
+          fonte_renda_id: ehReceita && !ehFonteExtra ? Number(fonteRendaId) : null,
           data,
         };
 
