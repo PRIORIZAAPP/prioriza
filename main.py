@@ -2656,19 +2656,20 @@ def criar_lancamento_financeiro(
         raise HTTPException(status_code=400, detail="Data inválida.")
     fonte = None
     if tipo == "receita":
-        if not fonte_renda_id:
-            raise HTTPException(status_code=400, detail="Selecione uma fonte de renda para receitas.")
-        fonte = (
-            db.query(FonteRendaFinanceira)
-            .filter(
-                FonteRendaFinanceira.id == fonte_renda_id,
-                FonteRendaFinanceira.user_id == current_user.id,
-                FonteRendaFinanceira.ativo == True,
+        if fonte_renda_id:
+            fonte = (
+                db.query(FonteRendaFinanceira)
+                .filter(
+                    FonteRendaFinanceira.id == fonte_renda_id,
+                    FonteRendaFinanceira.user_id == current_user.id,
+                    FonteRendaFinanceira.ativo == True,
+                )
+                .first()
             )
-            .first()
-        )
-        if not fonte:
-            raise HTTPException(status_code=400, detail="Fonte de renda inválida.")
+            if not fonte:
+                raise HTTPException(status_code=400, detail="Fonte de renda inválida.")
+        elif not descricao:
+            raise HTTPException(status_code=400, detail="Selecione uma fonte de renda ou informe o nome do extra.")
     else:
         fonte_renda_id = None
 
@@ -2724,19 +2725,20 @@ def editar_lancamento_financeiro(
 
     fonte = None
     if tipo == "receita":
-        if not fonte_renda_id:
-            raise HTTPException(status_code=400, detail="Selecione uma fonte de renda para receitas.")
-        fonte = (
-            db.query(FonteRendaFinanceira)
-            .filter(
-                FonteRendaFinanceira.id == fonte_renda_id,
-                FonteRendaFinanceira.user_id == current_user.id,
-                FonteRendaFinanceira.ativo == True,
+        if fonte_renda_id:
+            fonte = (
+                db.query(FonteRendaFinanceira)
+                .filter(
+                    FonteRendaFinanceira.id == fonte_renda_id,
+                    FonteRendaFinanceira.user_id == current_user.id,
+                    FonteRendaFinanceira.ativo == True,
+                )
+                .first()
             )
-            .first()
-        )
-        if not fonte:
-            raise HTTPException(status_code=400, detail="Fonte de renda inválida.")
+            if not fonte:
+                raise HTTPException(status_code=400, detail="Fonte de renda inválida.")
+        elif not descricao:
+            raise HTTPException(status_code=400, detail="Selecione uma fonte de renda ou informe o nome do extra.")
     else:
         fonte_renda_id = None
 
