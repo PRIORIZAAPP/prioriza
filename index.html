@@ -2330,6 +2330,14 @@
       #screen-financas .financas-shell {
         gap: 14px;
       }
+      #screen-financas .financas-mobile-view {
+        display: none;
+      }
+      #screen-financas .financas-desktop-view {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
       #screen-financas .financas-hero {
         display: flex;
         align-items: flex-start;
@@ -2385,7 +2393,7 @@
       #screen-financas .financas-kpi-grid {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 12px;
+        gap: 10px;
       }
       #screen-financas .financas-kpi-card,
       #screen-financas .financas-premium-card {
@@ -2410,10 +2418,10 @@
         outline-offset: 2px;
       }
       #screen-financas .financas-kpi-card {
-        padding: 14px 15px;
+        padding: 12px 13px;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 7px;
       }
       #screen-financas .financas-kpi-card.positive {
         background: linear-gradient(180deg, rgba(241, 253, 245, 0.96) 0%, rgba(255,255,255,0.98) 100%);
@@ -2447,23 +2455,23 @@
         color: #7b8ca3;
       }
       #screen-financas .financas-kpi-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 13px;
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
       }
       #screen-financas .financas-kpi-icon svg {
-        width: 17px;
-        height: 17px;
+        width: 15px;
+        height: 15px;
       }
       #screen-financas .financas-kpi-icon.positive { background: rgba(34, 197, 94, 0.09); color: #16a34a; }
       #screen-financas .financas-kpi-icon.danger { background: rgba(239, 68, 68, 0.09); color: #dc2626; }
       #screen-financas .financas-kpi-icon.warning { background: rgba(245, 158, 11, 0.1); color: #d97706; }
       #screen-financas .financas-kpi-icon.neutral { background: rgba(59, 130, 246, 0.08); color: #2563eb; }
       #screen-financas .financas-kpi-value {
-        font-size: clamp(22px, 2.6vw, 29px);
+        font-size: clamp(20px, 2.35vw, 27px);
         line-height: 1;
         font-weight: 720;
         letter-spacing: -0.05em;
@@ -2483,36 +2491,36 @@
       #screen-financas .financas-dashboard-grid {
         display: grid;
         grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.9fr);
-        gap: 14px;
+        gap: 12px;
         align-items: start;
       }
       #screen-financas .financas-main-column,
       #screen-financas .financas-side-column {
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 12px;
       }
       #screen-financas .financas-premium-card {
-        padding: 15px;
+        padding: 13px;
       }
       #screen-financas .financas-card-header {
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
         gap: 10px;
-        margin-bottom: 11px;
+        margin-bottom: 10px;
         flex-wrap: wrap;
       }
       #screen-financas .financas-card-title {
         margin: 0;
-        font-size: 17px;
+        font-size: 16px;
         line-height: 1.08;
         letter-spacing: -0.04em;
         color: #0f172a;
       }
       #screen-financas .financas-card-subtitle {
         margin-top: 3px;
-        font-size: 12px;
+        font-size: 11px;
         color: #64748b;
       }
       #screen-financas .financas-card-chip,
@@ -2543,13 +2551,13 @@
         border: 1px solid rgba(226, 232, 240, 0.9);
         border-radius: 15px;
         background: linear-gradient(180deg, rgba(248,250,252,0.75) 0%, rgba(255,255,255,0.92) 100%);
-        padding: 11px 13px;
-        margin-bottom: 12px;
+        padding: 10px 12px;
+        margin-bottom: 10px;
         color: #475569;
       }
       #screen-financas .financas-summary-inline strong {
         color: #0f172a;
-        font-size: 18px;
+        font-size: 17px;
         letter-spacing: -0.04em;
       }
       #screen-financas .financas-summary-inline-side {
@@ -2562,13 +2570,13 @@
       #screen-financas .financas-resumo-grid {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
+        gap: 8px;
       }
       #screen-financas .financas-resumo-metric {
         display: flex;
         flex-direction: column;
-        gap: 8px;
-        padding: 11px 12px 10px;
+        gap: 7px;
+        padding: 10px 11px 9px;
         border-radius: 15px;
         border: 1px solid rgba(226, 232, 240, 0.9);
         background: rgba(248,250,252,0.7);
@@ -2581,7 +2589,7 @@
         font-weight: 700;
       }
       #screen-financas .financas-resumo-value {
-        font-size: 20px;
+        font-size: 18px;
         line-height: 1;
         font-weight: 700;
         letter-spacing: -0.04em;
@@ -2607,10 +2615,10 @@
       #screen-financas .financas-progress-fill.warning { background: linear-gradient(90deg, #f59e0b 0%, #fde68a 100%); }
       #screen-financas .financas-progress-fill.neutral { background: linear-gradient(90deg, #60a5fa 0%, #bfdbfe 100%); }
       #screen-financas .financas-alert-banner {
-        margin-top: 12px;
-        padding: 11px 13px;
+        margin-top: 10px;
+        padding: 10px 12px;
         border-radius: 15px;
-        font-size: 12px;
+        font-size: 11px;
         line-height: 1.45;
         border: 1px solid rgba(226, 232, 240, 0.92);
         background: rgba(248, 250, 252, 0.9);
@@ -2642,7 +2650,7 @@
         grid-template-columns: minmax(170px, 1.5fr) minmax(90px, 0.8fr) minmax(100px, 0.9fr) minmax(90px, 0.7fr) minmax(88px, 0.7fr);
         gap: 10px;
         align-items: center;
-        padding: 11px 13px;
+        padding: 10px 12px;
       }
       #screen-financas .financas-debt-head {
         background: rgba(255,255,255,0.88);
@@ -2712,7 +2720,7 @@
         color: #b91c1c;
       }
       #screen-financas .financas-chart-line {
-        min-height: 208px;
+        min-height: 180px;
       }
       #screen-financas .financas-line-chart-wrap {
         display: grid;
@@ -2721,7 +2729,7 @@
       }
       #screen-financas .financas-line-chart-svg {
         width: 100%;
-        height: 176px;
+        height: 148px;
         display: block;
       }
       #screen-financas .financas-line-labels {
@@ -2818,8 +2826,8 @@
         color: #64748b;
       }
       #screen-financas .financas-goal-card {
-        margin-top: 12px;
-        padding: 11px 12px;
+        margin-top: 10px;
+        padding: 10px 11px;
         border-radius: 15px;
         border: 1px solid rgba(251, 191, 36, 0.18);
         background: linear-gradient(180deg, rgba(255, 251, 235, 0.96) 0%, rgba(255,255,255,0.96) 100%);
@@ -2840,7 +2848,7 @@
         color: #92400e;
       }
       #screen-financas .financas-health-card {
-        padding-bottom: 14px;
+        padding-bottom: 12px;
       }
       #screen-financas .financas-health-head {
         margin-bottom: 8px;
@@ -2932,6 +2940,260 @@
         line-height: 1.45;
         color: #64748b;
       }
+      #screen-financas .financas-mobile-top {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: start;
+      }
+      #screen-financas .financas-mobile-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      #screen-financas .financas-mobile-title {
+        margin: 0;
+        font-size: 24px;
+        line-height: 1;
+        letter-spacing: -0.05em;
+        color: #0f172a;
+      }
+      #screen-financas .financas-mobile-subtitle {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #64748b;
+      }
+      #screen-financas .financas-mobile-month-picker {
+        min-width: 132px;
+      }
+      #screen-financas .financas-mobile-balance-card,
+      #screen-financas .financas-mobile-mini-card {
+        border: 1px solid rgba(226,232,240,0.95);
+        background: rgba(255,255,255,0.95);
+        box-shadow: 0 10px 24px rgba(15,23,42,0.05);
+      }
+      #screen-financas .financas-mobile-balance-card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 14px;
+        border-radius: 20px;
+        text-align: left;
+        cursor: pointer;
+        width: 100%;
+        appearance: none;
+      }
+      #screen-financas .financas-mobile-balance-top,
+      #screen-financas .financas-mobile-balance-bottom {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      #screen-financas .financas-mobile-balance-kicker,
+      #screen-financas .financas-mobile-balance-label,
+      #screen-financas .financas-mobile-balance-chip {
+        font-size: 11px;
+        font-weight: 700;
+        color: #7b8ca3;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      #screen-financas .financas-mobile-balance-chip {
+        min-height: 24px;
+        padding: 0 9px;
+        border-radius: 999px;
+        background: rgba(241,245,249,0.94);
+        border: 1px solid rgba(226,232,240,0.92);
+        display: inline-flex;
+        align-items: center;
+      }
+      #screen-financas .financas-mobile-balance-value,
+      #screen-financas .financas-mobile-balance-result {
+        display: block;
+        font-size: 28px;
+        line-height: 1;
+        font-weight: 740;
+        letter-spacing: -0.06em;
+        color: #0f172a;
+      }
+      #screen-financas .financas-mobile-balance-result.negative,
+      #screen-financas .financas-mobile-balance-value.negative,
+      #screen-financas .financas-mobile-mini-value.negative {
+        color: #c62828;
+      }
+      #screen-financas .financas-mobile-balance-divider {
+        height: 1px;
+        background: rgba(226,232,240,0.88);
+      }
+      #screen-financas .financas-mobile-mini-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      #screen-financas .financas-mobile-mini-card {
+        padding: 12px;
+        border-radius: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        text-align: left;
+        cursor: pointer;
+        width: 100%;
+        appearance: none;
+        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      }
+      #screen-financas .financas-mobile-mini-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 28px rgba(15,23,42,0.06);
+      }
+      #screen-financas .financas-mobile-mini-card.positive {
+        background: linear-gradient(180deg, rgba(241,253,245,0.98) 0%, rgba(255,255,255,0.98) 100%);
+      }
+      #screen-financas .financas-mobile-mini-card.danger {
+        background: linear-gradient(180deg, rgba(255,242,242,0.98) 0%, rgba(255,255,255,0.98) 100%);
+      }
+      #screen-financas .financas-mobile-mini-card.warning {
+        background: linear-gradient(180deg, rgba(255,248,238,0.98) 0%, rgba(255,255,255,0.98) 100%);
+      }
+      #screen-financas .financas-mobile-mini-card.alert {
+        background: linear-gradient(180deg, rgba(247,250,252,0.98) 0%, rgba(255,255,255,0.98) 100%);
+      }
+      #screen-financas .financas-mobile-mini-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #7b8ca3;
+      }
+      #screen-financas .financas-mobile-mini-value {
+        font-size: 20px;
+        line-height: 1;
+        font-weight: 720;
+        letter-spacing: -0.05em;
+        color: #0f172a;
+      }
+      #screen-financas .financas-mobile-mini-copy {
+        font-size: 11px;
+        line-height: 1.4;
+        color: #64748b;
+      }
+      #screen-financas .financas-mobile-list-card {
+        padding: 13px;
+        border-radius: 20px;
+        border: 1px solid rgba(226,232,240,0.95);
+        background: rgba(255,255,255,0.95);
+        box-shadow: 0 10px 24px rgba(15,23,42,0.05);
+      }
+      #screen-financas .financas-mobile-launch-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      #screen-financas .financas-mobile-launch-item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+        padding: 11px 0;
+        border-bottom: 1px solid rgba(226,232,240,0.85);
+        width: 100%;
+        text-align: left;
+        background: transparent;
+        border-left: none;
+        border-right: none;
+        border-top: none;
+        appearance: none;
+      }
+      #screen-financas .financas-mobile-launch-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+      #screen-financas .financas-mobile-launch-main {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      #screen-financas .financas-mobile-launch-title {
+        font-size: 13px;
+        font-weight: 620;
+        color: #0f172a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #screen-financas .financas-mobile-launch-meta {
+        font-size: 11px;
+        line-height: 1.35;
+        color: #64748b;
+      }
+      #screen-financas .financas-mobile-launch-value {
+        font-size: 13px;
+        font-weight: 700;
+        color: #0f172a;
+        white-space: nowrap;
+      }
+      #screen-financas .financas-mobile-launch-value.negative {
+        color: #c62828;
+      }
+      #screen-financas .financas-mobile-launch-value.positive {
+        color: #15803d;
+      }
+      #screen-financas .financas-quick-panel {
+        max-width: 520px;
+      }
+      #screen-financas .financas-quick-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+      #screen-financas .financas-quick-action {
+        border: 1px solid rgba(226,232,240,0.92);
+        border-radius: 18px;
+        background: rgba(248,250,252,0.72);
+        padding: 13px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        cursor: pointer;
+        transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+        text-align: left;
+      }
+      #screen-financas .financas-quick-action:hover {
+        background: rgba(255,255,255,0.96);
+        border-color: rgba(var(--cor-tema-rgb), 0.18);
+        box-shadow: 0 12px 24px rgba(15,23,42,0.06);
+        transform: translateY(-1px);
+      }
+      #screen-financas .financas-quick-action strong {
+        font-size: 14px;
+        color: #0f172a;
+      }
+      #screen-financas .financas-quick-action span:last-child {
+        font-size: 12px;
+        line-height: 1.45;
+        color: #64748b;
+      }
+      #screen-financas .financas-quick-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 13px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #screen-financas .financas-quick-icon svg {
+        width: 17px;
+        height: 17px;
+      }
+      #screen-financas .financas-quick-icon.positive { background: rgba(34,197,94,0.09); color: #16a34a; }
+      #screen-financas .financas-quick-icon.danger { background: rgba(239,68,68,0.09); color: #dc2626; }
+      #screen-financas .financas-quick-icon.warning { background: rgba(245,158,11,0.10); color: #d97706; }
+      #screen-financas .financas-quick-icon.neutral { background: rgba(59,130,246,0.08); color: #2563eb; }
       #screen-financas .financas-source-item {
         padding: 9px 0;
       }
@@ -3125,75 +3387,48 @@
         #screen-financas .financas-shell {
           gap: 12px;
         }
-        #screen-financas .financas-hero {
-          gap: 10px;
+        #screen-financas .financas-mobile-view {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
         }
-        #screen-financas .financas-title {
-          font-size: 26px;
-        }
-        #screen-financas .financas-subtitle {
-          font-size: 12px;
-        }
-        #screen-financas .financas-hero-actions {
-          width: 100%;
-          gap: 6px;
-        }
-        #screen-financas .financas-month-picker {
-          flex: 1 1 0;
-          min-width: 0;
-        }
-        #screen-financas .financas-action-btn {
-          min-height: 38px;
-          padding: 0 12px;
-        }
-        #screen-financas #btn-financas-exportar,
-        #screen-financas #btn-financas-novo-lancamento {
+        #screen-financas .financas-desktop-view {
           display: none;
         }
-        #screen-financas .financas-kpi-grid,
-        #screen-financas .financas-resumo-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+        #screen-financas .financas-mobile-title {
+          font-size: 22px;
         }
-        #screen-financas .financas-premium-card {
+        #screen-financas .financas-mobile-subtitle {
+          font-size: 11px;
+        }
+        #screen-financas .financas-mobile-month-picker {
+          min-width: 0;
+          width: 122px;
+        }
+        #screen-financas .financas-mobile-balance-card {
           padding: 13px;
-          border-radius: 17px;
+          border-radius: 18px;
         }
-        #screen-financas .financas-card-title {
-          font-size: 16px;
+        #screen-financas .financas-mobile-balance-value,
+        #screen-financas .financas-mobile-balance-result {
+          font-size: 24px;
         }
-        #screen-financas .financas-summary-inline {
-          flex-direction: column;
-          align-items: flex-start;
+        #screen-financas .financas-mobile-mini-grid {
+          gap: 8px;
         }
-        #screen-financas .financas-summary-inline-side {
-          width: 100%;
-          justify-content: space-between;
+        #screen-financas .financas-mobile-mini-card {
+          padding: 11px;
+          border-radius: 16px;
         }
-        #screen-financas .financas-line-chart-svg {
-          height: 150px;
-        }
-        #screen-financas .financas-source-inline {
-          align-items: flex-start;
-          padding: 9px 10px;
-        }
-        #screen-financas .financas-source-inline-value {
+        #screen-financas .financas-mobile-mini-value {
           font-size: 18px;
         }
-        #screen-financas .financas-gauge-wrap {
-          width: 168px;
-          height: 96px;
+        #screen-financas .financas-mobile-list-card {
+          padding: 12px;
+          border-radius: 18px;
         }
-        #screen-financas .financas-gauge-arc {
-          width: 168px;
-          height: 168px;
-        }
-        #screen-financas .financas-gauge-needle {
-          width: 9px;
-          height: 82px;
-          bottom: 11px;
-        }
-        #screen-financas .financas-gauge-status {
-          font-size: 21px;
+        #screen-financas .financas-quick-grid {
+          grid-template-columns: 1fr;
         }
       }
       .campo-em-breve { opacity: 0.45; pointer-events: none; }
@@ -8247,6 +8482,69 @@
         <div class="screen" id="screen-financas">
           <div class="card">
             <div class="financas-shell">
+              <div class="financas-mobile-view">
+                <div class="financas-mobile-top">
+                  <div class="financas-mobile-copy">
+                    <div class="financas-kicker">Finanças</div>
+                    <h2 class="financas-mobile-title">Resumo rápido</h2>
+                    <p class="financas-mobile-subtitle">Lançe e confira seu mês em segundos.</p>
+                  </div>
+                  <input id="financas-mes-referencia-mobile" class="financas-month-picker financas-mobile-month-picker" type="month" />
+                </div>
+
+                <button id="financas-mobile-balance-card" class="financas-mobile-balance-card" type="button">
+                  <div class="financas-mobile-balance-top">
+                    <div>
+                      <div class="financas-mobile-balance-kicker">Saldo atual</div>
+                      <strong id="financas-mobile-saldo-atual" class="financas-mobile-balance-value">R$ 0,00</strong>
+                    </div>
+                    <div class="financas-mobile-balance-chip">Mês ativo</div>
+                  </div>
+                  <div class="financas-mobile-balance-divider"></div>
+                  <div class="financas-mobile-balance-bottom">
+                    <span class="financas-mobile-balance-label">Resultado do mês</span>
+                    <strong id="financas-mobile-resultado" class="financas-mobile-balance-result">R$ 0,00</strong>
+                  </div>
+                </button>
+
+                <div class="financas-mobile-mini-grid">
+                  <button id="financas-mobile-card-hoje" class="financas-mobile-mini-card warning" type="button">
+                    <span class="financas-mobile-mini-label">Gastos do dia</span>
+                    <strong id="financas-mobile-gastos-hoje" class="financas-mobile-mini-value">R$ 0,00</strong>
+                    <span id="financas-mobile-gastos-copy" class="financas-mobile-mini-copy">Sem lançamentos hoje.</span>
+                  </button>
+                  <button id="financas-mobile-card-vencendo" class="financas-mobile-mini-card alert" type="button">
+                    <span class="financas-mobile-mini-label">Contas vencendo</span>
+                    <strong id="financas-mobile-contas-vencendo" class="financas-mobile-mini-value">0</strong>
+                    <span id="financas-mobile-contas-copy" class="financas-mobile-mini-copy">Sem pressão nesta semana.</span>
+                  </button>
+                  <button id="financas-mobile-card-despesas" class="financas-mobile-mini-card danger" type="button">
+                    <span class="financas-mobile-mini-label">Despesas do mês</span>
+                    <strong id="financas-mobile-despesas-mes" class="financas-mobile-mini-value">R$ 0,00</strong>
+                    <span id="financas-mobile-despesas-copy" class="financas-mobile-mini-copy">Saídas registradas.</span>
+                  </button>
+                  <button id="financas-mobile-card-receitas" class="financas-mobile-mini-card positive" type="button">
+                    <span class="financas-mobile-mini-label">Receitas do mês</span>
+                    <strong id="financas-mobile-receitas-mes" class="financas-mobile-mini-value">R$ 0,00</strong>
+                    <span id="financas-mobile-receitas-copy" class="financas-mobile-mini-copy">Entradas já lançadas.</span>
+                  </button>
+                </div>
+
+                <div class="financas-mobile-list-card">
+                  <div class="financas-card-header">
+                    <div>
+                      <h3 class="financas-card-title">Últimos lançamentos</h3>
+                      <div class="financas-card-subtitle">Seus registros mais recentes.</div>
+                    </div>
+                    <div id="financas-mobile-lancamentos-meta" class="financas-card-chip">0 item(s)</div>
+                  </div>
+                  <div id="financas-mobile-lancamentos" class="financas-mobile-launch-list">
+                    <div class="financas-empty">Nenhum lançamento recente por aqui.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="financas-desktop-view">
               <div class="financas-hero">
                 <div class="financas-hero-copy">
                   <div class="financas-kicker">Finanças</div>
@@ -8422,6 +8720,18 @@
                     </div>
                   </div>
 
+                  <div class="financas-premium-card financas-chart-line">
+                    <div class="financas-card-header">
+                      <div>
+                        <h3 class="financas-card-title">Evolução financeira</h3>
+                        <div class="financas-card-subtitle">Resultado recente para leitura rápida.</div>
+                      </div>
+                    </div>
+                    <div id="financas-evolucao-chart" class="financas-line-chart-wrap">
+                      <div class="financas-empty">Sem histórico suficiente para mostrar a evolução.</div>
+                    </div>
+                  </div>
+
                 </div>
                 <div class="financas-side-column">
                   <div class="financas-premium-card financas-health-card">
@@ -8508,6 +8818,7 @@
                     </div>
                   </div>
                 </div>
+              </div>
               </div>
             </div>
           </div>
@@ -8715,6 +9026,62 @@
               </div>
               <div class="financas-sheet-actions">
                 <button id="btn-financas-fechar-kpi-detail" class="btn-secondary" type="button">Fechar</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="financas-quick-sheet" class="financas-sheet financas-fixed-sheet" hidden>
+            <div class="financas-sheet-panel financas-quick-panel" role="dialog" aria-modal="true" aria-labelledby="financas-quick-sheet-title">
+              <div class="financas-sheet-handle" aria-hidden="true"></div>
+              <div class="financas-sheet-head">
+                <div id="financas-quick-sheet-title" class="financas-sheet-title">Novo registro</div>
+                <button id="btn-financas-fechar-quick-sheet-topo" class="btn-secondary" type="button">Fechar</button>
+              </div>
+              <div class="financas-card-subtitle">Escolha o fluxo mais rápido para continuar.</div>
+              <div class="financas-quick-grid">
+                <button class="financas-quick-action" type="button" data-financas-quick="uso-diario">
+                  <span class="financas-quick-icon warning">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="8"></circle>
+                      <path d="M12 8v4l3 2"></path>
+                    </svg>
+                  </span>
+                  <strong>Uso diário</strong>
+                  <span>Café, almoço, mercado, farmácia.</span>
+                </button>
+                <button class="financas-quick-action" type="button" data-financas-quick="receita">
+                  <span class="financas-quick-icon positive">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M4 14 9 9l4 4 7-7"></path>
+                      <path d="M14 6h6v6"></path>
+                    </svg>
+                  </span>
+                  <strong>Receita</strong>
+                  <span>Entrada recebida com fonte definida.</span>
+                </button>
+                <button class="financas-quick-action" type="button" data-financas-quick="divida">
+                  <span class="financas-quick-icon danger">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="3" y="6" width="18" height="12" rx="3"></rect>
+                      <path d="M7 12h6"></path>
+                    </svg>
+                  </span>
+                  <strong>Dívida</strong>
+                  <span>Compromisso recorrente em aberto.</span>
+                </button>
+                <button class="financas-quick-action" type="button" data-financas-quick="despesa">
+                  <span class="financas-quick-icon neutral">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M12 5v14"></path>
+                      <path d="m19 12-7 7-7-7"></path>
+                    </svg>
+                  </span>
+                  <strong>Despesa</strong>
+                  <span>Lançamento manual com mais contexto.</span>
+                </button>
+              </div>
+              <div class="financas-sheet-actions">
+                <button id="btn-financas-fechar-quick-sheet" class="btn-secondary" type="button">Fechar</button>
               </div>
             </div>
           </div>
@@ -9855,13 +10222,17 @@
     function definirMesReferenciaFinancas(valor) {
       const normalizado = (valor || "").trim() || mesReferenciaAtualFinancas();
       const campoPrincipal = document.getElementById("financas-mes-referencia");
+      const campoMobile = document.getElementById("financas-mes-referencia-mobile");
       if (campoPrincipal && campoPrincipal.value !== normalizado) campoPrincipal.value = normalizado;
+      if (campoMobile && campoMobile.value !== normalizado) campoMobile.value = normalizado;
       return normalizado;
     }
 
     function obterMesAnoSelecionadoFinancas() {
       const valor = definirMesReferenciaFinancas(
-        document.getElementById("financas-mes-referencia")?.value || mesReferenciaAtualFinancas()
+        document.getElementById("financas-mes-referencia")?.value
+          || document.getElementById("financas-mes-referencia-mobile")?.value
+          || mesReferenciaAtualFinancas()
       );
       const [anoTexto, mesTexto] = valor.split("-");
       const ano = Number(anoTexto);
@@ -9965,6 +10336,22 @@
         despesasCategoria,
         maiorDespesa,
       };
+    }
+
+    function obterContasVencendoFinancas() {
+      const { mes, ano } = obterMesAnoSelecionadoFinancas();
+      const hoje = new Date();
+      const mesmoMesAtual = hoje.getFullYear() === ano && hoje.getMonth() + 1 === mes;
+      const limiteDias = new Date(ano, mes - 1, hoje.getDate() + 7);
+      return financasContasFixas
+        .map((item) => ({ item, status: obterStatusContaFixaFinancas(item) }))
+        .filter(({ status }) => !status.confirmado)
+        .filter(({ item }) => {
+          const dataVencimento = new Date(ano, mes - 1, Number(item?.dia_vencimento || 1));
+          if (mesmoMesAtual) return dataVencimento <= limiteDias;
+          return true;
+        })
+        .sort((a, b) => Number(a.item?.dia_vencimento || 0) - Number(b.item?.dia_vencimento || 0));
     }
 
     function definirTexto(id, valor) {
@@ -10074,6 +10461,23 @@
               criarLinhaDetalheKpiFinancas(
                 item.descricao || item.categoria || "Despesa",
                 `${item.categoria || "Outros"} · ${formatarDataCurtaBR(item.data)}`,
+                formatarMoedaFinancas(item.valor || 0)
+              )
+            );
+          });
+        }
+      } else if (tipo === "vencendo") {
+        titleEl.textContent = "Contas vencendo";
+        subtitleEl.textContent = "Compromissos fixos com maior pressão nos próximos dias.";
+        const vencendo = obterContasVencendoFinancas();
+        if (!vencendo.length) {
+          lista.innerHTML = '<div class="financas-empty">Nenhuma conta vencendo neste período.</div>';
+        } else {
+          vencendo.forEach(({ item, status }) => {
+            lista.appendChild(
+              criarLinhaDetalheKpiFinancas(
+                item.nome || "Conta fixa",
+                `${item.categoria || "Outros"} · dia ${Number(item.dia_vencimento || 0)} · ${status.label}`,
                 formatarMoedaFinancas(item.valor || 0)
               )
             );
@@ -10284,6 +10688,137 @@
       `;
     }
 
+    function criarLinhaLancamentoMobileFinancas(item) {
+      const row = document.createElement("button");
+      row.className = "financas-mobile-launch-item";
+      row.type = "button";
+      row.addEventListener("click", () => abrirSheetFinancas(item));
+      const titulo = (item.descricao || "").trim() || item.fonte_renda_nome || item.categoria || item.tipo;
+      const metaPartes = [item.categoria];
+      if (item.fonte_renda_nome && normalizarTipoFinancasUI(item.tipo) === "Receita") metaPartes.push(item.fonte_renda_nome);
+      metaPartes.push(formatarDataCurtaBR(item.data));
+      const classeValor = normalizarTipoFinancasUI(item.tipo) === "Receita" ? "positive" : "negative";
+      row.innerHTML = `
+        <div class="financas-mobile-launch-main">
+          <div class="financas-mobile-launch-title">${titulo}</div>
+          <div class="financas-mobile-launch-meta">${metaPartes.filter(Boolean).join(" · ")}</div>
+        </div>
+        <div class="financas-mobile-launch-value ${classeValor}">${formatarMoedaFinancas(item.valor || 0)}</div>
+      `;
+      return row;
+    }
+
+    function renderizarMobileFinancas() {
+      const contexto = obterContextoFinanceiroMes();
+      const saldoAtualEl = document.getElementById("financas-mobile-saldo-atual");
+      const resultadoEl = document.getElementById("financas-mobile-resultado");
+      const gastosHojeEl = document.getElementById("financas-mobile-gastos-hoje");
+      const gastosCopyEl = document.getElementById("financas-mobile-gastos-copy");
+      const contasVencendoEl = document.getElementById("financas-mobile-contas-vencendo");
+      const contasCopyEl = document.getElementById("financas-mobile-contas-copy");
+      const despesasMesEl = document.getElementById("financas-mobile-despesas-mes");
+      const receitasMesEl = document.getElementById("financas-mobile-receitas-mes");
+      const lancamentosMetaEl = document.getElementById("financas-mobile-lancamentos-meta");
+      const lancamentosEl = document.getElementById("financas-mobile-lancamentos");
+      if (!saldoAtualEl || !resultadoEl || !lancamentosMetaEl || !lancamentosEl) return;
+
+      saldoAtualEl.textContent = formatarMoedaFinancas(contexto.saldoMes || 0);
+      saldoAtualEl.classList.toggle("negative", Number(contexto.saldoMes || 0) < 0);
+      resultadoEl.textContent = formatarMoedaFinancas(contexto.saldoPrevisto || 0);
+      resultadoEl.classList.toggle("negative", Number(contexto.saldoPrevisto || 0) < 0);
+
+      if (gastosHojeEl) gastosHojeEl.textContent = formatarMoedaFinancas(contexto.gastosHoje || 0);
+      if (gastosCopyEl) {
+        const qtd = financasLancamentosTemporarios.filter((item) => item.data === dataHojeISO() && normalizarTipoFinancasUI(item.tipo) === "Despesa").length;
+        gastosCopyEl.textContent = qtd ? `${qtd} gasto(s) hoje.` : "Sem gastos hoje.";
+      }
+      if (despesasMesEl) despesasMesEl.textContent = formatarMoedaFinancas(contexto.saidasMes || 0);
+      if (receitasMesEl) receitasMesEl.textContent = formatarMoedaFinancas(contexto.entradasMes || 0);
+
+      const vencendo = obterContasVencendoFinancas();
+      if (contasVencendoEl) contasVencendoEl.textContent = String(vencendo.length);
+      if (contasCopyEl) {
+        contasCopyEl.textContent = vencendo.length
+          ? `Próxima até dia ${Number(vencendo[0].item?.dia_vencimento || 0)}.`
+          : "Sem pressão nesta semana.";
+      }
+
+      const recentes = [...financasLancamentosMesSelecionado]
+        .sort((a, b) => {
+          const dataB = new Date(b.criado_em || b.criadoEm || b.data || 0).getTime();
+          const dataA = new Date(a.criado_em || a.criadoEm || a.data || 0).getTime();
+          return dataB - dataA;
+        })
+        .slice(0, 6);
+      lancamentosMetaEl.textContent = `${recentes.length} item(s)`;
+      if (!recentes.length) {
+        lancamentosEl.innerHTML = '<div class="financas-empty">Nenhum lançamento recente por aqui.</div>';
+      } else {
+        lancamentosEl.innerHTML = "";
+        recentes.forEach((item) => lancamentosEl.appendChild(criarLinhaLancamentoMobileFinancas(item)));
+      }
+    }
+
+    function abrirSheetAcoesRapidasFinancas() {
+      const sheet = document.getElementById("financas-quick-sheet");
+      if (!sheet) return;
+      sheet.hidden = false;
+      requestAnimationFrame(() => sheet.classList.add("open"));
+    }
+
+    function fecharSheetAcoesRapidasFinancas() {
+      const sheet = document.getElementById("financas-quick-sheet");
+      if (!sheet) return;
+      sheet.classList.remove("open");
+      window.setTimeout(() => {
+        if (!sheet.classList.contains("open")) sheet.hidden = true;
+      }, 180);
+    }
+
+    function abrirLancamentoRapidoFinancas(modo = "despesa") {
+      fecharSheetAcoesRapidasFinancas();
+      abrirSheetFinancas();
+      const tituloEl = document.getElementById("financas-sheet-title");
+      const botaoSalvarEl = document.getElementById("btn-financas-salvar");
+      const categoriaEl = document.getElementById("financas-categoria");
+      const dataEl = document.getElementById("financas-data");
+      if (dataEl) dataEl.value = dataHojeISO();
+      if (modo === "receita") {
+        definirTipoLancamentoFinancas("Receita");
+        if (tituloEl) tituloEl.textContent = "Nova receita";
+        if (botaoSalvarEl) botaoSalvarEl.textContent = "Salvar receita";
+      } else {
+        definirTipoLancamentoFinancas("Despesa");
+        if (tituloEl) tituloEl.textContent = modo === "uso-diario" ? "Uso diário" : "Nova despesa";
+        if (botaoSalvarEl) botaoSalvarEl.textContent = modo === "uso-diario" ? "Salvar gasto" : "Salvar despesa";
+        if (categoriaEl && modo === "divida") categoriaEl.value = "Dívidas";
+      }
+      const valorEl = document.getElementById("financas-valor");
+      window.setTimeout(() => valorEl?.focus(), 70);
+    }
+
+    function abrirContaDividaRapidaFinancas() {
+      fecharSheetAcoesRapidasFinancas();
+      abrirSheetContaFixaFinancas();
+      definirTipoContaFixaFinancas("Despesa");
+      const categoriaEl = document.getElementById("financas-conta-fixa-categoria");
+      const tituloEl = document.getElementById("financas-fixed-sheet-title");
+      const botaoSalvarEl = document.getElementById("btn-financas-salvar-conta-fixa");
+      if (categoriaEl) categoriaEl.value = "Dívidas";
+      if (tituloEl) tituloEl.textContent = "Nova dívida fixa";
+      if (botaoSalvarEl) botaoSalvarEl.textContent = "Salvar dívida";
+      const nomeEl = document.getElementById("financas-conta-fixa-nome");
+      window.setTimeout(() => nomeEl?.focus(), 70);
+    }
+
+    function abrirFluxoFinancasPrincipal() {
+      if (window.matchMedia("(max-width: 640px)").matches) {
+        abrirSheetAcoesRapidasFinancas();
+        return;
+      }
+      abrirSheetFinancas();
+    }
+
     function atualizarVisaoMensalPremiumFinancas() {
       const contexto = obterContextoFinanceiroMes();
       const { valor } = obterMesAnoSelecionadoFinancas();
@@ -10386,6 +10921,7 @@
       renderizarDividasFinancas();
       renderizarInsightsFinancas();
       renderizarEvolucaoFinanceiraFinancas();
+      renderizarMobileFinancas();
     }
 
     function definirTipoContaFixaFinancas(tipo = "Despesa") {
@@ -10525,6 +11061,7 @@
     function abrirSheetFinancas(lancamento = null) {
       const sheet = document.getElementById("financas-sheet");
       if (!sheet) return;
+      fecharSheetAcoesRapidasFinancas();
       resetarFormularioFinancas();
       if (lancamento) {
         const idEl = document.getElementById("financas-lancamento-id");
@@ -10565,6 +11102,7 @@
     function abrirSheetFonteRendaFinancas(fonte = null) {
       const sheet = document.getElementById("financas-source-sheet");
       if (!sheet) return;
+      fecharSheetAcoesRapidasFinancas();
       resetarFormularioFonteRendaFinancas();
       if (fonte) {
         const idEl = document.getElementById("financas-fonte-renda-id");
@@ -10598,6 +11136,7 @@
     function abrirSheetContaFixaFinancas(conta = null) {
       const sheet = document.getElementById("financas-fixed-sheet");
       if (!sheet) return;
+      fecharSheetAcoesRapidasFinancas();
       resetarFormularioContaFixaFinancas();
       if (conta) {
         const idEl = document.getElementById("financas-conta-fixa-id");
@@ -11476,10 +12015,17 @@
       document.getElementById("financas-kpi-card-saidas")?.addEventListener("click", () => abrirDetalheKpiFinancas("saidas"));
       document.getElementById("financas-kpi-resultado-card")?.addEventListener("click", () => abrirDetalheKpiFinancas("resultado"));
       document.getElementById("financas-kpi-card-hoje")?.addEventListener("click", () => abrirDetalheKpiFinancas("hoje"));
+      document.getElementById("financas-mobile-balance-card")?.addEventListener("click", () => abrirDetalheKpiFinancas("resultado"));
+      document.getElementById("financas-mobile-card-hoje")?.addEventListener("click", () => abrirDetalheKpiFinancas("hoje"));
+      document.getElementById("financas-mobile-card-vencendo")?.addEventListener("click", () => abrirDetalheKpiFinancas("vencendo"));
+      document.getElementById("financas-mobile-card-despesas")?.addEventListener("click", () => abrirDetalheKpiFinancas("saidas"));
+      document.getElementById("financas-mobile-card-receitas")?.addEventListener("click", () => abrirDetalheKpiFinancas("receitas"));
       document.getElementById("btn-financas-cancelar")?.addEventListener("click", fecharSheetFinancas);
       document.getElementById("btn-financas-fechar-sheet-topo")?.addEventListener("click", fecharSheetFinancas);
       document.getElementById("btn-financas-fechar-kpi-detail")?.addEventListener("click", fecharDetalheKpiFinancas);
       document.getElementById("btn-financas-fechar-kpi-detail-topo")?.addEventListener("click", fecharDetalheKpiFinancas);
+      document.getElementById("btn-financas-fechar-quick-sheet")?.addEventListener("click", fecharSheetAcoesRapidasFinancas);
+      document.getElementById("btn-financas-fechar-quick-sheet-topo")?.addEventListener("click", fecharSheetAcoesRapidasFinancas);
       document.getElementById("btn-financas-cancelar-source-sheet")?.addEventListener("click", fecharSheetFonteRendaFinancas);
       document.getElementById("btn-financas-fechar-source-sheet-topo")?.addEventListener("click", fecharSheetFonteRendaFinancas);
       document.getElementById("btn-financas-nova-conta-fixa")?.addEventListener("click", () => abrirSheetContaFixaFinancas());
@@ -11510,11 +12056,29 @@
       document.getElementById("financas-kpi-detail-sheet")?.addEventListener("click", (ev) => {
         if (ev.target?.id === "financas-kpi-detail-sheet") fecharDetalheKpiFinancas();
       });
+      document.getElementById("financas-quick-sheet")?.addEventListener("click", (ev) => {
+        if (ev.target?.id === "financas-quick-sheet") fecharSheetAcoesRapidasFinancas();
+      });
       document.getElementById("financas-mes-referencia")?.addEventListener("change", async (ev) => {
         definirMesReferenciaFinancas(ev.target?.value || mesReferenciaAtualFinancas());
         await carregarFinancasMesSelecionadoCompleto();
         await carregarContasFixasFinancas();
         await carregarFontesRendaFinancas();
+      });
+      document.getElementById("financas-mes-referencia-mobile")?.addEventListener("change", async (ev) => {
+        definirMesReferenciaFinancas(ev.target?.value || mesReferenciaAtualFinancas());
+        await carregarFinancasMesSelecionadoCompleto();
+        await carregarContasFixasFinancas();
+        await carregarFontesRendaFinancas();
+      });
+      document.querySelectorAll("[data-financas-quick]").forEach((botao) => {
+        botao.addEventListener("click", () => {
+          const acao = botao.dataset.financasQuick || "";
+          if (acao === "receita") abrirLancamentoRapidoFinancas("receita");
+          else if (acao === "divida") abrirContaDividaRapidaFinancas();
+          else if (acao === "uso-diario") abrirLancamentoRapidoFinancas("uso-diario");
+          else abrirLancamentoRapidoFinancas("despesa");
+        });
       });
 
       document.getElementById("form-financas-lancamento")?.addEventListener("submit", async (ev) => {
@@ -15435,7 +15999,7 @@
       });
 
       document.getElementById("btn-toggle-form-agenda")?.addEventListener("click", () => toggleFormAgenda());
-      document.getElementById("btn-toggle-form-financas")?.addEventListener("click", abrirSheetFinancas);
+      document.getElementById("btn-toggle-form-financas")?.addEventListener("click", abrirFluxoFinancasPrincipal);
       document.getElementById("btn-fechar-form-agenda")?.addEventListener("click", () => toggleFormAgenda(false));
       document.getElementById("btn-cancelar-form-agenda")?.addEventListener("click", () => toggleFormAgenda(false));
       document.getElementById("agenda-form-wrap")?.addEventListener("click", (ev) => {
