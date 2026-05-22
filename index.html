@@ -2926,6 +2926,33 @@
       #screen-financas .financas-source-item {
         padding: 9px 0;
       }
+      #screen-financas .financas-source-inline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 12px;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 14px;
+        background: rgba(248,250,252,0.6);
+      }
+      #screen-financas .financas-source-inline-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+      #screen-financas .financas-source-inline-value {
+        font-size: 20px;
+        line-height: 1;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        color: #0f172a;
+      }
+      #screen-financas .financas-source-inline-text {
+        font-size: 11px;
+        color: #64748b;
+      }
       #screen-financas .financas-source-name {
         font-size: 13px;
         font-weight: 620;
@@ -3092,6 +3119,13 @@
         }
         #screen-financas .financas-line-chart-svg {
           height: 150px;
+        }
+        #screen-financas .financas-source-inline {
+          align-items: flex-start;
+          padding: 9px 10px;
+        }
+        #screen-financas .financas-source-inline-value {
+          font-size: 18px;
         }
         #screen-financas .financas-gauge-wrap {
           width: 168px;
@@ -8314,28 +8348,25 @@
                   <div class="financas-premium-card">
                     <div class="financas-card-header">
                       <div>
-                        <h3 class="financas-card-title">Evolução financeira</h3>
-                        <div class="financas-card-subtitle">Resultado mensal recente para leitura rápida.</div>
-                      </div>
-                    </div>
-                    <div id="financas-evolucao-chart" class="financas-chart-line">
-                      <div class="financas-empty">Carregando evolução...</div>
-                    </div>
-                  </div>
-
-                  <div class="financas-premium-card">
-                    <div class="financas-card-header">
-                      <div>
                         <h3 class="financas-card-title">Fontes de renda</h3>
-                        <div class="financas-card-subtitle">Receitas organizadas por origem para facilitar o mês.</div>
+                        <div class="financas-card-subtitle">Receitas organizadas por origem.</div>
                       </div>
                       <div class="financas-header-actions">
                         <div id="financas-fontes-meta" class="financas-card-chip">0 fonte(s)</div>
-                        <button id="btn-financas-nova-fonte-renda" class="btn-secondary financas-action-btn" type="button">Nova fonte</button>
+                        <button id="btn-financas-visualizar-fontes" class="btn-secondary financas-action-btn" type="button">Visualizar</button>
+                        <button id="btn-financas-nova-fonte-renda" class="btn-secondary financas-action-btn" type="button">Adicionar</button>
                       </div>
                     </div>
-                    <div id="financas-fontes-renda-lista" class="financas-source-list">
-                      <div class="financas-empty">Nenhuma fonte de renda cadastrada.</div>
+                    <div class="financas-source-inline">
+                      <div class="financas-source-inline-copy">
+                        <strong id="financas-fontes-total" class="financas-source-inline-value">R$ 0,00</strong>
+                        <span id="financas-fontes-inline-copy" class="financas-source-inline-text">Nenhuma fonte cadastrada.</span>
+                      </div>
+                    </div>
+                    <div id="financas-fontes-renda-wrap" hidden>
+                      <div id="financas-fontes-renda-lista" class="financas-source-list">
+                        <div class="financas-empty">Nenhuma fonte de renda cadastrada.</div>
+                      </div>
                     </div>
                   </div>
 
@@ -9751,6 +9782,7 @@
     let financasFontesRenda = [];
     let financasContaFixaConfirmacaoAtual = null;
     let financasHistoricoResumo = [];
+    let financasFontesVisiveis = false;
 
     function formatarMoedaFinancas(valor) {
       const numero = Number(valor || 0);
@@ -9880,6 +9912,18 @@
     function definirTexto(id, valor) {
       const el = document.getElementById(id);
       if (el) el.textContent = valor;
+    }
+
+    function atualizarToggleFontesFinancas() {
+      const wrap = document.getElementById("financas-fontes-renda-wrap");
+      const btn = document.getElementById("btn-financas-visualizar-fontes");
+      if (wrap) wrap.hidden = !financasFontesVisiveis;
+      if (btn) btn.textContent = financasFontesVisiveis ? "Ocultar" : "Visualizar";
+    }
+
+    function alternarFontesRendaFinancas() {
+      financasFontesVisiveis = !financasFontesVisiveis;
+      atualizarToggleFontesFinancas();
     }
 
     function criarBadgeFinancas(tipo = "pendente", texto = "") {
@@ -10619,21 +10663,29 @@
     function renderizarFontesRendaFinancas(mensagemErro = "") {
       const metaResumoEl = document.getElementById("financas-fontes-meta");
       const listaEl = document.getElementById("financas-fontes-renda-lista");
-      if (!metaResumoEl || !listaEl) return;
+      const totalEl = document.getElementById("financas-fontes-total");
+      const copyEl = document.getElementById("financas-fontes-inline-copy");
+      if (!metaResumoEl || !listaEl || !totalEl || !copyEl) return;
       aplicarResumoFinancasMes(financasResumoMesSelecionado || {});
 
       if (mensagemErro) {
         listaEl.innerHTML = `<div class="financas-empty">${mensagemErro}</div>`;
         metaResumoEl.textContent = "0 fonte(s)";
+        totalEl.textContent = "R$ 0,00";
+        copyEl.textContent = mensagemErro;
         return;
       }
 
       metaResumoEl.textContent = `${financasFontesRenda.length} fonte(s)`;
+      const totalBase = financasFontesRenda.reduce((soma, item) => soma + Number(item.valor_base || 0), 0);
+      totalEl.textContent = formatarMoedaFinancas(totalBase);
       if (!financasFontesRenda.length) {
         listaEl.innerHTML = '<div class="financas-empty">Nenhuma fonte de renda cadastrada.</div>';
+        copyEl.textContent = "Nenhuma fonte cadastrada.";
         preencherSelectFonteRendaFinancas();
         return;
       }
+      copyEl.textContent = `${financasFontesRenda.length} fonte(s) cadastrada(s) neste mês.`;
 
       listaEl.innerHTML = "";
       financasFontesRenda.forEach((fonte) => {
@@ -10707,6 +10759,7 @@
       });
 
       preencherSelectFonteRendaFinancas();
+      atualizarToggleFontesFinancas();
     }
 
     function aplicarPrevisaoContasFixasFinancas() {
@@ -11246,6 +11299,7 @@
       document.getElementById("btn-financas-novo-lancamento")?.addEventListener("click", abrirSheetFinancas);
       document.getElementById("btn-financas-exportar")?.addEventListener("click", exportarVisaoFinancasAtual);
       document.getElementById("btn-financas-nova-fonte-renda")?.addEventListener("click", () => abrirSheetFonteRendaFinancas());
+      document.getElementById("btn-financas-visualizar-fontes")?.addEventListener("click", alternarFontesRendaFinancas);
       document.getElementById("btn-financas-cancelar")?.addEventListener("click", fecharSheetFinancas);
       document.getElementById("btn-financas-fechar-sheet-topo")?.addEventListener("click", fecharSheetFinancas);
       document.getElementById("btn-financas-cancelar-source-sheet")?.addEventListener("click", fecharSheetFonteRendaFinancas);
