@@ -2856,7 +2856,7 @@
         height: 190px;
         border-radius: 999px;
         background:
-          conic-gradient(from 180deg,
+          conic-gradient(from 270deg,
             #ef4444 0deg,
             #f97316 42deg,
             #f59e0b 84deg,
@@ -2869,27 +2869,39 @@
       #screen-financas .financas-gauge-needle {
         position: absolute;
         left: 50%;
-        bottom: 12px;
-        width: 3px;
-        height: 78px;
+        bottom: 16px;
+        width: 44px;
+        height: 10px;
         border-radius: 999px;
-        background: #0f172a;
+        background: linear-gradient(90deg, #0f172a 0%, #1e293b 72%, rgba(15, 23, 42, 0.18) 100%);
         transform-origin: 50% calc(100% - 6px);
         transform: translateX(-50%) rotate(-50deg);
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.16);
         transition: transform .32s ease;
+      }
+      #screen-financas .financas-gauge-needle::after {
+        content: "";
+        position: absolute;
+        right: -2px;
+        top: 50%;
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        background: #0f172a;
+        transform: translateY(-50%);
+        box-shadow: 0 0 0 4px rgba(255,255,255,0.82);
       }
       #screen-financas .financas-gauge-center {
         position: absolute;
         left: 50%;
-        bottom: 8px;
-        width: 16px;
-        height: 16px;
+        bottom: 9px;
+        width: 18px;
+        height: 18px;
         border-radius: 999px;
         background: #ffffff;
-        border: 3px solid #0f172a;
+        border: 3px solid rgba(15, 23, 42, 0.88);
         transform: translateX(-50%);
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
       }
       #screen-financas .financas-gauge-status {
         font-size: 24px;
@@ -3066,7 +3078,9 @@
           height: 168px;
         }
         #screen-financas .financas-gauge-needle {
-          height: 68px;
+          width: 40px;
+          height: 9px;
+          bottom: 15px;
         }
         #screen-financas .financas-gauge-status {
           font-size: 21px;
