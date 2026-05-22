@@ -10387,6 +10387,14 @@
       const resumo = financasResumoMesSelecionado || {};
       const receitasPlanejadas = financasFontesRenda.reduce((soma, item) => soma + Number(item.valor_base || 0), 0);
       const entradasMes = Number(resumo.entradas_mes || 0);
+      const receitasSemFonte = financasLancamentosMesSelecionado
+        .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Receita" && !item.fonte_renda_id)
+        .reduce((soma, item) => soma + Number(item.valor || 0), 0);
+      const receitasMesPainel = financasFontesRenda.reduce((soma, item) => {
+        const recebido = Number(item.total_recebido_mes || 0);
+        const base = Number(item.valor_base || 0);
+        return soma + (recebido > 0 ? recebido : base);
+      }, 0) + receitasSemFonte;
       const lancamentosAvulsosDespesa = obterLancamentosDespesaAvulsosMesFinancas();
       const saidasAvulsasMes = lancamentosAvulsosDespesa.reduce((soma, item) => soma + Number(item.valor || 0), 0);
       const contasDespesa = financasContasFixas.filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa");
@@ -10415,6 +10423,8 @@
       return {
         receitasPlanejadas,
         entradasMes,
+        receitasMesPainel,
+        receitasSemFonte,
         saidasMes,
         saldoMes,
         saldoPrevisto,
@@ -10675,18 +10685,33 @@
 
       if (tipo === "receitas") {
         titleEl.textContent = "Receitas";
-        subtitleEl.textContent = "Entradas lançadas neste mês.";
-        const receitas = financasLancamentosMesSelecionado
-          .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Receita")
-          .sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0));
+        subtitleEl.textContent = "Fontes e entradas que compõem a receita do mês.";
+        const receitasDetalhadas = [];
+        financasFontesRenda.forEach((fonte) => {
+          const recebido = Number(fonte.total_recebido_mes || 0);
+          const base = Number(fonte.valor_base || 0);
+          receitasDetalhadas.push({
+            titulo: fonte.nome || "Fonte de renda",
+            meta: recebido > 0 ? `Recebido no mês · ${fonte.descricao || "com lançamento"}` : (fonte.descricao || "Base mensal"),
+            valor: recebido > 0 ? recebido : base,
+          });
+        });
+        const avulsas = financasLancamentosMesSelecionado
+          .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Receita" && !item.fonte_renda_id)
+          .map((item) => ({
+            titulo: item.descricao || "Receita avulsa",
+            meta: `Entrada avulsa · ${formatarDataCurtaBR(item.data)}`,
+            valor: Number(item.valor || 0),
+          }));
+        const receitas = [...receitasDetalhadas, ...avulsas].sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0));
         if (!receitas.length) {
           lista.innerHTML = '<div class="financas-empty">Nenhuma receita registrada neste mês.</div>';
         } else {
           receitas.forEach((item) => {
             lista.appendChild(
               criarLinhaDetalheKpiFinancas(
-                item.descricao || "Receita",
-                `${item.fonte_renda_nome || "Entrada avulsa"} · ${formatarDataCurtaBR(item.data)}`,
+                item.titulo || "Receita",
+                item.meta || "Receita do mês",
                 formatarMoedaFinancas(item.valor || 0)
               )
             );
@@ -11007,7 +11032,7 @@
         gastosCopyEl.textContent = qtd ? `${qtd} gasto(s) hoje.` : "Sem gastos hoje.";
       }
       if (despesasMesEl) despesasMesEl.textContent = formatarMoedaFinancas(contexto.saidasMes || 0);
-      if (receitasMesEl) receitasMesEl.textContent = formatarMoedaFinancas(contexto.entradasMes || 0);
+      if (receitasMesEl) receitasMesEl.textContent = formatarMoedaFinancas(contexto.receitasMesPainel || 0);
 
       const vencendo = obterContasVencendoFinancas();
       if (contasVencendoEl) contasVencendoEl.textContent = String(vencendo.length);
@@ -11098,8 +11123,8 @@
       const contexto = obterContextoFinanceiroMes();
       const { valor } = obterMesAnoSelecionadoFinancas();
       definirTexto("financas-month-label", formatarMesAnoHumanoFinancas(valor));
-      definirTexto("financas-kpi-receitas", formatarMoedaFinancas(contexto.entradasMes));
-      definirTexto("financas-kpi-receitas-aux", `${financasLancamentosMesSelecionado.filter((item) => normalizarTipoFinancasUI(item.tipo) === "Receita").length} receita(s) lançada(s).`);
+      definirTexto("financas-kpi-receitas", formatarMoedaFinancas(contexto.receitasMesPainel));
+      definirTexto("financas-kpi-receitas-aux", `${financasFontesRenda.length} fonte(s) e ${financasLancamentosMesSelecionado.filter((item) => normalizarTipoFinancasUI(item.tipo) === "Receita" && !item.fonte_renda_id).length} entrada(s) avulsa(s).`);
       const saidasTotais = contexto.saidasMes;
       definirTexto("financas-kpi-saidas", formatarMoedaFinancas(saidasTotais));
       definirTexto("financas-kpi-saidas-aux", `${financasContasFixas.filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa").length} despesa(s) recorrente(s) e ${contexto.lancamentosAvulsosDespesa.length} gasto(s) avulso(s).`);
@@ -11116,14 +11141,14 @@
       const resultadoEl = document.getElementById("financas-kpi-resultado");
       resultadoEl?.classList.toggle("negative", contexto.saldoMes < 0);
 
-      definirTexto("financas-resumo-receitas", formatarMoedaFinancas(contexto.entradasMes));
+      definirTexto("financas-resumo-receitas", formatarMoedaFinancas(contexto.receitasMesPainel));
       definirTexto("financas-resumo-despesas", formatarMoedaFinancas(contexto.saidasMes));
       definirTexto("financas-resumo-dividas-pagas", formatarMoedaFinancas(contexto.gastosHoje));
       definirTexto("financas-resumo-resultado", formatarMoedaFinancas(contexto.saldoMes));
       document.getElementById("financas-resumo-resultado")?.classList.toggle("negative", contexto.saldoMes < 0);
 
-      const baseReceita = Math.max(contexto.entradasMes || 0, contexto.saidasMes || 0, contexto.gastosHoje || 0, Math.abs(contexto.saldoMes || 0), 1);
-      const pctReceita = Math.min(100, Math.round((contexto.entradasMes / baseReceita) * 100));
+      const baseReceita = Math.max(contexto.receitasMesPainel || 0, contexto.saidasMes || 0, contexto.gastosHoje || 0, Math.abs(contexto.saldoMes || 0), 1);
+      const pctReceita = Math.min(100, Math.round((contexto.receitasMesPainel / baseReceita) * 100));
       const pctDespesa = Math.min(100, Math.round((contexto.saidasMes / baseReceita) * 100));
       const pctDivida = Math.min(100, Math.round((contexto.gastosHoje / baseReceita) * 100));
       const pctResultado = Math.min(100, Math.round((Math.abs(contexto.saldoMes) / baseReceita) * 100));
