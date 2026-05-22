@@ -2400,6 +2400,15 @@
         transform: translateY(-2px);
         box-shadow: 0 14px 28px rgba(15, 23, 42, 0.06);
       }
+      #screen-financas .financas-kpi-button {
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+      }
+      #screen-financas .financas-kpi-button:focus-visible {
+        outline: 2px solid rgba(var(--cor-tema-rgb), 0.38);
+        outline-offset: 2px;
+      }
       #screen-financas .financas-kpi-card {
         padding: 14px 15px;
         display: flex;
@@ -2952,6 +2961,49 @@
       #screen-financas .financas-source-inline-text {
         font-size: 11px;
         color: #64748b;
+      }
+      #screen-financas .financas-kpi-detail-body {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      #screen-financas .financas-kpi-detail-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      #screen-financas .financas-kpi-detail-item {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.78);
+      }
+      #screen-financas .financas-kpi-detail-item:last-child {
+        border-bottom: none;
+      }
+      #screen-financas .financas-kpi-detail-main {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      #screen-financas .financas-kpi-detail-name {
+        font-size: 13px;
+        font-weight: 620;
+        color: #0f172a;
+      }
+      #screen-financas .financas-kpi-detail-meta {
+        font-size: 11px;
+        line-height: 1.4;
+        color: #64748b;
+      }
+      #screen-financas .financas-kpi-detail-value {
+        font-size: 13px;
+        font-weight: 650;
+        color: #0f172a;
+        white-space: nowrap;
       }
       #screen-financas .financas-source-name {
         font-size: 13px;
@@ -8209,7 +8261,7 @@
               </div>
 
               <div class="financas-kpi-grid">
-                <div class="financas-kpi-card positive">
+                <button id="financas-kpi-card-receitas" class="financas-kpi-card positive financas-kpi-button" type="button">
                   <div class="financas-kpi-top">
                     <span class="financas-kpi-label">Receitas</span>
                     <span class="financas-kpi-icon positive">
@@ -8221,10 +8273,10 @@
                   </div>
                   <div id="financas-kpi-receitas" class="financas-kpi-value">R$ 0,00</div>
                   <div id="financas-kpi-receitas-aux" class="financas-kpi-meta">Renda planejada para o mês.</div>
-                </div>
-                <div class="financas-kpi-card danger">
+                </button>
+                <button id="financas-kpi-card-saidas" class="financas-kpi-card danger financas-kpi-button" type="button">
                   <div class="financas-kpi-top">
-                    <span class="financas-kpi-label">Despesas</span>
+                    <span class="financas-kpi-label">Saídas do mês</span>
                     <span class="financas-kpi-icon danger">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M12 5v14"/>
@@ -8232,23 +8284,10 @@
                       </svg>
                     </span>
                   </div>
-                  <div id="financas-kpi-despesas" class="financas-kpi-value">R$ 0,00</div>
-                  <div id="financas-kpi-despesas-aux" class="financas-kpi-meta">Saídas lançadas neste mês.</div>
-                </div>
-                <div class="financas-kpi-card warning">
-                  <div class="financas-kpi-top">
-                    <span class="financas-kpi-label">Dívidas</span>
-                    <span class="financas-kpi-icon warning">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <rect x="3" y="6" width="18" height="12" rx="2"/>
-                        <path d="M3 10h18"/>
-                      </svg>
-                    </span>
-                  </div>
-                  <div id="financas-kpi-dividas" class="financas-kpi-value">R$ 0,00</div>
-                  <div id="financas-kpi-dividas-aux" class="financas-kpi-meta">Compromissos em aberto no mês.</div>
-                </div>
-                <div id="financas-kpi-resultado-card" class="financas-kpi-card neutral">
+                  <div id="financas-kpi-saidas" class="financas-kpi-value">R$ 0,00</div>
+                  <div id="financas-kpi-saidas-aux" class="financas-kpi-meta">Despesas lançadas e dívidas em aberto.</div>
+                </button>
+                <button id="financas-kpi-resultado-card" class="financas-kpi-card neutral financas-kpi-button" type="button">
                   <div class="financas-kpi-top">
                     <span class="financas-kpi-label">Resultado do mês</span>
                     <span class="financas-kpi-icon neutral">
@@ -8260,7 +8299,20 @@
                   </div>
                   <div id="financas-kpi-resultado" class="financas-kpi-value">R$ 0,00</div>
                   <div id="financas-kpi-resultado-aux" class="financas-kpi-meta">Resultado previsto com base no mês.</div>
-                </div>
+                </button>
+                <button id="financas-kpi-card-hoje" class="financas-kpi-card warning financas-kpi-button" type="button">
+                  <div class="financas-kpi-top">
+                    <span class="financas-kpi-label">Gastos do dia</span>
+                    <span class="financas-kpi-icon warning">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="8"/>
+                        <path d="M12 8v4l3 2"/>
+                      </svg>
+                    </span>
+                  </div>
+                  <div id="financas-kpi-hoje" class="financas-kpi-value">R$ 0,00</div>
+                  <div id="financas-kpi-hoje-aux" class="financas-kpi-meta">Despesas registradas hoje.</div>
+                </button>
               </div>
 
               <div class="financas-dashboard-grid">
@@ -8370,18 +8422,6 @@
                     </div>
                   </div>
 
-                  <div class="financas-premium-card">
-                    <div class="financas-card-header">
-                      <div>
-                        <h3 class="financas-card-title">Lançamentos de hoje</h3>
-                        <div class="financas-card-subtitle">Extrato operacional das saídas do dia.</div>
-                      </div>
-                      <div id="financas-lista-meta" class="financas-card-chip">0 despesa(s)</div>
-                    </div>
-                    <div id="financas-lista-hoje" class="financas-day-list">
-                      <div class="financas-empty">Nenhuma despesa registrada hoje.</div>
-                    </div>
-                  </div>
                 </div>
                 <div class="financas-side-column">
                   <div class="financas-premium-card financas-health-card">
@@ -8659,6 +8699,23 @@
                   </div>
                 </div>
               </form>
+            </div>
+          </div>
+
+          <div id="financas-kpi-detail-sheet" class="financas-sheet financas-fixed-sheet" hidden>
+            <div class="financas-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="financas-kpi-detail-title">
+              <div class="financas-sheet-handle" aria-hidden="true"></div>
+              <div class="financas-sheet-head">
+                <div id="financas-kpi-detail-title" class="financas-sheet-title">Detalhes</div>
+                <button id="btn-financas-fechar-kpi-detail-topo" class="btn-secondary" type="button">Fechar</button>
+              </div>
+              <div id="financas-kpi-detail-subtitle" class="financas-card-subtitle">Visão detalhada do indicador.</div>
+              <div id="financas-kpi-detail-body" class="financas-kpi-detail-body">
+                <div class="financas-empty">Sem detalhes disponíveis.</div>
+              </div>
+              <div class="financas-sheet-actions">
+                <button id="btn-financas-fechar-kpi-detail" class="btn-secondary" type="button">Fechar</button>
+              </div>
             </div>
           </div>
         </div>
@@ -9783,6 +9840,7 @@
     let financasContaFixaConfirmacaoAtual = null;
     let financasHistoricoResumo = [];
     let financasFontesVisiveis = false;
+    let financasKpiDetailAtual = "";
 
     function formatarMoedaFinancas(valor) {
       const numero = Number(valor || 0);
@@ -9924,6 +9982,119 @@
     function alternarFontesRendaFinancas() {
       financasFontesVisiveis = !financasFontesVisiveis;
       atualizarToggleFontesFinancas();
+    }
+
+    function criarLinhaDetalheKpiFinancas(titulo, meta, valor) {
+      const row = document.createElement("div");
+      row.className = "financas-kpi-detail-item";
+      row.innerHTML = `
+        <div class="financas-kpi-detail-main">
+          <div class="financas-kpi-detail-name">${titulo}</div>
+          <div class="financas-kpi-detail-meta">${meta}</div>
+        </div>
+        <div class="financas-kpi-detail-value">${valor}</div>
+      `;
+      return row;
+    }
+
+    function abrirDetalheKpiFinancas(tipo) {
+      const sheet = document.getElementById("financas-kpi-detail-sheet");
+      const titleEl = document.getElementById("financas-kpi-detail-title");
+      const subtitleEl = document.getElementById("financas-kpi-detail-subtitle");
+      const bodyEl = document.getElementById("financas-kpi-detail-body");
+      if (!sheet || !titleEl || !subtitleEl || !bodyEl) return;
+      financasKpiDetailAtual = tipo || "";
+      const contexto = obterContextoFinanceiroMes();
+      const lista = document.createElement("div");
+      lista.className = "financas-kpi-detail-list";
+
+      if (tipo === "receitas") {
+        titleEl.textContent = "Receitas";
+        subtitleEl.textContent = "Fontes que compõem sua receita planejada do mês.";
+        if (!financasFontesRenda.length) {
+          lista.innerHTML = '<div class="financas-empty">Nenhuma fonte de renda cadastrada.</div>';
+        } else {
+          financasFontesRenda.forEach((fonte) => {
+            lista.appendChild(
+              criarLinhaDetalheKpiFinancas(
+                fonte.nome || "Fonte",
+                fonte.descricao || "Base mensal",
+                formatarMoedaFinancas(fonte.valor_base || 0)
+              )
+            );
+          });
+        }
+      } else if (tipo === "saidas") {
+        titleEl.textContent = "Saídas do mês";
+        subtitleEl.textContent = "Despesas lançadas somadas às dívidas em aberto.";
+        const despesas = financasLancamentosMesSelecionado
+          .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa")
+          .sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0));
+        if (!despesas.length && !contexto.dividasAbertas.length) {
+          lista.innerHTML = '<div class="financas-empty">Nenhuma saída registrada para detalhar.</div>';
+        } else {
+          despesas.forEach((item) => {
+            lista.appendChild(
+              criarLinhaDetalheKpiFinancas(
+                item.descricao || item.categoria || "Despesa",
+                `${item.categoria || "Outros"} · ${formatarDataCurtaBR(item.data)}`,
+                formatarMoedaFinancas(item.valor || 0)
+              )
+            );
+          });
+          contexto.dividasAbertas.forEach((item) => {
+            lista.appendChild(
+              criarLinhaDetalheKpiFinancas(
+                item.nome || "Dívida",
+                `Em aberto · dia ${Number(item.dia_vencimento || 0)}`,
+                formatarMoedaFinancas(item.valor || 0)
+              )
+            );
+          });
+        }
+      } else if (tipo === "resultado") {
+        titleEl.textContent = "Resultado do mês";
+        subtitleEl.textContent = "Comparação entre receita planejada, saídas e saldo previsto.";
+        lista.appendChild(criarLinhaDetalheKpiFinancas("Receita planejada", "Fontes de renda cadastradas", formatarMoedaFinancas(contexto.receitasPlanejadas)));
+        lista.appendChild(criarLinhaDetalheKpiFinancas("Despesas lançadas", "Saídas realizadas até agora", formatarMoedaFinancas(contexto.saidasMes)));
+        lista.appendChild(criarLinhaDetalheKpiFinancas("Dívidas em aberto", "Pendências ainda não confirmadas", formatarMoedaFinancas(contexto.dividasEmAberto)));
+        lista.appendChild(criarLinhaDetalheKpiFinancas("Saldo previsto", "Receita menos contas fixas", formatarMoedaFinancas(contexto.saldoPrevisto)));
+      } else if (tipo === "hoje") {
+        titleEl.textContent = "Gastos do dia";
+        subtitleEl.textContent = "Despesas registradas na data de hoje.";
+        const hoje = dataHojeISO();
+        const despesasHoje = financasLancamentosTemporarios
+          .filter((item) => item.data === hoje && normalizarTipoFinancasUI(item.tipo) === "Despesa")
+          .sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0));
+        if (!despesasHoje.length) {
+          lista.innerHTML = '<div class="financas-empty">Nenhum gasto registrado hoje.</div>';
+        } else {
+          despesasHoje.forEach((item) => {
+            lista.appendChild(
+              criarLinhaDetalheKpiFinancas(
+                item.descricao || item.categoria || "Despesa",
+                `${item.categoria || "Outros"} · ${formatarDataCurtaBR(item.data)}`,
+                formatarMoedaFinancas(item.valor || 0)
+              )
+            );
+          });
+        }
+      }
+
+      bodyEl.innerHTML = "";
+      bodyEl.appendChild(lista);
+      sheet.hidden = false;
+      requestAnimationFrame(() => sheet.classList.add("open"));
+    }
+
+    function fecharDetalheKpiFinancas() {
+      const sheet = document.getElementById("financas-kpi-detail-sheet");
+      if (!sheet) return;
+      sheet.classList.remove("open");
+      window.setTimeout(() => {
+        if (!sheet.classList.contains("open")) sheet.hidden = true;
+      }, 180);
+      financasKpiDetailAtual = "";
     }
 
     function criarBadgeFinancas(tipo = "pendente", texto = "") {
@@ -10119,12 +10290,13 @@
       definirTexto("financas-month-label", formatarMesAnoHumanoFinancas(valor));
       definirTexto("financas-kpi-receitas", formatarMoedaFinancas(contexto.receitasPlanejadas));
       definirTexto("financas-kpi-receitas-aux", `Entradas lançadas: ${formatarMoedaFinancas(contexto.entradasMes)}`);
-      definirTexto("financas-kpi-despesas", formatarMoedaFinancas(contexto.saidasMes));
-      definirTexto("financas-kpi-despesas-aux", `${financasLancamentosMesSelecionado.filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa").length} despesa(s) lançada(s).`);
-      definirTexto("financas-kpi-dividas", formatarMoedaFinancas(contexto.dividasEmAberto));
-      definirTexto("financas-kpi-dividas-aux", `${contexto.dividasAbertas.length} pendência(s) em aberto.`);
+      const saidasTotais = contexto.saidasMes + contexto.dividasEmAberto;
+      definirTexto("financas-kpi-saidas", formatarMoedaFinancas(saidasTotais));
+      definirTexto("financas-kpi-saidas-aux", `${financasLancamentosMesSelecionado.filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa").length} despesa(s) e ${contexto.dividasAbertas.length} dívida(s).`);
       definirTexto("financas-kpi-resultado", formatarMoedaFinancas(contexto.saldoPrevisto));
       definirTexto("financas-kpi-resultado-aux", contexto.saldoPrevisto < 0 ? "Previsão indica falta no fechamento do mês." : "Previsão confortável para o fechamento.");
+      definirTexto("financas-kpi-hoje", formatarMoedaFinancas(contexto.gastosHoje));
+      definirTexto("financas-kpi-hoje-aux", `${financasLancamentosTemporarios.filter((item) => item.data === dataHojeISO() && normalizarTipoFinancasUI(item.tipo) === "Despesa").length} gasto(s) registrado(s) hoje.`);
 
       const resultadoCard = document.getElementById("financas-kpi-resultado-card");
       if (resultadoCard) {
@@ -11300,8 +11472,14 @@
       document.getElementById("btn-financas-exportar")?.addEventListener("click", exportarVisaoFinancasAtual);
       document.getElementById("btn-financas-nova-fonte-renda")?.addEventListener("click", () => abrirSheetFonteRendaFinancas());
       document.getElementById("btn-financas-visualizar-fontes")?.addEventListener("click", alternarFontesRendaFinancas);
+      document.getElementById("financas-kpi-card-receitas")?.addEventListener("click", () => abrirDetalheKpiFinancas("receitas"));
+      document.getElementById("financas-kpi-card-saidas")?.addEventListener("click", () => abrirDetalheKpiFinancas("saidas"));
+      document.getElementById("financas-kpi-resultado-card")?.addEventListener("click", () => abrirDetalheKpiFinancas("resultado"));
+      document.getElementById("financas-kpi-card-hoje")?.addEventListener("click", () => abrirDetalheKpiFinancas("hoje"));
       document.getElementById("btn-financas-cancelar")?.addEventListener("click", fecharSheetFinancas);
       document.getElementById("btn-financas-fechar-sheet-topo")?.addEventListener("click", fecharSheetFinancas);
+      document.getElementById("btn-financas-fechar-kpi-detail")?.addEventListener("click", fecharDetalheKpiFinancas);
+      document.getElementById("btn-financas-fechar-kpi-detail-topo")?.addEventListener("click", fecharDetalheKpiFinancas);
       document.getElementById("btn-financas-cancelar-source-sheet")?.addEventListener("click", fecharSheetFonteRendaFinancas);
       document.getElementById("btn-financas-fechar-source-sheet-topo")?.addEventListener("click", fecharSheetFonteRendaFinancas);
       document.getElementById("btn-financas-nova-conta-fixa")?.addEventListener("click", () => abrirSheetContaFixaFinancas());
@@ -11328,6 +11506,9 @@
       });
       document.getElementById("financas-confirm-sheet")?.addEventListener("click", (ev) => {
         if (ev.target?.id === "financas-confirm-sheet") fecharSheetConfirmacaoContaFixaFinancas();
+      });
+      document.getElementById("financas-kpi-detail-sheet")?.addEventListener("click", (ev) => {
+        if (ev.target?.id === "financas-kpi-detail-sheet") fecharDetalheKpiFinancas();
       });
       document.getElementById("financas-mes-referencia")?.addEventListener("change", async (ev) => {
         definirMesReferenciaFinancas(ev.target?.value || mesReferenciaAtualFinancas());
