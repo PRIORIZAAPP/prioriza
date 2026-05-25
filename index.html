@@ -3428,50 +3428,213 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 18px;
+        background: rgba(255,255,255,0.92);
+        overflow: hidden;
       }
-      #screen-financas .financas-projecao-grid {
+      #screen-financas .financas-projecao-scroll {
+        overflow-x: auto;
+        overflow-y: hidden;
+      }
+      #screen-financas .financas-projecao-table {
+        min-width: 760px;
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
-        gap: 10px;
+        grid-auto-rows: minmax(42px, auto);
       }
-      #screen-financas .financas-projecao-card {
-        border: 1px solid rgba(226,232,240,0.9);
-        border-radius: 16px;
-        padding: 11px 12px;
-        background: rgba(248,250,252,0.72);
-        display: flex;
-        flex-direction: column;
-        gap: 7px;
-        cursor: pointer;
-        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+      #screen-financas .financas-projecao-head,
+      #screen-financas .financas-projecao-row,
+      #screen-financas .financas-projecao-total-row {
+        display: grid;
+        grid-template-columns: minmax(250px, 1.65fr) repeat(6, minmax(98px, 1fr));
+        align-items: center;
       }
-      #screen-financas .financas-projecao-card:hover {
-        transform: translateY(-1px);
-        border-color: rgba(var(--cor-tema-rgb), 0.18);
-        box-shadow: 0 12px 24px rgba(15,23,42,0.05);
-        background: rgba(255,255,255,0.95);
+      #screen-financas .financas-projecao-table.anual .financas-projecao-head,
+      #screen-financas .financas-projecao-table.anual .financas-projecao-row,
+      #screen-financas .financas-projecao-table.anual .financas-projecao-total-row {
+        grid-template-columns: minmax(250px, 1.65fr) repeat(12, minmax(84px, 1fr));
       }
-      #screen-financas .financas-projecao-label {
-        font-size: 11px;
+      #screen-financas .financas-projecao-head {
+        min-height: 44px;
+        padding: 0 14px;
+        background: rgba(248, 250, 252, 0.88);
+        border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+      }
+      #screen-financas .financas-projecao-head-label,
+      #screen-financas .financas-projecao-head-month {
+        font-size: 10px;
         font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
         color: #7b8ca3;
       }
-      #screen-financas .financas-projecao-value {
-        font-size: 20px;
-        line-height: 1;
-        font-weight: 720;
-        letter-spacing: -0.05em;
-        color: #0f172a;
+      #screen-financas .financas-projecao-head-label {
+        padding-right: 10px;
       }
-      #screen-financas .financas-projecao-value.negative {
+      #screen-financas .financas-projecao-head-month {
+        text-align: center;
+      }
+      #screen-financas .financas-projecao-category {
+        display: grid;
+        grid-template-columns: minmax(250px, 1.65fr) repeat(6, minmax(98px, 1fr));
+        min-height: 38px;
+        padding: 0 14px;
+        align-items: center;
+        border-top: 1px solid rgba(226, 232, 240, 0.82);
+        border-bottom: 1px solid rgba(241, 245, 249, 0.92);
+        background: rgba(248, 250, 252, 0.82);
+      }
+      #screen-financas .financas-projecao-table.anual .financas-projecao-category {
+        grid-template-columns: minmax(250px, 1.65fr) repeat(12, minmax(84px, 1fr));
+      }
+      #screen-financas .financas-projecao-category-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 11px;
+        font-weight: 650;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #1f2937;
+      }
+      #screen-financas .financas-projecao-category-total {
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748b;
+      }
+      #screen-financas .financas-projecao-row,
+      #screen-financas .financas-projecao-total-row {
+        min-height: 42px;
+        padding: 0 14px;
+        border-bottom: 1px solid rgba(241, 245, 249, 0.92);
+        transition: background .16s ease;
+      }
+      #screen-financas .financas-projecao-row:hover {
+        background: rgba(248, 250, 252, 0.72);
+      }
+      #screen-financas .financas-projecao-total-row {
+        background: rgba(248, 250, 252, 0.48);
+      }
+      #screen-financas .financas-projecao-name {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+      #screen-financas .financas-projecao-toggle {
+        width: 18px;
+        height: 18px;
+        border: none;
+        background: transparent;
+        color: #94a3b8;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        cursor: pointer;
+      }
+      #screen-financas .financas-projecao-toggle svg {
+        width: 14px;
+        height: 14px;
+        transition: transform .16s ease;
+      }
+      #screen-financas .financas-projecao-toggle.is-open svg {
+        transform: rotate(90deg);
+      }
+      #screen-financas .financas-projecao-name-main {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        gap: 1px;
+      }
+      #screen-financas .financas-projecao-name-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: #0f172a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #screen-financas .financas-projecao-name-meta {
+        font-size: 10.5px;
+        color: #64748b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #screen-financas .financas-projecao-cell {
+        min-width: 0;
+      }
+      #screen-financas .financas-projecao-cell-btn,
+      #screen-financas .financas-projecao-cell-static {
+        width: 100%;
+        min-height: 28px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 8px;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #0f172a;
+        background: transparent;
+        border: none;
+      }
+      #screen-financas .financas-projecao-cell-btn {
+        cursor: pointer;
+        transition: background .16s ease, color .16s ease;
+      }
+      #screen-financas .financas-projecao-cell-btn:hover {
+        background: rgba(var(--cor-tema-rgb), 0.08);
+        color: rgb(var(--cor-tema-rgb));
+      }
+      #screen-financas .financas-projecao-cell-btn.zero,
+      #screen-financas .financas-projecao-cell-static.zero {
+        color: #94a3b8;
+        font-weight: 500;
+      }
+      #screen-financas .financas-projecao-cell-btn.negative,
+      #screen-financas .financas-projecao-cell-static.negative {
         color: #c62828;
       }
-      #screen-financas .financas-projecao-meta {
+      #screen-financas .financas-projecao-expand {
+        grid-column: 1 / -1;
+        padding: 0 14px 10px 44px;
+        border-bottom: 1px solid rgba(241, 245, 249, 0.92);
+        background: rgba(250, 252, 255, 0.7);
+      }
+      #screen-financas .financas-projecao-expand-inner {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+      #screen-financas .financas-projecao-expand-item {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      #screen-financas .financas-projecao-expand-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #94a3b8;
+      }
+      #screen-financas .financas-projecao-expand-value {
+        font-size: 12px;
+        color: #334155;
+      }
+      #screen-financas .financas-projecao-total-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #334155;
+      }
+      #screen-financas .financas-projecao-caption {
+        padding: 0 14px 12px;
         font-size: 11px;
         color: #64748b;
-        line-height: 1.4;
       }
       #screen-financas .financas-item {
         padding: 9px 0;
@@ -3525,6 +3688,12 @@
         #screen-financas .financas-fixed-actions {
           justify-self: end;
           opacity: 1;
+        }
+        #screen-financas .financas-projecao-wrap {
+          border-radius: 16px;
+        }
+        #screen-financas .financas-projecao-scroll {
+          overflow-x: auto;
         }
       }
       @media (max-width: 640px) {
@@ -10607,40 +10776,53 @@
 
     function obterResumoProjecaoFinancas() {
       const { mes, ano } = obterMesAnoSelecionadoFinancas();
-      const totaisCategoriaMes = calcularTotaisCategoriaMesFinancas();
       const receitasBase = financasFontesRenda.reduce((soma, item) => soma + Number(item.valor_base || 0), 0);
-      const resumoAtual = {
-        ano,
-        mes,
-        label: formatarMesAnoHumanoFinancas(`${ano}-${String(mes).padStart(2, "0")}`),
-        receitas: Number(financasResumoMesSelecionado?.entradas_mes || 0),
-        despesas: totaisCategoriaMes.reduce((soma, item) => soma + Number(item.total || 0), 0),
-        categorias: totaisCategoriaMes,
-      };
-      resumoAtual.resultado = resumoAtual.receitas - resumoAtual.despesas;
+      const grupos = obterLinhasDespesasMensaisFinancas();
 
-      const montarMesFuturo = (offset) => {
+      const montarMes = (offset) => {
         const data = new Date(ano, mes - 1 + offset, 1);
-        const categorias = FINANCAS_CATEGORIAS_DESPESA.map((categoria) => ({
-          categoria,
-          total: (categoria === "Despesas diversas") ? 0 : (calcularTotaisCategoriaMesFinancas().find((item) => item.categoria === categoria)?.total || 0),
-        })).filter((item) => item.total > 0 || item.categoria === "Despesas diversas");
-        const despesas = categorias.reduce((soma, item) => soma + Number(item.total || 0), 0);
         return {
           ano: data.getFullYear(),
           mes: data.getMonth() + 1,
           label: `${nomeMesCurtoFinancas(data.getMonth())}/${String(data.getFullYear()).slice(-2)}`,
-          receitas: receitasBase,
-          despesas,
-          resultado: receitasBase - despesas,
-          categorias,
+          receitas: offset === 0 ? Number(financasResumoMesSelecionado?.entradas_mes || 0) : receitasBase,
         };
       };
 
+      const construirMapa = (quantidadeMeses) => {
+        const meses = Array.from({ length: quantidadeMeses }, (_, index) => montarMes(index));
+        const categorias = FINANCAS_CATEGORIAS_DESPESA.map((categoria) => {
+          const itens = (grupos.get(categoria) || []).map((item) => {
+            const valores = meses.map((mesRef, index) => {
+              if (item.kind === "diario") {
+                return index === 0 ? Number(item.valor || 0) : 0;
+              }
+              return Number(item.valor || 0);
+            });
+            return {
+              ...item,
+              observacao: item.conta?.observacao || "",
+              valores,
+            };
+          });
+          const totais = meses.map((_, index) => itens.reduce((soma, item) => soma + Number(item.valores[index] || 0), 0));
+          return {
+            categoria,
+            itens,
+            totais,
+          };
+        }).filter((categoria) => categoria.itens.length > 0);
+
+        const totaisMensais = meses.map((_, index) => categorias.reduce((soma, categoria) => soma + Number(categoria.totais[index] || 0), 0));
+        const receitasMensais = meses.map((item) => Number(item.receitas || 0));
+        const resultadosMensais = meses.map((item, index) => Number(item.receitas || 0) - Number(totaisMensais[index] || 0));
+        return { meses, categorias, totaisMensais, receitasMensais, resultadosMensais };
+      };
+
       return {
-        mensal: [resumoAtual],
-        semestral: Array.from({ length: 6 }, (_, index) => montarMesFuturo(index)),
-        anual: Array.from({ length: 12 }, (_, index) => montarMesFuturo(index)),
+        mensal: construirMapa(1),
+        semestral: construirMapa(6),
+        anual: construirMapa(12),
       };
     }
 
@@ -10668,26 +10850,178 @@
       if (!wrap) return;
       const chave = financasVisaoDespesas === "anual" ? "anual" : "semestral";
       const dados = obterResumoProjecaoFinancas()[chave];
-      if (!dados.length) {
+      if (!dados?.meses?.length || !dados?.categorias?.length) {
         wrap.innerHTML = '<div class="financas-empty">Sem dados suficientes para a projeção.</div>';
         return;
       }
-      const grid = document.createElement("div");
-      grid.className = "financas-projecao-grid";
-      dados.forEach((item) => {
-        const card = document.createElement("button");
-        card.className = "financas-projecao-card";
-        card.type = "button";
-        card.innerHTML = `
-          <span class="financas-projecao-label">${item.label}</span>
-          <strong class="financas-projecao-value ${item.resultado < 0 ? "negative" : ""}">${formatarMoedaFinancas(item.resultado)}</strong>
-          <span class="financas-projecao-meta">${formatarMoedaFinancas(item.receitas)} de receitas · ${formatarMoedaFinancas(item.despesas)} para pagar</span>
-        `;
-        card.addEventListener("click", () => abrirMesEspecificoFinancas(item.ano, item.mes));
-        grid.appendChild(card);
-      });
       wrap.innerHTML = "";
-      wrap.appendChild(grid);
+      const scroll = document.createElement("div");
+      scroll.className = "financas-projecao-scroll";
+      const tabela = document.createElement("div");
+      tabela.className = `financas-projecao-table ${chave}`;
+
+      const cabecalho = document.createElement("div");
+      cabecalho.className = "financas-projecao-head";
+      const tituloColuna = document.createElement("div");
+      tituloColuna.className = "financas-projecao-head-label";
+      tituloColuna.textContent = "Despesa / dívida";
+      cabecalho.appendChild(tituloColuna);
+      dados.meses.forEach((mesRef) => {
+        const mesEl = document.createElement("div");
+        mesEl.className = "financas-projecao-head-month";
+        mesEl.textContent = mesRef.label;
+        cabecalho.appendChild(mesEl);
+      });
+      tabela.appendChild(cabecalho);
+
+      dados.categorias.forEach((grupo) => {
+        const categoriaRow = document.createElement("div");
+        categoriaRow.className = "financas-projecao-category";
+        const categoriaCell = document.createElement("div");
+        categoriaCell.className = "financas-projecao-category-title";
+        categoriaCell.innerHTML = `${grupo.categoria}<span class="financas-projecao-category-total">${formatarMoedaFinancas(grupo.totais.reduce((soma, valor) => soma + Number(valor || 0), 0))}</span>`;
+        categoriaRow.appendChild(categoriaCell);
+        grupo.totais.forEach((valor, index) => {
+          const totalCell = document.createElement("div");
+          totalCell.className = "financas-projecao-head-month";
+          totalCell.textContent = formatarMoedaFinancas(valor || 0);
+          if (Number(valor || 0) > 0) {
+            totalCell.style.color = "#334155";
+            totalCell.style.fontWeight = "650";
+          }
+          totalCell.addEventListener("click", () => abrirMesEspecificoFinancas(dados.meses[index].ano, dados.meses[index].mes));
+          totalCell.style.cursor = "pointer";
+          categoriaRow.appendChild(totalCell);
+        });
+        tabela.appendChild(categoriaRow);
+
+        grupo.itens.forEach((item, itemIndex) => {
+          const row = document.createElement("div");
+          row.className = "financas-projecao-row";
+
+          const nameCell = document.createElement("div");
+          nameCell.className = "financas-projecao-name";
+
+          const toggle = document.createElement("button");
+          toggle.className = "financas-projecao-toggle";
+          toggle.type = "button";
+          toggle.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m9 18 6-6-6-6"></path>
+            </svg>
+          `;
+          const expandId = `financas-projecao-expand-${grupo.categoria.replace(/\s+/g, "-").toLowerCase()}-${itemIndex}`;
+          if (item.kind === "diario") {
+            toggle.style.visibility = "hidden";
+          }
+
+          const main = document.createElement("div");
+          main.className = "financas-projecao-name-main";
+          main.innerHTML = `
+            <div class="financas-projecao-name-title">${item.titulo || "Despesa"}</div>
+            <div class="financas-projecao-name-meta">${item.kind === "diario" ? "Consolidado do mês" : `${grupo.categoria} · ${item.due || "mês atual"}`}</div>
+          `;
+
+          nameCell.appendChild(toggle);
+          nameCell.appendChild(main);
+          row.appendChild(nameCell);
+
+          item.valores.forEach((valor, index) => {
+            const cell = document.createElement("div");
+            cell.className = "financas-projecao-cell";
+            const btn = document.createElement("button");
+            btn.className = `financas-projecao-cell-btn ${valor ? "" : "zero"}`;
+            btn.type = "button";
+            btn.textContent = valor ? formatarMoedaFinancas(valor) : "—";
+            btn.addEventListener("click", () => abrirMesEspecificoFinancas(dados.meses[index].ano, dados.meses[index].mes));
+            cell.appendChild(btn);
+            row.appendChild(cell);
+          });
+          tabela.appendChild(row);
+
+          if (item.kind !== "diario") {
+            const expand = document.createElement("div");
+            expand.className = "financas-projecao-expand";
+            expand.id = expandId;
+            expand.hidden = true;
+            expand.innerHTML = `
+              <div class="financas-projecao-expand-inner">
+                <div class="financas-projecao-expand-item">
+                  <span class="financas-projecao-expand-label">Vencimento</span>
+                  <span class="financas-projecao-expand-value">${item.due || "mês atual"}</span>
+                </div>
+                <div class="financas-projecao-expand-item">
+                  <span class="financas-projecao-expand-label">Categoria</span>
+                  <span class="financas-projecao-expand-value">${grupo.categoria}</span>
+                </div>
+                <div class="financas-projecao-expand-item">
+                  <span class="financas-projecao-expand-label">Status atual</span>
+                  <span class="financas-projecao-expand-value">${item.status?.label || "Pendente"}</span>
+                </div>
+                <div class="financas-projecao-expand-item">
+                  <span class="financas-projecao-expand-label">Observações</span>
+                  <span class="financas-projecao-expand-value">${item.observacao || "Sem observações."}</span>
+                </div>
+              </div>
+            `;
+            toggle.addEventListener("click", (ev) => {
+              ev.stopPropagation();
+              const aberto = !expand.hidden;
+              expand.hidden = aberto;
+              toggle.classList.toggle("is-open", !aberto);
+            });
+            tabela.appendChild(expand);
+          }
+        });
+      });
+
+      const totalRow = document.createElement("div");
+      totalRow.className = "financas-projecao-total-row";
+      const totalLabel = document.createElement("div");
+      totalLabel.className = "financas-projecao-total-label";
+      totalLabel.textContent = "Total mensal";
+      totalRow.appendChild(totalLabel);
+      dados.totaisMensais.forEach((valor, index) => {
+        const cell = document.createElement("div");
+        cell.className = "financas-projecao-cell";
+        const btn = document.createElement("button");
+        btn.className = `financas-projecao-cell-btn ${valor ? "" : "zero"}`;
+        btn.type = "button";
+        btn.textContent = valor ? formatarMoedaFinancas(valor) : "—";
+        btn.addEventListener("click", () => abrirMesEspecificoFinancas(dados.meses[index].ano, dados.meses[index].mes));
+        cell.appendChild(btn);
+        totalRow.appendChild(cell);
+      });
+      tabela.appendChild(totalRow);
+
+      const resultadoRow = document.createElement("div");
+      resultadoRow.className = "financas-projecao-total-row";
+      const resultadoLabel = document.createElement("div");
+      resultadoLabel.className = "financas-projecao-total-label";
+      resultadoLabel.textContent = "Resultado previsto";
+      resultadoRow.appendChild(resultadoLabel);
+      dados.resultadosMensais.forEach((valor, index) => {
+        const cell = document.createElement("div");
+        cell.className = "financas-projecao-cell";
+        const btn = document.createElement("button");
+        btn.className = `financas-projecao-cell-btn ${valor < 0 ? "negative" : ""} ${valor ? "" : "zero"}`;
+        btn.type = "button";
+        btn.textContent = valor ? formatarMoedaFinancas(valor) : "—";
+        btn.addEventListener("click", () => abrirMesEspecificoFinancas(dados.meses[index].ano, dados.meses[index].mes));
+        cell.appendChild(btn);
+        resultadoRow.appendChild(cell);
+      });
+      tabela.appendChild(resultadoRow);
+
+      scroll.appendChild(tabela);
+      wrap.appendChild(scroll);
+
+      const caption = document.createElement("div");
+      caption.className = "financas-projecao-caption";
+      caption.textContent = chave === "anual"
+        ? "Visão anual comparativa. Clique em qualquer valor para abrir aquele mês no modo mensal."
+        : "Visão semestral comparativa. Clique em qualquer valor para abrir aquele mês no modo mensal.";
+      wrap.appendChild(caption);
     }
 
     function definirTexto(id, valor) {
