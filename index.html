@@ -3545,19 +3545,12 @@
         display: flex;
         flex-direction: column;
         min-width: 0;
-        gap: 1px;
+        gap: 0;
       }
       #screen-financas .financas-projecao-name-title {
         font-size: 12px;
         font-weight: 600;
         color: #0f172a;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      #screen-financas .financas-projecao-name-meta {
-        font-size: 10.5px;
-        color: #64748b;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -10832,8 +10825,16 @@
       });
       const wrapMensal = document.getElementById("financas-despesas-mensal-wrap");
       const wrapProjecao = document.getElementById("financas-despesas-projecao");
-      if (wrapMensal) wrapMensal.hidden = financasVisaoDespesas !== "mensal";
-      if (wrapProjecao) wrapProjecao.hidden = financasVisaoDespesas === "mensal";
+      if (wrapMensal) {
+        const mostrarMensal = financasVisaoDespesas === "mensal";
+        wrapMensal.hidden = !mostrarMensal;
+        wrapMensal.style.display = mostrarMensal ? "" : "none";
+      }
+      if (wrapProjecao) {
+        const mostrarProjecao = financasVisaoDespesas !== "mensal";
+        wrapProjecao.hidden = !mostrarProjecao;
+        wrapProjecao.style.display = mostrarProjecao ? "" : "none";
+      }
     }
 
     function abrirMesEspecificoFinancas(ano, mes) {
@@ -10917,10 +10918,7 @@
 
           const main = document.createElement("div");
           main.className = "financas-projecao-name-main";
-          main.innerHTML = `
-            <div class="financas-projecao-name-title">${item.titulo || "Despesa"}</div>
-            <div class="financas-projecao-name-meta">${item.kind === "diario" ? "Consolidado do mês" : `${grupo.categoria} · ${item.due || "mês atual"}`}</div>
-          `;
+          main.innerHTML = `<div class="financas-projecao-name-title">${item.titulo || "Despesa"}</div>`;
 
           nameCell.appendChild(toggle);
           nameCell.appendChild(main);
