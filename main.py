@@ -6,11 +6,13 @@ import unicodedata
 import base64
 import hashlib
 import hmac
+import html
 import re
 import secrets
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
+from zoneinfo import ZoneInfo
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -1745,6 +1747,50 @@ def google_service(db: Session, user: User):
     return build("calendar", "v3", credentials=credentials)
 
 
+def _obter_timezone_google(timezone_nome: Optional[str] = None):
+    nome = (timezone_nome or TIMEZONE_PADRAO or "UTC").strip()
+    try:
+        return ZoneInfo(nome)
+    except Exception:
+        try:
+            return ZoneInfo(TIMEZONE_PADRAO)
+        except Exception:
+            return UTC
+
+
+def _converter_datetime_google(valor: Optional[str], timezone_nome: Optional[str] = None) -> Optional[datetime]:
+    if not valor:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(valor).strip().replace("Z", "+00:00"))
+    except Exception:
+        return None
+    tz_alvo = _obter_timezone_google(timezone_nome)
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=tz_alvo)
+    return parsed.astimezone(tz_alvo)
+
+
+def _descricao_google_para_texto(valor: Any) -> str:
+    texto = str(valor or "").strip()
+    if not texto:
+        return ""
+
+    texto = re.sub(r"(?i)<br\s*/?>", "\n", texto)
+    texto = re.sub(r"(?i)</p\s*>", "\n\n", texto)
+    texto = re.sub(r"(?i)</div\s*>", "\n", texto)
+    texto = re.sub(r"(?i)<li\s*>", "• ", texto)
+    texto = re.sub(r"(?i)</li\s*>", "\n", texto)
+    texto = re.sub(r"(?i)</ul\s*>|</ol\s*>", "\n", texto)
+    texto = re.sub(r"<[^>]+>", "", texto)
+    texto = html.unescape(texto)
+    texto = texto.replace("\r\n", "\n").replace("\r", "\n")
+    texto = re.sub(r"\n{3,}", "\n\n", texto)
+    texto = re.sub(r"[ \t]+\n", "\n", texto)
+    texto = re.sub(r"\n[ \t]+", "\n", texto)
+    return texto.strip()
+
+
 def normalizar_evento_google(event: dict[str, Any]) -> dict[str, Any]:
     start = event.get("start") or {}
     end = event.get("end") or {}
@@ -1752,34 +1798,42 @@ def normalizar_evento_google(event: dict[str, Any]) -> dict[str, Any]:
     start_date = start.get("date")
     end_dt = end.get("dateTime")
     end_date = end.get("date")
+    start_tz = start.get("timeZone") or end.get("timeZone") or event.get("timeZone") or TIMEZONE_PADRAO
     all_day = bool(start_date and not start_dt)
 
     data_iso = ""
     hora_inicio = "Dia todo" if all_day else ""
     hora_fim = ""
+    inicio_iso = start_dt or start_date or ""
+    fim_iso = end_dt or end_date or ""
 
     if start_dt:
-        inicio = datetime.fromisoformat(start_dt.replace("Z", "+00:00"))
-        data_iso = inicio.date().isoformat()
-        hora_inicio = inicio.astimezone().strftime("%H:%M")
+        inicio = _converter_datetime_google(start_dt, start_tz)
+        if inicio:
+            data_iso = inicio.date().isoformat()
+            hora_inicio = inicio.strftime("%H:%M")
     elif start_date:
         data_iso = start_date
 
     if end_dt:
-        fim = datetime.fromisoformat(end_dt.replace("Z", "+00:00"))
-        hora_fim = fim.astimezone().strftime("%H:%M")
+        fim = _converter_datetime_google(end_dt, start_tz)
+        if fim:
+            hora_fim = fim.strftime("%H:%M")
     elif end_date and all_day:
         hora_fim = ""
 
     return {
         "id": event.get("id"),
         "titulo": event.get("summary") or "(Sem título)",
-        "descricao": event.get("description") or "",
+        "descricao": _descricao_google_para_texto(event.get("description") or ""),
         "local": event.get("location") or "",
         "origem": "GOOGLE",
         "data": data_iso,
         "hora_inicio": hora_inicio,
         "hora_fim": hora_fim,
+        "inicio": inicio_iso,
+        "fim": fim_iso,
+        "timezone": start_tz,
         "duracao_min": 0,
         "prioridade": 2,
         "status": event.get("status") or "confirmed",
