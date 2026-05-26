@@ -1343,10 +1343,20 @@
       .btn-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
       .checklist-toolbar {
         display: flex; align-items: center; justify-content: space-between;
-        gap: 10px; margin: 10px 0 12px 0; flex-wrap: wrap;
+        gap: 8px; margin: 6px 0 8px 0; flex-wrap: wrap;
       }
       .checklist-toolbar-info {
-        font-size: 11px; color: #6b7280;
+        font-size: 12px; color: #64748b;
+      }
+      .checklist-toolbar-summary {
+        font-size: 12px;
+        line-height: 1.4;
+        color: #64748b;
+        margin: 4px 0 8px;
+      }
+      .checklist-toolbar-summary strong {
+        color: #0f172a;
+        font-weight: 650;
       }
       .btn-ghost-action {
         border-radius: 999px;
@@ -3749,26 +3759,33 @@
         font-size: 10px; color: #9ca3af; padding: 2px 4px 6px 4px;
       }
       .checklist-item {
-        position: relative; padding: 10px 10px 10px 12px;
-        border-radius: 10px; margin-bottom: 8px; background: #f3f4f6;
-        display: flex; align-items: center; gap: 10px;
-        transition: transform 0.15s ease-out, background 0.15s ease-out, box-shadow 0.15s ease-out;
+        position: relative;
+        padding: 10px 2px;
+        border-radius: 0;
+        margin-bottom: 0;
+        background: transparent;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.72);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: background 0.15s ease-out, border-color 0.15s ease-out, opacity 0.15s ease-out;
         touch-action: pan-y; overflow: hidden;
         will-change: transform;
       }
-      .checklist-item.pessoal { background: #e0f2fe; }
+      .checklist-item:hover { background: rgba(248, 250, 252, 0.9); }
+      .checklist-item.pessoal { background: transparent; }
       .check-status {
-        width: 22px; height: 22px; border-radius: 999px; border: 2px solid #9ca3af;
+        width: 22px; height: 22px; border-radius: 999px; border: 1.75px solid #cbd5e1;
         display: flex; align-items: center; justify-content: center;
-        font-size: 12px; flex-shrink: 0; background: #f9fafb; cursor: pointer;
+        font-size: 12px; flex-shrink: 0; background: #ffffff; cursor: pointer;
         transition: all 0.15s ease-out;
       }
-      .check-status.pendente     { border-color: #9ca3af; background: #f9fafb; }
-      .check-status.em_andamento { border-color: #f97316; background: #fff7ed; }
+      .check-status.pendente     { border-color: #cbd5e1; background: #ffffff; }
+      .check-status.em_andamento { border-color: #f59e0b; background: #fffbeb; }
       .check-status.feito        { border-color: #22c55e; background: #22c55e; }
-      .check-info { flex: 1; font-size: 13px; min-width: 0; }
-      .check-titulo { font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .check-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
+      .check-info { flex: 1; font-size: 13px; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+      .check-titulo { font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; line-height: 1.25; }
+      .check-sub { font-size: 12px; color: #64748b; margin-top: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
       .checklist-item.feito .check-titulo {
         color: #6b7280;
         text-decoration: line-through;
@@ -3779,10 +3796,55 @@
       .checklist-item.feito {
         opacity: 0.84;
       }
-      .check-proxima { font-size: 11px; margin-top: 2px; }
-      .check-proxima.atrasado { color: #b91c1c; }
-      .check-proxima.hoje     { color: #f97316; }
-      .check-proxima.futuro   { color: #6b7280; }
+      .check-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 20px;
+        padding: 0 8px;
+        border-radius: 999px;
+        font-size: 10px;
+        line-height: 1;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+      }
+      .check-badge.hoje { background: #fff7ed; color: #c2410c; }
+      .check-badge.atrasado { background: #fef2f2; color: #b91c1c; }
+      .check-badge.semana { background: #eff6ff; color: #1d4ed8; }
+      .check-badge.concluido { background: #dcfce7; color: #166534; }
+      .check-badge.andamento { background: #fff7ed; color: #b45309; }
+      .checklist-item-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        opacity: 0.42;
+        transition: opacity 0.16s ease;
+      }
+      .checklist-item:hover .checklist-item-actions { opacity: 1; }
+      .checklist-item-action {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: #94a3b8;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+      }
+      .checklist-item-action:hover {
+        background: rgba(148, 163, 184, 0.08);
+        color: #475569;
+        border-color: rgba(203, 213, 225, 0.8);
+      }
+      .checklist-item-action.delete:hover {
+        background: #fef2f2;
+        color: #dc2626;
+        border-color: rgba(252, 165, 165, 0.65);
+      }
 
 
       .checklist-secao {
@@ -3865,56 +3927,56 @@
         background: #f8fafc;
       }
       .checklist-segmented {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
         gap: 6px;
-        margin: 16px 0 12px;
-        padding: 6px;
-        border-radius: 20px;
-        background: rgba(255,255,255,0.72);
-        border: 1px solid rgba(226,232,240,0.92);
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.78);
+        margin: 8px 0 10px;
+        padding: 0;
+        border-radius: 0;
+        background: transparent;
+        border: none;
+        box-shadow: none;
       }
       .checklist-segment {
-        border: 1px solid transparent;
-        background: transparent;
-        border-radius: 15px;
-        padding: 10px 10px 10px;
-        display: flex;
-        flex-direction: column;
+        border: 1px solid rgba(226,232,240,0.92);
+        background: rgba(255,255,255,0.9);
+        border-radius: 999px;
+        padding: 7px 10px;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 5px;
+        gap: 6px;
         color: #64748b;
         cursor: pointer;
         text-align: center;
-        transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease, color 0.16s ease;
+        transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
       }
       .checklist-segment:hover {
         color: #334155;
-        background: rgba(255,255,255,0.62);
+        background: #f8fafc;
       }
       .checklist-segment.active {
         color: #0f172a;
         border-color: rgba(var(--cor-tema-rgb), 0.18);
-        background: linear-gradient(180deg, #ffffff 0%, rgba(var(--cor-tema-rgb), 0.055) 100%);
-        box-shadow: 0 8px 18px rgba(15,23,42,0.06);
+        background: rgba(var(--cor-tema-rgb), 0.08);
+        box-shadow: none;
       }
       .checklist-segment-label {
-        font-size: 10px;
+        font-size: 11px;
         line-height: 1.1;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        font-weight: 650;
+        letter-spacing: 0.01em;
+        text-transform: none;
       }
       .checklist-segment-count {
-        font-size: 15px;
+        font-size: 11px;
         line-height: 1.1;
-        font-weight: 800;
-        letter-spacing: -0.03em;
-        color: #0f172a;
-        min-width: 28px;
-        padding: 2px 8px;
+        font-weight: 700;
+        letter-spacing: 0;
+        color: #475569;
+        min-width: auto;
+        padding: 3px 7px;
         border-radius: 999px;
         background: rgba(148,163,184,0.10);
       }
@@ -3926,23 +3988,23 @@
         display: none;
       }
       .checklist-list-shell {
-        margin-top: 10px;
-        padding-top: 8px;
+        margin-top: 6px;
+        padding-top: 4px;
       }
       .checklist-list-heading {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        margin-bottom: 12px;
+        margin-bottom: 6px;
       }
       .checklist-list-heading h3 {
         margin: 0;
-        font-size: 13px;
+        font-size: 12px;
         line-height: 1.2;
         color: #475569;
         font-weight: 700;
-        letter-spacing: 0.02em;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
       }
       .checklist-list-meta {
@@ -3955,13 +4017,13 @@
       .checklist-list-container {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 0;
       }
       .checklist-list-empty {
-        padding: 14px 12px;
-        border-radius: 14px;
-        border: 1px dashed rgba(148,163,184,0.22);
-        background: rgba(255,255,255,0.62);
+        padding: 12px 4px;
+        border-radius: 0;
+        border: none;
+        background: transparent;
         color: #64748b;
         font-size: 13px;
         line-height: 1.45;
@@ -3969,17 +4031,16 @@
       @media (max-width: 420px) {
         .checklist-segmented {
           gap: 4px;
-          padding: 5px;
         }
         .checklist-segment {
-          padding: 9px 6px;
+          padding: 6px 8px;
         }
         .checklist-segment-label {
-          font-size: 9px;
+          font-size: 10px;
         }
         .checklist-segment-count {
-          font-size: 14px;
-          min-width: 24px;
+          font-size: 10px;
+          min-width: auto;
           padding: 2px 6px;
         }
       }
@@ -8621,10 +8682,7 @@
               </svg>
               <h2>Checklist geral</h2>
             </div>
-            <div class="secao-subtitulo">Lista organizada por status. Arraste direita = mudar status · esquerda = excluir.</div>
-            <div class="checklist-toolbar">
-              <div class="checklist-toolbar-info">Crie novas rotinas sem poluir a tela. O formulário só aparece quando necessário.</div>
-            </div>
+            <div class="checklist-toolbar-summary" id="checklist-toolbar-summary">0 pendentes • 0 em andamento • 0 concluídas</div>
 
             <div id="checklist-form-wrap" class="checklist-form-wrap" hidden>
               <div class="checklist-form-panel" role="dialog" aria-modal="true" aria-labelledby="checklist-form-title">
@@ -8684,7 +8742,6 @@
             </div>
             <div class="filtros-row">
               <div class="filtro-select">
-                <label for="filtro-frequencia">Frequência</label>
                 <select id="filtro-frequencia">
                   <option value="">Todas</option>
                   <option value="Único">Único (esporádico)</option>
@@ -8698,7 +8755,6 @@
                 </select>
               </div>
               <div class="filtro-select">
-                <label for="filtro-origem">Local / contexto</label>
                 <input id="filtro-origem" type="text" placeholder="Ex: HGG, Escritório" />
               </div>
             </div>
@@ -15390,6 +15446,17 @@
       return "pendente";
     }
 
+    function obterBadgeChecklist(item, status) {
+      if (status === "feito") return { texto: "Concluído", classe: "concluido" };
+      if (status === "em_andamento") return { texto: "Em andamento", classe: "andamento" };
+      const dias = typeof item?.dias_para_proxima === "number" ? item.dias_para_proxima : null;
+      if (dias === null) return null;
+      if (dias < 0) return { texto: "Atrasado", classe: "atrasado" };
+      if (dias === 0) return { texto: "Hoje", classe: "hoje" };
+      if (dias <= 7) return { texto: "Esta semana", classe: "semana" };
+      return null;
+    }
+
     function criarElementoChecklistItem(item) {
       const status = normalizarStatusChecklist(item.status || "pendente");
       const origem = (item.origem || "").toUpperCase();
@@ -15416,26 +15483,43 @@
 
       const sub = document.createElement("div");
       sub.className = "check-sub";
-      sub.textContent = `${item.frequencia} · ${obterRotuloOrigemChecklist(item)}`;
+      const badge = obterBadgeChecklist(item, status);
+      const metaPartes = [item.frequencia, obterRotuloOrigemChecklist(item)].filter(Boolean);
+      const metaTexto = document.createElement("span");
+      metaTexto.textContent = metaPartes.join(" • ");
+      sub.appendChild(metaTexto);
+      if (badge) {
+        const badgeEl = document.createElement("span");
+        badgeEl.className = `check-badge ${badge.classe}`;
+        badgeEl.textContent = badge.texto;
+        sub.appendChild(badgeEl);
+      }
 
       info.appendChild(tituloEl);
       info.appendChild(sub);
 
-      if (item.dias_para_proxima !== undefined) {
-        const d = item.dias_para_proxima;
-        const prox = document.createElement("div");
-        prox.className = "check-proxima " + (d < 0 ? "atrasado" : d === 0 ? "hoje" : "futuro");
-        prox.textContent = d < 0 ? `Atrasado ${Math.abs(d)} dia(s)` : d === 0 ? "Executar hoje" : `Próxima em ${d} dia(s)`;
-        info.appendChild(prox);
-      }
-
       const btnDel = document.createElement("button");
-      btnDel.className = "checklist-delete-btn";
-      btnDel.textContent = "Excluir";
+      btnDel.className = "checklist-item-action delete";
+      btnDel.type = "button";
+      btnDel.title = "Excluir rotina";
+      btnDel.setAttribute("aria-label", `Excluir ${item.titulo}`);
+      btnDel.innerHTML = `
+        <svg width="15" height="15" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+          <path d="M96 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+          <path d="M160 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+          <path d="M40 72h176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+          <path d="M72 72l8-24h96l8 24" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M56 72l8 128a8 8 0 0 0 8 8h112a8 8 0 0 0 8-8l8-128" stroke="currentColor" stroke-width="20" stroke-linejoin="round"/>
+        </svg>
+      `;
+
+      const actions = document.createElement("div");
+      actions.className = "checklist-item-actions";
+      actions.appendChild(btnDel);
 
       div.appendChild(bolinha);
       div.appendChild(info);
-      div.appendChild(btnDel);
+      div.appendChild(actions);
 
       bolinha.addEventListener("click", async () => {
         const atual = bolinha.dataset.status || "pendente";
@@ -15498,6 +15582,10 @@
       document.getElementById("checklist-count-pendente").textContent = String(grupos.pendente.length);
       document.getElementById("checklist-count-em_andamento").textContent = String(grupos.em_andamento.length);
       document.getElementById("checklist-count-feito").textContent = String(grupos.feito.length);
+      const resumoTopo = document.getElementById("checklist-toolbar-summary");
+      if (resumoTopo) {
+        resumoTopo.innerHTML = `<strong>${grupos.pendente.length}</strong> pendentes • <strong>${grupos.em_andamento.length}</strong> em andamento • <strong>${grupos.feito.length}</strong> concluídas`;
+      }
 
       const titulo = document.getElementById("checklist-list-title");
       const meta = document.getElementById("checklist-list-meta");
