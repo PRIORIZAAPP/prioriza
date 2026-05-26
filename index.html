@@ -14663,15 +14663,80 @@
       return { date_from: dateToISO(inicio), date_to: dateToISO(fim) };
     }
 
-    function formatarHoraEvento(valor) {
+    function obterTimeZoneCliente() {
+      try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Sao_Paulo";
+      } catch (e) {
+        return "America/Sao_Paulo";
+      }
+    }
+
+    function formatarHoraEvento(valor, timeZone) {
       if (!valor) return "--:--";
       if (/^\d{2}:\d{2}$/.test(valor)) return valor;
       const data = new Date(valor);
       if (!Number.isNaN(data.getTime())) {
-        return `${String(data.getHours()).padStart(2,"0")}:${String(data.getMinutes()).padStart(2,"0")}`;
+        try {
+          const partes = new Intl.DateTimeFormat("pt-BR", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            timeZone: timeZone || obterTimeZoneCliente(),
+          }).formatToParts(data);
+          const hora = partes.find((item) => item.type === "hour")?.value || "00";
+          const minuto = partes.find((item) => item.type === "minute")?.value || "00";
+          return `${hora}:${minuto}`;
+        } catch (e) {
+          return `${String(data.getHours()).padStart(2,"0")}:${String(data.getMinutes()).padStart(2,"0")}`;
+        }
       }
       const match = String(valor).match(/T(\d{2}:\d{2})/);
       return match ? match[1] : "--:--";
+    }
+
+    function formatarDataISOEvento(valor, timeZone) {
+      if (!valor) return "";
+      if (/^\d{4}-\d{2}-\d{2}$/.test(String(valor).trim())) return String(valor).trim();
+      const data = new Date(valor);
+      if (Number.isNaN(data.getTime())) return "";
+      try {
+        const partes = new Intl.DateTimeFormat("en-CA", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          timeZone: timeZone || obterTimeZoneCliente(),
+        }).formatToParts(data);
+        const ano = partes.find((item) => item.type === "year")?.value;
+        const mes = partes.find((item) => item.type === "month")?.value;
+        const dia = partes.find((item) => item.type === "day")?.value;
+        return ano && mes && dia ? `${ano}-${mes}-${dia}` : "";
+      } catch (e) {
+        return "";
+      }
+    }
+
+    function descricaoGoogleParaTexto(valor) {
+      const bruto = String(valor || "").trim();
+      if (!bruto) return "";
+      if (!/[<>]/.test(bruto)) return bruto;
+      try {
+        const htmlNormalizado = bruto
+          .replace(/<br\s*\/?>/gi, "\n")
+          .replace(/<\/p>/gi, "\n\n")
+          .replace(/<\/div>/gi, "\n")
+          .replace(/<li>/gi, "• ")
+          .replace(/<\/li>/gi, "\n");
+        const doc = new DOMParser().parseFromString(htmlNormalizado, "text/html");
+        return (doc.body?.textContent || "")
+          .replace(/\r\n/g, "\n")
+          .replace(/\n{3,}/g, "\n\n")
+          .replace(/[ \t]+\n/g, "\n")
+          .replace(/\n[ \t]+/g, "\n")
+          .trim();
+      } catch (e) {
+        const fallback = bruto.replace(/<[^>]+>/g, " ");
+        return fallback.replace(/\s+/g, " ").trim();
+      }
     }
 
     function somarMinutosHora(hora, minutos) {
@@ -14688,6 +14753,7 @@
       const horaFimDireta = String(evento?.hora_fim || "").trim();
       const inicioRaw = String(evento?.inicio || "").trim();
       const fimRaw = String(evento?.fim || "").trim();
+      const timeZoneEvento = String(evento?.timezone || "").trim() || obterTimeZoneCliente();
 
       const allDayBackend = evento?.all_day === true || horaInicioDireta === "Dia todo";
       const allDayLegado = inicioRaw ? !inicioRaw.includes("T") : false;
@@ -14695,14 +14761,9 @@
 
       let dataISO = dataDireta;
       if (!dataISO && inicioRaw) {
-        if (allDayLegado) dataISO = normalizarDataParaISO(inicioRaw.slice(0, 10));
-        else {
-          try {
-            dataISO = normalizarDataParaISO(new Date(inicioRaw).toISOString().slice(0, 10));
-          } catch (e) {
-            dataISO = "";
-          }
-        }
+        dataISO = allDayLegado
+          ? normalizarDataParaISO(inicioRaw.slice(0, 10))
+          : formatarDataISOEvento(inicioRaw, timeZoneEvento);
       }
 
       let horaInicio = "";
@@ -14712,8 +14773,8 @@
         horaInicio = "Dia todo";
         horaFim = "";
       } else {
-        horaInicio = horaInicioDireta || (inicioRaw ? formatarHoraEvento(inicioRaw) : "");
-        horaFim = horaFimDireta || (fimRaw ? formatarHoraEvento(fimRaw) : "");
+        horaInicio = horaInicioDireta || (inicioRaw ? formatarHoraEvento(inicioRaw, timeZoneEvento) : "");
+        horaFim = horaFimDireta || (fimRaw ? formatarHoraEvento(fimRaw, timeZoneEvento) : "");
       }
 
       return {
@@ -14724,13 +14785,14 @@
         hora_fim: horaFim,
         origem: (evento?.origem || "google_calendar"),
         tipo_evento: "google",
-        descricao: evento?.descricao || "",
+        descricao: descricaoGoogleParaTexto(evento?.descricao || ""),
         local: evento?.local || "",
         link: evento?.link || evento?.google_html_link || "",
         status: evento?.status || "confirmed",
         ativo: evento?.ativo !== false,
         prioridade: evento?.prioridade || "",
         all_day: allDay,
+        timezone: timeZoneEvento,
         google_event_id: evento?.google_event_id || evento?.id || "",
         google_html_link: evento?.google_html_link || evento?.link || "",
       };
