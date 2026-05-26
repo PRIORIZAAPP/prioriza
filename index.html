@@ -8410,13 +8410,6 @@
           </div>
 
           <div class="card" id="hoje-operational-timeline-card" hidden>
-            <div class="timeline-operational-head">
-              <div>
-                <div class="timeline-operational-kicker">Sistema operacional da rotina</div>
-                <h2>Timeline operacional</h2>
-              </div>
-              <button id="btn-ver-agenda-completa-home" class="home-card-link" type="button" style="display:none">Ver agenda completa</button>
-            </div>
             <div id="operational-timeline"><small>Carregando rotina do dia...</small></div>
           </div>
 
@@ -14063,8 +14056,8 @@
         return list;
       };
 
-      const agendaList = criarSecaoTimeline("Compromissos do dia", "Agenda principal");
-      const checklistList = criarSecaoTimeline("Rotinas operacionais", "Execução contínua");
+      const agendaList = criarSecaoTimeline("Compromissos do dia");
+      const checklistList = criarSecaoTimeline("Rotinas operacionais");
 
       itens.forEach((item) => {
         const status = item._tipo === "checklist"
