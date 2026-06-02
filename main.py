@@ -161,6 +161,7 @@ class Tarefa(Base):
     sincronizado_google = Column(Boolean, default=False)
     ultima_sync_google = Column(DateTime, nullable=True)
     all_day = Column(Boolean, default=False)
+    blocked = Column(Boolean, default=False)
     ativo = Column(Boolean, default=True)
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC))
 
@@ -186,6 +187,7 @@ class Tarefa(Base):
             "sincronizado_google": bool(self.sincronizado_google),
             "ultima_sync_google": self.ultima_sync_google.isoformat() if self.ultima_sync_google else None,
             "all_day": bool(self.all_day),
+            "blocked": bool(self.blocked),
             "ativo": self.ativo,
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
         }
@@ -889,7 +891,7 @@ def _sql_tipo_coluna(nome_coluna: str) -> str:
         return "REAL" if IS_SQLITE else "DOUBLE PRECISION"
     if nome_coluna == "total_acessos":
         return "INTEGER"
-    if nome_coluna in ("ativo", "is_admin", "sincronizado_google", "all_day"):
+    if nome_coluna in ("ativo", "is_admin", "sincronizado_google", "all_day", "blocked"):
         return "BOOLEAN"
     if nome_coluna in ("criado_em", "ultimo_acesso", "ultima_sync_google", "avatar_updated_at"):
         return "TIMESTAMP" if not IS_SQLITE else "DATETIME"
@@ -913,7 +915,7 @@ def _sql_default_coluna(nome_coluna: str) -> str:
         return " DEFAULT ''"
     if nome_coluna in ("tipo_evento", "origem_evento"):
         return " DEFAULT 'prioriza'"
-    if nome_coluna in ("ativo", "sincronizado_google", "all_day"):
+    if nome_coluna in ("ativo", "sincronizado_google", "all_day", "blocked"):
         return " DEFAULT false" if not IS_SQLITE else " DEFAULT 0"
     return ""
 
@@ -973,6 +975,7 @@ def rodar_migracoes_automaticas():
         "sincronizado_google",
         "ultima_sync_google",
         "all_day",
+        "blocked",
     ]
     for coluna in colunas_tarefas:
         garantir_coluna_tabela("tarefas", coluna)
@@ -1258,6 +1261,8 @@ def _duracao_tarefa_minutos(tarefa: Tarefa) -> int:
 
 
 def _faixa_tarefa_minutos(tarefa: Tarefa) -> tuple[Optional[int], Optional[int]]:
+    if bool(getattr(tarefa, "blocked", False)) and bool(getattr(tarefa, "all_day", False)):
+        return 0, 24 * 60
     hora_inicio = (tarefa.hora_inicio or "").strip()
     if not hora_inicio or not validar_hora(hora_inicio):
         return None, None
@@ -1383,6 +1388,7 @@ def _aplicar_payload_google_em_tarefa(tarefa: Tarefa, payload: dict[str, Any]) -
     local = payload.get("local")
     data_ref = (payload.get("data") or tarefa.data or "").strip()
     all_day = _bool_from_value(payload.get("all_day"))
+    blocked = _bool_from_value(payload.get("blocked"))
     hora_inicio = _hora_sync_normalizada(payload.get("hora_inicio"), all_day)
     hora_fim = _hora_sync_normalizada(payload.get("hora_fim"), all_day)
 
@@ -1402,6 +1408,7 @@ def _aplicar_payload_google_em_tarefa(tarefa: Tarefa, payload: dict[str, Any]) -
     if data_ref:
         tarefa.data = data_ref
     tarefa.all_day = all_day
+    tarefa.blocked = blocked
     tarefa.hora_inicio = "" if all_day else hora_inicio
     tarefa.hora_fim = "" if all_day else hora_fim
 
@@ -1409,6 +1416,8 @@ def _aplicar_payload_google_em_tarefa(tarefa: Tarefa, payload: dict[str, Any]) -
         tarefa.duracao_min = int(payload.get("duracao_min") or tarefa.duracao_min or 30)
     except Exception:
         tarefa.duracao_min = tarefa.duracao_min or 30
+    if tarefa.all_day:
+        tarefa.duracao_min = 24 * 60
 
     try:
         prioridade = int(payload.get("prioridade") or tarefa.prioridade or 2)
@@ -1845,6 +1854,7 @@ def normalizar_evento_google(event: dict[str, Any]) -> dict[str, Any]:
         "sincronizado_google": True,
         "ultima_sync_google": datetime.now(UTC).isoformat(),
         "all_day": all_day,
+        "blocked": False,
         "ativo": event.get("status") != "cancelled",
     }
 
@@ -1857,6 +1867,7 @@ def montar_evento_google_body(
     descricao: str = "",
     local: str = "",
     all_day: bool = False,
+    blocked: bool = False,
 ) -> dict[str, Any]:
     if all_day:
         data_inicio = date.fromisoformat(data_iso)
@@ -1867,6 +1878,7 @@ def montar_evento_google_body(
             "location": local,
             "start": {"date": data_inicio.isoformat()},
             "end": {"date": data_fim.isoformat()},
+            "transparency": "opaque" if blocked else "transparent",
         }
 
     inicio_dt = datetime.fromisoformat(f"{data_iso}T{hora_inicio}:00")
@@ -1883,6 +1895,7 @@ def montar_evento_google_body(
             "dateTime": fim_dt.isoformat(),
             "timeZone": TIMEZONE_PADRAO,
         },
+        "transparency": "opaque" if blocked else "opaque",
     }
 
 
@@ -1910,6 +1923,7 @@ def sincronizar_tarefa_no_google(db: Session, tarefa: Tarefa, user: User):
         descricao=tarefa.descricao or "",
         local=tarefa.local or tarefa.origem or "",
         all_day=all_day,
+        blocked=bool(getattr(tarefa, "blocked", False)),
     )
 
     if tarefa.google_event_id:
@@ -2574,6 +2588,7 @@ def criar_evento_google(
     descricao: str = Query(""),
     local: str = Query(""),
     all_day: bool = Query(False),
+    blocked: bool = Query(False),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -2593,6 +2608,7 @@ def criar_evento_google(
         descricao=(descricao or "").strip(),
         local=(local or "").strip(),
         all_day=all_day,
+        blocked=blocked,
     )
     criado = service.events().insert(calendarId="primary", body=body).execute()
     normalizado = normalizar_evento_google(criado)
@@ -2617,6 +2633,7 @@ def editar_evento_google(
     descricao: str = Query(""),
     local: str = Query(""),
     all_day: bool = Query(False),
+    blocked: bool = Query(False),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -2626,7 +2643,7 @@ def editar_evento_google(
         raise HTTPException(status_code=400, detail="Hora inválida. Use HH:MM.")
 
     service = google_service(db, current_user)
-    body = montar_evento_google_body(titulo, data, hora_inicio, hora_fim, descricao, local, all_day)
+    body = montar_evento_google_body(titulo, data, hora_inicio, hora_fim, descricao, local, all_day, blocked)
     evento = service.events().update(calendarId="primary", eventId=event_id, body=body).execute()
     return {"ok": True, "evento": normalizar_evento_google(evento)}
 
@@ -3445,6 +3462,7 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
     status = q.get("status")
     sincronizar_google = q.get("sincronizar_google")
     all_day = q.get("all_day")
+    blocked = q.get("blocked")
     tipo_evento = q.get("tipo_evento")
     origem_evento = q.get("origem_evento")
     google_event_id = q.get("google_event_id")
@@ -3467,6 +3485,7 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
             status = form.get("status")
             sincronizar_google = form.get("sincronizar_google")
             all_day = form.get("all_day")
+            blocked = form.get("blocked")
             tipo_evento = form.get("tipo_evento")
             origem_evento = form.get("origem_evento")
             google_event_id = form.get("google_event_id")
@@ -3484,6 +3503,9 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
     hora_inicio = (hora_inicio or "").strip()
     hora_fim = (hora_fim or "").strip()
     eh_all_day = str(all_day).lower() in {"1", "true", "sim", "yes"}
+    eh_blocked = str(blocked).lower() in {"1", "true", "sim", "yes"}
+    if eh_blocked:
+        eh_all_day = True
 
     if not eh_all_day and hora_inicio and not validar_hora(hora_inicio):
         raise HTTPException(status_code=400, detail="Hora inicial inválida. Use HH:MM.")
@@ -3494,6 +3516,8 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
         duracao_val = int(duracao_min) if duracao_min else 60
     except ValueError:
         duracao_val = 60
+    if eh_all_day:
+        duracao_val = 24 * 60
 
     if not hora_fim and hora_inicio and not eh_all_day:
         hora_fim = calcular_hora_fim(hora_inicio, duracao_val)
@@ -3536,6 +3560,7 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
             "sincronizado_google": True,
             "ultima_sync_google": ultima_sync_google,
             "all_day": eh_all_day,
+            "blocked": eh_blocked,
             "ativo": True,
         }
         tarefa_google = criar_ou_atualizar_tarefa_importada_google(db, user_id, payload_google)
@@ -3557,6 +3582,7 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
         origem_evento="prioriza",
         sincronizado_google=False,
         all_day=eh_all_day,
+        blocked=eh_blocked,
         ativo=True,
     )
     db.add(tarefa)
@@ -3599,6 +3625,7 @@ async def editar_tarefa(tarefa_id: int, request: Request, db: Session = Depends(
     status = pegar("status")
     sincronizar_google = pegar("sincronizar_google")
     all_day = pegar("all_day")
+    blocked = pegar("blocked")
 
     if titulo is not None:
         tarefa.titulo = titulo.strip()
@@ -3642,6 +3669,14 @@ async def editar_tarefa(tarefa_id: int, request: Request, db: Session = Depends(
         if tarefa.all_day:
             tarefa.hora_inicio = ""
             tarefa.hora_fim = ""
+            tarefa.duracao_min = 24 * 60
+    if blocked is not None:
+        tarefa.blocked = str(blocked).lower() in {"1", "true", "sim", "yes"}
+        if tarefa.blocked:
+            tarefa.all_day = True
+            tarefa.hora_inicio = ""
+            tarefa.hora_fim = ""
+            tarefa.duracao_min = 24 * 60
 
     if tarefa.hora_inicio and not tarefa.hora_fim and not tarefa.all_day:
         tarefa.hora_fim = calcular_hora_fim(tarefa.hora_inicio, tarefa.duracao_min)
@@ -3670,6 +3705,8 @@ def editar_tarefa_legado(
     hora_inicio: str = "",
     duracao_min: int = 60,
     prioridade: int = 2,
+    all_day: bool = False,
+    blocked: bool = False,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -3679,16 +3716,18 @@ def editar_tarefa_legado(
 
     if data and not validar_data_iso(data):
         raise HTTPException(status_code=400, detail="Data inválida. Use YYYY-MM-DD.")
-    if hora_inicio and not validar_hora(hora_inicio):
+    if not all_day and not blocked and hora_inicio and not validar_hora(hora_inicio):
         raise HTTPException(status_code=400, detail="Hora inicial inválida. Use HH:MM.")
 
     tarefa.titulo = titulo.strip()
     tarefa.origem = origem.strip()
     if data:
         tarefa.data = data
-    tarefa.hora_inicio = hora_inicio.strip()
-    tarefa.duracao_min = duracao_min
-    tarefa.hora_fim = calcular_hora_fim(tarefa.hora_inicio, tarefa.duracao_min)
+    tarefa.all_day = bool(all_day or blocked)
+    tarefa.blocked = bool(blocked)
+    tarefa.hora_inicio = "" if tarefa.all_day else hora_inicio.strip()
+    tarefa.duracao_min = 24 * 60 if tarefa.all_day else duracao_min
+    tarefa.hora_fim = "" if tarefa.all_day else calcular_hora_fim(tarefa.hora_inicio, tarefa.duracao_min)
     tarefa.prioridade = prioridade if prioridade in (1, 2, 3) else 2
 
     db.commit()
@@ -3951,7 +3990,11 @@ async def importar_backup(request: Request, db: Session = Depends(get_db), curre
                 continue
             hora_inicio = (t.get("hora_inicio") or "").strip()
             hora_fim = (t.get("hora_fim") or "").strip()
-            duracao_val = int(t.get("duracao_min") or 60)
+            all_day_val = bool(t.get("all_day"))
+            blocked_val = bool(t.get("blocked"))
+            duracao_val = int(t.get("duracao_min") or (1440 if all_day_val else 60))
+            if all_day_val:
+                duracao_val = 1440
             if hora_inicio and not hora_fim:
                 hora_fim = calcular_hora_fim(hora_inicio, duracao_val)
             nova = Tarefa(
@@ -3971,7 +4014,8 @@ async def importar_backup(request: Request, db: Session = Depends(get_db), curre
                 google_event_id=t.get("google_event_id"),
                 google_html_link=t.get("google_html_link") or t.get("link"),
                 sincronizado_google=bool(t.get("sincronizado_google")),
-                all_day=bool(t.get("all_day")),
+                all_day=all_day_val,
+                blocked=blocked_val,
                 ativo=True,
             )
             db.add(nova)
