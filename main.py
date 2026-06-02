@@ -2705,6 +2705,19 @@ def resumo(data_ref: str = Query(None, description="Data de referência YYYY-MM-
 # FINANÇAS
 # ============================================================
 
+@app.delete("/financas/limpar")
+def limpar_dados_financeiros(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    user_id = garantir_user_id(current_user.id, "limpeza financeira")
+    removidos = {
+        "status_mensais": db.query(ContaFixaStatusMensal).filter(ContaFixaStatusMensal.user_id == user_id).delete(synchronize_session=False),
+        "lancamentos": db.query(LancamentoFinanceiro).filter(LancamentoFinanceiro.user_id == user_id).delete(synchronize_session=False),
+        "fontes_renda": db.query(FonteRendaFinanceira).filter(FonteRendaFinanceira.user_id == user_id).delete(synchronize_session=False),
+        "contas_fixas": db.query(ContaFixaFinanceira).filter(ContaFixaFinanceira.user_id == user_id).delete(synchronize_session=False),
+    }
+    db.commit()
+    return {"ok": True, "removidos": removidos}
+
+
 @app.post("/financas/lancamentos", response_model=LancamentoFinanceiroOut)
 def criar_lancamento_financeiro(
     payload: LancamentoFinanceiroCreate,
