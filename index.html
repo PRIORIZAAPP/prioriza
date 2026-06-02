@@ -1271,6 +1271,20 @@
       .agenda-item.cancelada {
         opacity: 0.9;
       }
+      .agenda-item.all-day .agenda-horario {
+        color: #075985;
+      }
+      .agenda-item.blocked {
+        margin: 6px 0;
+        padding: 10px;
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        background: #fff1f2;
+      }
+      .agenda-item.blocked .agenda-horario,
+      .agenda-item.blocked .agenda-titulo {
+        color: #991b1b;
+      }
 
       /* ── BOTTOM NAV ── */
       .bottom-nav-wrapper { position: sticky; bottom: 0; background: #0f172a; z-index: 20; }
@@ -4258,6 +4272,13 @@
       .calendar-indicator.feito {
         background: #22c55e;
       }
+      .calendar-indicator.all-day {
+        background: #0ea5e9;
+      }
+      .calendar-indicator.blocked {
+        width: 18px;
+        background: #ef4444;
+      }
       .agenda-dia-container {
         margin-top: 0;
         padding: 16px 14px 6px;
@@ -4480,6 +4501,93 @@
         margin-top: 4px;
         line-height: 1.45;
       }
+      .agenda-quick-toggles {
+        display: grid;
+        gap: 8px;
+        margin: 10px 0 8px;
+      }
+      .agenda-toggle-row {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid #e5e7eb;
+        background: #f8fafc;
+        cursor: pointer;
+        transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+      }
+      .agenda-toggle-row input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .agenda-toggle-row strong {
+        display: block;
+        font-size: 12px;
+        color: #111827;
+      }
+      .agenda-toggle-row small {
+        display: block;
+        margin-top: 2px;
+        font-size: 11px;
+        line-height: 1.35;
+        color: #64748b;
+      }
+      .agenda-toggle-switch {
+        width: 38px;
+        height: 22px;
+        border-radius: 999px;
+        background: #cbd5e1;
+        position: relative;
+        transition: background 0.18s ease;
+      }
+      .agenda-toggle-switch::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        background: #ffffff;
+        box-shadow: 0 1px 3px rgba(15,23,42,0.22);
+        transition: transform 0.18s ease;
+      }
+      .agenda-toggle-row:has(input:checked) {
+        border-color: rgba(var(--cor-tema-rgb), 0.28);
+        background: rgba(var(--cor-tema-rgb), 0.06);
+        box-shadow: inset 0 0 0 1px rgba(var(--cor-tema-rgb), 0.04);
+      }
+      .agenda-toggle-row-blocked:has(input:checked) {
+        border-color: rgba(239,68,68,0.28);
+        background: #fff1f2;
+      }
+      .agenda-toggle-row:has(input:checked) .agenda-toggle-switch {
+        background: var(--cor-tema);
+      }
+      .agenda-toggle-row-blocked:has(input:checked) .agenda-toggle-switch {
+        background: #ef4444;
+      }
+      .agenda-toggle-row:has(input:checked) .agenda-toggle-switch::after {
+        transform: translateX(16px);
+      }
+      .agenda-duration-wrap {
+        overflow: hidden;
+        max-height: 86px;
+        opacity: 1;
+        transform: translateY(0);
+        transition: max-height 0.2s ease, opacity 0.18s ease, transform 0.18s ease, margin 0.18s ease;
+      }
+      .agenda-duration-wrap.is-hidden {
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-4px);
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        pointer-events: none;
+      }
       .agenda-tag.google {
         background: var(--cor-tema-clara);
         color: var(--cor-tema-escura);
@@ -4487,6 +4595,14 @@
       .agenda-tag.local-google {
         background: #ede9fe;
         color: #6d28d9;
+      }
+      .agenda-tag.all-day {
+        background: #e0f2fe;
+        color: #075985;
+      }
+      .agenda-tag.blocked {
+        background: #fee2e2;
+        color: #991b1b;
       }
       .agenda-meta {
         font-size: 11px;
@@ -7945,6 +8061,19 @@
         text-decoration: line-through;
       }
 
+      .timeline-row.agenda.blocked {
+        background: #fff1f2;
+        box-shadow: inset 0 0 0 1px rgba(239,68,68,0.1), 0 10px 22px rgba(239,68,68,0.06);
+      }
+
+      .timeline-row.agenda.blocked::before {
+        background: #ef4444;
+      }
+
+      .timeline-row.agenda.blocked .timeline-stamp {
+        color: #991b1b;
+      }
+
       .timeline-stamp {
         grid-column: 1;
         justify-self: start;
@@ -8570,7 +8699,25 @@
                         <div><label for="agenda-data">Data</label><input id="agenda-data" type="date" /></div>
                         <div><label for="agenda-hora">Hora início</label><input id="agenda-hora" type="time" value="08:00" /></div>
                       </div>
-                      <div class="form-grid" style="margin-bottom:0">
+                      <div class="agenda-quick-toggles" aria-label="Opções rápidas do compromisso">
+                        <label class="agenda-toggle-row" for="agenda-all-day">
+                          <input id="agenda-all-day" type="checkbox" />
+                          <span class="agenda-toggle-switch" aria-hidden="true"></span>
+                          <span>
+                            <strong>Dia inteiro</strong>
+                            <small>Ajusta a duração automaticamente.</small>
+                          </span>
+                        </label>
+                        <label class="agenda-toggle-row agenda-toggle-row-blocked" for="agenda-blocked">
+                          <input id="agenda-blocked" type="checkbox" />
+                          <span class="agenda-toggle-switch" aria-hidden="true"></span>
+                          <span>
+                            <strong>Bloquear agenda do dia</strong>
+                            <small>Marca o dia como indisponível para encaixes.</small>
+                          </span>
+                        </label>
+                      </div>
+                      <div id="agenda-duracao-wrap" class="form-grid agenda-duration-wrap" style="margin-bottom:0">
                         <div><label for="agenda-duracao">Duração (min)</label><input id="agenda-duracao" type="number" value="60" min="10" step="5" /></div>
                         <div></div>
                       </div>
@@ -13755,7 +13902,7 @@
 
     function normalizarTarefaAgenda(tarefa) {
       const inicio = horaParaMinutos(tarefa?.hora_inicio);
-      const duracao = Math.max(1, Number(tarefa?.duracao_min || 30));
+      const duracao = tarefa?.all_day ? 1440 : Math.max(1, Number(tarefa?.duracao_min || 30));
       const fim = inicio === null ? null : inicio + duracao;
       return {
         ...tarefa,
@@ -14122,6 +14269,8 @@
 
         const row = document.createElement("div");
         row.className = `timeline-row ${item._tipo} ${status}`;
+        if (item.blocked) row.classList.add("blocked");
+        if (item.all_day) row.classList.add("all-day");
         row.style.setProperty(
           "--timeline-accent",
           item._tipo === "agenda"
@@ -14133,7 +14282,7 @@
         if (item._tipo === "agenda") stamp.type = "button";
         stamp.className = "timeline-stamp";
         stamp.textContent = item._tipo === "agenda"
-          ? (item.all_day ? "Dia todo" : (item.hora_inicio || "--:--"))
+          ? (item.all_day ? (item.blocked ? "Bloqueado" : "Dia todo") : (item.hora_inicio || "--:--"))
           : (status === "em_andamento" ? "Agora" : "Rotina");
 
         const body = document.createElement("div");
@@ -14616,15 +14765,19 @@
       const prio=String(t.prioridade||"");
       const tipo=(t.tipo_evento||"").toLowerCase();
       const sincronizado=origem==="GOOGLE_SYNC" || t.google_sync===true;
-      if(tipo==="google")                            return `<span class="agenda-tag google">Google</span>`;
-      if(sincronizado)                                 return `<span class="agenda-tag local-google">PRIORIZA + Google</span>`;
-      if(origem==="PESSOAL")                          return `<span class="agenda-tag pessoal">Pessoal</span>`;
-      if(status==="extra"||status==="imprevisto")    return `<span class="agenda-tag extra">Extra</span>`;
-      if(ehStatusCancelada(status))                    return `<span class="agenda-tag cancelada">Cancelada</span>`;
-      if(ehStatusFeito(status))                        return `<span class="agenda-tag concluida">Concluída</span>`;
-      if(prio==="1") return `<span class="agenda-tag prio1">Prio 1</span>`;
-      if(prio==="2") return `<span class="agenda-tag prio2">Prio 2</span>`;
-      if(prio==="3") return `<span class="agenda-tag prio3">Prio 3</span>`;
+      const tags = [];
+      if(t.all_day) tags.push(`<span class="agenda-tag all-day">Dia inteiro</span>`);
+      if(t.blocked) tags.push(`<span class="agenda-tag blocked">Agenda bloqueada</span>`);
+      if(tipo==="google")                            tags.push(`<span class="agenda-tag google">Google</span>`);
+      else if(sincronizado)                            tags.push(`<span class="agenda-tag local-google">PRIORIZA + Google</span>`);
+      else if(origem==="PESSOAL")                      tags.push(`<span class="agenda-tag pessoal">Pessoal</span>`);
+      else if(status==="extra"||status==="imprevisto") tags.push(`<span class="agenda-tag extra">Extra</span>`);
+      else if(ehStatusCancelada(status))               tags.push(`<span class="agenda-tag cancelada">Cancelada</span>`);
+      else if(ehStatusFeito(status))                   tags.push(`<span class="agenda-tag concluida">Concluída</span>`);
+      else if(prio==="1") tags.push(`<span class="agenda-tag prio1">Prio 1</span>`);
+      else if(prio==="2") tags.push(`<span class="agenda-tag prio2">Prio 2</span>`);
+      else if(prio==="3") tags.push(`<span class="agenda-tag prio3">Prio 3</span>`);
+      if (tags.length) return tags.join(" ");
       const contexto = obterRotuloContextoTarefa(t);
       if(contexto && contexto.toUpperCase() !== "PESSOAL") return `<span class="agenda-tag">${textoSeguro(contexto)}</span>`;
       return `<span class="agenda-tag">Trabalho</span>`;
@@ -14637,6 +14790,8 @@
       const titulo = String(tarefa?.titulo || "").toLowerCase();
       if (ehStatusCancelada(tarefa?.status)) return "#cbd5e1";
       if (ehStatusFeito(tarefa?.status)) return "#22c55e";
+      if (tarefa?.blocked) return "#ef4444";
+      if (tarefa?.all_day) return "#0ea5e9";
       if (tipo === "google") return "rgba(var(--cor-tema-rgb), 0.72)";
       if (prioridade === "1") return "#ef4444";
       if (prioridade === "2") return "#f59e0b";
@@ -14655,6 +14810,8 @@
         const contexto = obterRotuloContextoTarefa(tarefa);
         if (contexto) partes.push(contexto);
       }
+      if (tarefa?.all_day) partes.push("Dia inteiro");
+      if (tarefa?.blocked) partes.push("Agenda bloqueada");
       if (tarefa?.local && !partes.includes(tarefa.local)) partes.push(tarefa.local);
       if (tarefa?.descricao && String(tarefa.descricao).trim()) partes.push(String(tarefa.descricao).trim());
       return partes.filter(Boolean).slice(0, 2).join(" · ");
@@ -14841,6 +14998,7 @@
         ativo: evento?.ativo !== false,
         prioridade: evento?.prioridade || "",
         all_day: allDay,
+        blocked: evento?.blocked === true,
         timezone: timeZoneEvento,
         google_event_id: evento?.google_event_id || evento?.id || "",
         google_html_link: evento?.google_html_link || evento?.link || "",
@@ -15045,6 +15203,8 @@
             const item = document.createElement("div");
             item.className = "agenda-item";
             if (t.id !== undefined && t.id !== null) item.dataset.taskId = String(t.id);
+            if (t.all_day) item.classList.add("all-day");
+            if (t.blocked) item.classList.add("blocked");
             if (ehStatusCancelada(t.status)) item.classList.add("cancelada");
             if (emLayoutDesktop()) {
               item.style.setProperty("--agenda-accent", obterCorIndicadorHoje(t));
@@ -15083,7 +15243,7 @@
 
             const horario = document.createElement("div");
             horario.className = "agenda-horario";
-            horario.textContent = t.hora_inicio || "--:--";
+            horario.textContent = t.all_day ? "Dia todo" : (t.hora_inicio || "--:--");
 
             const conteudo = document.createElement("div");
             conteudo.className = "agenda-conteudo";
@@ -15707,6 +15867,7 @@
       btnText.textContent = abrir ? "Fechar formulário de compromisso" : "Novo compromisso";
       if (abrir) {
         atualizarCategoriaAgendaUI();
+        atualizarOpcoesDiaInteiroAgenda();
         const inputData = document.getElementById("agenda-data");
         if (inputData && calendarioDiaSelecionadoISO) {
           inputData.value = calendarioDiaSelecionadoISO;
@@ -15722,6 +15883,25 @@
       const ativo = (select.value || "NENHUMA") !== "NENHUMA";
       inputAte.disabled = !ativo;
       if (!ativo) inputAte.value = "";
+    }
+
+    function atualizarOpcoesDiaInteiroAgenda() {
+      const allDay = document.getElementById("agenda-all-day");
+      const blocked = document.getElementById("agenda-blocked");
+      const hora = document.getElementById("agenda-hora");
+      const duracao = document.getElementById("agenda-duracao");
+      const duracaoWrap = document.getElementById("agenda-duracao-wrap");
+      if (!allDay || !blocked || !duracao || !duracaoWrap) return;
+
+      if (blocked.checked && !allDay.checked) allDay.checked = true;
+      const ativoDiaInteiro = allDay.checked;
+      duracao.value = ativoDiaInteiro ? "1440" : (duracao.value === "1440" ? "60" : (duracao.value || "60"));
+      duracao.disabled = ativoDiaInteiro;
+      duracaoWrap.classList.toggle("is-hidden", ativoDiaInteiro);
+      if (hora) {
+        hora.disabled = ativoDiaInteiro;
+        hora.title = ativoDiaInteiro ? "Dia inteiro: a hora fica apenas como referência visual." : "";
+      }
     }
 
     // ── SALVAR ROTINA (form) ──────────────────────────────────────
@@ -16259,6 +16439,8 @@
 
     function tipoIndicadorCalendario(item) {
       if (ehStatusFeito(item.status)) return "feito";
+      if (item.blocked) return "blocked";
+      if (item.all_day) return "all-day";
       const prioridade = String(item.prioridade || "");
       if (prioridade === "1") return "prio1";
       if (prioridade === "2") return "prio2";
@@ -16383,8 +16565,10 @@
         if (t?.id !== undefined && t?.id !== null) {
           item.dataset.taskId = String(t.id);
         }
+        if (t.all_day) item.classList.add("all-day");
+        if (t.blocked) item.classList.add("blocked");
         if (ehStatusCancelada(t.status)) item.classList.add("cancelada");
-        const hor=document.createElement("div"); hor.className="agenda-horario"; hor.textContent=t.hora_inicio||"--:--";
+        const hor=document.createElement("div"); hor.className="agenda-horario"; hor.textContent=t.all_day ? "Dia todo" : (t.hora_inicio||"--:--");
         const con=document.createElement("div"); con.className="agenda-conteudo"; con.style.flex="1";
         const ti=document.createElement("div"); ti.className="agenda-titulo"; ti.textContent=t.titulo;
         con.appendChild(ti);
@@ -16393,7 +16577,7 @@
         const metaLinhas = [];
         if ((t.tipo_evento || "") !== "google") metaLinhas.push(`Prioridade ${t.prioridade||"–"}`);
         if (t.local) metaLinhas.push(t.local);
-        if (t.hora_fim && t.hora_inicio !== "Dia todo") metaLinhas.push(`${t.hora_inicio} até ${t.hora_fim}`);
+        if (t.hora_fim && !t.all_day && t.hora_inicio !== "Dia todo") metaLinhas.push(`${t.hora_inicio} até ${t.hora_fim}`);
         if (t.descricao) metaLinhas.push(t.descricao);
         if (metaLinhas.length) {
           const meta=document.createElement("div"); meta.className="agenda-meta"; meta.textContent=metaLinhas.join(" · "); con.appendChild(meta);
@@ -16930,6 +17114,8 @@
         if (ev.target?.id === "agenda-form-wrap") toggleFormAgenda(false);
       });
       document.getElementById("agenda-repetir")?.addEventListener("change", atualizarCampoRecorrenciaAgenda);
+      document.getElementById("agenda-all-day")?.addEventListener("change", atualizarOpcoesDiaInteiroAgenda);
+      document.getElementById("agenda-blocked")?.addEventListener("change", atualizarOpcoesDiaInteiroAgenda);
       document.getElementById("agenda-categoria")?.addEventListener("change", atualizarCategoriaAgendaUI);
       document.getElementById("chk-categoria")?.addEventListener("change", atualizarCategoriaChecklistUI);
       document.getElementById("agenda-titulo")?.addEventListener("keydown", (ev) => {
@@ -16960,8 +17146,10 @@
         const local     = document.getElementById("agenda-local")?.value.trim()||"";
         const origem    = categoria === "PESSOAL" ? "PESSOAL" : "PROFISSIONAL";
         const data      = document.getElementById("agenda-data")?.value.trim();
-        const hora      = document.getElementById("agenda-hora")?.value||"00:00";
-        const duracao   = document.getElementById("agenda-duracao")?.value||"60";
+        const allDay    = document.getElementById("agenda-all-day")?.checked === true;
+        const blocked   = document.getElementById("agenda-blocked")?.checked === true;
+        const hora      = allDay ? "" : (document.getElementById("agenda-hora")?.value||"00:00");
+        const duracao   = allDay ? "1440" : (document.getElementById("agenda-duracao")?.value||"60");
         const prioridade= document.getElementById("agenda-prioridade")?.value||"2";
         const repetir   = document.getElementById("agenda-repetir")?.value||"NENHUMA";
         const repetirAte= document.getElementById("agenda-repetir-ate")?.value.trim()||"";
@@ -16983,6 +17171,8 @@
             prioridade,
             repetir,
             repetir_ate: repetirAte,
+            all_day: allDay ? "true" : "false",
+            blocked: blocked ? "true" : "false",
             sincronizar_google: syncGoogle ? "true" : "false"
           }),{method:"POST",headers:authHeaders()});
           if(!res.ok){await modal.alerta("Não foi possível salvar o compromisso.","Erro");return;}
@@ -17017,7 +17207,9 @@
           document.getElementById("form-agenda").reset();
           document.getElementById("agenda-categoria").value = "PROFISSIONAL";
           document.getElementById("agenda-sincronizar-google").checked = false;
+          document.getElementById("agenda-duracao").value = "60";
           atualizarCampoRecorrenciaAgenda();
+          atualizarOpcoesDiaInteiroAgenda();
           atualizarCategoriaAgendaUI();
           toggleFormAgenda(false);
           await modal.alerta(mensagemSucesso,"Sucesso");
