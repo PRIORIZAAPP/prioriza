@@ -3761,6 +3761,162 @@
           grid-template-columns: 1fr;
         }
       }
+
+      #screen-financas .financas-desktop-view {
+        gap: 10px;
+      }
+      #screen-financas .financas-hero {
+        align-items: center;
+        padding: 0 2px;
+      }
+      #screen-financas .financas-title {
+        font-size: clamp(23px, 2.4vw, 29px);
+        letter-spacing: -0.04em;
+      }
+      #screen-financas .financas-kpi-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 8px;
+      }
+      #screen-financas .financas-kpi-card,
+      #screen-financas .financas-premium-card {
+        border-radius: 12px;
+        box-shadow: 0 7px 18px rgba(15, 23, 42, 0.045);
+      }
+      #screen-financas .financas-kpi-card:hover,
+      #screen-financas .financas-premium-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.055);
+      }
+      #screen-financas .financas-kpi-card {
+        min-height: 98px;
+        padding: 9px 10px;
+        gap: 5px;
+      }
+      #screen-financas .financas-kpi-label {
+        font-size: 9.5px;
+        letter-spacing: 0.06em;
+      }
+      #screen-financas .financas-kpi-icon {
+        width: 25px;
+        height: 25px;
+        border-radius: 8px;
+      }
+      #screen-financas .financas-kpi-icon svg {
+        width: 13px;
+        height: 13px;
+      }
+      #screen-financas .financas-kpi-value {
+        font-size: clamp(17px, 1.55vw, 22px);
+        letter-spacing: -0.035em;
+      }
+      #screen-financas .financas-kpi-meta {
+        font-size: 10.5px;
+        line-height: 1.25;
+      }
+      #screen-financas .financas-kpi-percent {
+        min-height: 22px;
+        padding: 0 7px;
+        border-radius: 999px;
+        background: rgba(241,245,249,0.94);
+        color: #334155;
+        font-size: 11px;
+        font-weight: 750;
+        display: inline-flex;
+        align-items: center;
+      }
+      #screen-financas .financas-kpi-card.health {
+        background: linear-gradient(180deg, rgba(240,253,244,0.98) 0%, rgba(255,255,255,0.98) 100%);
+      }
+      #screen-financas .financas-health-status.warning {
+        color: #b45309;
+      }
+      #screen-financas .financas-health-status.danger {
+        color: #b91c1c;
+      }
+      #screen-financas .financas-dashboard-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+      }
+      #screen-financas .financas-main-column {
+        gap: 10px;
+      }
+      #screen-financas .financas-side-column,
+      #screen-financas .financas-resumo-card,
+      #screen-financas .financas-health-card {
+        display: none !important;
+      }
+      #screen-financas .financas-premium-card {
+        padding: 11px;
+      }
+      #screen-financas .financas-card-header {
+        margin-bottom: 8px;
+      }
+      #screen-financas .financas-card-title {
+        font-size: 15px;
+        letter-spacing: -0.025em;
+      }
+      #screen-financas .financas-summary-inline {
+        margin-bottom: 8px;
+        padding: 8px 10px;
+        border-radius: 11px;
+      }
+      #screen-financas .financas-source-inline {
+        margin-bottom: 8px;
+      }
+      #screen-financas .financas-fixed-list {
+        gap: 7px;
+      }
+      #screen-financas .financas-fixed-item {
+        border-radius: 10px;
+        padding: 9px 11px;
+      }
+      #screen-financas .financas-projecao-wrap {
+        border-radius: 12px;
+      }
+      #screen-financas .financas-projecao-scroll {
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+      }
+      #screen-financas .financas-projecao-table {
+        min-width: 860px;
+      }
+      #screen-financas .financas-projecao-table.anual {
+        min-width: 1280px;
+      }
+      #screen-financas .financas-projecao-head,
+      #screen-financas .financas-projecao-category {
+        min-height: 38px;
+        padding: 0 10px;
+      }
+      #screen-financas .financas-projecao-category {
+        grid-template-columns: minmax(210px, 1.4fr) repeat(6, minmax(104px, 1fr));
+      }
+      #screen-financas .financas-projecao-table.anual .financas-projecao-category {
+        grid-template-columns: minmax(210px, 1.4fr) repeat(12, minmax(94px, 1fr));
+      }
+      #screen-financas .financas-projecao-row,
+      #screen-financas .financas-projecao-total-row {
+        min-height: 38px;
+        padding: 0 10px;
+      }
+      #screen-financas .financas-projecao-cell-btn,
+      #screen-financas .financas-projecao-cell-static {
+        min-height: 26px;
+        padding: 0 6px;
+        font-size: 11px;
+      }
+      @media (max-width: 1099px) and (min-width: 641px) {
+        #screen-financas .financas-kpi-grid {
+          grid-template-columns: repeat(5, minmax(148px, 1fr));
+          overflow-x: auto;
+          padding-bottom: 2px;
+        }
+      }
+      @media (max-width: 640px) {
+        #screen-financas .financas-kpi-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
       .campo-em-breve { opacity: 0.45; pointer-events: none; }
       .badge-em-breve {
         display: inline-block; font-size: 10px; background: #fef3c7;
@@ -8987,9 +9143,7 @@
               <div class="financas-mobile-view">
                 <div class="financas-mobile-top">
                   <div class="financas-mobile-copy">
-                    <div class="financas-kicker">Finanças</div>
-                    <h2 class="financas-mobile-title">Resumo rápido</h2>
-                    <p class="financas-mobile-subtitle">Lançe e confira seu mês em segundos.</p>
+                    <h2 class="financas-mobile-title">Controle Financeiro</h2>
                   </div>
                   <input id="financas-mes-referencia-mobile" class="financas-month-picker financas-mobile-month-picker" type="month" />
                 </div>
@@ -9049,9 +9203,7 @@
               <div class="financas-desktop-view">
               <div class="financas-hero">
                 <div class="financas-hero-copy">
-                  <div class="financas-kicker">Finanças</div>
-                  <h2 class="financas-title">Visão Geral</h2>
-                  <p class="financas-subtitle">Panorama das suas finanças</p>
+                  <h2 class="financas-title">Controle Financeiro</h2>
                 </div>
                 <div class="financas-hero-actions">
                   <input id="financas-mes-referencia" class="financas-month-picker" type="month" />
@@ -9113,48 +9265,47 @@
                   <div id="financas-kpi-hoje" class="financas-kpi-value">R$ 0,00</div>
                   <div id="financas-kpi-hoje-aux" class="financas-kpi-meta">Despesas registradas hoje.</div>
                 </button>
+                <button id="financas-kpi-card-saude" class="financas-kpi-card health financas-kpi-button" type="button">
+                  <div class="financas-kpi-top">
+                    <span class="financas-kpi-label">Saúde financeira</span>
+                    <span id="financas-kpi-saude-percentual" class="financas-kpi-percent">0%</span>
+                  </div>
+                  <div id="financas-gauge-status" class="financas-kpi-value financas-health-status">Saudável</div>
+                  <div class="financas-progress-track soft"><div id="financas-kpi-saude-barra" class="financas-progress-fill positive" style="width:0%"></div></div>
+                  <div id="financas-gauge-copy" class="financas-kpi-meta">Suas saídas estão sob controle neste mês.</div>
+                </button>
               </div>
 
               <div class="financas-dashboard-grid">
                 <div class="financas-main-column">
-                  <div class="financas-premium-card financas-resumo-card">
+                  <div class="financas-premium-card">
                     <div class="financas-card-header">
                       <div>
-                        <h3 class="financas-card-title">Resumo do mês</h3>
-                        <div class="financas-card-subtitle">Leitura rápida do equilíbrio financeiro.</div>
+                        <h3 class="financas-card-title">Fontes de renda</h3>
                       </div>
-                      <div id="financas-month-label" class="financas-card-chip">Mês atual</div>
-                    </div>
-                    <div class="financas-resumo-grid">
-                      <div class="financas-resumo-metric positive">
-                        <div class="financas-resumo-label">Receitas</div>
-                        <div id="financas-resumo-receitas" class="financas-resumo-value">R$ 0,00</div>
-                        <div class="financas-progress-track"><div id="financas-bar-receitas" class="financas-progress-fill positive" style="width:0%"></div></div>
-                      </div>
-                      <div class="financas-resumo-metric danger">
-                        <div class="financas-resumo-label">Despesas</div>
-                        <div id="financas-resumo-despesas" class="financas-resumo-value">R$ 0,00</div>
-                        <div class="financas-progress-track"><div id="financas-bar-despesas" class="financas-progress-fill danger" style="width:0%"></div></div>
-                      </div>
-                      <div class="financas-resumo-metric warning">
-                        <div class="financas-resumo-label">Gastos diários</div>
-                        <div id="financas-resumo-dividas-pagas" class="financas-resumo-value">R$ 0,00</div>
-                        <div class="financas-progress-track"><div id="financas-bar-dividas" class="financas-progress-fill warning" style="width:0%"></div></div>
-                      </div>
-                      <div class="financas-resumo-metric neutral">
-                        <div class="financas-resumo-label">Resultado</div>
-                        <div id="financas-resumo-resultado" class="financas-resumo-value">R$ 0,00</div>
-                        <div class="financas-progress-track"><div id="financas-bar-resultado" class="financas-progress-fill neutral" style="width:0%"></div></div>
+                      <div class="financas-header-actions">
+                        <div id="financas-fontes-meta" class="financas-card-chip">0 fonte(s)</div>
+                        <button id="btn-financas-visualizar-fontes" class="btn-secondary financas-action-btn" type="button">Visualizar</button>
+                        <button id="btn-financas-nova-fonte-renda" class="btn-secondary financas-action-btn" type="button">Adicionar</button>
                       </div>
                     </div>
-                    <div id="financas-alerta-mes" class="financas-alert-banner neutral">Tudo equilibrado por aqui.</div>
+                    <div class="financas-source-inline">
+                      <div class="financas-source-inline-copy">
+                        <strong id="financas-fontes-total" class="financas-source-inline-value">R$ 0,00</strong>
+                        <span id="financas-fontes-inline-copy" class="financas-source-inline-text">Nenhuma fonte cadastrada.</span>
+                      </div>
+                    </div>
+                    <div id="financas-fontes-renda-wrap" hidden>
+                      <div id="financas-fontes-renda-lista" class="financas-source-list">
+                        <div class="financas-empty">Nenhuma fonte de renda cadastrada.</div>
+                      </div>
+                    </div>
                   </div>
 
                   <div class="financas-premium-card">
                     <div class="financas-card-header">
                       <div>
                         <h3 class="financas-card-title">Despesas e dívidas</h3>
-                        <div class="financas-card-subtitle">Sua operação financeira organizada por categoria.</div>
                       </div>
                       <div class="financas-header-actions">
                         <div id="financas-contas-fixas-meta" class="financas-card-chip">0 item(ns)</div>
@@ -9183,31 +9334,6 @@
                     </div>
                   </div>
 
-                  <div class="financas-premium-card">
-                    <div class="financas-card-header">
-                      <div>
-                        <h3 class="financas-card-title">Fontes de renda</h3>
-                        <div class="financas-card-subtitle">Receitas organizadas por origem.</div>
-                      </div>
-                      <div class="financas-header-actions">
-                        <div id="financas-fontes-meta" class="financas-card-chip">0 fonte(s)</div>
-                        <button id="btn-financas-visualizar-fontes" class="btn-secondary financas-action-btn" type="button">Visualizar</button>
-                        <button id="btn-financas-nova-fonte-renda" class="btn-secondary financas-action-btn" type="button">Adicionar</button>
-                      </div>
-                    </div>
-                    <div class="financas-source-inline">
-                      <div class="financas-source-inline-copy">
-                        <strong id="financas-fontes-total" class="financas-source-inline-value">R$ 0,00</strong>
-                        <span id="financas-fontes-inline-copy" class="financas-source-inline-text">Nenhuma fonte cadastrada.</span>
-                      </div>
-                    </div>
-                    <div id="financas-fontes-renda-wrap" hidden>
-                      <div id="financas-fontes-renda-lista" class="financas-source-list">
-                        <div class="financas-empty">Nenhuma fonte de renda cadastrada.</div>
-                      </div>
-                    </div>
-                  </div>
-
                   <div class="financas-premium-card financas-chart-line">
                     <div class="financas-card-header">
                       <div>
@@ -9220,91 +9346,6 @@
                     </div>
                   </div>
 
-                </div>
-                <div class="financas-side-column">
-                  <div class="financas-premium-card financas-health-card">
-                    <div class="financas-card-header financas-health-head">
-                      <div>
-                        <h3 class="financas-card-title">Saúde financeira</h3>
-                        <div class="financas-card-subtitle">Sinal rápido da pressão do mês.</div>
-                      </div>
-                    </div>
-                    <div class="financas-gauge-shell">
-                      <div class="financas-gauge-wrap">
-                        <div class="financas-gauge-arc"></div>
-                        <div id="financas-gauge-needle" class="financas-gauge-needle"></div>
-                        <div class="financas-gauge-center"></div>
-                      </div>
-                      <div id="financas-gauge-status" class="financas-gauge-status">Equilíbrio</div>
-                      <div id="financas-gauge-copy" class="financas-gauge-copy">Suas saídas estão sob controle neste mês.</div>
-                    </div>
-                  </div>
-
-                  <div class="financas-premium-card financas-side-balance">
-                    <div class="financas-card-header">
-                      <div>
-                        <h3 class="financas-card-title">Saldo do mês</h3>
-                        <div class="financas-card-subtitle">Visão separada entre previsto, realizado e pressão do mês.</div>
-                      </div>
-                      <div class="financas-card-chip">Mês ativo</div>
-                    </div>
-                    <div class="financas-balance-stack">
-                      <div class="financas-balance-hero">
-                        <span class="financas-balance-kicker">Final previsto</span>
-                        <strong id="financas-saldo-previsto" class="financas-balance-amount">R$ 0,00</strong>
-                        <span class="financas-balance-caption">Fontes de renda menos contas fixas previstas.</span>
-                      </div>
-                      <div class="financas-summary-rows">
-                        <div class="financas-summary-row">
-                          <span class="financas-summary-row-label">Saldo atual</span>
-                          <strong id="financas-saldo-mes" class="financas-summary-row-value">R$ 0,00</strong>
-                        </div>
-                        <div class="financas-summary-row">
-                          <span class="financas-summary-row-label">Receitas realizadas</span>
-                          <strong id="financas-entradas-mes" class="financas-summary-row-value">R$ 0,00</strong>
-                        </div>
-                        <div class="financas-summary-row">
-                          <span class="financas-summary-row-label">Saídas realizadas</span>
-                          <strong id="financas-saidas-mes" class="financas-summary-row-value">R$ 0,00</strong>
-                        </div>
-                        <div class="financas-summary-row">
-                          <span class="financas-summary-row-label">Gastos do dia</span>
-                          <strong id="financas-gastos-hoje" class="financas-summary-row-value">R$ 0,00</strong>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="financas-goal-card">
-                      <div class="financas-goal-copy">
-                        <div class="financas-goal-title">Meta financeira</div>
-                        <div id="financas-meta-texto" class="financas-goal-text">Tudo em ordem por enquanto.</div>
-                      </div>
-                      <div class="financas-progress-track soft"><div id="financas-meta-barra" class="financas-progress-fill warning" style="width:0%"></div></div>
-                    </div>
-                  </div>
-
-                  <div class="financas-premium-card">
-                    <div class="financas-card-header">
-                      <div>
-                        <h3 class="financas-card-title">Despesas por categoria</h3>
-                        <div class="financas-card-subtitle">Onde o mês está pesando mais.</div>
-                      </div>
-                    </div>
-                    <div id="financas-category-chart" class="financas-category-chart">
-                      <div class="financas-empty">Nenhuma despesa lançada neste mês.</div>
-                    </div>
-                  </div>
-
-                  <div class="financas-premium-card">
-                    <div class="financas-card-header">
-                      <div>
-                        <h3 class="financas-card-title">Insights do mês</h3>
-                        <div class="financas-card-subtitle">Sinais rápidos para orientar sua operação.</div>
-                      </div>
-                    </div>
-                    <div id="financas-insights-lista" class="financas-insights-list">
-                      <div class="financas-empty">Adicione dados para gerar insights.</div>
-                    </div>
-                  </div>
                 </div>
               </div>
               </div>
@@ -10681,7 +10722,7 @@
     let financasFontesRenda = [];
     let financasContaFixaConfirmacaoAtual = null;
     let financasHistoricoResumo = [];
-    let financasFontesVisiveis = false;
+    let financasFontesVisiveis = true;
     let financasKpiDetailAtual = "";
     let financasVisaoDespesas = "mensal";
 
@@ -11756,6 +11797,8 @@
       const gaugeNeedleEl = document.getElementById("financas-gauge-needle");
       const gaugeStatusEl = document.getElementById("financas-gauge-status");
       const gaugeCopyEl = document.getElementById("financas-gauge-copy");
+      const saudePercentualEl = document.getElementById("financas-kpi-saude-percentual");
+      const saudeBarraEl = document.getElementById("financas-kpi-saude-barra");
       if (metaTextoEl) {
         if (contexto.resultadoMes < 0) {
           metaTextoEl.textContent = `Faltam ${formatarMoedaFinancas(Math.abs(contexto.resultadoMes))} para fechar o mês no azul.`;
@@ -11773,12 +11816,18 @@
       const pressao = baseSaude > 0 ? (contexto.saidasMes / baseSaude) : (contexto.saidasMes > 0 ? 1.3 : 0);
       const pressaoNormalizada = Math.max(0, Math.min(1, pressao));
       const angulo = -90 + (pressaoNormalizada * 180);
+      const percentualComprometido = Math.round(pressao * 100);
+      if (saudePercentualEl) saudePercentualEl.textContent = `${percentualComprometido}%`;
+      if (saudeBarraEl) {
+        saudeBarraEl.style.width = `${Math.min(100, Math.max(4, percentualComprometido))}%`;
+        saudeBarraEl.classList.remove("positive", "warning", "danger", "neutral");
+        saudeBarraEl.classList.add(pressao <= 0.60 ? "positive" : (pressao <= 0.85 ? "warning" : "danger"));
+      }
       if (gaugeNeedleEl) {
         gaugeNeedleEl.style.transform = `translateX(-50%) rotate(${angulo}deg)`;
       }
       if (gaugeStatusEl && gaugeCopyEl) {
         gaugeStatusEl.classList.remove("warning", "danger");
-        const percentualComprometido = Math.round(pressao * 100);
         if (pressao <= 0.60) {
           gaugeStatusEl.textContent = "Saudável";
           gaugeCopyEl.textContent = `Suas despesas representam ${percentualComprometido}% da receita mensal.`;
@@ -12974,6 +13023,7 @@
       document.getElementById("financas-kpi-card-saidas")?.addEventListener("click", () => abrirDetalheKpiFinancas("saidas"));
       document.getElementById("financas-kpi-resultado-card")?.addEventListener("click", () => abrirDetalheKpiFinancas("resultado"));
       document.getElementById("financas-kpi-card-hoje")?.addEventListener("click", () => abrirDetalheKpiFinancas("hoje"));
+      document.getElementById("financas-kpi-card-saude")?.addEventListener("click", () => abrirDetalheKpiFinancas("resultado"));
       document.getElementById("financas-mobile-balance-card")?.addEventListener("click", () => abrirDetalheKpiFinancas("resultado"));
       document.getElementById("financas-mobile-card-hoje")?.addEventListener("click", () => abrirDetalheKpiFinancas("hoje"));
       document.getElementById("financas-mobile-card-vencendo")?.addEventListener("click", () => abrirDetalheKpiFinancas("vencendo"));
