@@ -4002,7 +4002,7 @@
           min-height: 86px;
         }
         .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-dashboard-grid {
-          grid-template-columns: minmax(0, 0.56fr) minmax(0, 0.44fr);
+          display: none;
         }
         .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-chart-line {
           display: none;
@@ -4288,8 +4288,7 @@
           color: #9ca3af;
         }
         #screen-financas .financas-workbook-bottom {
-          display: grid;
-          grid-template-columns: minmax(420px, 0.56fr) minmax(420px, 0.44fr);
+          display: block;
           border-top: 1px solid #9ca3af;
           background: #ffffff;
         }
@@ -9714,9 +9713,7 @@
 
                 <div class="financas-workbook-tabs" aria-hidden="true">
                   <span class="active">Orçamento 2026</span>
-                  <span>Controle Semanal</span>
                   <span>Controle Diário</span>
-                  <span>Dívidas</span>
                 </div>
 
                 <div class="financas-orcamento-scroll">
@@ -9733,18 +9730,6 @@
                         <span>Data</span><span>Descrição</span><span>Categoria</span><span>Valor</span>
                       </div>
                       <div id="financas-planilha-diarios-lista"></div>
-                    </div>
-                  </section>
-
-                  <section class="financas-sheet-section dividas">
-                    <div class="financas-sheet-section-head">
-                      <h4>Dívidas em aberto</h4>
-                    </div>
-                    <div class="financas-table">
-                      <div class="financas-table-row head">
-                        <span>Descrição</span><span>Venc.</span><span>Aberto</span><span>Status</span>
-                      </div>
-                      <div id="financas-planilha-dividas-lista"></div>
                     </div>
                   </section>
                 </div>
@@ -12933,7 +12918,7 @@
 
       adicionarSecaoOrcamentoFinancas(grade, "3. DESPESAS COM LAZER");
       despesasLazer.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Lazer", Number(item.valor || 0), realConta(item), { mesAtual: mes }));
-      adicionarLinhaOrcamentoFinancas(grade, "Lanches, saídas e gastos diários", totalGastosDiarios, totalGastosDiarios, { mesAtual: mes });
+      adicionarLinhaOrcamentoFinancas(grade, "Custos variáveis - gasto diário", totalGastosDiarios, totalGastosDiarios, { mesAtual: mes });
       adicionarLinhaOrcamentoFinancas(grade, "Estilo de vida total", totalPlanejadoLazer, totalRealLazer, { mesAtual: mes, total: true });
       adicionarLinhaOrcamentoFinancas(grade, "Est. de vida/Receita (30%)", percentual(totalPlanejadoLazer, totalPlanejadoReceitas), percentual(totalRealLazer, totalRealReceitas), { mesAtual: mes, total: true, tipo: "percentual" });
 
@@ -12961,19 +12946,6 @@
       definirTexto("financas-planilha-total-resultado", formatarMoedaFinancas(contexto.resultadoMes));
       document.getElementById("financas-planilha-total-resultado")?.classList.toggle("negative", contexto.resultadoMes < 0);
       renderizarOrcamentoAnualFinancas(contexto);
-
-      const linhasDividas = contexto.dividas
-        .slice()
-        .sort((a, b) => Number(a.dia_vencimento || 0) - Number(b.dia_vencimento || 0))
-        .map((item) => {
-          const status = obterStatusContaFixaFinancas(item);
-          const aberto = status.confirmado ? 0 : Number(item.valor || 0);
-          return criarLinhaPlanilhaFinancas(
-            [item.nome || "Dívida", `dia ${Number(item.dia_vencimento || 0)}`, formatarMoedaFinancas(aberto), status.label],
-            ["", "", aberto > 0 ? "money open" : "money positive", `status ${status.confirmado ? "positive" : "open"}`]
-          );
-        });
-      preencherListaPlanilhaFinancas("financas-planilha-dividas-lista", linhasDividas, "Nenhum parcelamento ou dívida cadastrada.");
 
       const linhasDiarias = contexto.lancamentosAvulsosDespesa
         .slice()
