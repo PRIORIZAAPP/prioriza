@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
   <head>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -1320,9 +1320,6 @@
       .nav-item span { display: block; line-height: 1.1; text-align: center; white-space: nowrap; }
 
       @media (max-width: 1099px) {
-        .bottom-nav .nav-item[data-target="screen-ajustes"] {
-          display: none;
-        }
         .bottom-nav {
           justify-content: space-between;
           padding-left: 10px;
@@ -1331,6 +1328,10 @@
         .nav-item {
           min-width: 0;
           flex: 1 1 0;
+        }
+        #screen-financas,
+        .bottom-nav .nav-item[data-target="screen-financas"] {
+          display: none !important;
         }
       }
 
@@ -3774,7 +3775,7 @@
         letter-spacing: -0.04em;
       }
       #screen-financas .financas-kpi-grid {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns: repeat(6, minmax(0, 1fr));
         gap: 8px;
       }
       #screen-financas .financas-kpi-card,
@@ -3907,7 +3908,7 @@
       }
       @media (max-width: 1099px) and (min-width: 641px) {
         #screen-financas .financas-kpi-grid {
-          grid-template-columns: repeat(5, minmax(148px, 1fr));
+          grid-template-columns: repeat(6, minmax(148px, 1fr));
           overflow-x: auto;
           padding-bottom: 2px;
         }
@@ -9203,7 +9204,7 @@
               <div class="financas-desktop-view">
               <div class="financas-hero">
                 <div class="financas-hero-copy">
-                  <h2 class="financas-title">Controle Financeiro</h2>
+                  <h2 class="financas-title">Saúde Financeira</h2>
                 </div>
                 <div class="financas-hero-actions">
                   <input id="financas-mes-referencia" class="financas-month-picker" type="month" />
@@ -9215,7 +9216,7 @@
               <div class="financas-kpi-grid">
                 <button id="financas-kpi-card-receitas" class="financas-kpi-card positive financas-kpi-button" type="button">
                   <div class="financas-kpi-top">
-                    <span class="financas-kpi-label">Receitas</span>
+                    <span class="financas-kpi-label">Receita do mês</span>
                     <span class="financas-kpi-icon positive">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M4 14 9 9l4 4 7-7"/>
@@ -9254,7 +9255,7 @@
                 </button>
                 <button id="financas-kpi-card-hoje" class="financas-kpi-card warning financas-kpi-button" type="button">
                   <div class="financas-kpi-top">
-                    <span class="financas-kpi-label">Gastos do dia</span>
+                    <span class="financas-kpi-label">Gasto médio diário</span>
                     <span class="financas-kpi-icon warning">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <circle cx="12" cy="12" r="8"/>
@@ -9263,16 +9264,29 @@
                     </span>
                   </div>
                   <div id="financas-kpi-hoje" class="financas-kpi-value">R$ 0,00</div>
-                  <div id="financas-kpi-hoje-aux" class="financas-kpi-meta">Despesas registradas hoje.</div>
+                  <div id="financas-kpi-hoje-aux" class="financas-kpi-meta">Média das saídas no mês selecionado.</div>
                 </button>
                 <button id="financas-kpi-card-saude" class="financas-kpi-card health financas-kpi-button" type="button">
                   <div class="financas-kpi-top">
-                    <span class="financas-kpi-label">Saúde financeira</span>
+                    <span class="financas-kpi-label">Percentual comprometido</span>
                     <span id="financas-kpi-saude-percentual" class="financas-kpi-percent">0%</span>
                   </div>
                   <div id="financas-gauge-status" class="financas-kpi-value financas-health-status">Saudável</div>
                   <div class="financas-progress-track soft"><div id="financas-kpi-saude-barra" class="financas-progress-fill positive" style="width:0%"></div></div>
                   <div id="financas-gauge-copy" class="financas-kpi-meta">Suas saídas estão sob controle neste mês.</div>
+                </button>
+                <button id="financas-kpi-card-aberto" class="financas-kpi-card danger financas-kpi-button" type="button">
+                  <div class="financas-kpi-top">
+                    <span class="financas-kpi-label">Contas em aberto</span>
+                    <span class="financas-kpi-icon danger">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="6" width="18" height="12" rx="3"/>
+                        <path d="M7 12h6"/>
+                      </svg>
+                    </span>
+                  </div>
+                  <div id="financas-kpi-aberto" class="financas-kpi-value">R$ 0,00</div>
+                  <div id="financas-kpi-aberto-aux" class="financas-kpi-meta">Dívidas e contas ainda não confirmadas.</div>
                 </button>
               </div>
 
@@ -9309,11 +9323,6 @@
                       </div>
                       <div class="financas-header-actions">
                         <div id="financas-contas-fixas-meta" class="financas-card-chip">0 item(ns)</div>
-                        <div class="financas-view-switch" id="financas-despesas-view-switch">
-                          <button class="financas-view-btn active" type="button" data-financas-view="mensal">Mensal</button>
-                          <button class="financas-view-btn" type="button" data-financas-view="semestral">Semestral</button>
-                          <button class="financas-view-btn" type="button" data-financas-view="anual">Anual</button>
-                        </div>
                         <button id="btn-financas-nova-conta-fixa" class="btn-secondary financas-action-btn" type="button">Nova despesa</button>
                       </div>
                     </div>
@@ -10142,16 +10151,6 @@
             <span>Checklist</span>
           </div>
 
-          <div class="nav-item" data-target="screen-financas">
-            <svg viewBox="0 0 256 256" fill="none" color="currentColor">
-              <circle cx="128" cy="128" r="88" fill="currentColor" opacity="0.18"/>
-              <circle cx="128" cy="128" r="88" stroke="currentColor" stroke-width="16"/>
-              <path d="M154 94c-9-10-23-14-37-11c-15 3-26 14-26 27c0 15 13 24 37 29c24 5 37 14 37 29c0 13-11 24-26 27c-14 3-28-1-37-11" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
-              <line x1="128" y1="66" x2="128" y2="190" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
-            </svg>
-            <span>Finanças</span>
-          </div>
-
           <div class="nav-item" data-target="screen-notas">
             <svg viewBox="0 0 256 256" fill="none" color="currentColor">
               <rect x="48" y="32" width="160" height="192" rx="8" fill="currentColor" opacity="0.2"/>
@@ -10824,6 +10823,11 @@
 
     function obterContextoFinanceiroMes() {
       const resumo = financasResumoMesSelecionado || {};
+      const { mes, ano } = obterMesAnoSelecionadoFinancas();
+      const hoje = new Date();
+      const mesmoMesAtual = hoje.getFullYear() === ano && hoje.getMonth() + 1 === mes;
+      const diasNoMes = new Date(ano, mes, 0).getDate();
+      const diasDecorridosMes = Math.max(1, Math.min(diasNoMes, mesmoMesAtual ? hoje.getDate() : diasNoMes));
       const receitasPlanejadas = financasFontesRenda.reduce((soma, item) => soma + Number(item.valor_base || 0), 0);
       const entradasMes = Number(resumo.entradas_mes || 0);
       const receitasSemFonte = financasLancamentosMesSelecionado
@@ -10841,8 +10845,11 @@
       const despesasFixasConfirmadas = contasDespesa
         .filter((item) => obterStatusContaFixaFinancas(item).confirmado)
         .reduce((soma, item) => soma + Number(item.valor || 0), 0);
+      const contasEmAberto = contasDespesa.filter((item) => !obterStatusContaFixaFinancas(item).confirmado);
+      const contasEmAbertoValor = contasEmAberto.reduce((soma, item) => soma + Number(item.valor || 0), 0);
       const saidasMes = despesasFixas + saidasAvulsasMes;
       const saidasRealizadasMes = despesasFixasConfirmadas + saidasAvulsasMes;
+      const gastoMedioDiario = saidasMes / diasDecorridosMes;
       const saldoAtual = Number(entradasMes - saidasRealizadasMes);
       const resultadoMes = Number(receitasMesPainel - saidasMes);
       const saldoPrevisto = receitasPlanejadas - despesasFixas;
@@ -10876,6 +10883,8 @@
         saldoPrevisto,
         despesasFixas,
         despesasFixasConfirmadas,
+        contasEmAberto,
+        contasEmAbertoValor,
         saidasAvulsasMes,
         lancamentosAvulsosDespesa,
         dividas,
@@ -10883,6 +10892,8 @@
         dividasAbertas,
         dividasEmAberto,
         gastosHoje,
+        gastoMedioDiario,
+        diasDecorridosMes,
         despesasCategoria,
         maiorDespesa,
       };
@@ -11363,20 +11374,26 @@
         lista.appendChild(criarLinhaDetalheKpiFinancas("Saldo atual", "Entradas realizadas menos saídas realizadas", formatarMoedaFinancas(contexto.saldoAtual)));
         lista.appendChild(criarLinhaDetalheKpiFinancas("Saldo previsto", "Fontes de renda menos despesas recorrentes", formatarMoedaFinancas(contexto.saldoPrevisto)));
       } else if (tipo === "hoje") {
-        titleEl.textContent = "Gastos do dia";
-        subtitleEl.textContent = "Despesas registradas na data de hoje.";
-        const hoje = dataHojeISO();
-        const despesasHoje = financasLancamentosTemporarios
-          .filter((item) => item.data === hoje && normalizarTipoFinancasUI(item.tipo) === "Despesa")
-          .sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0));
-        if (!despesasHoje.length) {
-          lista.innerHTML = '<div class="financas-empty">Nenhum gasto registrado hoje.</div>';
+        titleEl.textContent = "Gasto médio diário";
+        subtitleEl.textContent = "Média das saídas do mês selecionado.";
+        lista.appendChild(criarLinhaDetalheKpiFinancas("Saídas do mês", "Despesas recorrentes e gastos avulsos", formatarMoedaFinancas(contexto.saidasMes)));
+        lista.appendChild(criarLinhaDetalheKpiFinancas("Dias considerados", "Base usada para a média diária", `${contexto.diasDecorridosMes} dia(s)`));
+        lista.appendChild(criarLinhaDetalheKpiFinancas("Média diária", "Saídas divididas pelos dias considerados", formatarMoedaFinancas(contexto.gastoMedioDiario)));
+      } else if (tipo === "aberto") {
+        titleEl.textContent = "Contas em aberto";
+        subtitleEl.textContent = "Dívidas e contas fixas ainda não confirmadas no mês.";
+        if (!contexto.contasEmAberto.length) {
+          lista.innerHTML = '<div class="financas-empty">Nenhuma conta em aberto neste mês.</div>';
         } else {
-          despesasHoje.forEach((item) => {
+          contexto.contasEmAberto
+            .slice()
+            .sort((a, b) => Number(b.valor || 0) - Number(a.valor || 0))
+            .forEach((item) => {
+              const status = obterStatusContaFixaFinancas(item);
             lista.appendChild(
               criarLinhaDetalheKpiFinancas(
-                item.descricao || item.categoria || "Despesa",
-                `${item.categoria || "Outros"} · ${formatarDataCurtaBR(item.data)}`,
+                item.nome || "Conta em aberto",
+                `${item.categoria || "Outros"} · dia ${Number(item.dia_vencimento || 0)} · ${status.label}`,
                 formatarMoedaFinancas(item.valor || 0)
               )
             );
@@ -11729,8 +11746,7 @@
     }
 
     function abrirFluxoFinancasPrincipal() {
-      if (window.matchMedia("(max-width: 640px)").matches) {
-        abrirSheetAcoesRapidasFinancas();
+      if (window.matchMedia("(max-width: 1099px)").matches) {
         return;
       }
       abrirSheetFinancas();
@@ -11747,8 +11763,10 @@
       definirTexto("financas-kpi-saidas-aux", `${financasContasFixas.filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa").length} despesa(s) recorrente(s) e ${contexto.lancamentosAvulsosDespesa.length} gasto(s) avulso(s).`);
       definirTexto("financas-kpi-resultado", formatarMoedaFinancas(contexto.resultadoMes));
       definirTexto("financas-kpi-resultado-aux", contexto.resultadoMes < 0 ? "As despesas do mês estão acima das receitas do mês." : "As receitas do mês ainda cobrem as despesas previstas.");
-      definirTexto("financas-kpi-hoje", formatarMoedaFinancas(contexto.gastosHoje));
-      definirTexto("financas-kpi-hoje-aux", `${financasLancamentosTemporarios.filter((item) => item.data === dataHojeISO() && normalizarTipoFinancasUI(item.tipo) === "Despesa").length} gasto(s) registrado(s) hoje.`);
+      definirTexto("financas-kpi-hoje", formatarMoedaFinancas(contexto.gastoMedioDiario));
+      definirTexto("financas-kpi-hoje-aux", `${contexto.diasDecorridosMes} dia(s) considerados no mês selecionado.`);
+      definirTexto("financas-kpi-aberto", formatarMoedaFinancas(contexto.contasEmAbertoValor));
+      definirTexto("financas-kpi-aberto-aux", `${contexto.contasEmAberto.length} conta(s) ainda sem confirmação.`);
 
       const resultadoCard = document.getElementById("financas-kpi-resultado-card");
       if (resultadoCard) {
@@ -13024,6 +13042,7 @@
       document.getElementById("financas-kpi-resultado-card")?.addEventListener("click", () => abrirDetalheKpiFinancas("resultado"));
       document.getElementById("financas-kpi-card-hoje")?.addEventListener("click", () => abrirDetalheKpiFinancas("hoje"));
       document.getElementById("financas-kpi-card-saude")?.addEventListener("click", () => abrirDetalheKpiFinancas("resultado"));
+      document.getElementById("financas-kpi-card-aberto")?.addEventListener("click", () => abrirDetalheKpiFinancas("aberto"));
       document.getElementById("financas-mobile-balance-card")?.addEventListener("click", () => abrirDetalheKpiFinancas("resultado"));
       document.getElementById("financas-mobile-card-hoje")?.addEventListener("click", () => abrirDetalheKpiFinancas("hoje"));
       document.getElementById("financas-mobile-card-vencendo")?.addEventListener("click", () => abrirDetalheKpiFinancas("vencendo"));
@@ -17016,13 +17035,17 @@
         const btnChecklist = document.getElementById("btn-toggle-form-checklist");
         const btnFinancas = document.getElementById("btn-toggle-form-financas");
         if (!btnAgenda || !btnChecklist || !btnFinancas) return;
+        const desktop = window.matchMedia("(min-width: 1100px)").matches;
         btnAgenda.hidden = telaAtivaId !== "screen-agenda";
         btnChecklist.hidden = telaAtivaId !== "screen-checklist";
-        btnFinancas.hidden = telaAtivaId !== "screen-financas";
+        btnFinancas.hidden = !desktop || telaAtivaId !== "screen-financas";
       }
 
       function abrirTela(id, opts = {}) {
         if (!id) return;
+        if (id === "screen-financas" && window.matchMedia("(max-width: 1099px)").matches) {
+          id = "screen-hoje";
+        }
         const manterPosicao = opts?.manterPosicao === true;
         document.getElementById("app-shell")?.setAttribute("data-active-screen", id);
         screens.forEach((screen) => {
