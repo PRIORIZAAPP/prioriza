@@ -3923,6 +3923,234 @@
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
       }
+      @media (min-width: 1100px) {
+        .app-shell[data-active-screen="screen-financas"] {
+          background: #f3f6fb;
+        }
+        .app-shell[data-active-screen="screen-financas"] .topbar,
+        .app-shell[data-active-screen="screen-financas"] .resumo-bar,
+        .app-shell[data-active-screen="screen-financas"] .desktop-sidebar,
+        .app-shell[data-active-screen="screen-financas"] .desktop-rail {
+          display: none !important;
+        }
+        .app-shell[data-active-screen="screen-financas"] .app-workspace {
+          display: block;
+          width: 100vw;
+          min-height: 100vh;
+          padding: 0;
+        }
+        .app-shell[data-active-screen="screen-financas"] .app-main-column,
+        .app-shell[data-active-screen="screen-financas"] .content,
+        .app-shell[data-active-screen="screen-financas"] #screen-financas.screen.active {
+          width: 100%;
+          min-height: 100vh;
+          padding: 0;
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas > .card {
+          min-height: 100vh;
+          padding: 18px 22px 24px;
+          margin: 0;
+          border: none;
+          border-radius: 0;
+          background: #f3f6fb;
+          box-shadow: none;
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-shell,
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-desktop-view {
+          width: 100%;
+          max-width: none;
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-desktop-view {
+          gap: 12px;
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-hero {
+          position: sticky;
+          top: 0;
+          z-index: 8;
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr) auto;
+          align-items: center;
+          gap: 14px;
+          padding: 12px 0 14px;
+          background: rgba(243,246,251,0.94);
+          backdrop-filter: blur(14px);
+          border-bottom: 1px solid rgba(203,213,225,0.82);
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-title {
+          font-size: 24px;
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-subtitle {
+          display: block;
+          margin-top: 3px;
+          font-size: 12px;
+          color: #64748b;
+        }
+        #screen-financas .financas-back-btn {
+          display: none;
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-back-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          min-height: 36px;
+          border-radius: 9px;
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-kpi-grid {
+          grid-template-columns: repeat(6, minmax(150px, 1fr));
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-kpi-card {
+          min-height: 86px;
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-dashboard-grid {
+          grid-template-columns: minmax(0, 0.56fr) minmax(0, 0.44fr);
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-chart-line {
+          display: none;
+        }
+        #screen-financas .financas-spreadsheet-shell {
+          display: none;
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-spreadsheet-shell {
+          display: block;
+          border: 1px solid rgba(203,213,225,0.9);
+          border-radius: 10px;
+          background: #ffffff;
+          box-shadow: 0 12px 28px rgba(15,23,42,0.06);
+          overflow-x: auto;
+          overflow-y: hidden;
+        }
+        #screen-financas .financas-spreadsheet-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 18px;
+          padding: 12px 14px;
+          border-bottom: 1px solid rgba(226,232,240,0.95);
+          background: #fbfdff;
+        }
+        #screen-financas .financas-spreadsheet-totals {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(132px, 1fr));
+          gap: 8px;
+          width: min(760px, 58vw);
+        }
+        #screen-financas .financas-spreadsheet-totals > div {
+          min-height: 54px;
+          padding: 8px 10px;
+          border: 1px solid rgba(226,232,240,0.95);
+          border-radius: 8px;
+          background: #ffffff;
+        }
+        #screen-financas .financas-spreadsheet-totals span {
+          display: block;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.07em;
+          text-transform: uppercase;
+          color: #64748b;
+        }
+        #screen-financas .financas-spreadsheet-totals strong {
+          display: block;
+          margin-top: 5px;
+          font-size: 17px;
+          color: #0f172a;
+        }
+        #screen-financas .financas-spreadsheet-totals strong.negative {
+          color: #b91c1c;
+        }
+        #screen-financas .financas-spreadsheet-grid {
+          display: grid;
+          grid-template-columns: minmax(260px, 0.82fr) minmax(340px, 1.1fr) minmax(340px, 1.08fr) minmax(420px, 1.2fr);
+          min-width: 1280px;
+        }
+        #screen-financas .financas-sheet-section {
+          min-height: 360px;
+          border-right: 1px solid rgba(226,232,240,0.95);
+          background: #ffffff;
+        }
+        #screen-financas .financas-sheet-section:last-child {
+          border-right: none;
+        }
+        #screen-financas .financas-sheet-section-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          min-height: 52px;
+          padding: 10px 12px;
+          border-bottom: 1px solid rgba(226,232,240,0.95);
+          background: #f8fafc;
+        }
+        #screen-financas .financas-sheet-section h4 {
+          margin: 0;
+          font-size: 13px;
+          line-height: 1.1;
+          color: #0f172a;
+        }
+        #screen-financas .financas-table {
+          overflow: auto;
+          max-height: 430px;
+        }
+        #screen-financas .financas-table-row {
+          display: grid;
+          grid-template-columns: minmax(0, 1.2fr) minmax(74px, 0.55fr) minmax(92px, 0.72fr) minmax(86px, 0.62fr);
+          min-height: 36px;
+          border-bottom: 1px solid rgba(226,232,240,0.78);
+        }
+        #screen-financas .financas-sheet-section.diarios .financas-table-row {
+          grid-template-columns: minmax(82px, 0.62fr) minmax(150px, 1.1fr) minmax(110px, 0.85fr) minmax(92px, 0.62fr);
+        }
+        #screen-financas .financas-table-row.head {
+          position: sticky;
+          top: 0;
+          z-index: 1;
+          min-height: 30px;
+          background: #eef3f8;
+          color: #64748b;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+        #screen-financas .financas-table-row span {
+          display: flex;
+          align-items: center;
+          min-width: 0;
+          padding: 7px 9px;
+          border-right: 1px solid rgba(226,232,240,0.72);
+          font-size: 12px;
+          color: #334155;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        #screen-financas .financas-table-row span:last-child {
+          border-right: none;
+        }
+        #screen-financas .financas-table-row .money {
+          justify-content: flex-end;
+          font-weight: 700;
+          color: #0f172a;
+        }
+        #screen-financas .financas-table-row .positive {
+          color: #15803d;
+        }
+        #screen-financas .financas-table-row .negative,
+        #screen-financas .financas-table-row .open {
+          color: #b91c1c;
+        }
+        #screen-financas .financas-table-row .status {
+          justify-content: center;
+          font-size: 11px;
+          font-weight: 700;
+        }
+        #screen-financas .financas-table-row.empty span {
+          grid-column: 1 / -1;
+          justify-content: center;
+          min-height: 70px;
+          color: #94a3b8;
+        }
+      }
       .campo-em-breve { opacity: 0.45; pointer-events: none; }
       .badge-em-breve {
         display: inline-block; font-size: 10px; background: #fef3c7;
@@ -8713,7 +8941,7 @@
                 <path d="M154 94c-9-10-23-14-37-11c-15 3-26 14-26 27c0 15 13 24 37 29c24 5 37 14 37 29c0 13-11 24-26 27c-14 3-28-1-37-11" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
                 <line x1="128" y1="66" x2="128" y2="190" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
               </svg>
-              <span>Finanças</span>
+              <span>Painel Financeiro</span>
             </div>
 
             <div class="nav-item" data-target="screen-notas">
@@ -9208,8 +9436,15 @@
 
               <div class="financas-desktop-view">
               <div class="financas-hero">
+                <button id="btn-financas-voltar-prioriza" class="btn-secondary financas-back-btn" type="button" data-target-jump="screen-hoje">
+                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <path d="M160 48L80 128l80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Voltar ao PRIORIZA
+                </button>
                 <div class="financas-hero-copy">
-                  <h2 class="financas-title">Saúde Financeira</h2>
+                  <h2 class="financas-title">Painel Financeiro</h2>
+                  <div class="financas-subtitle">Visão ampla em formato de planilha para trabalhar o mês com calma.</div>
                 </div>
                 <div class="financas-hero-actions">
                   <input id="financas-mes-referencia" class="financas-month-picker" type="month" />
@@ -9293,6 +9528,87 @@
                   <div id="financas-kpi-aberto" class="financas-kpi-value">R$ 0,00</div>
                   <div id="financas-kpi-aberto-aux" class="financas-kpi-meta">Dívidas e contas ainda não confirmadas.</div>
                 </button>
+              </div>
+
+              <div class="financas-spreadsheet-shell">
+                <div class="financas-spreadsheet-head">
+                  <div>
+                    <h3 class="financas-card-title">Planilha do mês</h3>
+                    <div id="financas-planilha-periodo" class="financas-card-subtitle">Mês selecionado</div>
+                  </div>
+                  <div class="financas-spreadsheet-totals">
+                    <div>
+                      <span>Receita</span>
+                      <strong id="financas-planilha-total-receitas">R$ 0,00</strong>
+                    </div>
+                    <div>
+                      <span>Saídas</span>
+                      <strong id="financas-planilha-total-saidas">R$ 0,00</strong>
+                    </div>
+                    <div>
+                      <span>Em aberto</span>
+                      <strong id="financas-planilha-total-aberto">R$ 0,00</strong>
+                    </div>
+                    <div>
+                      <span>Resultado</span>
+                      <strong id="financas-planilha-total-resultado">R$ 0,00</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="financas-spreadsheet-grid">
+                  <section class="financas-sheet-section receita">
+                    <div class="financas-sheet-section-head">
+                      <h4>Receitas</h4>
+                      <button id="btn-financas-planilha-receita" class="btn-secondary financas-action-btn" type="button">Adicionar</button>
+                    </div>
+                    <div class="financas-table">
+                      <div class="financas-table-row head">
+                        <span>Fonte</span><span>Tipo</span><span>Valor</span><span>Status</span>
+                      </div>
+                      <div id="financas-planilha-receitas-lista"></div>
+                    </div>
+                  </section>
+
+                  <section class="financas-sheet-section despesas">
+                    <div class="financas-sheet-section-head">
+                      <h4>Despesas fixas</h4>
+                      <button id="btn-financas-planilha-despesa" class="btn-secondary financas-action-btn" type="button">Nova despesa</button>
+                    </div>
+                    <div class="financas-table">
+                      <div class="financas-table-row head">
+                        <span>Conta</span><span>Venc.</span><span>Valor</span><span>Status</span>
+                      </div>
+                      <div id="financas-planilha-despesas-lista"></div>
+                    </div>
+                  </section>
+
+                  <section class="financas-sheet-section dividas">
+                    <div class="financas-sheet-section-head">
+                      <h4>Dívidas / parcelamentos</h4>
+                      <button id="btn-financas-planilha-divida" class="btn-secondary financas-action-btn" type="button">Adicionar dívida</button>
+                    </div>
+                    <div class="financas-table">
+                      <div class="financas-table-row head">
+                        <span>Descrição</span><span>Venc.</span><span>Aberto</span><span>Status</span>
+                      </div>
+                      <div id="financas-planilha-dividas-lista"></div>
+                    </div>
+                  </section>
+
+                  <section class="financas-sheet-section diarios">
+                    <div class="financas-sheet-section-head">
+                      <h4>Gastos diários</h4>
+                      <button id="btn-financas-planilha-gasto" class="btn-primary financas-action-btn" type="button">Novo gasto</button>
+                    </div>
+                    <div class="financas-table">
+                      <div class="financas-table-row head">
+                        <span>Data</span><span>Descrição</span><span>Categoria</span><span>Valor</span>
+                      </div>
+                      <div id="financas-planilha-diarios-lista"></div>
+                    </div>
+                  </section>
+                </div>
               </div>
 
               <div class="financas-dashboard-grid">
@@ -11871,6 +12187,7 @@
       renderizarInsightsFinancas();
       renderizarEvolucaoFinanceiraFinancas();
       renderizarMobileFinancas();
+      atualizarPlanilhaFinanceiraFinancas();
     }
 
     function definirTipoContaFixaFinancas(tipo = "Despesa") {
@@ -12318,6 +12635,109 @@
       itens.forEach((item) => {
         listaEl.appendChild(criarLinhaLancamentoFinancas(item));
       });
+    }
+
+    function criarLinhaPlanilhaFinancas(celulas = [], classes = []) {
+      const row = document.createElement("div");
+      row.className = "financas-table-row";
+      celulas.forEach((valor, index) => {
+        const cell = document.createElement("span");
+        if (classes[index]) cell.className = classes[index];
+        cell.textContent = valor;
+        row.appendChild(cell);
+      });
+      return row;
+    }
+
+    function criarLinhaVaziaPlanilhaFinancas(texto) {
+      const row = document.createElement("div");
+      row.className = "financas-table-row empty";
+      const cell = document.createElement("span");
+      cell.textContent = texto;
+      row.appendChild(cell);
+      return row;
+    }
+
+    function preencherListaPlanilhaFinancas(id, linhas, textoVazio) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.innerHTML = "";
+      if (!linhas.length) {
+        el.appendChild(criarLinhaVaziaPlanilhaFinancas(textoVazio));
+        return;
+      }
+      linhas.forEach((linha) => el.appendChild(linha));
+    }
+
+    function atualizarPlanilhaFinanceiraFinancas() {
+      const shell = document.querySelector("#screen-financas .financas-spreadsheet-shell");
+      if (!shell) return;
+      const contexto = obterContextoFinanceiroMes();
+      const { valor } = obterMesAnoSelecionadoFinancas();
+
+      definirTexto("financas-planilha-periodo", formatarMesAnoHumanoFinancas(valor));
+      definirTexto("financas-planilha-total-receitas", formatarMoedaFinancas(contexto.receitasMesPainel));
+      definirTexto("financas-planilha-total-saidas", formatarMoedaFinancas(contexto.saidasMes));
+      definirTexto("financas-planilha-total-aberto", formatarMoedaFinancas(contexto.contasEmAbertoValor));
+      definirTexto("financas-planilha-total-resultado", formatarMoedaFinancas(contexto.resultadoMes));
+      document.getElementById("financas-planilha-total-resultado")?.classList.toggle("negative", contexto.resultadoMes < 0);
+
+      const receitasAvulsas = financasLancamentosMesSelecionado
+        .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Receita" && !item.fonte_renda_id);
+      const linhasReceitas = [
+        ...financasFontesRenda.map((fonte) => {
+          const recebido = Number(fonte.total_recebido_mes || 0);
+          const base = Number(fonte.valor_base || 0);
+          return criarLinhaPlanilhaFinancas(
+            [fonte.nome || "Fonte de renda", recebido > 0 ? "Recebida" : "Prevista", formatarMoedaFinancas(recebido > 0 ? recebido : base), recebido > 0 ? "Realizada" : "Base"],
+            ["", "", "money positive", "status"]
+          );
+        }),
+        ...receitasAvulsas.map((item) => criarLinhaPlanilhaFinancas(
+          [item.descricao || item.categoria || "Receita avulsa", formatarDataCurtaBR(item.data), formatarMoedaFinancas(item.valor || 0), "Avulsa"],
+          ["", "", "money positive", "status"]
+        )),
+      ];
+      preencherListaPlanilhaFinancas("financas-planilha-receitas-lista", linhasReceitas, "Nenhuma receita cadastrada.");
+
+      const linhasDespesas = financasContasFixas
+        .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Despesa")
+        .filter((item) => {
+          const categoria = classificarCategoriaDespesaFinancas(item);
+          return categoria !== "Parcelamentos" && categoria !== "Cartões";
+        })
+        .sort((a, b) => Number(a.dia_vencimento || 0) - Number(b.dia_vencimento || 0))
+        .map((item) => {
+          const status = obterStatusContaFixaFinancas(item);
+          return criarLinhaPlanilhaFinancas(
+            [item.nome || "Despesa fixa", `dia ${Number(item.dia_vencimento || 0)}`, formatarMoedaFinancas(item.valor || 0), status.label],
+            ["", "", "money negative", `status ${status.confirmado ? "positive" : "open"}`]
+          );
+        });
+      preencherListaPlanilhaFinancas("financas-planilha-despesas-lista", linhasDespesas, "Nenhuma despesa fixa cadastrada.");
+
+      const linhasDividas = contexto.dividas
+        .slice()
+        .sort((a, b) => Number(a.dia_vencimento || 0) - Number(b.dia_vencimento || 0))
+        .map((item) => {
+          const status = obterStatusContaFixaFinancas(item);
+          const aberto = status.confirmado ? 0 : Number(item.valor || 0);
+          return criarLinhaPlanilhaFinancas(
+            [item.nome || "Dívida", `dia ${Number(item.dia_vencimento || 0)}`, formatarMoedaFinancas(aberto), status.label],
+            ["", "", aberto > 0 ? "money open" : "money positive", `status ${status.confirmado ? "positive" : "open"}`]
+          );
+        });
+      preencherListaPlanilhaFinancas("financas-planilha-dividas-lista", linhasDividas, "Nenhum parcelamento ou dívida cadastrada.");
+
+      const linhasDiarias = contexto.lancamentosAvulsosDespesa
+        .slice()
+        .sort((a, b) => String(b.data || "").localeCompare(String(a.data || "")))
+        .slice(0, 40)
+        .map((item) => criarLinhaPlanilhaFinancas(
+          [formatarDataCurtaBR(item.data), item.descricao || "Gasto", item.categoria || "Outros", formatarMoedaFinancas(item.valor || 0)],
+          ["", "", "", "money negative"]
+        ));
+      preencherListaPlanilhaFinancas("financas-planilha-diarios-lista", linhasDiarias, "Nenhum gasto diário registrado neste mês.");
     }
 
     function renderizarFinancasHoje(mensagemErro = "") {
@@ -13041,6 +13461,8 @@
       document.getElementById("btn-financas-novo-lancamento")?.addEventListener("click", abrirSheetFinancas);
       document.getElementById("btn-financas-exportar")?.addEventListener("click", exportarVisaoFinancasAtual);
       document.getElementById("btn-financas-nova-fonte-renda")?.addEventListener("click", () => abrirSheetFonteRendaFinancas());
+      document.getElementById("btn-financas-planilha-receita")?.addEventListener("click", () => abrirSheetFonteRendaFinancas());
+      document.getElementById("btn-financas-planilha-gasto")?.addEventListener("click", () => abrirLancamentoRapidoFinancas("uso-diario"));
       document.getElementById("btn-financas-visualizar-fontes")?.addEventListener("click", alternarFontesRendaFinancas);
       document.getElementById("financas-kpi-card-receitas")?.addEventListener("click", () => abrirDetalheKpiFinancas("receitas"));
       document.getElementById("financas-kpi-card-saidas")?.addEventListener("click", () => abrirDetalheKpiFinancas("saidas"));
@@ -13062,6 +13484,8 @@
       document.getElementById("btn-financas-cancelar-source-sheet")?.addEventListener("click", fecharSheetFonteRendaFinancas);
       document.getElementById("btn-financas-fechar-source-sheet-topo")?.addEventListener("click", fecharSheetFonteRendaFinancas);
       document.getElementById("btn-financas-nova-conta-fixa")?.addEventListener("click", () => abrirSheetContaFixaFinancas());
+      document.getElementById("btn-financas-planilha-despesa")?.addEventListener("click", () => abrirSheetContaFixaFinancas());
+      document.getElementById("btn-financas-planilha-divida")?.addEventListener("click", abrirContaDividaRapidaFinancas);
       document.getElementById("btn-financas-cancelar-fixed-sheet")?.addEventListener("click", fecharSheetContaFixaFinancas);
       document.getElementById("btn-financas-fechar-fixed-sheet-topo")?.addEventListener("click", fecharSheetContaFixaFinancas);
       document.getElementById("btn-financas-cancelar-confirm-sheet")?.addEventListener("click", fecharSheetConfirmacaoContaFixaFinancas);
