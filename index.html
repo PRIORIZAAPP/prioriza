@@ -4016,8 +4016,7 @@
           border-radius: 10px;
           background: #ffffff;
           box-shadow: 0 12px 28px rgba(15,23,42,0.06);
-          overflow-x: auto;
-          overflow-y: hidden;
+          overflow: hidden;
         }
         #screen-financas .financas-spreadsheet-head {
           display: flex;
@@ -4157,12 +4156,7 @@
           box-shadow: none;
         }
         #screen-financas .financas-planilha-actions {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          padding: 10px 12px;
-          border-bottom: 1px solid #cbd5e1;
-          background: #e5e7eb;
+          display: none;
         }
         #screen-financas .financas-workbook-tabs {
           display: flex;
@@ -4191,13 +4185,16 @@
         }
         #screen-financas .financas-orcamento-scroll {
           overflow: auto;
-          max-height: min(68vh, 720px);
+          width: 100%;
+          max-width: 100%;
+          max-height: min(72vh, 760px);
           background: #ffffff;
         }
         #screen-financas .financas-orcamento-grade {
           display: grid;
-          grid-template-columns: 252px repeat(24, minmax(104px, 1fr));
-          min-width: 2820px;
+          grid-template-columns: 236px repeat(24, 92px);
+          width: max-content;
+          min-width: 2444px;
           font-size: 12px;
           color: #111827;
         }
@@ -4236,15 +4233,22 @@
         #screen-financas .financas-orcamento-cell.title {
           position: sticky;
           left: 0;
+          top: 0;
           z-index: 5;
           justify-content: flex-start;
           font-size: 13px;
         }
         #screen-financas .financas-orcamento-cell.month {
+          position: sticky;
+          top: 0;
+          z-index: 4;
           justify-content: center;
           text-align: center;
         }
         #screen-financas .financas-orcamento-cell.subhead {
+          position: sticky;
+          top: 34px;
+          z-index: 3;
           min-height: 28px;
           justify-content: center;
           background: #cccccc;
@@ -4280,7 +4284,16 @@
           font-weight: 800;
         }
         #screen-financas .financas-orcamento-cell.current {
-          background: #ff9900;
+          background: #e8f1ff;
+        }
+        #screen-financas .financas-orcamento-cell.paid {
+          background: #dcfce7;
+          color: #166534;
+          font-weight: 800;
+        }
+        #screen-financas .financas-orcamento-cell.unpaid {
+          background: #fff7ed;
+          color: #9a3412;
         }
         #screen-financas .financas-orcamento-cell.negative {
           color: #b91c1c;
@@ -9719,13 +9732,6 @@
                   </div>
                 </div>
 
-                <div class="financas-planilha-actions" aria-label="Ações rápidas do financeiro">
-                  <button id="btn-financas-planilha-receita" class="btn-secondary financas-action-btn" type="button">Adicionar receita</button>
-                  <button id="btn-financas-planilha-despesa" class="btn-secondary financas-action-btn" type="button">Nova despesa fixa</button>
-                  <button id="btn-financas-planilha-divida" class="btn-secondary financas-action-btn" type="button">Adicionar dívida</button>
-                  <button id="btn-financas-planilha-gasto" class="btn-primary financas-action-btn" type="button">Novo gasto diário</button>
-                </div>
-
                 <div class="financas-workbook-tabs" aria-label="Abas do painel financeiro">
                   <button id="btn-financas-tab-orcamento" class="active" type="button">Orçamento 2026</button>
                   <button id="btn-financas-tab-diario" type="button">Controle Diário</button>
@@ -12860,14 +12866,15 @@
       const classeBase = opcoes.total ? "total" : "";
       const classeLabel = opcoes.total ? "total-label" : "label";
       const acao = typeof opcoes.acao === "function" ? opcoes.acao : null;
+      const statusConta = opcoes.status || null;
       const resolverPlanejado = typeof planejado === "function" ? planejado : () => Number(planejado || 0);
       const resolverReal = typeof realSelecionado === "function" ? realSelecionado : (index) => (index === mesAtual ? Number(realSelecionado || 0) : 0);
-      container.appendChild(criarCelulaOrcamentoFinancas(label, [classeLabel], 1, acao));
+      container.appendChild(criarCelulaOrcamentoFinancas(label, [classeLabel, statusConta?.confirmado ? "paid" : "", statusConta && !statusConta.confirmado ? "unpaid" : ""], 1, acao));
       FINANCAS_PLANILHA_MESES.forEach((_, index) => {
         const planejadoMes = Number(resolverPlanejado(index) || 0);
         const realMes = Number(resolverReal(index) || 0);
         const plannedClasses = [classeBase, index === mesAtual ? "current" : "", planejadoMes < 0 ? "negative" : "", planejadoMes > 0 ? "positive" : "", !planejadoMes ? "blank" : ""];
-        const realClasses = [classeBase, index === mesAtual ? "current" : "", realMes < 0 ? "negative" : "", realMes > 0 ? "positive" : "", !realMes ? "blank" : ""];
+        const realClasses = [classeBase, index === mesAtual ? "current" : "", statusConta?.confirmado ? "paid" : "", statusConta && !statusConta.confirmado ? "unpaid" : "", realMes < 0 ? "negative" : "", realMes > 0 ? "positive" : "", !realMes ? "blank" : ""];
         if (tipo === "percentual") {
           plannedClasses.push("percent");
           realClasses.push("percent");
@@ -12923,6 +12930,16 @@
       const resultadoPlanejado = totalPlanejadoReceitas - totalPlanejadoEssenciais - totalPlanejadoLazer - totalPlanejadoDividas;
       const resultadoReal = totalRealReceitas - totalRealEssenciais - totalRealLazer - totalRealDividas;
       const percentual = (valor, receita) => receita > 0 ? valor / receita : 0;
+      const acaoPagamentoConta = (item) => async () => {
+        const status = obterStatusContaFixaFinancas(item);
+        if (status.confirmado) {
+          const ok = await modal.confirmar("Esta despesa já está marcada como paga. Deseja desfazer?", "Despesa paga", "vermelho");
+          if (!ok) return;
+          await desfazerConfirmacaoContaFixaFinancas(item);
+          return;
+        }
+        abrirSheetConfirmacaoContaFixaFinancas(item);
+      };
 
       adicionarLinhaCabecalhoOrcamentoFinancas(grade);
 
@@ -12934,13 +12951,13 @@
       if (!despesasEssenciais.length) {
         adicionarLinhaOrcamentoFinancas(grade, "Aluguel / Moradia", 0, 0, { mesAtual: mes, acao: () => abrirSheetContaFixaFinancas() });
       } else {
-        despesasEssenciais.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Despesa essencial", Number(item.valor || 0), realConta(item), { mesAtual: mes, acao: () => abrirSheetContaFixaFinancas(item) }));
+        despesasEssenciais.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Despesa essencial", Number(item.valor || 0), realConta(item), { mesAtual: mes, acao: acaoPagamentoConta(item), status: obterStatusContaFixaFinancas(item) }));
       }
       adicionarLinhaOrcamentoFinancas(grade, "Essencial total", totalPlanejadoEssenciais, totalRealEssenciais, { mesAtual: mes, total: true });
       adicionarLinhaOrcamentoFinancas(grade, "Essencial/Receita (50%)", percentual(totalPlanejadoEssenciais, totalPlanejadoReceitas), percentual(totalRealEssenciais, totalRealReceitas), { mesAtual: mes, total: true, tipo: "percentual" });
 
       adicionarSecaoOrcamentoFinancas(grade, "3. DESPESAS COM LAZER");
-      despesasLazer.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Lazer", Number(item.valor || 0), realConta(item), { mesAtual: mes, acao: () => abrirSheetContaFixaFinancas(item) }));
+      despesasLazer.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Lazer", Number(item.valor || 0), realConta(item), { mesAtual: mes, acao: acaoPagamentoConta(item), status: obterStatusContaFixaFinancas(item) }));
       adicionarLinhaOrcamentoFinancas(grade, "Custos variáveis - gasto diário", totalGastosDiarios, totalGastosDiarios, { mesAtual: mes, acao: () => abrirLancamentoRapidoFinancas("uso-diario") });
       adicionarLinhaOrcamentoFinancas(grade, "Estilo de vida total", totalPlanejadoLazer, totalRealLazer, { mesAtual: mes, total: true });
       adicionarLinhaOrcamentoFinancas(grade, "Est. de vida/Receita (30%)", percentual(totalPlanejadoLazer, totalPlanejadoReceitas), percentual(totalRealLazer, totalRealReceitas), { mesAtual: mes, total: true, tipo: "percentual" });
@@ -12949,7 +12966,7 @@
       if (!dividas.length) {
         adicionarLinhaOrcamentoFinancas(grade, "Cartões / Parcelamentos", 0, 0, { mesAtual: mes, acao: abrirContaDividaRapidaFinancas });
       } else {
-        dividas.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Dívida", Number(item.valor || 0), realConta(item), { mesAtual: mes, acao: () => abrirSheetContaFixaFinancas(item) }));
+        dividas.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Dívida", Number(item.valor || 0), realConta(item), { mesAtual: mes, acao: acaoPagamentoConta(item), status: obterStatusContaFixaFinancas(item) }));
       }
       adicionarLinhaOrcamentoFinancas(grade, "Investimentos total", totalPlanejadoDividas, totalRealDividas, { mesAtual: mes, total: true });
       adicionarLinhaOrcamentoFinancas(grade, "Invest./Receita (20%)", percentual(totalPlanejadoDividas, totalPlanejadoReceitas), percentual(totalRealDividas, totalRealReceitas), { mesAtual: mes, total: true, tipo: "percentual" });
@@ -13711,8 +13728,6 @@
       document.getElementById("btn-financas-novo-lancamento")?.addEventListener("click", abrirSheetFinancas);
       document.getElementById("btn-financas-exportar")?.addEventListener("click", exportarVisaoFinancasAtual);
       document.getElementById("btn-financas-nova-fonte-renda")?.addEventListener("click", () => abrirSheetFonteRendaFinancas());
-      document.getElementById("btn-financas-planilha-receita")?.addEventListener("click", () => abrirSheetFonteRendaFinancas());
-      document.getElementById("btn-financas-planilha-gasto")?.addEventListener("click", () => abrirLancamentoRapidoFinancas("uso-diario"));
       document.getElementById("btn-financas-tab-orcamento")?.addEventListener("click", () => ativarAbaPlanilhaFinanceiraFinancas("orcamento"));
       document.getElementById("btn-financas-tab-diario")?.addEventListener("click", () => ativarAbaPlanilhaFinanceiraFinancas("diario"));
       document.getElementById("btn-financas-visualizar-fontes")?.addEventListener("click", alternarFontesRendaFinancas);
@@ -13736,8 +13751,6 @@
       document.getElementById("btn-financas-cancelar-source-sheet")?.addEventListener("click", fecharSheetFonteRendaFinancas);
       document.getElementById("btn-financas-fechar-source-sheet-topo")?.addEventListener("click", fecharSheetFonteRendaFinancas);
       document.getElementById("btn-financas-nova-conta-fixa")?.addEventListener("click", () => abrirSheetContaFixaFinancas());
-      document.getElementById("btn-financas-planilha-despesa")?.addEventListener("click", () => abrirSheetContaFixaFinancas());
-      document.getElementById("btn-financas-planilha-divida")?.addEventListener("click", abrirContaDividaRapidaFinancas);
       document.getElementById("btn-financas-cancelar-fixed-sheet")?.addEventListener("click", fecharSheetContaFixaFinancas);
       document.getElementById("btn-financas-fechar-fixed-sheet-topo")?.addEventListener("click", fecharSheetContaFixaFinancas);
       document.getElementById("btn-financas-cancelar-confirm-sheet")?.addEventListener("click", fecharSheetConfirmacaoContaFixaFinancas);
