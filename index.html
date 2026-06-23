@@ -3948,7 +3948,7 @@
         }
         .app-shell[data-active-screen="screen-financas"] #screen-financas > .card {
           min-height: 100vh;
-          padding: 18px 22px 24px;
+          padding: 10px 14px 18px;
           margin: 0;
           border: none;
           border-radius: 0;
@@ -3961,7 +3961,7 @@
           max-width: none;
         }
         .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-desktop-view {
-          gap: 12px;
+          gap: 8px;
         }
         .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-hero {
           position: sticky;
@@ -3970,17 +3970,18 @@
           display: grid;
           grid-template-columns: auto minmax(0, 1fr) auto;
           align-items: center;
-          gap: 14px;
-          padding: 12px 0 14px;
+          gap: 10px;
+          padding: 4px 0 8px;
           background: rgba(243,246,251,0.94);
           backdrop-filter: blur(14px);
           border-bottom: 1px solid rgba(203,213,225,0.82);
         }
         .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-title {
-          font-size: 24px;
+          font-size: 18px;
+          font-weight: 500;
         }
         .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-subtitle {
-          display: block;
+          display: none;
           margin-top: 3px;
           font-size: 12px;
           color: #64748b;
@@ -3992,14 +3993,18 @@
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          min-height: 36px;
-          border-radius: 9px;
+          min-height: 32px;
+          border-radius: 7px;
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-hero-actions {
+          justify-content: flex-end;
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-hero-actions #btn-financas-exportar,
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-hero-actions #btn-financas-novo-lancamento {
+          display: none;
         }
         .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-kpi-grid {
-          grid-template-columns: repeat(6, minmax(150px, 1fr));
-        }
-        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-kpi-card {
-          min-height: 86px;
+          display: none;
         }
         .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-dashboard-grid {
           display: none;
@@ -4023,12 +4028,12 @@
           align-items: center;
           justify-content: space-between;
           gap: 18px;
-          padding: 12px 14px;
+          padding: 8px 10px;
           border-bottom: 1px solid rgba(226,232,240,0.95);
           background: #fbfdff;
         }
         #screen-financas .financas-spreadsheet-totals {
-          display: grid;
+          display: none;
           grid-template-columns: repeat(4, minmax(132px, 1fr));
           gap: 8px;
           width: min(760px, 58vw);
@@ -4174,7 +4179,7 @@
           border-bottom: none;
           border-left: none;
           font-size: 12px;
-          font-weight: 700;
+          font-weight: 500;
           color: #374151;
           background: #e5e7eb;
           cursor: pointer;
@@ -4187,28 +4192,30 @@
           overflow: auto;
           width: 100%;
           max-width: 100%;
-          max-height: min(72vh, 760px);
+          max-height: calc(100vh - 190px);
           background: #ffffff;
+          scrollbar-gutter: stable both-edges;
         }
         #screen-financas .financas-orcamento-grade {
           display: grid;
-          grid-template-columns: 236px repeat(24, 92px);
+          grid-template-columns: 240px repeat(24, 112px);
           width: max-content;
-          min-width: 2444px;
-          font-size: 12px;
+          min-width: 2928px;
+          font-size: 11px;
           color: #111827;
         }
         #screen-financas .financas-orcamento-cell {
           display: flex;
           align-items: center;
           justify-content: flex-end;
-          min-height: 32px;
-          padding: 6px 8px;
+          min-height: 24px;
+          padding: 3px 7px;
           border-right: 1px solid #d1d5db;
           border-bottom: 1px solid #d1d5db;
           background: #f8fafc;
           text-align: right;
           white-space: nowrap;
+          font-weight: 400;
         }
         #screen-financas .financas-orcamento-cell.label {
           position: sticky;
@@ -4220,15 +4227,15 @@
           text-align: left;
           background: #666666;
           color: #ffffff;
-          font-weight: 600;
+          font-weight: 400;
         }
         #screen-financas .financas-orcamento-cell.title,
         #screen-financas .financas-orcamento-cell.month,
         #screen-financas .financas-orcamento-cell.section {
-          min-height: 34px;
+          min-height: 26px;
           background: #000000;
           color: #ffffff;
-          font-weight: 800;
+          font-weight: 500;
         }
         #screen-financas .financas-orcamento-cell.title {
           position: sticky;
@@ -4236,7 +4243,7 @@
           top: 0;
           z-index: 5;
           justify-content: flex-start;
-          font-size: 13px;
+          font-size: 12px;
         }
         #screen-financas .financas-orcamento-cell.month {
           position: sticky;
@@ -4245,16 +4252,19 @@
           justify-content: center;
           text-align: center;
         }
+        #screen-financas .financas-orcamento-cell.month.current {
+          background: #243044;
+        }
         #screen-financas .financas-orcamento-cell.subhead {
           position: sticky;
-          top: 34px;
+          top: 26px;
           z-index: 3;
-          min-height: 28px;
+          min-height: 22px;
           justify-content: center;
           background: #cccccc;
           color: #111827;
           font-size: 10px;
-          font-weight: 800;
+          font-weight: 400;
           letter-spacing: 0.06em;
           text-transform: uppercase;
         }
@@ -4264,7 +4274,7 @@
           z-index: 4;
           grid-column: 1 / -1;
           justify-content: flex-start;
-          padding-left: 10px;
+          padding-left: 8px;
         }
         #screen-financas .financas-orcamento-cell.total-label {
           position: sticky;
@@ -4273,27 +4283,31 @@
           justify-content: flex-start;
           background: #b7b7b7;
           color: #111827;
-          font-weight: 800;
+          font-weight: 500;
         }
         #screen-financas .financas-orcamento-cell.total {
           background: #cccccc;
-          font-weight: 800;
+          font-weight: 500;
         }
         #screen-financas .financas-orcamento-cell.percent {
           background: #e5e7eb;
-          font-weight: 800;
+          font-weight: 400;
         }
         #screen-financas .financas-orcamento-cell.current {
-          background: #e8f1ff;
+          background: #f8fafc;
         }
         #screen-financas .financas-orcamento-cell.paid {
-          background: #dcfce7;
+          background: #ecfdf5;
           color: #166534;
-          font-weight: 800;
+          font-weight: 500;
         }
         #screen-financas .financas-orcamento-cell.unpaid {
-          background: #fff7ed;
-          color: #9a3412;
+          background: #f8fafc;
+          color: #64748b;
+        }
+        #screen-financas .financas-orcamento-cell.overdue {
+          background: #fef2f2;
+          color: #b91c1c;
         }
         #screen-financas .financas-orcamento-cell.negative {
           color: #b91c1c;
@@ -4303,6 +4317,18 @@
         }
         #screen-financas .financas-orcamento-cell.blank {
           color: #9ca3af;
+        }
+        #screen-financas .financas-orcamento-cell.paid.blank,
+        #screen-financas .financas-orcamento-cell.paid {
+          color: #166534;
+        }
+        #screen-financas .financas-orcamento-cell.overdue.blank,
+        #screen-financas .financas-orcamento-cell.overdue {
+          color: #b91c1c;
+        }
+        #screen-financas .financas-orcamento-cell.unpaid.blank,
+        #screen-financas .financas-orcamento-cell.unpaid {
+          color: #64748b;
         }
         #screen-financas button.financas-orcamento-cell {
           font: inherit;
@@ -4325,6 +4351,14 @@
         }
         #screen-financas .financas-workbook-bottom .financas-table {
           max-height: 260px;
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-spreadsheet-head,
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-spreadsheet-head *,
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-orcamento-grade,
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-orcamento-grade *,
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-workbook-bottom,
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-workbook-bottom * {
+          font-weight: 400;
         }
       }
       .campo-em-breve { opacity: 0.45; pointer-events: none; }
@@ -12839,15 +12873,10 @@
       return cell;
     }
 
-    function adicionarLinhaCabecalhoOrcamentoFinancas(container) {
+    function adicionarLinhaCabecalhoOrcamentoFinancas(container, mesAtual = 1) {
       container.appendChild(criarCelulaOrcamentoFinancas("Planejamento Financeiro - PRIORIZA", ["title"]));
-      FINANCAS_PLANILHA_MESES.forEach((mes) => {
-        container.appendChild(criarCelulaOrcamentoFinancas(mes, ["month"], 2));
-      });
-      container.appendChild(criarCelulaOrcamentoFinancas("", ["subhead", "label"]));
-      FINANCAS_PLANILHA_MESES.forEach(() => {
-        container.appendChild(criarCelulaOrcamentoFinancas("Planejado", ["subhead"]));
-        container.appendChild(criarCelulaOrcamentoFinancas("Real", ["subhead"]));
+      FINANCAS_PLANILHA_MESES.forEach((mes, index) => {
+        container.appendChild(criarCelulaOrcamentoFinancas(mes, ["month", index === Number(mesAtual || 1) - 1 ? "current" : ""], 2));
       });
     }
 
@@ -12867,14 +12896,19 @@
       const classeLabel = opcoes.total ? "total-label" : "label";
       const acao = typeof opcoes.acao === "function" ? opcoes.acao : null;
       const statusConta = opcoes.status || null;
+      const statusClasses = [
+        statusConta?.confirmado ? "paid" : "",
+        statusConta && !statusConta.confirmado ? "unpaid" : "",
+        statusConta?.chave === "atrasado" ? "overdue" : "",
+      ];
       const resolverPlanejado = typeof planejado === "function" ? planejado : () => Number(planejado || 0);
       const resolverReal = typeof realSelecionado === "function" ? realSelecionado : (index) => (index === mesAtual ? Number(realSelecionado || 0) : 0);
-      container.appendChild(criarCelulaOrcamentoFinancas(label, [classeLabel, statusConta?.confirmado ? "paid" : "", statusConta && !statusConta.confirmado ? "unpaid" : ""], 1, acao));
+      container.appendChild(criarCelulaOrcamentoFinancas(label, [classeLabel, ...statusClasses], 1, acao));
       FINANCAS_PLANILHA_MESES.forEach((_, index) => {
         const planejadoMes = Number(resolverPlanejado(index) || 0);
         const realMes = Number(resolverReal(index) || 0);
-        const plannedClasses = [classeBase, index === mesAtual ? "current" : "", planejadoMes < 0 ? "negative" : "", planejadoMes > 0 ? "positive" : "", !planejadoMes ? "blank" : ""];
-        const realClasses = [classeBase, index === mesAtual ? "current" : "", statusConta?.confirmado ? "paid" : "", statusConta && !statusConta.confirmado ? "unpaid" : "", realMes < 0 ? "negative" : "", realMes > 0 ? "positive" : "", !realMes ? "blank" : ""];
+        const plannedClasses = [classeBase, planejadoMes < 0 ? "negative" : "", !planejadoMes ? "blank" : ""];
+        const realClasses = [classeBase, ...statusClasses, realMes < 0 ? "negative" : "", !realMes ? "blank" : ""];
         if (tipo === "percentual") {
           plannedClasses.push("percent");
           realClasses.push("percent");
@@ -12941,7 +12975,7 @@
         abrirSheetConfirmacaoContaFixaFinancas(item);
       };
 
-      adicionarLinhaCabecalhoOrcamentoFinancas(grade);
+      adicionarLinhaCabecalhoOrcamentoFinancas(grade, mes);
 
       adicionarSecaoOrcamentoFinancas(grade, "1. RECEITAS");
       receitasRows.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.label, item.planejado, item.real, { mesAtual: mes, acao: () => abrirSheetFonteRendaFinancas(item.fonte || null) }));
