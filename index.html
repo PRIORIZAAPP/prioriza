@@ -4199,10 +4199,10 @@
         }
         #screen-financas .financas-orcamento-grade {
           display: grid;
-          grid-template-columns: 240px repeat(24, 112px);
-          width: max-content;
-          min-width: 2928px;
-          font-size: 11px;
+          grid-template-columns: 168px repeat(24, minmax(64px, 1fr));
+          width: 100%;
+          min-width: 0;
+          font-size: 10px;
           color: #111827;
         }
         #screen-financas .financas-orcamento-cell {
@@ -4210,7 +4210,7 @@
           align-items: center;
           justify-content: flex-end;
           min-height: 24px;
-          padding: 3px 7px;
+          padding: 3px 4px;
           border-right: 1px solid #d1d5db;
           border-bottom: 1px solid #d1d5db;
           background: #f8fafc;
@@ -4244,7 +4244,7 @@
           top: 0;
           z-index: 5;
           justify-content: flex-start;
-          font-size: 12px;
+          font-size: 11px;
         }
         #screen-financas .financas-orcamento-cell.month {
           position: sticky;
@@ -9803,8 +9803,8 @@
                 </div>
                 <div class="financas-month-controls" aria-label="Meses visíveis no orçamento">
                   <span>Meses:</span>
-                  <button class="financas-month-filter-btn active" type="button" data-financas-meses="todos">Todos</button>
-                  <button class="financas-month-filter-btn" type="button" data-financas-meses="jan-jun">Jan-Jun</button>
+                  <button class="financas-month-filter-btn" type="button" data-financas-meses="todos">Todos</button>
+                  <button class="financas-month-filter-btn active" type="button" data-financas-meses="jan-jun">Jan-Jun</button>
                   <button class="financas-month-filter-btn" type="button" data-financas-meses="jul-dez">Jul-Dez</button>
                   <button class="financas-month-filter-btn" type="button" data-financas-meses="atual">Mês atual</button>
                 </div>
@@ -12890,7 +12890,7 @@
       "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
       "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
     ];
-    let financasFiltroMesesOrcamento = "todos";
+    let financasFiltroMesesOrcamento = "jan-jun";
 
     function obterIndicesMesesOrcamentoFinancas(mesAtual = 1) {
       if (financasFiltroMesesOrcamento === "jan-jun") return [0, 1, 2, 3, 4, 5];
@@ -12975,8 +12975,10 @@
       const { mes } = obterMesAnoSelecionadoFinancas();
       const indicesMeses = obterIndicesMesesOrcamentoFinancas(mes);
       grade.innerHTML = "";
-      grade.style.gridTemplateColumns = `240px repeat(${indicesMeses.length * 2}, 112px)`;
-      grade.style.minWidth = `${240 + (indicesMeses.length * 2 * 112)}px`;
+      const colunasValores = indicesMeses.length * 2;
+      const larguraMinima = 168 + (colunasValores * 64);
+      grade.style.gridTemplateColumns = `168px repeat(${colunasValores}, minmax(64px, 1fr))`;
+      grade.style.minWidth = indicesMeses.length <= 6 ? "100%" : `${larguraMinima}px`;
 
       const receitasAvulsas = financasLancamentosMesSelecionado
         .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Receita" && !item.fonte_renda_id);
