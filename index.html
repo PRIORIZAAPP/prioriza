@@ -4171,17 +4171,21 @@
           border-bottom: 1px solid #9ca3af;
           background: #d1d5db;
         }
-        #screen-financas .financas-workbook-tabs span {
+        #screen-financas .financas-workbook-tabs button {
           flex: 0 0 auto;
           min-width: 150px;
           padding: 7px 14px;
           border-right: 1px solid #9ca3af;
+          border-top: none;
+          border-bottom: none;
+          border-left: none;
           font-size: 12px;
           font-weight: 700;
           color: #374151;
           background: #e5e7eb;
+          cursor: pointer;
         }
-        #screen-financas .financas-workbook-tabs span.active {
+        #screen-financas .financas-workbook-tabs button.active {
           color: #ffffff;
           background: #111827;
         }
@@ -4286,6 +4290,17 @@
         }
         #screen-financas .financas-orcamento-cell.blank {
           color: #9ca3af;
+        }
+        #screen-financas button.financas-orcamento-cell {
+          font: inherit;
+          cursor: pointer;
+        }
+        #screen-financas button.financas-orcamento-cell:hover,
+        #screen-financas button.financas-orcamento-cell:focus-visible {
+          outline: 2px solid rgba(59, 130, 246, 0.28);
+          outline-offset: -2px;
+          background: #dbeafe;
+          color: #0f172a;
         }
         #screen-financas .financas-workbook-bottom {
           display: block;
@@ -9711,16 +9726,16 @@
                   <button id="btn-financas-planilha-gasto" class="btn-primary financas-action-btn" type="button">Novo gasto diário</button>
                 </div>
 
-                <div class="financas-workbook-tabs" aria-hidden="true">
-                  <span class="active">Orçamento 2026</span>
-                  <span>Controle Diário</span>
+                <div class="financas-workbook-tabs" aria-label="Abas do painel financeiro">
+                  <button id="btn-financas-tab-orcamento" class="active" type="button">Orçamento 2026</button>
+                  <button id="btn-financas-tab-diario" type="button">Controle Diário</button>
                 </div>
 
-                <div class="financas-orcamento-scroll">
+                <div id="financas-orcamento-area" class="financas-orcamento-scroll">
                   <div id="financas-orcamento-grade" class="financas-orcamento-grade"></div>
                 </div>
 
-                <div class="financas-workbook-bottom">
+                <div id="financas-controle-diario-area" class="financas-workbook-bottom">
                   <section class="financas-sheet-section diarios">
                     <div class="financas-sheet-section-head">
                       <h4>Controle diário</h4>
@@ -12805,10 +12820,15 @@
       return formatarMoedaFinancas(numero);
     }
 
-    function criarCelulaOrcamentoFinancas(texto, classes = [], span = 1) {
-      const cell = document.createElement("div");
+    function criarCelulaOrcamentoFinancas(texto, classes = [], span = 1, acao = null) {
+      const cell = document.createElement(acao ? "button" : "div");
       cell.className = `financas-orcamento-cell ${classes.filter(Boolean).join(" ")}`.trim();
       cell.textContent = texto;
+      if (acao) {
+        cell.type = "button";
+        cell.title = "Clique para alimentar esta linha";
+        cell.addEventListener("click", acao);
+      }
       if (span > 1) cell.style.gridColumn = `span ${span}`;
       return cell;
     }
@@ -12839,9 +12859,10 @@
       const tipo = opcoes.tipo || "moeda";
       const classeBase = opcoes.total ? "total" : "";
       const classeLabel = opcoes.total ? "total-label" : "label";
+      const acao = typeof opcoes.acao === "function" ? opcoes.acao : null;
       const resolverPlanejado = typeof planejado === "function" ? planejado : () => Number(planejado || 0);
       const resolverReal = typeof realSelecionado === "function" ? realSelecionado : (index) => (index === mesAtual ? Number(realSelecionado || 0) : 0);
-      container.appendChild(criarCelulaOrcamentoFinancas(label, [classeLabel]));
+      container.appendChild(criarCelulaOrcamentoFinancas(label, [classeLabel], 1, acao));
       FINANCAS_PLANILHA_MESES.forEach((_, index) => {
         const planejadoMes = Number(resolverPlanejado(index) || 0);
         const realMes = Number(resolverReal(index) || 0);
@@ -12851,8 +12872,9 @@
           plannedClasses.push("percent");
           realClasses.push("percent");
         }
-        container.appendChild(criarCelulaOrcamentoFinancas(formatarValorPlanilhaFinancas(planejadoMes, tipo), plannedClasses));
-        container.appendChild(criarCelulaOrcamentoFinancas(formatarValorPlanilhaFinancas(realMes, tipo), realClasses));
+        const cellAction = opcoes.total || tipo === "percentual" ? null : acao;
+        container.appendChild(criarCelulaOrcamentoFinancas(formatarValorPlanilhaFinancas(planejadoMes, tipo), plannedClasses, 1, cellAction));
+        container.appendChild(criarCelulaOrcamentoFinancas(formatarValorPlanilhaFinancas(realMes, tipo), realClasses, 1, cellAction));
       });
     }
 
@@ -12868,6 +12890,7 @@
         label: fonte.nome || "Fonte de renda",
         planejado: Number(fonte.valor_base || 0),
         real: Number(fonte.total_recebido_mes || 0),
+        fonte,
       }));
       const totalReceitasAvulsas = receitasAvulsas.reduce((soma, item) => soma + Number(item.valor || 0), 0);
       if (totalReceitasAvulsas > 0 || !receitasRows.length) {
@@ -12904,29 +12927,29 @@
       adicionarLinhaCabecalhoOrcamentoFinancas(grade);
 
       adicionarSecaoOrcamentoFinancas(grade, "1. RECEITAS");
-      receitasRows.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.label, item.planejado, item.real, { mesAtual: mes }));
+      receitasRows.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.label, item.planejado, item.real, { mesAtual: mes, acao: () => abrirSheetFonteRendaFinancas(item.fonte || null) }));
       adicionarLinhaOrcamentoFinancas(grade, "Receita Total", totalPlanejadoReceitas, totalRealReceitas, { mesAtual: mes, total: true });
 
       adicionarSecaoOrcamentoFinancas(grade, "2. DESPESAS ESSENCIAIS");
       if (!despesasEssenciais.length) {
-        adicionarLinhaOrcamentoFinancas(grade, "Aluguel / Moradia", 0, 0, { mesAtual: mes });
+        adicionarLinhaOrcamentoFinancas(grade, "Aluguel / Moradia", 0, 0, { mesAtual: mes, acao: () => abrirSheetContaFixaFinancas() });
       } else {
-        despesasEssenciais.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Despesa essencial", Number(item.valor || 0), realConta(item), { mesAtual: mes }));
+        despesasEssenciais.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Despesa essencial", Number(item.valor || 0), realConta(item), { mesAtual: mes, acao: () => abrirSheetContaFixaFinancas(item) }));
       }
       adicionarLinhaOrcamentoFinancas(grade, "Essencial total", totalPlanejadoEssenciais, totalRealEssenciais, { mesAtual: mes, total: true });
       adicionarLinhaOrcamentoFinancas(grade, "Essencial/Receita (50%)", percentual(totalPlanejadoEssenciais, totalPlanejadoReceitas), percentual(totalRealEssenciais, totalRealReceitas), { mesAtual: mes, total: true, tipo: "percentual" });
 
       adicionarSecaoOrcamentoFinancas(grade, "3. DESPESAS COM LAZER");
-      despesasLazer.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Lazer", Number(item.valor || 0), realConta(item), { mesAtual: mes }));
-      adicionarLinhaOrcamentoFinancas(grade, "Custos variáveis - gasto diário", totalGastosDiarios, totalGastosDiarios, { mesAtual: mes });
+      despesasLazer.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Lazer", Number(item.valor || 0), realConta(item), { mesAtual: mes, acao: () => abrirSheetContaFixaFinancas(item) }));
+      adicionarLinhaOrcamentoFinancas(grade, "Custos variáveis - gasto diário", totalGastosDiarios, totalGastosDiarios, { mesAtual: mes, acao: () => abrirLancamentoRapidoFinancas("uso-diario") });
       adicionarLinhaOrcamentoFinancas(grade, "Estilo de vida total", totalPlanejadoLazer, totalRealLazer, { mesAtual: mes, total: true });
       adicionarLinhaOrcamentoFinancas(grade, "Est. de vida/Receita (30%)", percentual(totalPlanejadoLazer, totalPlanejadoReceitas), percentual(totalRealLazer, totalRealReceitas), { mesAtual: mes, total: true, tipo: "percentual" });
 
       adicionarSecaoOrcamentoFinancas(grade, "4. DÍVIDAS/INVESTIMENTOS");
       if (!dividas.length) {
-        adicionarLinhaOrcamentoFinancas(grade, "Cartões / Parcelamentos", 0, 0, { mesAtual: mes });
+        adicionarLinhaOrcamentoFinancas(grade, "Cartões / Parcelamentos", 0, 0, { mesAtual: mes, acao: abrirContaDividaRapidaFinancas });
       } else {
-        dividas.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Dívida", Number(item.valor || 0), realConta(item), { mesAtual: mes }));
+        dividas.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Dívida", Number(item.valor || 0), realConta(item), { mesAtual: mes, acao: () => abrirSheetContaFixaFinancas(item) }));
       }
       adicionarLinhaOrcamentoFinancas(grade, "Investimentos total", totalPlanejadoDividas, totalRealDividas, { mesAtual: mes, total: true });
       adicionarLinhaOrcamentoFinancas(grade, "Invest./Receita (20%)", percentual(totalPlanejadoDividas, totalPlanejadoReceitas), percentual(totalRealDividas, totalRealReceitas), { mesAtual: mes, total: true, tipo: "percentual" });
@@ -12956,6 +12979,15 @@
           ["", "", "", "money negative"]
         ));
       preencherListaPlanilhaFinancas("financas-planilha-diarios-lista", linhasDiarias, "Nenhum gasto diário registrado neste mês.");
+    }
+
+    function ativarAbaPlanilhaFinanceiraFinancas(alvo = "orcamento") {
+      const area = alvo === "diario"
+        ? document.getElementById("financas-controle-diario-area")
+        : document.getElementById("financas-orcamento-area");
+      document.getElementById("btn-financas-tab-orcamento")?.classList.toggle("active", alvo !== "diario");
+      document.getElementById("btn-financas-tab-diario")?.classList.toggle("active", alvo === "diario");
+      area?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
     }
 
     function renderizarFinancasHoje(mensagemErro = "") {
@@ -13580,7 +13612,7 @@
           definirErroContaFixaFinancas(mensagem);
           return;
         }
-        await carregarContasFixasFinancas();
+        await carregarFinancasPainelCompleto();
         resetarFormularioContaFixaFinancas();
         fecharSheetContaFixaFinancas();
       } catch (erro) {
@@ -13634,7 +13666,7 @@
           definirErroFonteRendaFinancas(mensagem);
           return;
         }
-        await carregarFontesRendaFinancas();
+        await carregarFinancasPainelCompleto();
         resetarFormularioFonteRendaFinancas();
         fecharSheetFonteRendaFinancas();
       } catch (erro) {
@@ -13681,6 +13713,8 @@
       document.getElementById("btn-financas-nova-fonte-renda")?.addEventListener("click", () => abrirSheetFonteRendaFinancas());
       document.getElementById("btn-financas-planilha-receita")?.addEventListener("click", () => abrirSheetFonteRendaFinancas());
       document.getElementById("btn-financas-planilha-gasto")?.addEventListener("click", () => abrirLancamentoRapidoFinancas("uso-diario"));
+      document.getElementById("btn-financas-tab-orcamento")?.addEventListener("click", () => ativarAbaPlanilhaFinanceiraFinancas("orcamento"));
+      document.getElementById("btn-financas-tab-diario")?.addEventListener("click", () => ativarAbaPlanilhaFinanceiraFinancas("diario"));
       document.getElementById("btn-financas-visualizar-fontes")?.addEventListener("click", alternarFontesRendaFinancas);
       document.getElementById("financas-kpi-card-receitas")?.addEventListener("click", () => abrirDetalheKpiFinancas("receitas"));
       document.getElementById("financas-kpi-card-saidas")?.addEventListener("click", () => abrirDetalheKpiFinancas("saidas"));
@@ -17716,6 +17750,7 @@
           }
         }
         if (id === "screen-financas") {
+          atualizarPlanilhaFinanceiraFinancas();
           setTimeout(() => {
             carregarFinancasPainelCompleto();
           }, 40);
