@@ -4192,6 +4192,7 @@
           overflow: auto;
           width: 100%;
           max-width: 100%;
+          min-width: 0;
           max-height: calc(100vh - 190px);
           background: #ffffff;
           scrollbar-gutter: stable both-edges;
@@ -4251,6 +4252,7 @@
           z-index: 4;
           justify-content: center;
           text-align: center;
+          grid-column: span 2;
         }
         #screen-financas .financas-orcamento-cell.month.current {
           background: #243044;
@@ -4272,9 +4274,38 @@
           position: sticky;
           left: 0;
           z-index: 4;
-          grid-column: 1 / -1;
           justify-content: flex-start;
           padding-left: 8px;
+        }
+        #screen-financas .financas-month-controls {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 7px 8px;
+          border-bottom: 1px solid #cbd5e1;
+          background: #eef2f7;
+          overflow-x: auto;
+        }
+        #screen-financas .financas-month-controls span {
+          flex: 0 0 auto;
+          font-size: 11px;
+          color: #475569;
+        }
+        #screen-financas .financas-month-filter-btn {
+          flex: 0 0 auto;
+          min-height: 26px;
+          padding: 3px 9px;
+          border: 1px solid #cbd5e1;
+          border-radius: 7px;
+          background: #ffffff;
+          color: #334155;
+          font-size: 11px;
+          cursor: pointer;
+        }
+        #screen-financas .financas-month-filter-btn.active {
+          border-color: #111827;
+          background: #111827;
+          color: #ffffff;
         }
         #screen-financas .financas-orcamento-cell.total-label {
           position: sticky;
@@ -9770,6 +9801,13 @@
                   <button id="btn-financas-tab-orcamento" class="active" type="button">Orçamento 2026</button>
                   <button id="btn-financas-tab-diario" type="button">Controle Diário</button>
                 </div>
+                <div class="financas-month-controls" aria-label="Meses visíveis no orçamento">
+                  <span>Meses:</span>
+                  <button class="financas-month-filter-btn active" type="button" data-financas-meses="todos">Todos</button>
+                  <button class="financas-month-filter-btn" type="button" data-financas-meses="jan-jun">Jan-Jun</button>
+                  <button class="financas-month-filter-btn" type="button" data-financas-meses="jul-dez">Jul-Dez</button>
+                  <button class="financas-month-filter-btn" type="button" data-financas-meses="atual">Mês atual</button>
+                </div>
 
                 <div id="financas-orcamento-area" class="financas-orcamento-scroll">
                   <div id="financas-orcamento-grade" class="financas-orcamento-grade"></div>
@@ -12852,6 +12890,16 @@
       "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
       "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
     ];
+    let financasFiltroMesesOrcamento = "todos";
+
+    function obterIndicesMesesOrcamentoFinancas(mesAtual = 1) {
+      if (financasFiltroMesesOrcamento === "jan-jun") return [0, 1, 2, 3, 4, 5];
+      if (financasFiltroMesesOrcamento === "jul-dez") return [6, 7, 8, 9, 10, 11];
+      if (financasFiltroMesesOrcamento === "atual") {
+        return [Math.max(0, Math.min(11, Number(mesAtual || 1) - 1))];
+      }
+      return FINANCAS_PLANILHA_MESES.map((_, index) => index);
+    }
 
     function formatarValorPlanilhaFinancas(valor, tipo = "moeda") {
       const numero = Number(valor || 0);
@@ -12873,17 +12921,18 @@
       return cell;
     }
 
-    function adicionarLinhaCabecalhoOrcamentoFinancas(container, mesAtual = 1) {
+    function adicionarLinhaCabecalhoOrcamentoFinancas(container, mesAtual = 1, indicesMeses = obterIndicesMesesOrcamentoFinancas(mesAtual)) {
       container.appendChild(criarCelulaOrcamentoFinancas("Planejamento Financeiro - PRIORIZA", ["title"]));
-      FINANCAS_PLANILHA_MESES.forEach((mes, index) => {
-        container.appendChild(criarCelulaOrcamentoFinancas(mes, ["month", index === Number(mesAtual || 1) - 1 ? "current" : ""], 2));
+      indicesMeses.forEach((index) => {
+        const mes = FINANCAS_PLANILHA_MESES[index];
+        container.appendChild(criarCelulaOrcamentoFinancas(mes, ["month", index === Number(mesAtual || 1) - 1 ? "current" : ""]));
       });
     }
 
-    function adicionarSecaoOrcamentoFinancas(container, titulo) {
-      container.appendChild(criarCelulaOrcamentoFinancas(titulo, ["section"]));
+    function adicionarSecaoOrcamentoFinancas(container, titulo, indicesMeses) {
+      container.appendChild(criarCelulaOrcamentoFinancas(titulo, ["section"], 1 + (indicesMeses.length * 2)));
       container.appendChild(criarCelulaOrcamentoFinancas("", ["subhead", "label"]));
-      FINANCAS_PLANILHA_MESES.forEach(() => {
+      indicesMeses.forEach(() => {
         container.appendChild(criarCelulaOrcamentoFinancas("Planejado", ["subhead"]));
         container.appendChild(criarCelulaOrcamentoFinancas("Real", ["subhead"]));
       });
@@ -12904,7 +12953,8 @@
       const resolverPlanejado = typeof planejado === "function" ? planejado : () => Number(planejado || 0);
       const resolverReal = typeof realSelecionado === "function" ? realSelecionado : (index) => (index === mesAtual ? Number(realSelecionado || 0) : 0);
       container.appendChild(criarCelulaOrcamentoFinancas(label, [classeLabel, ...statusClasses], 1, acao));
-      FINANCAS_PLANILHA_MESES.forEach((_, index) => {
+      const indicesMeses = opcoes.indicesMeses || obterIndicesMesesOrcamentoFinancas(Number(opcoes.mesAtual || 1));
+      indicesMeses.forEach((index) => {
         const planejadoMes = Number(resolverPlanejado(index) || 0);
         const realMes = Number(resolverReal(index) || 0);
         const plannedClasses = [classeBase, planejadoMes < 0 ? "negative" : "", !planejadoMes ? "blank" : ""];
@@ -12923,7 +12973,10 @@
       const grade = document.getElementById("financas-orcamento-grade");
       if (!grade) return;
       const { mes } = obterMesAnoSelecionadoFinancas();
+      const indicesMeses = obterIndicesMesesOrcamentoFinancas(mes);
       grade.innerHTML = "";
+      grade.style.gridTemplateColumns = `240px repeat(${indicesMeses.length * 2}, 112px)`;
+      grade.style.minWidth = `${240 + (indicesMeses.length * 2 * 112)}px`;
 
       const receitasAvulsas = financasLancamentosMesSelecionado
         .filter((item) => normalizarTipoFinancasUI(item.tipo) === "Receita" && !item.fonte_renda_id);
@@ -12975,36 +13028,36 @@
         abrirSheetConfirmacaoContaFixaFinancas(item);
       };
 
-      adicionarLinhaCabecalhoOrcamentoFinancas(grade, mes);
+      adicionarLinhaCabecalhoOrcamentoFinancas(grade, mes, indicesMeses);
 
-      adicionarSecaoOrcamentoFinancas(grade, "1. RECEITAS");
-      receitasRows.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.label, item.planejado, item.real, { mesAtual: mes, acao: () => abrirSheetFonteRendaFinancas(item.fonte || null) }));
-      adicionarLinhaOrcamentoFinancas(grade, "Receita Total", totalPlanejadoReceitas, totalRealReceitas, { mesAtual: mes, total: true });
+      adicionarSecaoOrcamentoFinancas(grade, "1. RECEITAS", indicesMeses);
+      receitasRows.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.label, item.planejado, item.real, { mesAtual: mes, indicesMeses, acao: () => abrirSheetFonteRendaFinancas(item.fonte || null) }));
+      adicionarLinhaOrcamentoFinancas(grade, "Receita Total", totalPlanejadoReceitas, totalRealReceitas, { mesAtual: mes, indicesMeses, total: true });
 
-      adicionarSecaoOrcamentoFinancas(grade, "2. DESPESAS ESSENCIAIS");
+      adicionarSecaoOrcamentoFinancas(grade, "2. DESPESAS ESSENCIAIS", indicesMeses);
       if (!despesasEssenciais.length) {
-        adicionarLinhaOrcamentoFinancas(grade, "Aluguel / Moradia", 0, 0, { mesAtual: mes, acao: () => abrirSheetContaFixaFinancas() });
+        adicionarLinhaOrcamentoFinancas(grade, "Aluguel / Moradia", 0, 0, { mesAtual: mes, indicesMeses, acao: () => abrirSheetContaFixaFinancas() });
       } else {
-        despesasEssenciais.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Despesa essencial", Number(item.valor || 0), realConta(item), { mesAtual: mes, acao: acaoPagamentoConta(item), status: obterStatusContaFixaFinancas(item) }));
+        despesasEssenciais.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Despesa essencial", Number(item.valor || 0), realConta(item), { mesAtual: mes, indicesMeses, acao: acaoPagamentoConta(item), status: obterStatusContaFixaFinancas(item) }));
       }
-      adicionarLinhaOrcamentoFinancas(grade, "Essencial total", totalPlanejadoEssenciais, totalRealEssenciais, { mesAtual: mes, total: true });
-      adicionarLinhaOrcamentoFinancas(grade, "Essencial/Receita (50%)", percentual(totalPlanejadoEssenciais, totalPlanejadoReceitas), percentual(totalRealEssenciais, totalRealReceitas), { mesAtual: mes, total: true, tipo: "percentual" });
+      adicionarLinhaOrcamentoFinancas(grade, "Essencial total", totalPlanejadoEssenciais, totalRealEssenciais, { mesAtual: mes, indicesMeses, total: true });
+      adicionarLinhaOrcamentoFinancas(grade, "Essencial/Receita (50%)", percentual(totalPlanejadoEssenciais, totalPlanejadoReceitas), percentual(totalRealEssenciais, totalRealReceitas), { mesAtual: mes, indicesMeses, total: true, tipo: "percentual" });
 
-      adicionarSecaoOrcamentoFinancas(grade, "3. DESPESAS COM LAZER");
-      despesasLazer.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Lazer", Number(item.valor || 0), realConta(item), { mesAtual: mes, acao: acaoPagamentoConta(item), status: obterStatusContaFixaFinancas(item) }));
-      adicionarLinhaOrcamentoFinancas(grade, "Custos variáveis - gasto diário", totalGastosDiarios, totalGastosDiarios, { mesAtual: mes, acao: () => abrirLancamentoRapidoFinancas("uso-diario") });
-      adicionarLinhaOrcamentoFinancas(grade, "Estilo de vida total", totalPlanejadoLazer, totalRealLazer, { mesAtual: mes, total: true });
-      adicionarLinhaOrcamentoFinancas(grade, "Est. de vida/Receita (30%)", percentual(totalPlanejadoLazer, totalPlanejadoReceitas), percentual(totalRealLazer, totalRealReceitas), { mesAtual: mes, total: true, tipo: "percentual" });
+      adicionarSecaoOrcamentoFinancas(grade, "3. DESPESAS COM LAZER", indicesMeses);
+      despesasLazer.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Lazer", Number(item.valor || 0), realConta(item), { mesAtual: mes, indicesMeses, acao: acaoPagamentoConta(item), status: obterStatusContaFixaFinancas(item) }));
+      adicionarLinhaOrcamentoFinancas(grade, "Custos variáveis - gasto diário", totalGastosDiarios, totalGastosDiarios, { mesAtual: mes, indicesMeses, acao: () => abrirLancamentoRapidoFinancas("uso-diario") });
+      adicionarLinhaOrcamentoFinancas(grade, "Estilo de vida total", totalPlanejadoLazer, totalRealLazer, { mesAtual: mes, indicesMeses, total: true });
+      adicionarLinhaOrcamentoFinancas(grade, "Est. de vida/Receita (30%)", percentual(totalPlanejadoLazer, totalPlanejadoReceitas), percentual(totalRealLazer, totalRealReceitas), { mesAtual: mes, indicesMeses, total: true, tipo: "percentual" });
 
-      adicionarSecaoOrcamentoFinancas(grade, "4. DÍVIDAS/INVESTIMENTOS");
+      adicionarSecaoOrcamentoFinancas(grade, "4. DÍVIDAS/INVESTIMENTOS", indicesMeses);
       if (!dividas.length) {
-        adicionarLinhaOrcamentoFinancas(grade, "Cartões / Parcelamentos", 0, 0, { mesAtual: mes, acao: abrirContaDividaRapidaFinancas });
+        adicionarLinhaOrcamentoFinancas(grade, "Cartões / Parcelamentos", 0, 0, { mesAtual: mes, indicesMeses, acao: abrirContaDividaRapidaFinancas });
       } else {
-        dividas.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Dívida", Number(item.valor || 0), realConta(item), { mesAtual: mes, acao: acaoPagamentoConta(item), status: obterStatusContaFixaFinancas(item) }));
+        dividas.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Dívida", Number(item.valor || 0), realConta(item), { mesAtual: mes, indicesMeses, acao: acaoPagamentoConta(item), status: obterStatusContaFixaFinancas(item) }));
       }
-      adicionarLinhaOrcamentoFinancas(grade, "Investimentos total", totalPlanejadoDividas, totalRealDividas, { mesAtual: mes, total: true });
-      adicionarLinhaOrcamentoFinancas(grade, "Invest./Receita (20%)", percentual(totalPlanejadoDividas, totalPlanejadoReceitas), percentual(totalRealDividas, totalRealReceitas), { mesAtual: mes, total: true, tipo: "percentual" });
-      adicionarLinhaOrcamentoFinancas(grade, "SOBRA MENSAL", resultadoPlanejado, resultadoReal, { mesAtual: mes, total: true });
+      adicionarLinhaOrcamentoFinancas(grade, "Investimentos total", totalPlanejadoDividas, totalRealDividas, { mesAtual: mes, indicesMeses, total: true });
+      adicionarLinhaOrcamentoFinancas(grade, "Invest./Receita (20%)", percentual(totalPlanejadoDividas, totalPlanejadoReceitas), percentual(totalRealDividas, totalRealReceitas), { mesAtual: mes, indicesMeses, total: true, tipo: "percentual" });
+      adicionarLinhaOrcamentoFinancas(grade, "SOBRA MENSAL", resultadoPlanejado, resultadoReal, { mesAtual: mes, indicesMeses, total: true });
     }
 
     function atualizarPlanilhaFinanceiraFinancas() {
@@ -13039,6 +13092,16 @@
       document.getElementById("btn-financas-tab-orcamento")?.classList.toggle("active", alvo !== "diario");
       document.getElementById("btn-financas-tab-diario")?.classList.toggle("active", alvo === "diario");
       area?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+    }
+
+    function definirFiltroMesesOrcamentoFinancas(filtro = "todos") {
+      financasFiltroMesesOrcamento = filtro || "todos";
+      document.querySelectorAll("[data-financas-meses]").forEach((botao) => {
+        botao.classList.toggle("active", botao.dataset.financasMeses === financasFiltroMesesOrcamento);
+      });
+      atualizarPlanilhaFinanceiraFinancas();
+      const scroll = document.getElementById("financas-orcamento-area");
+      if (scroll) scroll.scrollLeft = 0;
     }
 
     function renderizarFinancasHoje(mensagemErro = "") {
@@ -13764,6 +13827,9 @@
       document.getElementById("btn-financas-nova-fonte-renda")?.addEventListener("click", () => abrirSheetFonteRendaFinancas());
       document.getElementById("btn-financas-tab-orcamento")?.addEventListener("click", () => ativarAbaPlanilhaFinanceiraFinancas("orcamento"));
       document.getElementById("btn-financas-tab-diario")?.addEventListener("click", () => ativarAbaPlanilhaFinanceiraFinancas("diario"));
+      document.querySelectorAll("[data-financas-meses]").forEach((botao) => {
+        botao.addEventListener("click", () => definirFiltroMesesOrcamentoFinancas(botao.dataset.financasMeses || "todos"));
+      });
       document.getElementById("btn-financas-visualizar-fontes")?.addEventListener("click", alternarFontesRendaFinancas);
       document.getElementById("financas-kpi-card-receitas")?.addEventListener("click", () => abrirDetalheKpiFinancas("receitas"));
       document.getElementById("financas-kpi-card-saidas")?.addEventListener("click", () => abrirDetalheKpiFinancas("saidas"));
