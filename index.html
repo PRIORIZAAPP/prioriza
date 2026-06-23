@@ -3993,8 +3993,19 @@
           display: inline-flex;
           align-items: center;
           gap: 6px;
+          width: 132px;
           min-height: 32px;
+          padding: 0;
+          border: none;
           border-radius: 7px;
+          background: transparent;
+          box-shadow: none;
+        }
+        .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-logo-img {
+          display: block;
+          width: 112px;
+          max-height: 34px;
+          object-fit: contain;
         }
         .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-hero-actions {
           justify-content: flex-end;
@@ -9678,10 +9689,7 @@
               <div class="financas-desktop-view">
               <div class="financas-hero">
                 <button id="btn-financas-voltar-prioriza" class="btn-secondary financas-back-btn" type="button" data-target-jump="screen-hoje">
-                  <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                    <path d="M160 48L80 128l80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  Voltar ao PRIORIZA
+                  <img id="financas-logo-prioriza" class="financas-logo-img" alt="PRIORIZA" />
                 </button>
                 <div class="financas-hero-copy">
                   <h2 class="financas-title">Painel Financeiro</h2>
@@ -12922,7 +12930,7 @@
     }
 
     function adicionarLinhaCabecalhoOrcamentoFinancas(container, mesAtual = 1, indicesMeses = obterIndicesMesesOrcamentoFinancas(mesAtual)) {
-      container.appendChild(criarCelulaOrcamentoFinancas("Planejamento Financeiro - PRIORIZA", ["title"]));
+      container.appendChild(criarCelulaOrcamentoFinancas("PRIORIZA", ["title"]));
       indicesMeses.forEach((index) => {
         const mes = FINANCAS_PLANILHA_MESES[index];
         container.appendChild(criarCelulaOrcamentoFinancas(mes, ["month", index === Number(mesAtual || 1) - 1 ? "current" : ""]));
@@ -13104,6 +13112,16 @@
       atualizarPlanilhaFinanceiraFinancas();
       const scroll = document.getElementById("financas-orcamento-area");
       if (scroll) scroll.scrollLeft = 0;
+    }
+
+    function atualizarLogoFinanceiroFinancas() {
+      const logoFinanceiro = document.getElementById("financas-logo-prioriza");
+      if (!logoFinanceiro) return;
+      const logoBase = document.querySelector(".topbar .prioriza-logo") || document.querySelector(".prioriza-logo");
+      const src = logoBase?.currentSrc || logoBase?.src || logoBase?.getAttribute("src") || "";
+      if (src && logoFinanceiro.getAttribute("src") !== src) {
+        logoFinanceiro.src = src;
+      }
     }
 
     function renderizarFinancasHoje(mensagemErro = "") {
@@ -13823,6 +13841,7 @@
     function vincularFinancasUI() {
       if (financasUiVinculada) return;
       financasUiVinculada = true;
+      atualizarLogoFinanceiroFinancas();
 
       document.getElementById("btn-financas-novo-lancamento")?.addEventListener("click", abrirSheetFinancas);
       document.getElementById("btn-financas-exportar")?.addEventListener("click", exportarVisaoFinancasAtual);
@@ -17865,6 +17884,7 @@
           }
         }
         if (id === "screen-financas") {
+          atualizarLogoFinanceiroFinancas();
           atualizarPlanilhaFinanceiraFinancas();
           setTimeout(() => {
             carregarFinancasPainelCompleto();
