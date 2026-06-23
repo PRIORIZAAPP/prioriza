@@ -3924,8 +3924,14 @@
         }
       }
       @media (min-width: 1100px) {
+        #btn-topbar-ajustes.topbar-settings-btn {
+          display: none !important;
+        }
+
         .app-shell[data-active-screen="screen-financas"] {
           background: #f3f6fb;
+          max-width: 100%;
+          overflow-x: hidden;
         }
         .app-shell[data-active-screen="screen-financas"] .topbar,
         .app-shell[data-active-screen="screen-financas"] .resumo-bar,
@@ -3935,19 +3941,24 @@
         }
         .app-shell[data-active-screen="screen-financas"] .app-workspace {
           display: block;
-          width: 100vw;
+          width: 100%;
+          max-width: 100%;
           min-height: 100vh;
           padding: 0;
+          overflow-x: hidden;
         }
         .app-shell[data-active-screen="screen-financas"] .app-main-column,
         .app-shell[data-active-screen="screen-financas"] .content,
         .app-shell[data-active-screen="screen-financas"] #screen-financas.screen.active {
           width: 100%;
+          max-width: 100%;
           min-height: 100vh;
           padding: 0;
+          overflow-x: hidden;
         }
         .app-shell[data-active-screen="screen-financas"] #screen-financas > .card {
           min-height: 100vh;
+          max-width: 100%;
           padding: 10px 14px 18px;
           margin: 0;
           border: none;
@@ -3958,7 +3969,8 @@
         .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-shell,
         .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-desktop-view {
           width: 100%;
-          max-width: none;
+          max-width: 100%;
+          overflow-x: hidden;
         }
         .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-desktop-view {
           gap: 8px;
@@ -4028,6 +4040,8 @@
         }
         .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-spreadsheet-shell {
           display: block;
+          width: 100%;
+          max-width: 100%;
           border: 1px solid rgba(203,213,225,0.9);
           border-radius: 10px;
           background: #ffffff;
@@ -4177,7 +4191,7 @@
         #screen-financas .financas-workbook-tabs {
           display: flex;
           gap: 0;
-          overflow-x: auto;
+          overflow-x: hidden;
           border-bottom: 1px solid #9ca3af;
           background: #d1d5db;
         }
@@ -4200,13 +4214,14 @@
           background: #111827;
         }
         #screen-financas .financas-orcamento-scroll {
-          overflow: auto;
+          overflow-x: hidden;
+          overflow-y: auto;
           width: 100%;
           max-width: 100%;
           min-width: 0;
           max-height: calc(100vh - 190px);
           background: #ffffff;
-          scrollbar-gutter: stable both-edges;
+          scrollbar-gutter: stable;
         }
         #screen-financas .financas-orcamento-grade {
           display: grid;
@@ -4295,7 +4310,7 @@
           padding: 7px 8px;
           border-bottom: 1px solid #cbd5e1;
           background: #eef2f7;
-          overflow-x: auto;
+          overflow-x: hidden;
         }
         #screen-financas .financas-month-controls span {
           flex: 0 0 auto;
@@ -9188,10 +9203,12 @@
 
             <div class="nav-item" data-target="screen-financas">
               <svg viewBox="0 0 256 256" fill="none" color="currentColor">
-                <circle cx="128" cy="128" r="88" fill="currentColor" opacity="0.18"/>
-                <circle cx="128" cy="128" r="88" stroke="currentColor" stroke-width="16"/>
-                <path d="M154 94c-9-10-23-14-37-11c-15 3-26 14-26 27c0 15 13 24 37 29c24 5 37 14 37 29c0 13-11 24-26 27c-14 3-28-1-37-11" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
-                <line x1="128" y1="66" x2="128" y2="190" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>
+                <rect x="40" y="48" width="176" height="160" rx="8" fill="currentColor" opacity="0.2"/>
+                <rect x="40" y="48" width="176" height="160" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
+                <line x1="72" y1="88" x2="184" y2="88" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>
+                <rect x="76" y="128" width="26" height="48" rx="4" fill="currentColor" opacity="0.45"/>
+                <rect x="115" y="108" width="26" height="68" rx="4" fill="currentColor" opacity="0.65"/>
+                <rect x="154" y="140" width="26" height="36" rx="4" fill="currentColor"/>
               </svg>
               <span>Painel Financeiro</span>
             </div>
@@ -9811,7 +9828,6 @@
                 </div>
                 <div class="financas-month-controls" aria-label="Meses visíveis no orçamento">
                   <span>Meses:</span>
-                  <button class="financas-month-filter-btn" type="button" data-financas-meses="todos">Todos</button>
                   <button class="financas-month-filter-btn active" type="button" data-financas-meses="jan-jun">Jan-Jun</button>
                   <button class="financas-month-filter-btn" type="button" data-financas-meses="jul-dez">Jul-Dez</button>
                   <button class="financas-month-filter-btn" type="button" data-financas-meses="atual">Mês atual</button>
@@ -12906,7 +12922,7 @@
       if (financasFiltroMesesOrcamento === "atual") {
         return [Math.max(0, Math.min(11, Number(mesAtual || 1) - 1))];
       }
-      return FINANCAS_PLANILHA_MESES.map((_, index) => index);
+      return [0, 1, 2, 3, 4, 5];
     }
 
     function formatarValorPlanilhaFinancas(valor, tipo = "moeda") {
@@ -13104,8 +13120,9 @@
       area?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
     }
 
-    function definirFiltroMesesOrcamentoFinancas(filtro = "todos") {
-      financasFiltroMesesOrcamento = filtro || "todos";
+    function definirFiltroMesesOrcamentoFinancas(filtro = "jan-jun") {
+      const filtrosPermitidos = new Set(["jan-jun", "jul-dez", "atual"]);
+      financasFiltroMesesOrcamento = filtrosPermitidos.has(filtro) ? filtro : "jan-jun";
       document.querySelectorAll("[data-financas-meses]").forEach((botao) => {
         botao.classList.toggle("active", botao.dataset.financasMeses === financasFiltroMesesOrcamento);
       });
@@ -13849,7 +13866,7 @@
       document.getElementById("btn-financas-tab-orcamento")?.addEventListener("click", () => ativarAbaPlanilhaFinanceiraFinancas("orcamento"));
       document.getElementById("btn-financas-tab-diario")?.addEventListener("click", () => ativarAbaPlanilhaFinanceiraFinancas("diario"));
       document.querySelectorAll("[data-financas-meses]").forEach((botao) => {
-        botao.addEventListener("click", () => definirFiltroMesesOrcamentoFinancas(botao.dataset.financasMeses || "todos"));
+        botao.addEventListener("click", () => definirFiltroMesesOrcamentoFinancas(botao.dataset.financasMeses || "jan-jun"));
       });
       document.getElementById("btn-financas-visualizar-fontes")?.addEventListener("click", alternarFontesRendaFinancas);
       document.getElementById("financas-kpi-card-receitas")?.addEventListener("click", () => abrirDetalheKpiFinancas("receitas"));
