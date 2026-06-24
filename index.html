@@ -4117,8 +4117,8 @@
           color: #0f172a;
         }
         #screen-financas .financas-table {
-          overflow: auto;
-          max-height: 430px;
+          overflow: visible;
+          max-height: none;
         }
         #screen-financas .financas-table-row {
           display: grid;
@@ -4214,14 +4214,13 @@
           background: #111827;
         }
         #screen-financas .financas-orcamento-scroll {
-          overflow-x: hidden;
-          overflow-y: auto;
+          overflow: visible;
           width: 100%;
           max-width: 100%;
           min-width: 0;
-          max-height: calc(100vh - 190px);
+          max-height: none;
           background: #ffffff;
-          scrollbar-gutter: stable;
+          scrollbar-gutter: auto;
         }
         #screen-financas .financas-orcamento-grade {
           display: grid;
@@ -4407,7 +4406,7 @@
           min-height: 230px;
         }
         #screen-financas .financas-workbook-bottom .financas-table {
-          max-height: 260px;
+          max-height: none;
         }
         .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-spreadsheet-head,
         .app-shell[data-active-screen="screen-financas"] #screen-financas .financas-spreadsheet-head *,
