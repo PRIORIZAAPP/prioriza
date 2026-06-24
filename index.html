@@ -4429,6 +4429,11 @@
           border-top: 1px solid #9ca3af;
           background: #ffffff;
         }
+        #screen-financas .financas-month-controls[hidden],
+        #screen-financas .financas-orcamento-scroll[hidden],
+        #screen-financas .financas-workbook-bottom[hidden] {
+          display: none !important;
+        }
         #screen-financas .financas-workbook-bottom .financas-sheet-section {
           min-height: 230px;
         }
@@ -9851,7 +9856,7 @@
                   <button id="btn-financas-tab-orcamento" class="active" type="button">Orçamento 2026</button>
                   <button id="btn-financas-tab-diario" type="button">Controle Diário</button>
                 </div>
-                <div class="financas-month-controls" aria-label="Meses visíveis no orçamento">
+                <div id="financas-month-controls" class="financas-month-controls" aria-label="Meses visíveis no orçamento">
                   <span>Meses:</span>
                   <button class="financas-month-filter-btn active" type="button" data-financas-meses="jan-jun">Jan-Jun</button>
                   <button class="financas-month-filter-btn" type="button" data-financas-meses="jul-dez">Jul-Dez</button>
@@ -9862,7 +9867,7 @@
                   <div id="financas-orcamento-grade" class="financas-orcamento-grade"></div>
                 </div>
 
-                <div id="financas-controle-diario-area" class="financas-workbook-bottom">
+                <div id="financas-controle-diario-area" class="financas-workbook-bottom" hidden>
                   <section class="financas-sheet-section diarios">
                     <div class="financas-sheet-section-head">
                       <h4>Controle diário</h4>
@@ -13176,12 +13181,16 @@
     }
 
     function ativarAbaPlanilhaFinanceiraFinancas(alvo = "orcamento") {
-      const area = alvo === "diario"
-        ? document.getElementById("financas-controle-diario-area")
-        : document.getElementById("financas-orcamento-area");
-      document.getElementById("btn-financas-tab-orcamento")?.classList.toggle("active", alvo !== "diario");
-      document.getElementById("btn-financas-tab-diario")?.classList.toggle("active", alvo === "diario");
-      area?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+      const diarioAtivo = alvo === "diario";
+      const orcamentoArea = document.getElementById("financas-orcamento-area");
+      const diarioArea = document.getElementById("financas-controle-diario-area");
+      const filtrosMeses = document.getElementById("financas-month-controls");
+      document.getElementById("btn-financas-tab-orcamento")?.classList.toggle("active", !diarioAtivo);
+      document.getElementById("btn-financas-tab-diario")?.classList.toggle("active", diarioAtivo);
+      if (orcamentoArea) orcamentoArea.hidden = diarioAtivo;
+      if (filtrosMeses) filtrosMeses.hidden = diarioAtivo;
+      if (diarioArea) diarioArea.hidden = !diarioAtivo;
+      document.querySelector("#screen-financas .financas-spreadsheet-shell")?.scrollIntoView({ behavior: "auto", block: "start", inline: "nearest" });
     }
 
     function definirFiltroMesesOrcamentoFinancas(filtro = "jan-jun") {
