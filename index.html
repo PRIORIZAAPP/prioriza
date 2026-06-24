@@ -9708,7 +9708,6 @@
                   <img id="financas-logo-prioriza" class="financas-logo-img" alt="PRIORIZA" />
                 </button>
                 <div class="financas-hero-copy">
-                  <h2 class="financas-title">Painel Financeiro</h2>
                   <div class="financas-subtitle">Visão ampla em formato de planilha para trabalhar o mês com calma.</div>
                 </div>
                 <div class="financas-hero-actions">
@@ -9981,6 +9980,7 @@
                   </div>
                   <div id="financas-sheet-erro" class="financas-sheet-error"></div>
                   <div class="financas-sheet-actions">
+                    <button id="btn-financas-excluir-lancamento" class="btn-secondary" type="button" hidden>Excluir</button>
                     <button id="btn-financas-cancelar" class="btn-secondary" type="button">Cancelar</button>
                     <button id="btn-financas-salvar" class="btn-primary" type="submit">Salvar lançamento</button>
                   </div>
@@ -10012,6 +10012,7 @@
                   </div>
                   <div id="financas-source-sheet-erro" class="financas-sheet-error"></div>
                   <div class="financas-sheet-actions">
+                    <button id="btn-financas-excluir-fonte-renda-sheet" class="btn-secondary" type="button" hidden>Excluir</button>
                     <button id="btn-financas-cancelar-source-sheet" class="btn-secondary" type="button">Cancelar</button>
                     <button id="btn-financas-salvar-fonte-renda" class="btn-primary" type="submit">Salvar fonte</button>
                   </div>
@@ -10070,6 +10071,7 @@
                   </div>
                   <div id="financas-fixed-sheet-erro" class="financas-sheet-error"></div>
                   <div class="financas-sheet-actions">
+                    <button id="btn-financas-excluir-conta-fixa-sheet" class="btn-secondary" type="button" hidden>Excluir</button>
                     <button id="btn-financas-cancelar-fixed-sheet" class="btn-secondary" type="button">Cancelar</button>
                     <button id="btn-financas-salvar-conta-fixa" class="btn-primary" type="submit">Salvar conta fixa</button>
                   </div>
@@ -12502,6 +12504,8 @@
       if (tituloEl) tituloEl.textContent = "Novo lançamento";
       const botaoSalvarEl = document.getElementById("btn-financas-salvar");
       if (botaoSalvarEl) botaoSalvarEl.textContent = "Salvar lançamento";
+      const botaoExcluirEl = document.getElementById("btn-financas-excluir-lancamento");
+      if (botaoExcluirEl) botaoExcluirEl.hidden = true;
       definirTipoLancamentoFinancas("Despesa");
       preencherSelectFonteRendaFinancas();
       atualizarCampoFonteExtraFinancas();
@@ -12547,6 +12551,8 @@
       if (titulo) titulo.textContent = "Nova fonte de renda";
       const botaoSalvar = document.getElementById("btn-financas-salvar-fonte-renda");
       if (botaoSalvar) botaoSalvar.textContent = "Salvar fonte";
+      const botaoExcluir = document.getElementById("btn-financas-excluir-fonte-renda-sheet");
+      if (botaoExcluir) botaoExcluir.hidden = true;
       limparErroFonteRendaFinancas();
     }
 
@@ -12569,6 +12575,8 @@
       if (titulo) titulo.textContent = "Nova conta fixa";
       const botaoSalvar = document.getElementById("btn-financas-salvar-conta-fixa");
       if (botaoSalvar) botaoSalvar.textContent = "Salvar conta fixa";
+      const botaoExcluir = document.getElementById("btn-financas-excluir-conta-fixa-sheet");
+      if (botaoExcluir) botaoExcluir.hidden = true;
       limparErroContaFixaFinancas();
     }
 
@@ -12613,6 +12621,7 @@
         const fonteExtraEl = document.getElementById("financas-fonte-renda-extra");
         const tituloEl = document.getElementById("financas-sheet-title");
         const botaoSalvarEl = document.getElementById("btn-financas-salvar");
+        const botaoExcluirEl = document.getElementById("btn-financas-excluir-lancamento");
         if (idEl) idEl.value = String(lancamento.id || "");
         definirTipoLancamentoFinancas(normalizarTipoFinancasUI(lancamento.tipo));
         if (valorEl) valorEl.value = String(Number(lancamento.valor || 0));
@@ -12632,6 +12641,7 @@
         atualizarCampoFonteExtraFinancas();
         if (tituloEl) tituloEl.textContent = "Editar lançamento";
         if (botaoSalvarEl) botaoSalvarEl.textContent = "Salvar alterações";
+        if (botaoExcluirEl) botaoExcluirEl.hidden = false;
       }
       sheet.hidden = false;
       requestAnimationFrame(() => sheet.classList.add("open"));
@@ -12661,12 +12671,14 @@
         const descEl = document.getElementById("financas-fonte-renda-descricao");
         const tituloEl = document.getElementById("financas-source-sheet-title");
         const salvarEl = document.getElementById("btn-financas-salvar-fonte-renda");
+        const excluirEl = document.getElementById("btn-financas-excluir-fonte-renda-sheet");
         if (idEl) idEl.value = String(fonte.id || "");
         if (nomeEl) nomeEl.value = fonte.nome || "";
         if (valorEl) valorEl.value = String(Number(fonte.valor_base || 0));
         if (descEl) descEl.value = fonte.descricao || "";
         if (tituloEl) tituloEl.textContent = "Editar fonte de renda";
         if (salvarEl) salvarEl.textContent = "Salvar alterações";
+        if (excluirEl) excluirEl.hidden = false;
       }
       sheet.hidden = false;
       requestAnimationFrame(() => sheet.classList.add("open"));
@@ -12697,6 +12709,7 @@
         const obsEl = document.getElementById("financas-conta-fixa-observacao");
         const tituloEl = document.getElementById("financas-fixed-sheet-title");
         const botaoSalvar = document.getElementById("btn-financas-salvar-conta-fixa");
+        const botaoExcluir = document.getElementById("btn-financas-excluir-conta-fixa-sheet");
         if (idEl) idEl.value = String(conta.id || "");
         if (nomeEl) nomeEl.value = conta.nome || "";
         if (valorEl) valorEl.value = String(Number(conta.valor || 0));
@@ -12706,6 +12719,7 @@
         definirTipoContaFixaFinancas(normalizarTipoFinancasUI(conta.tipo));
         if (tituloEl) tituloEl.textContent = "Editar conta fixa";
         if (botaoSalvar) botaoSalvar.textContent = "Salvar alterações";
+        if (botaoExcluir) botaoExcluir.hidden = false;
       }
       sheet.hidden = false;
       requestAnimationFrame(() => sheet.classList.add("open"));
@@ -12938,7 +12952,7 @@
       if (acao) {
         cell.type = "button";
         cell.title = "Clique para alimentar esta linha";
-        cell.addEventListener("click", acao);
+        cell.addEventListener("click", (ev) => acao(ev));
       }
       if (span > 1) cell.style.gridColumn = `span ${span}`;
       return cell;
@@ -12967,29 +12981,44 @@
       const classeBase = opcoes.total ? "total" : "";
       const classeLabel = opcoes.total ? "total-label" : "label";
       const acao = typeof opcoes.acao === "function" ? opcoes.acao : null;
+      const acaoLabel = typeof opcoes.acaoLabel === "function" ? opcoes.acaoLabel : acao;
       const statusConta = opcoes.status || null;
-      const statusClasses = [
-        statusConta?.confirmado ? "paid" : "",
-        statusConta && !statusConta.confirmado ? "unpaid" : "",
-        statusConta?.chave === "atrasado" ? "overdue" : "",
-      ];
+      const statusClassesParaMes = (index) => {
+        const statusMes = index === mesAtual ? statusConta : null;
+        return [
+          statusMes?.confirmado ? "paid" : "",
+          statusMes && !statusMes.confirmado ? "unpaid" : "",
+          statusMes?.chave === "atrasado" ? "overdue" : "",
+        ];
+      };
       const resolverPlanejado = typeof planejado === "function" ? planejado : () => Number(planejado || 0);
       const resolverReal = typeof realSelecionado === "function" ? realSelecionado : (index) => (index === mesAtual ? Number(realSelecionado || 0) : 0);
-      container.appendChild(criarCelulaOrcamentoFinancas(label, [classeLabel, ...statusClasses], 1, acao));
+      container.appendChild(criarCelulaOrcamentoFinancas(label, [classeLabel], 1, acaoLabel));
       const indicesMeses = opcoes.indicesMeses || obterIndicesMesesOrcamentoFinancas(Number(opcoes.mesAtual || 1));
       indicesMeses.forEach((index) => {
         const planejadoMes = Number(resolverPlanejado(index) || 0);
         const realMes = Number(resolverReal(index) || 0);
         const plannedClasses = [classeBase, planejadoMes < 0 ? "negative" : "", !planejadoMes ? "blank" : ""];
-        const realClasses = [classeBase, ...statusClasses, realMes < 0 ? "negative" : "", !realMes ? "blank" : ""];
+        const realClasses = [classeBase, ...statusClassesParaMes(index), realMes < 0 ? "negative" : "", !realMes ? "blank" : ""];
         if (tipo === "percentual") {
           plannedClasses.push("percent");
           realClasses.push("percent");
         }
-        const cellAction = opcoes.total || tipo === "percentual" ? null : acao;
+        const cellAction = opcoes.total || tipo === "percentual" || !acao ? null : () => acao(index);
         container.appendChild(criarCelulaOrcamentoFinancas(formatarValorPlanilhaFinancas(planejadoMes, tipo), plannedClasses, 1, cellAction));
         container.appendChild(criarCelulaOrcamentoFinancas(formatarValorPlanilhaFinancas(realMes, tipo), realClasses, 1, cellAction));
       });
+    }
+
+    async function selecionarMesOrcamentoFinancas(indiceMes) {
+      const { ano, mes } = obterMesAnoSelecionadoFinancas();
+      const mesAlvo = Math.max(1, Math.min(12, Number(indiceMes || 0) + 1));
+      if (mesAlvo === mes) return false;
+      definirMesReferenciaFinancas(`${ano}-${String(mesAlvo).padStart(2, "0")}`);
+      await carregarFinancasMesSelecionadoCompleto();
+      await carregarContasFixasFinancas();
+      await carregarFontesRendaFinancas();
+      return true;
     }
 
     function renderizarOrcamentoAnualFinancas(contexto) {
@@ -13042,15 +13071,17 @@
       const resultadoPlanejado = totalPlanejadoReceitas - totalPlanejadoEssenciais - totalPlanejadoLazer - totalPlanejadoDividas;
       const resultadoReal = totalRealReceitas - totalRealEssenciais - totalRealLazer - totalRealDividas;
       const percentual = (valor, receita) => receita > 0 ? valor / receita : 0;
-      const acaoPagamentoConta = (item) => async () => {
-        const status = obterStatusContaFixaFinancas(item);
+      const acaoPagamentoConta = (item) => async (indiceMes = mes - 1) => {
+        await selecionarMesOrcamentoFinancas(indiceMes);
+        const contaAtualizada = financasContasFixas.find((conta) => Number(conta.id || 0) === Number(item.id || 0)) || item;
+        const status = obterStatusContaFixaFinancas(contaAtualizada);
         if (status.confirmado) {
           const ok = await modal.confirmar("Esta despesa já está marcada como paga. Deseja desfazer?", "Despesa paga", "vermelho");
           if (!ok) return;
-          await desfazerConfirmacaoContaFixaFinancas(item);
+          await desfazerConfirmacaoContaFixaFinancas(contaAtualizada);
           return;
         }
-        abrirSheetConfirmacaoContaFixaFinancas(item);
+        abrirSheetConfirmacaoContaFixaFinancas(contaAtualizada);
       };
 
       adicionarLinhaCabecalhoOrcamentoFinancas(grade, mes, indicesMeses);
@@ -13063,13 +13094,13 @@
       if (!despesasEssenciais.length) {
         adicionarLinhaOrcamentoFinancas(grade, "Aluguel / Moradia", 0, 0, { mesAtual: mes, indicesMeses, acao: () => abrirSheetContaFixaFinancas() });
       } else {
-        despesasEssenciais.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Despesa essencial", Number(item.valor || 0), realConta(item), { mesAtual: mes, indicesMeses, acao: acaoPagamentoConta(item), status: obterStatusContaFixaFinancas(item) }));
+        despesasEssenciais.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Despesa essencial", Number(item.valor || 0), realConta(item), { mesAtual: mes, indicesMeses, acao: acaoPagamentoConta(item), acaoLabel: () => abrirSheetContaFixaFinancas(item), status: obterStatusContaFixaFinancas(item) }));
       }
       adicionarLinhaOrcamentoFinancas(grade, "Essencial total", totalPlanejadoEssenciais, totalRealEssenciais, { mesAtual: mes, indicesMeses, total: true });
       adicionarLinhaOrcamentoFinancas(grade, "Essencial/Receita (50%)", percentual(totalPlanejadoEssenciais, totalPlanejadoReceitas), percentual(totalRealEssenciais, totalRealReceitas), { mesAtual: mes, indicesMeses, total: true, tipo: "percentual" });
 
       adicionarSecaoOrcamentoFinancas(grade, "3. DESPESAS COM LAZER", indicesMeses);
-      despesasLazer.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Lazer", Number(item.valor || 0), realConta(item), { mesAtual: mes, indicesMeses, acao: acaoPagamentoConta(item), status: obterStatusContaFixaFinancas(item) }));
+      despesasLazer.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Lazer", Number(item.valor || 0), realConta(item), { mesAtual: mes, indicesMeses, acao: acaoPagamentoConta(item), acaoLabel: () => abrirSheetContaFixaFinancas(item), status: obterStatusContaFixaFinancas(item) }));
       adicionarLinhaOrcamentoFinancas(grade, "Custos variáveis - gasto diário", totalGastosDiarios, totalGastosDiarios, { mesAtual: mes, indicesMeses, acao: () => abrirLancamentoRapidoFinancas("uso-diario") });
       adicionarLinhaOrcamentoFinancas(grade, "Estilo de vida total", totalPlanejadoLazer, totalRealLazer, { mesAtual: mes, indicesMeses, total: true });
       adicionarLinhaOrcamentoFinancas(grade, "Est. de vida/Receita (30%)", percentual(totalPlanejadoLazer, totalPlanejadoReceitas), percentual(totalRealLazer, totalRealReceitas), { mesAtual: mes, indicesMeses, total: true, tipo: "percentual" });
@@ -13078,7 +13109,7 @@
       if (!dividas.length) {
         adicionarLinhaOrcamentoFinancas(grade, "Cartões / Parcelamentos", 0, 0, { mesAtual: mes, indicesMeses, acao: abrirContaDividaRapidaFinancas });
       } else {
-        dividas.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Dívida", Number(item.valor || 0), realConta(item), { mesAtual: mes, indicesMeses, acao: acaoPagamentoConta(item), status: obterStatusContaFixaFinancas(item) }));
+        dividas.forEach((item) => adicionarLinhaOrcamentoFinancas(grade, item.nome || "Dívida", Number(item.valor || 0), realConta(item), { mesAtual: mes, indicesMeses, acao: acaoPagamentoConta(item), acaoLabel: () => abrirSheetContaFixaFinancas(item), status: obterStatusContaFixaFinancas(item) }));
       }
       adicionarLinhaOrcamentoFinancas(grade, "Investimentos total", totalPlanejadoDividas, totalRealDividas, { mesAtual: mes, indicesMeses, total: true });
       adicionarLinhaOrcamentoFinancas(grade, "Invest./Receita (20%)", percentual(totalPlanejadoDividas, totalPlanejadoReceitas), percentual(totalRealDividas, totalRealReceitas), { mesAtual: mes, indicesMeses, total: true, tipo: "percentual" });
@@ -13778,7 +13809,7 @@
           const erro = await resposta.json().catch(() => ({}));
           throw new Error(erro?.detail || "Não foi possível excluir a conta fixa.");
         }
-        await carregarContasFixasFinancas();
+        await carregarFinancasPainelCompleto();
       } catch (erro) {
         await modal.alerta(erro.message || "Não foi possível excluir a conta fixa agora.", "Contas fixas");
       }
@@ -13832,7 +13863,7 @@
           const erro = await resposta.json().catch(() => ({}));
           throw new Error(erro?.detail || "Não foi possível excluir a fonte de renda.");
         }
-        await carregarFontesRendaFinancas();
+        await carregarFinancasPainelCompleto();
       } catch (erro) {
         await modal.alerta(erro.message || "Não foi possível excluir a fonte de renda agora.", "Fontes de renda");
       }
@@ -13881,15 +13912,39 @@
       document.getElementById("financas-mobile-card-receitas")?.addEventListener("click", () => abrirDetalheKpiFinancas("receitas"));
       document.getElementById("btn-financas-cancelar")?.addEventListener("click", fecharSheetFinancas);
       document.getElementById("btn-financas-fechar-sheet-topo")?.addEventListener("click", fecharSheetFinancas);
+      document.getElementById("btn-financas-excluir-lancamento")?.addEventListener("click", async () => {
+        const lancamentoId = document.getElementById("financas-lancamento-id")?.value || "";
+        if (!lancamentoId) return;
+        const confirmar = await modal.confirmar("Deseja excluir este lançamento?", "Finanças", "vermelho");
+        if (confirmar === false) return;
+        await excluirLancamentoFinancas(lancamentoId);
+        fecharSheetFinancas();
+      });
       document.getElementById("btn-financas-fechar-kpi-detail")?.addEventListener("click", fecharDetalheKpiFinancas);
       document.getElementById("btn-financas-fechar-kpi-detail-topo")?.addEventListener("click", fecharDetalheKpiFinancas);
       document.getElementById("btn-financas-fechar-quick-sheet")?.addEventListener("click", fecharSheetAcoesRapidasFinancas);
       document.getElementById("btn-financas-fechar-quick-sheet-topo")?.addEventListener("click", fecharSheetAcoesRapidasFinancas);
       document.getElementById("btn-financas-cancelar-source-sheet")?.addEventListener("click", fecharSheetFonteRendaFinancas);
       document.getElementById("btn-financas-fechar-source-sheet-topo")?.addEventListener("click", fecharSheetFonteRendaFinancas);
+      document.getElementById("btn-financas-excluir-fonte-renda-sheet")?.addEventListener("click", async () => {
+        const fonteId = document.getElementById("financas-fonte-renda-id")?.value || "";
+        if (!fonteId) return;
+        const confirmar = await modal.confirmar("Deseja excluir esta fonte de renda?", "Fontes de renda", "vermelho");
+        if (confirmar === false) return;
+        await excluirFonteRendaFinancas(fonteId);
+        fecharSheetFonteRendaFinancas();
+      });
       document.getElementById("btn-financas-nova-conta-fixa")?.addEventListener("click", () => abrirSheetContaFixaFinancas());
       document.getElementById("btn-financas-cancelar-fixed-sheet")?.addEventListener("click", fecharSheetContaFixaFinancas);
       document.getElementById("btn-financas-fechar-fixed-sheet-topo")?.addEventListener("click", fecharSheetContaFixaFinancas);
+      document.getElementById("btn-financas-excluir-conta-fixa-sheet")?.addEventListener("click", async () => {
+        const contaId = document.getElementById("financas-conta-fixa-id")?.value || "";
+        if (!contaId) return;
+        const confirmar = await modal.confirmar("Deseja excluir esta despesa?", "Despesas e dívidas", "vermelho");
+        if (confirmar === false) return;
+        await excluirContaFixaFinancas(contaId);
+        fecharSheetContaFixaFinancas();
+      });
       document.getElementById("btn-financas-cancelar-confirm-sheet")?.addEventListener("click", fecharSheetConfirmacaoContaFixaFinancas);
       document.getElementById("btn-financas-fechar-confirm-sheet-topo")?.addEventListener("click", fecharSheetConfirmacaoContaFixaFinancas);
 
