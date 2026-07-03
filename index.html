@@ -591,6 +591,7 @@
       .mic-button.listening { background: rgba(34,197,94,0.22); border-color: #22c55e; }
       .mic-svg { width: 20px; height: 20px; color: #ffffff; }
       .mic-button.listening .mic-svg { color: #22c55e; }
+      .mic-button-label { display: none; }
       .topbar-settings-btn {
         border-radius: 999px;
         border: 1px solid rgba(15,23,42,0.10);
@@ -1289,6 +1290,147 @@
       .agenda-item.blocked .agenda-horario,
       .agenda-item.blocked .agenda-titulo {
         color: #991b1b;
+      }
+
+      .marcos-operacionais-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin: 10px 0 14px;
+      }
+      .marco-register-btn,
+      .marco-search-btn {
+        min-height: 38px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #334155;
+        padding: 0 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .marco-register-btn {
+        border-color: #d6b46a;
+        background: #fffaf0;
+        color: #7c5314;
+      }
+      .marco-search-form {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        width: min(100%, 390px);
+      }
+      .marco-search-form input {
+        min-width: 0;
+        min-height: 38px;
+        margin: 0;
+      }
+      .marco-search-clear {
+        width: 38px;
+        min-width: 38px;
+        padding: 0;
+      }
+      .marcos-search-results {
+        margin: -6px 0 14px;
+        padding: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #f8fafc;
+      }
+      .marcos-search-results[hidden],
+      .marcos-dia-lista[hidden] { display: none !important; }
+      .marcos-search-heading {
+        margin: 0 0 8px;
+        color: #64748b;
+        font-size: 11px;
+        text-transform: uppercase;
+      }
+      .marcos-operacionais-form-panel { width: min(100%, 590px); }
+      .marco-description-field textarea {
+        width: 100%;
+        min-height: 118px;
+        resize: vertical;
+      }
+      .marcos-dia-lista {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .marco-operacional-card {
+        position: relative;
+        display: grid;
+        grid-template-columns: 4px minmax(0, 1fr) auto;
+        gap: 0 11px;
+        align-items: start;
+        padding: 11px 10px 11px 0;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #fffdf8;
+      }
+      .marco-operacional-card::before {
+        content: "";
+        align-self: stretch;
+        border-radius: 0 4px 4px 0;
+        background: #d6a94f;
+      }
+      .marco-operacional-card.severidade-alta::before { background: #ea580c; }
+      .marco-operacional-card.severidade-critica::before { background: #dc2626; }
+      .marco-operacional-card.severidade-baixa::before { background: #64748b; }
+      .marco-operacional-kicker {
+        color: #7c5314;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .marco-operacional-title {
+        margin-top: 2px;
+        color: #172033;
+        font-size: 13px;
+        font-weight: 650;
+        line-height: 1.35;
+      }
+      .marco-operacional-description {
+        margin-top: 4px;
+        color: #64748b;
+        font-size: 12px;
+        line-height: 1.45;
+        white-space: pre-wrap;
+      }
+      .marco-operacional-actions { display: flex; gap: 4px; }
+      .marco-operacional-actions .agenda-icon-btn {
+        width: 30px;
+        height: 30px;
+      }
+      .marco-search-result { cursor: pointer; }
+      .marco-search-date {
+        margin-top: 4px;
+        color: #64748b;
+        font-size: 11px;
+      }
+      .calendar-indicator.marco {
+        background: #d6a94f;
+        box-shadow: none;
+      }
+
+      @media (max-width: 680px) {
+        .marcos-operacionais-toolbar {
+          align-items: stretch;
+          flex-direction: column;
+        }
+        .marco-register-btn,
+        .marco-search-form { width: 100%; }
+        .marco-search-form input { flex: 1; }
+        .marco-operacional-card { grid-template-columns: 3px minmax(0, 1fr); }
+        .marco-operacional-actions {
+          grid-column: 2;
+          margin-top: 8px;
+        }
       }
 
       /* ── BOTTOM NAV ── */
@@ -4797,6 +4939,7 @@
       .nota-texto { color: #111827; }
       .nota-data  { font-size: 11px; color: #6b7280; margin-top: 2px; }
       .nota-status-feito { text-decoration: line-through; color: #6b7280; }
+      .notas-new-button { display: none; }
 
       /* ── CALENDÁRIO ── */
       .agenda-calendar-card {
@@ -9007,6 +9150,177 @@
           rgba(148, 163, 184, 0) 100%
         );
       }
+
+      /* SPRINT 04: refinamentos exclusivamente Desktop */
+      .topbar-right { gap: 8px; }
+      .mic-button {
+        width: auto;
+        min-width: 154px;
+        padding: 0 15px;
+        gap: 8px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.9);
+      }
+      .mic-button-label {
+        display: inline;
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 650;
+        white-space: nowrap;
+      }
+
+      .desktop-sidebar-status {
+        padding-top: 14px;
+        border-top: 1px solid rgba(203, 213, 225, 0.72);
+      }
+      .desktop-status-day { display: grid; gap: 0; }
+      .desktop-status-day-empty {
+        color: #64748b;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+      .desktop-status-day-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        min-height: 28px;
+        color: #334155;
+        font-size: 12px;
+      }
+      .desktop-status-day-row span:first-child {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .desktop-status-day-check { color: #16a34a; margin-right: 6px; }
+      .desktop-status-day-count { color: #0f172a; font-variant-numeric: tabular-nums; }
+      .desktop-status-day-total {
+        margin-top: 8px;
+        padding: 9px 0;
+        border-top: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+        color: #0f172a;
+        font-size: 13px;
+        font-weight: 650;
+      }
+      .desktop-status-day-next {
+        margin-top: 10px;
+        color: #64748b;
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .desktop-status-day-next-value {
+        margin-top: 4px;
+        color: #334155;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      #screen-notas.screen.active {
+        display: block;
+        padding: 0;
+        border: 1px solid rgba(203, 213, 225, 0.62);
+        border-radius: 10px;
+        background: #ffffff;
+        overflow: hidden;
+      }
+      #screen-notas > .card {
+        margin: 0;
+        padding: 16px 18px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+      #screen-notas .notas-editor-card { border-bottom: 1px solid #e2e8f0; }
+      #screen-notas .notas-card-header {
+        justify-content: flex-start;
+        margin-bottom: 0;
+      }
+      #screen-notas .notas-card-header h2 { margin-right: auto; }
+      #screen-notas .notas-new-button { display: inline-flex; }
+      #screen-notas .notas-editor-card > .secao-subtitulo,
+      #screen-notas .notas-editor-card > .swipe-hint { display: none; }
+      #screen-notas #form-nota {
+        display: none;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid #e2e8f0;
+      }
+      #screen-notas.notas-form-open #form-nota { display: block; }
+      #screen-notas .notas-list-card .card-header { display: none; }
+      #screen-notas .notas-list-card { padding-top: 10px; }
+      #screen-notas .nota-category-marker {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        flex: 0 0 auto;
+        background: #2563eb;
+      }
+      #screen-notas .nota-category-marker.pessoal { background: #8b5cf6; }
+
+      .timeline-action-menu { position: relative; }
+      .timeline-menu-trigger {
+        width: 30px;
+        height: 30px;
+        border: 1px solid rgba(203, 213, 225, 0.72);
+        border-radius: 7px;
+        background: #ffffff;
+        color: #64748b;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      .timeline-menu-popover {
+        position: absolute;
+        top: calc(100% + 5px);
+        right: 0;
+        z-index: 40;
+        width: 154px;
+        padding: 4px;
+        border: 1px solid #dbe3ed;
+        border-radius: 8px;
+        background: #ffffff;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+      }
+      .timeline-menu-popover[hidden] { display: none !important; }
+      .timeline-menu-item {
+        width: 100%;
+        min-height: 32px;
+        padding: 0 9px;
+        border: 0;
+        border-radius: 5px;
+        background: transparent;
+        color: #334155;
+        text-align: left;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .timeline-menu-item:hover { background: #f1f5f9; }
+      .timeline-menu-item.danger { color: #b91c1c; }
+
+      #screen-hoje.screen.active {
+        grid-template-columns: minmax(0, 1fr) 288px;
+        gap: 0 36px;
+      }
+      #hoje-calendar-card {
+        min-height: 336px;
+        padding: 16px;
+      }
+      #hoje-calendar-card::before { left: -18px; }
+      #hoje-calendar-card .today-calendar-head {
+        padding-bottom: 8px;
+        margin-bottom: 2px;
+      }
+      #hoje-calendar-card .desktop-mini-calendar { gap: 5px 4px; }
+      #hoje-calendar-card .desktop-mini-weekday,
+      #hoje-calendar-card .desktop-mini-day { min-height: 27px; }
+      #hoje-calendar-card .desktop-mini-day { font-size: 11px; }
+      #hoje-calendar-card .today-calendar-note { margin-top: 8px; font-size: 11px; }
     }
   </style>
   </head>
@@ -9161,6 +9475,7 @@
               <line x1="12" y1="19" x2="12" y2="23"/>
               <line x1="8"  y1="23" x2="16" y2="23"/>
             </svg>
+            <span class="mic-button-label">Adicionar por voz</span>
           </button>
           <button id="btn-topbar-ajustes" class="topbar-settings-btn" title="Ajustes" aria-label="Ajustes">
             <svg viewBox="0 0 24 24" fill="currentColor" color="currentColor" aria-hidden="true">
@@ -9264,8 +9579,8 @@
           </div>
 
           <div class="desktop-sidebar-section desktop-sidebar-status">
-            <div class="desktop-sidebar-section-title">Status do dia</div>
-            <div class="desktop-sidebar-status-summary" data-resumo-espelho>Carregando resumo...</div>
+            <div class="desktop-sidebar-section-title">STATUS DO DIA</div>
+            <div id="desktop-status-do-dia" class="desktop-sidebar-status-summary">Carregando resumo...</div>
           </div>
 
         </aside>
@@ -9366,6 +9681,30 @@
                 <h2>Agenda</h2>
               </div>
             </div>
+
+            <div class="marcos-operacionais-toolbar">
+              <button id="btn-registrar-marco" class="marco-register-btn" type="button">
+                <svg width="16" height="16" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                  <path d="M64 32h128v192l-64-40-64 40V32z" stroke="currentColor" stroke-width="18" stroke-linejoin="round"/>
+                </svg>
+                Registrar Marco
+              </button>
+              <form id="form-busca-marcos" class="marco-search-form" role="search">
+                <input id="busca-marcos-texto" type="search" minlength="2" placeholder="Buscar marcos antigos" aria-label="Buscar Marcos Operacionais" />
+                <button class="marco-search-btn" type="submit" aria-label="Buscar" title="Buscar">
+                  <svg width="16" height="16" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <circle cx="112" cy="112" r="64" stroke="currentColor" stroke-width="18"/>
+                    <path d="M160 160l48 48" stroke="currentColor" stroke-width="18" stroke-linecap="round"/>
+                  </svg>
+                </button>
+                <button id="btn-limpar-busca-marcos" class="marco-search-btn marco-search-clear" type="button" aria-label="Limpar busca" title="Limpar busca" hidden>
+                  <svg width="15" height="15" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                    <path d="M72 72l112 112M184 72L72 184" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
+            <div id="marcos-search-results" class="marcos-search-results" hidden></div>
 
             <div id="agenda-form-wrap" class="checklist-form-wrap" hidden>
               <div class="checklist-form-panel" role="dialog" aria-modal="true" aria-labelledby="agenda-form-title">
@@ -9469,6 +9808,62 @@
               </div>
             </div>
 
+            <div id="marco-form-wrap" class="checklist-form-wrap" hidden>
+              <div class="checklist-form-panel marcos-operacionais-form-panel" role="dialog" aria-modal="true" aria-labelledby="marco-form-title">
+                <div class="checklist-form-handle" aria-hidden="true"></div>
+                <div class="checklist-form-header">
+                  <div>
+                    <div id="marco-form-title" class="checklist-form-title">Novo Marco Operacional</div>
+                    <div class="checklist-form-subtitle">Registro histórico, sem horário e sem pendência.</div>
+                  </div>
+                  <button id="btn-fechar-form-marco" class="btn-secondary" type="button">Fechar</button>
+                </div>
+                <form id="form-marco-operacional">
+                  <input id="marco-id" type="hidden" />
+                  <div class="form-main-stack">
+                    <div>
+                      <label for="marco-titulo">Título</label>
+                      <input id="marco-titulo" type="text" maxlength="180" placeholder="Ex: Sistema Mobile fora do ar" required />
+                    </div>
+                    <div class="form-grid">
+                      <div><label for="marco-data">Data</label><input id="marco-data" type="date" required /></div>
+                      <div>
+                        <label for="marco-categoria">Categoria</label>
+                        <select id="marco-categoria" required>
+                          <option value="TI">TI</option>
+                          <option value="Operação">Operação</option>
+                          <option value="Equipamento">Equipamento</option>
+                          <option value="Gestão">Gestão</option>
+                          <option value="Contrato">Contrato</option>
+                          <option value="Auditoria">Auditoria</option>
+                          <option value="Qualidade">Qualidade</option>
+                          <option value="Incidente">Incidente</option>
+                          <option value="Outro">Outro</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label for="marco-severidade">Severidade</label>
+                      <select id="marco-severidade" required>
+                        <option value="Baixa">Baixa</option>
+                        <option value="Média" selected>Média</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Crítica">Crítica</option>
+                      </select>
+                    </div>
+                    <div class="marco-description-field">
+                      <label for="marco-descricao">Descrição</label>
+                      <textarea id="marco-descricao" maxlength="5000" placeholder="Registre o que aconteceu, impactos e ações tomadas."></textarea>
+                    </div>
+                    <div class="checklist-form-actions">
+                      <button id="btn-cancelar-form-marco" class="btn-secondary" type="button">Cancelar</button>
+                      <button id="btn-salvar-marco" class="btn-primary" type="submit">Salvar Marco</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+
             <div id="calendar-container" class="calendar-wrapper">
               <div class="calendar-header">
                 <div class="calendar-nav">
@@ -9503,6 +9898,7 @@
                   </svg>
                 </button>
               </div>
+              <div id="marcos-operacionais-dia" class="marcos-dia-lista" hidden></div>
               <div id="agenda-geral-lista"><p class="agenda-dia-vazio">Nenhum compromisso neste dia.</p></div>
             </div>
           </div>
@@ -10615,8 +11011,8 @@
 
         <!-- ══ ABA NOTAS ══ -->
         <div class="screen" id="screen-notas">
-          <div class="card">
-            <div class="card-header">
+          <div class="card notas-editor-card">
+            <div class="card-header notas-card-header">
               <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
                 <path d="M 208,32 L 48,32 A 16,16 0 0 0 32,48 L 32,208 A 16,16 0 0 0 48,224 L 208,224 A 16,16 0 0 0 224,208 L 224,48 A 16,16 0 0 0 208,32 Z" fill="currentColor" opacity="0.2"/>
                 <path d="M 208,32 L 48,32 A 16,16 0 0 0 32,48 L 32,208 A 16,16 0 0 0 48,224 L 208,224 A 16,16 0 0 0 224,208 L 224,48 A 16,16 0 0 0 208,32 Z" stroke="currentColor" stroke-width="16" fill="none"/>
@@ -10627,6 +11023,13 @@
                 <path d="M 196,108 L 216,88 A 16,16 0 0 0 192,64 L 172,84 Z" fill="currentColor" stroke="currentColor" stroke-width="12" stroke-linejoin="round"/>
               </svg>
               <h2>Anotações importantes</h2>
+              <button id="btn-toggle-form-nota" class="btn-ghost-action notas-new-button" type="button" aria-expanded="false" aria-controls="form-nota">
+                <svg width="15" height="15" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                  <line x1="128" y1="64" x2="128" y2="192" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                  <line x1="64" y1="128" x2="192" y2="128" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+                </svg>
+                <span>Nova Nota</span>
+              </button>
             </div>
             <div class="secao-subtitulo">Lembretes soltos. Deslize direita = feito · esquerda = excluir.</div>
             <div class="swipe-hint"><span>← Excluir</span><span>Feito →</span></div>
@@ -10647,7 +11050,7 @@
             </form>
           </div>
 
-          <div class="card">
+          <div class="card notas-list-card">
             <div class="card-header">
               <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
                 <path d="M 32,80 L 32,200 A 8,8 0 0 0 40,208 L 216,208 A 8,8 0 0 0 224,200 L 224,104 A 8,8 0 0 0 216,96 L 120,96 L 96,72 A 8,8 0 0 0 90,70 L 40,70 A 8,8 0 0 0 32,80 Z" fill="currentColor" opacity="0.25"/>
@@ -13671,6 +14074,7 @@
       await carregarFinancasMesSelecionadoCompleto();
       await carregarContasFixasFinancas();
       await carregarFontesRendaFinancas();
+      if (emLayoutDesktop()) await atualizarStatusDoDiaDesktop();
     }
 
     function exportarVisaoFinancasAtual() {
@@ -14743,6 +15147,7 @@
 
     let tarefasAgendaCache = [];
     let googleAgendaCache = [];
+    let marcosOperacionaisCache = [];
     let googleAgendaStatus = { configurado: false, conectado: false };
     let checklistHojeCache = [];
 
@@ -14829,6 +15234,157 @@
         item.textContent = texto;
       });
       window.requestAnimationFrame(atualizarOffsetsCabecalho);
+    }
+
+    function dataLocalDeRegistro(valor) {
+      if (!valor) return "";
+      const data = new Date(valor);
+      return Number.isNaN(data.getTime()) ? "" : dateToISO(data);
+    }
+
+    function calcularStatusDoDia(dados = {}, referencia = new Date()) {
+      const hoje = dateToISO(referencia);
+      const tarefas = Array.isArray(dados.tarefas) ? dados.tarefas : [];
+      const compromissos = Array.isArray(dados.compromissos) ? dados.compromissos : tarefas;
+      const checklist = Array.isArray(dados.checklist) ? dados.checklist : [];
+      const notas = Array.isArray(dados.notas) ? dados.notas : [];
+      const marcos = Array.isArray(dados.marcos) ? dados.marcos : [];
+      const lancamentos = Array.isArray(dados.lancamentos) ? dados.lancamentos : [];
+
+      const categorias = [
+        {
+          chave: "rotinas",
+          rotulo: "Rotinas",
+          total: checklist.filter((item) => item?.ativo !== false && ehStatusFeito(item?.status) && dataLocalDeRegistro(item?.ultimo_exec) === hoje).length,
+        },
+        {
+          chave: "notas",
+          rotulo: "Notas",
+          total: notas.filter((nota) => {
+            if (nota?.ativo === false || String(nota?.status || "").toLowerCase() !== "feito") return false;
+            return normalizarDataParaISO(nota?.data || "") === hoje || dataLocalDeRegistro(nota?.created_at) === hoje;
+          }).length,
+        },
+        {
+          chave: "agenda",
+          rotulo: "Agenda",
+          total: tarefas.filter((tarefa) => tarefa?.ativo !== false && !ehStatusCancelada(tarefa?.status) && ehStatusFeito(tarefa?.status) && normalizarDataParaISO(tarefa?.data || "") === hoje).length,
+        },
+        {
+          chave: "marcos",
+          rotulo: "Marco Operacional",
+          total: marcos.filter((marco) => marco?.ativo !== false && dataLocalDeRegistro(marco?.criado_em) === hoje).length,
+        },
+        {
+          chave: "financeiro",
+          rotulo: "Financeiro",
+          total: lancamentos.filter((item) => item?.ativo !== false && dataLocalDeRegistro(item?.criado_em) === hoje).length,
+        },
+      ].filter((categoria) => categoria.total > 0);
+
+      const pendentes = compromissos.filter((tarefa) =>
+        tarefa?.ativo !== false
+        && normalizarDataParaISO(tarefa?.data || "") === hoje
+        && !ehStatusFeito(tarefa?.status)
+        && !ehStatusCancelada(tarefa?.status)
+      );
+      const comHorario = pendentes
+        .filter((tarefa) => !tarefa?.all_day && horaParaMinutos(tarefa?.hora_inicio) !== null)
+        .sort((a, b) => horaParaMinutos(a?.hora_inicio) - horaParaMinutos(b?.hora_inicio));
+      const agoraMin = referencia.getHours() * 60 + referencia.getMinutes();
+      const proximaComHorario = comHorario.find((tarefa) => horaParaMinutos(tarefa?.hora_inicio) >= agoraMin) || comHorario[0] || null;
+      const proxima = proximaComHorario || pendentes.find((tarefa) => tarefa?.all_day || horaParaMinutos(tarefa?.hora_inicio) === null) || null;
+
+      return {
+        categorias,
+        total: categorias.reduce((soma, categoria) => soma + categoria.total, 0),
+        proxima: proxima ? {
+          titulo: proxima.titulo || "Compromisso sem título",
+          horario: (!proxima.all_day && proxima.hora_inicio) ? proxima.hora_inicio : "Sem horário",
+        } : null,
+      };
+    }
+
+    function renderizarStatusDoDiaDesktop(status) {
+      const container = document.getElementById("desktop-status-do-dia");
+      if (!container || !emLayoutDesktop()) return;
+      container.innerHTML = "";
+      const corpo = document.createElement("div");
+      corpo.className = "desktop-status-day";
+      if (!status.categorias.length) {
+        const vazio = document.createElement("div");
+        vazio.className = "desktop-status-day-empty";
+        vazio.textContent = "Nenhuma ação concluída hoje.";
+        corpo.appendChild(vazio);
+      } else {
+        status.categorias.forEach((categoria) => {
+          const linha = document.createElement("div");
+          linha.className = "desktop-status-day-row";
+          const rotulo = document.createElement("span");
+          rotulo.innerHTML = `<span class="desktop-status-day-check">✓</span>${categoria.rotulo}`;
+          const total = document.createElement("span");
+          total.className = "desktop-status-day-count";
+          total.textContent = String(categoria.total);
+          linha.append(rotulo, total);
+          corpo.appendChild(linha);
+        });
+      }
+      const total = document.createElement("div");
+      total.className = "desktop-status-day-total";
+      total.textContent = `${status.total} ${status.total === 1 ? "ação" : "ações"}`;
+      corpo.appendChild(total);
+      const proximaLabel = document.createElement("div");
+      proximaLabel.className = "desktop-status-day-next";
+      proximaLabel.textContent = "Próxima";
+      const proximaValor = document.createElement("div");
+      proximaValor.className = "desktop-status-day-next-value";
+      proximaValor.textContent = status.proxima
+        ? `${status.proxima.horario} · ${status.proxima.titulo}`
+        : "Nenhuma atividade pendente hoje.";
+      corpo.append(proximaLabel, proximaValor);
+      container.appendChild(corpo);
+
+      const resumoEspelho = status.proxima
+        ? `${status.total} ${status.total === 1 ? "ação" : "ações"} hoje · Próxima: ${status.proxima.horario} · ${status.proxima.titulo}`
+        : `${status.total} ${status.total === 1 ? "ação" : "ações"} hoje · Nenhuma atividade pendente hoje.`;
+      document.querySelectorAll("[data-resumo-espelho]").forEach((item) => { item.textContent = resumoEspelho; });
+    }
+
+    let statusDoDiaPromise = null;
+
+    async function atualizarStatusDoDiaDesktop() {
+      if (!emLayoutDesktop()) return null;
+      if (statusDoDiaPromise) return statusDoDiaPromise;
+      statusDoDiaPromise = (async () => {
+        const hoje = new Date();
+        const paramsMes = new URLSearchParams({ mes: String(hoje.getMonth() + 1), ano: String(hoje.getFullYear()) });
+        const buscarLista = async (url) => {
+          try {
+            const res = await fetch(url, { headers: authHeaders() });
+            if (!res.ok) return [];
+            const dados = await res.json();
+            return Array.isArray(dados) ? dados : [];
+          } catch {
+            return [];
+          }
+        };
+        const [tarefas, checklist, notas, marcos, lancamentos] = await Promise.all([
+          buscarLista(API + "/tarefas"),
+          buscarLista(API + "/checklist"),
+          buscarLista(API + "/notes"),
+          buscarLista(API + "/marcos-operacionais"),
+          buscarLista(API + "/financas/lancamentos?" + paramsMes.toString()),
+        ]);
+        const googleHoje = googleAgendaCache.filter((item) => normalizarDataParaISO(item?.data || "") === dataHojeISO());
+        const status = calcularStatusDoDia({ tarefas, compromissos: [...tarefas, ...googleHoje], checklist, notas, marcos, lancamentos });
+        renderizarStatusDoDiaDesktop(status);
+        return status;
+      })();
+      try {
+        return await statusDoDiaPromise;
+      } finally {
+        statusDoDiaPromise = null;
+      }
     }
 
     // ── FERIADOS ─────────────────────────────────────────────────
@@ -15183,11 +15739,119 @@
     }
 
     function obterMetaTimelineChecklist(item) {
-      const partes = [];
-      if (item?.frequencia) partes.push(item.frequencia);
-      const origem = obterRotuloOrigemChecklist(item);
-      if (origem) partes.push(origem);
-      return partes.join(" · ");
+      return obterRotuloOrigemChecklist(item);
+    }
+
+    function obterRecorrenciaChecklist(item) {
+      const frequencia = String(item?.frequencia || item?.frequencia_interna || "Rotina").trim();
+      return frequencia.toLocaleUpperCase("pt-BR");
+    }
+
+    function chaveRotinasPuladasHoje() {
+      return `prioriza_rotinas_puladas_${authUser?.id || "local"}_${dataHojeISO()}`;
+    }
+
+    function obterRotinasPuladasHoje() {
+      try {
+        const dados = JSON.parse(localStorage.getItem(chaveRotinasPuladasHoje()) || "[]");
+        return new Set(Array.isArray(dados) ? dados.map(String) : []);
+      } catch {
+        return new Set();
+      }
+    }
+
+    function rotinaFoiPuladaHoje(itemId) {
+      return obterRotinasPuladasHoje().has(String(itemId));
+    }
+
+    function pularRotinaApenasHoje(itemId) {
+      const puladas = obterRotinasPuladasHoje();
+      puladas.add(String(itemId));
+      try {
+        localStorage.setItem(chaveRotinasPuladasHoje(), JSON.stringify([...puladas]));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function editarRotinaChecklist(item) {
+      const titulo = await modal.perguntar(`Título atual: ${item.titulo || ""}`, "Editar rotina", item.titulo || "");
+      if (titulo === null) return false;
+      const origem = await modal.perguntar(`Origem atual: ${obterRotuloOrigemChecklist(item)}`, "Editar origem", item.origem || "");
+      if (origem === null) return false;
+      const frequencia = await modal.perguntar(`Recorrência atual: ${item.frequencia || "Semanal"}`, "Editar recorrência", item.frequencia || "Semanal");
+      if (frequencia === null) return false;
+      const params = new URLSearchParams({
+        titulo: titulo.trim() || item.titulo || "",
+        origem: origem.trim() || item.origem || "",
+        frequencia: frequencia.trim() || item.frequencia || "Semanal",
+      });
+      try {
+        const res = await fetch(API + `/checklist/${item.id}?` + params.toString(), { method: "PUT", headers: authHeaders() });
+        if (!res.ok) throw new Error("Não foi possível editar a rotina.");
+        await recarregarBlocosComRolagem({ checklistHoje: true, checklistGeral: true, pessoal: true });
+        return true;
+      } catch (e) {
+        console.error(e);
+        await modal.alerta(e.message || "Não foi possível editar a rotina.", "Erro");
+        return false;
+      }
+    }
+
+    function fecharMenusRotinaDesktop(excecao = null) {
+      document.querySelectorAll(".timeline-menu-popover").forEach((menu) => {
+        if (menu !== excecao) menu.hidden = true;
+      });
+    }
+
+    function criarMenuRotinaDesktop(item) {
+      const wrap = document.createElement("div");
+      wrap.className = "timeline-action-menu";
+      const trigger = document.createElement("button");
+      trigger.type = "button";
+      trigger.className = "timeline-menu-trigger";
+      trigger.title = "Ações da rotina";
+      trigger.setAttribute("aria-label", `Ações de ${item.titulo}`);
+      trigger.setAttribute("aria-expanded", "false");
+      trigger.innerHTML = `<svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><circle cx="56" cy="128" r="14"/><circle cx="128" cy="128" r="14"/><circle cx="200" cy="128" r="14"/></svg>`;
+      const menu = document.createElement("div");
+      menu.className = "timeline-menu-popover";
+      menu.hidden = true;
+
+      const adicionarItem = (texto, acao, danger = false) => {
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.className = `timeline-menu-item${danger ? " danger" : ""}`;
+        botao.textContent = texto;
+        botao.addEventListener("click", async (ev) => {
+          ev.stopPropagation();
+          menu.hidden = true;
+          trigger.setAttribute("aria-expanded", "false");
+          await acao();
+        });
+        menu.appendChild(botao);
+      };
+
+      adicionarItem("Editar", () => editarRotinaChecklist(item));
+      adicionarItem("Pular apenas hoje", async () => {
+        pularRotinaApenasHoje(item.id);
+        renderizarTimelineOperacionalDesktop();
+      });
+      adicionarItem("Excluir", async () => {
+        if (!await modal.confirmar(`Remover definitivamente “${item.titulo}”?`, "Excluir rotina", "vermelho")) return;
+        await excluirChecklistItem(item.id);
+        await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
+      }, true);
+
+      trigger.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        const abrir = menu.hidden;
+        fecharMenusRotinaDesktop(abrir ? menu : null);
+        menu.hidden = !abrir;
+        trigger.setAttribute("aria-expanded", abrir ? "true" : "false");
+      });
+      wrap.append(trigger, menu);
+      return wrap;
     }
 
     function obterDadosTimelineOperacional() {
@@ -15203,7 +15867,7 @@
         .sort((a, b) => (a._ordem ?? 9999) - (b._ordem ?? 9999));
 
       const checklistHoje = checklistHojeCache
-        .filter((item) => item.ativo !== false && normalizarStatusChecklist(item.status || "pendente") !== "feito")
+        .filter((item) => item.ativo !== false && normalizarStatusChecklist(item.status || "pendente") !== "feito" && !rotinaFoiPuladaHoje(item.id))
         .map((item, idx) => ({ ...item, _tipo: "checklist", _ordem: agoraMin + 0.25 + (idx * 0.01) }));
 
       const agendaPassada = agendaHoje.filter((item) => !ehStatusFeito(item.status) && (item.inicio_min ?? 9999) < agoraMin);
@@ -15281,7 +15945,7 @@
         stamp.className = "timeline-stamp";
         stamp.textContent = item._tipo === "agenda"
           ? (item.all_day ? (item.blocked ? "Bloqueado" : "Dia todo") : (item.hora_inicio || "--:--"))
-          : (status === "em_andamento" ? "Agora" : "Rotina");
+          : obterRecorrenciaChecklist(item);
 
         const body = document.createElement("div");
         body.className = "timeline-body";
@@ -15291,9 +15955,7 @@
 
         const kind = document.createElement("div");
         kind.className = "timeline-kind";
-        kind.textContent = item._tipo === "agenda"
-          ? ((String(item.origem || "").toUpperCase() === "PESSOAL") ? "Pessoal" : "Compromisso")
-          : "Rotina";
+        kind.textContent = (String(item.origem || "").toUpperCase() === "PESSOAL") ? "Pessoal" : "Compromisso";
 
         const title = document.createElement("div");
         title.className = "timeline-title";
@@ -15305,7 +15967,7 @@
           ? (obterResumoAgendaHojeDesktop(item) || "Prioriza")
           : (obterMetaTimelineChecklist(item) || "Rotina do dia");
 
-        header.appendChild(kind);
+        if (item._tipo === "agenda") header.appendChild(kind);
         header.appendChild(title);
         body.appendChild(header);
         body.appendChild(meta);
@@ -15422,19 +16084,7 @@
           });
           actions.appendChild(toggle);
 
-          const excluir = document.createElement("button");
-          excluir.type = "button";
-          excluir.className = "timeline-icon-btn";
-          excluir.textContent = "×";
-          excluir.title = "Excluir rotina";
-          excluir.setAttribute("aria-label", `Excluir ${item.titulo}`);
-          excluir.addEventListener("click", async (ev) => {
-            ev.stopPropagation();
-            if (!await modal.confirmar(`Remover "${item.titulo}"?`, "Excluir rotina", "vermelho")) return;
-            await excluirChecklistItem(item.id);
-            await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
-          });
-          actions.appendChild(excluir);
+          actions.appendChild(criarMenuRotinaDesktop(item));
         }
 
         row.appendChild(stamp);
@@ -16164,17 +16814,21 @@
           if (ehStatusAndamento(t.status)) andamento++;
         });
 
-        try {
-          const resC = await fetch(API+"/checklist",{headers:authHeaders()});
-          const chkItens = await resC.json();
-          const chkBase = Array.isArray(chkItens) ? chkItens.filter(i => i.ativo !== false) : [];
-          const chkVisiveisHoje = chkBase.filter(i => i.pode_mostrar_hoje !== false);
-          const chkConcluidasOcultas = chkBase.filter(i => i.pode_mostrar_hoje === false && ehStatusFeito(i.status));
-          const chkFeitos = chkVisiveisHoje.filter(i => ehStatusFeito(i.status)).length + chkConcluidasOcultas.length;
-          const chkTotal  = chkVisiveisHoje.length + chkConcluidasOcultas.length;
-          definirResumoVisual(`${feitos} tarefa${feitos!==1?"s":""} concluída${feitos!==1?"s":""} · ${andamento} em andamento · ${chkFeitos}/${chkTotal} rotinas`);
-        } catch {
-          definirResumoVisual(`${feitos} tarefa${feitos!==1?"s":""} concluída${feitos!==1?"s":""} · ${andamento} em andamento`);
+        if (emLayoutDesktop()) {
+          await atualizarStatusDoDiaDesktop();
+        } else {
+          try {
+            const resC = await fetch(API+"/checklist",{headers:authHeaders()});
+            const chkItens = await resC.json();
+            const chkBase = Array.isArray(chkItens) ? chkItens.filter(i => i.ativo !== false) : [];
+            const chkVisiveisHoje = chkBase.filter(i => i.pode_mostrar_hoje !== false);
+            const chkConcluidasOcultas = chkBase.filter(i => i.pode_mostrar_hoje === false && ehStatusFeito(i.status));
+            const chkFeitos = chkVisiveisHoje.filter(i => ehStatusFeito(i.status)).length + chkConcluidasOcultas.length;
+            const chkTotal  = chkVisiveisHoje.length + chkConcluidasOcultas.length;
+            definirResumoVisual(`${feitos} tarefa${feitos!==1?"s":""} concluída${feitos!==1?"s":""} · ${andamento} em andamento · ${chkFeitos}/${chkTotal} rotinas`);
+          } catch {
+            definirResumoVisual(`${feitos} tarefa${feitos!==1?"s":""} concluída${feitos!==1?"s":""} · ${andamento} em andamento`);
+          }
         }
 
         const combinadaHoje = agendaDoDiaCombinada(dataHojeISO());
@@ -16389,6 +17043,10 @@
 
     // ── RECALCULAR RESUMO A PARTIR DO CACHE (sem chamada de servidor) ──
     async function recalcularResumoBar() {
+      if (emLayoutDesktop()) {
+        await atualizarStatusDoDiaDesktop();
+        return;
+      }
       // Conta a partir do cache local (já atualizado pela bolinha)
       const hojeItens = tarefasAgendaCache.filter(t => t.ativo !== false && !ehStatusCancelada(t.status) && dataEhHoje(t.data || ""));
       let feitos = 0, andamento = 0;
@@ -17422,6 +18080,235 @@
     if (checklistDiv) checklistDiv.innerHTML = desktop ? "<small>Erro ao carregar rotinas pessoais.</small>" : "<small>Erro ao carregar checklist pessoal.</small>";
   }
 }
+    // ── MARCOS OPERACIONAIS ──────────────────────────────────────
+    function classeSeveridadeMarco(severidade = "") {
+      return `severidade-${String(severidade).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()}`;
+    }
+
+    function formatarDataMarco(iso = "") {
+      const partes = String(iso).split("-");
+      return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : iso;
+    }
+
+    function toggleFormMarcoOperacional(forceOpen = null, marco = null) {
+      const wrap = document.getElementById("marco-form-wrap");
+      if (!wrap) return;
+      const abrir = forceOpen === null ? !wrap.classList.contains("open") : !!forceOpen;
+      wrap.hidden = !abrir;
+      wrap.classList.toggle("open", abrir);
+      if (!abrir) return;
+      const editando = !!marco?.id;
+      document.getElementById("marco-form-title").textContent = editando ? "Editar Marco Operacional" : "Novo Marco Operacional";
+      document.getElementById("marco-id").value = editando ? String(marco.id) : "";
+      document.getElementById("marco-titulo").value = marco?.titulo || "";
+      document.getElementById("marco-data").value = marco?.data || calendarioDiaSelecionadoISO || dataHojeISO();
+      document.getElementById("marco-categoria").value = marco?.categoria || "TI";
+      document.getElementById("marco-severidade").value = marco?.severidade || "Média";
+      document.getElementById("marco-descricao").value = marco?.descricao || "";
+      setTimeout(() => document.getElementById("marco-titulo")?.focus(), 50);
+    }
+
+    function criarCardMarcoOperacional(marco, { mostrarData = false, resultadoBusca = false } = {}) {
+      const card = document.createElement("article");
+      card.className = `marco-operacional-card ${classeSeveridadeMarco(marco.severidade)}`;
+      if (resultadoBusca) card.classList.add("marco-search-result");
+
+      const conteudo = document.createElement("div");
+      const kicker = document.createElement("div");
+      kicker.className = "marco-operacional-kicker";
+      kicker.textContent = `Marco Operacional · ${marco.severidade} · ${marco.categoria}`;
+      const titulo = document.createElement("div");
+      titulo.className = "marco-operacional-title";
+      titulo.textContent = marco.titulo;
+      conteudo.append(kicker, titulo);
+      if (marco.descricao) {
+        const descricao = document.createElement("div");
+        descricao.className = "marco-operacional-description";
+        descricao.textContent = marco.descricao;
+        conteudo.appendChild(descricao);
+      }
+      if (mostrarData) {
+        const data = document.createElement("div");
+        data.className = "marco-search-date";
+        data.textContent = formatarDataMarco(marco.data);
+        conteudo.appendChild(data);
+      }
+
+      const acoes = document.createElement("div");
+      acoes.className = "marco-operacional-actions";
+      const editar = document.createElement("button");
+      editar.type = "button";
+      editar.className = "agenda-icon-btn";
+      editar.title = "Editar Marco Operacional";
+      editar.setAttribute("aria-label", "Editar Marco Operacional");
+      editar.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M180 32l44 44L72 228H28v-44L180 32z" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 60l44 44" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
+      editar.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        toggleFormMarcoOperacional(true, marco);
+      });
+      const excluir = document.createElement("button");
+      excluir.type = "button";
+      excluir.className = "agenda-icon-btn";
+      excluir.title = "Excluir Marco Operacional";
+      excluir.setAttribute("aria-label", "Excluir Marco Operacional");
+      excluir.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M40 72h176M96 104v72M160 104v72M64 72l8 136h112l8-136M88 72l8-32h64l8 32" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      excluir.addEventListener("click", async (ev) => {
+        ev.stopPropagation();
+        await excluirMarcoOperacional(marco);
+      });
+      acoes.append(editar, excluir);
+      card.append(conteudo, acoes);
+      if (resultadoBusca) {
+        card.addEventListener("click", () => selecionarDataDeMarco(marco.data));
+      }
+      return card;
+    }
+
+    function renderizarMarcosDoDia(iso) {
+      const container = document.getElementById("marcos-operacionais-dia");
+      if (!container) return;
+      const marcos = marcosOperacionaisCache.filter((marco) => marco.ativo !== false && marco.data === iso);
+      container.innerHTML = "";
+      container.hidden = marcos.length === 0;
+      marcos.forEach((marco) => container.appendChild(criarCardMarcoOperacional(marco)));
+    }
+
+    async function carregarMarcosOperacionaisMes() {
+      const ano = calendarioMesAtual.getFullYear();
+      const mes = calendarioMesAtual.getMonth();
+      const primeiroMes = new Date(ano, mes, 1);
+      const inicio = new Date(ano, mes, 1 - primeiroMes.getDay());
+      const fim = new Date(inicio);
+      fim.setDate(inicio.getDate() + 41);
+      const params = new URLSearchParams({ data_from: dateToISO(inicio), data_to: dateToISO(fim) });
+      try {
+        const res = await fetch(API + "/marcos-operacionais?" + params.toString(), { headers: authHeaders() });
+        const dados = await res.json().catch(() => []);
+        if (!res.ok) throw new Error(dados?.detail || "Não foi possível carregar os Marcos Operacionais.");
+        marcosOperacionaisCache = Array.isArray(dados) ? dados : [];
+      } catch (e) {
+        console.error(e);
+        marcosOperacionaisCache = [];
+      }
+    }
+
+    async function salvarMarcoOperacional(ev) {
+      ev.preventDefault();
+      const id = document.getElementById("marco-id")?.value || "";
+      const payload = {
+        titulo: document.getElementById("marco-titulo")?.value.trim() || "",
+        data: document.getElementById("marco-data")?.value || "",
+        categoria: document.getElementById("marco-categoria")?.value || "Outro",
+        severidade: document.getElementById("marco-severidade")?.value || "Média",
+        descricao: document.getElementById("marco-descricao")?.value.trim() || "",
+      };
+      if (!payload.titulo || !payload.data) {
+        await modal.alerta("Preencha Título e Data.", "Marco Operacional");
+        return;
+      }
+      const btn = document.getElementById("btn-salvar-marco");
+      if (btn) btn.disabled = true;
+      try {
+        const res = await fetch(API + "/marcos-operacionais" + (id ? `/${id}` : ""), {
+          method: id ? "PUT" : "POST",
+          headers: authHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify(payload),
+        });
+        const dados = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(dados?.detail || "Não foi possível salvar o Marco Operacional.");
+        calendarioDiaSelecionadoISO = payload.data;
+        const [ano, mes] = payload.data.split("-").map(Number);
+        calendarioMesAtual = new Date(ano, mes - 1, 1);
+        toggleFormMarcoOperacional(false);
+        await carregarMarcosOperacionaisMes();
+        montarCalendarioMes();
+        preencherAgendaDiaSelecionado();
+        await atualizarResumoBar();
+      } catch (e) {
+        await modal.alerta(e.message || "Não foi possível salvar o Marco Operacional.", "Erro");
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function excluirMarcoOperacional(marco) {
+      const ok = await modal.confirmar(`Excluir o Marco Operacional “${marco.titulo}”?`, "Excluir Marco", "vermelho");
+      if (!ok) return;
+      try {
+        const res = await fetch(API + `/marcos-operacionais/${marco.id}`, { method: "DELETE", headers: authHeaders() });
+        const dados = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(dados?.detail || "Não foi possível excluir o Marco Operacional.");
+        await carregarMarcosOperacionaisMes();
+        montarCalendarioMes();
+        preencherAgendaDiaSelecionado();
+        await atualizarResumoBar();
+        const termo = document.getElementById("busca-marcos-texto")?.value.trim();
+        if (termo) await buscarMarcosOperacionais(termo);
+      } catch (e) {
+        await modal.alerta(e.message || "Não foi possível excluir o Marco Operacional.", "Erro");
+      }
+    }
+
+    async function buscarMarcosOperacionais(termoInformado = "") {
+      const termo = String(termoInformado || document.getElementById("busca-marcos-texto")?.value || "").trim();
+      if (termo.length < 2) {
+        await modal.alerta("Digite pelo menos 2 caracteres para buscar.", "Buscar Marcos");
+        return;
+      }
+      const container = document.getElementById("marcos-search-results");
+      const limpar = document.getElementById("btn-limpar-busca-marcos");
+      if (!container) return;
+      container.hidden = false;
+      container.innerHTML = '<p class="marcos-search-heading">Buscando registros...</p>';
+      if (limpar) limpar.hidden = false;
+      try {
+        const res = await fetch(API + "/marcos-operacionais/buscar?" + new URLSearchParams({ q: termo }), { headers: authHeaders() });
+        const dados = await res.json().catch(() => []);
+        if (!res.ok) throw new Error(dados?.detail || "Não foi possível realizar a busca.");
+        container.innerHTML = "";
+        const titulo = document.createElement("p");
+        titulo.className = "marcos-search-heading";
+        titulo.textContent = `${dados.length} registro${dados.length === 1 ? "" : "s"} encontrado${dados.length === 1 ? "" : "s"}`;
+        container.appendChild(titulo);
+        if (!dados.length) {
+          const vazio = document.createElement("small");
+          vazio.textContent = "Nenhum Marco Operacional corresponde à busca.";
+          container.appendChild(vazio);
+          return;
+        }
+        dados.forEach((marco) => container.appendChild(criarCardMarcoOperacional(marco, { mostrarData: true, resultadoBusca: true })));
+      } catch (e) {
+        container.innerHTML = "";
+        const erro = document.createElement("small");
+        erro.textContent = e.message || "Não foi possível realizar a busca.";
+        container.appendChild(erro);
+      }
+    }
+
+    function limparBuscaMarcosOperacionais() {
+      const input = document.getElementById("busca-marcos-texto");
+      const container = document.getElementById("marcos-search-results");
+      const limpar = document.getElementById("btn-limpar-busca-marcos");
+      if (input) input.value = "";
+      if (container) {
+        container.innerHTML = "";
+        container.hidden = true;
+      }
+      if (limpar) limpar.hidden = true;
+    }
+
+    function selecionarDataDeMarco(dataMarco) {
+      const [ano, mes] = String(dataMarco).split("-").map(Number);
+      if (!ano || !mes) return;
+      calendarioDiaSelecionadoISO = dataMarco;
+      calendarioMesAtual = new Date(ano, mes - 1, 1);
+      carregarMarcosOperacionaisMes().then(() => {
+        montarCalendarioMes();
+        preencherAgendaDiaSelecionado();
+        rolarParaAgendaDiaSelecionado();
+      });
+    }
+
     // ── CALENDÁRIO ────────────────────────────────────────────────
     let calendarioMesAtual          = new Date();
     let calendarioDiaSelecionadoISO = dataHojeISO();
@@ -17452,7 +18339,11 @@
 
     function indicadoresDoDia(iso) {
       const itens = agendaDoDiaCombinada(iso);
-      return itens.map(tipoIndicadorCalendario);
+      const indicadores = itens.map(tipoIndicadorCalendario);
+      if (marcosOperacionaisCache.some((marco) => marco.ativo !== false && marco.data === iso)) {
+        indicadores.unshift("marco");
+      }
+      return indicadores;
     }
 
     function rolarParaAgendaDiaSelecionado() {
@@ -17531,10 +18422,11 @@
 
         cel.appendChild(topo);
         cel.appendChild(trilhas);
-        cel.addEventListener("click", () => {
+        cel.addEventListener("click", async () => {
           calendarioDiaSelecionadoISO = iso;
           if (dia.getMonth() !== mes) {
             calendarioMesAtual = new Date(dia.getFullYear(), dia.getMonth(), 1);
+            await carregarMarcosOperacionaisMes();
           }
           montarCalendarioMes();
           preencherAgendaDiaSelecionado();
@@ -17552,6 +18444,7 @@
       if (!lista || !label) return;
       label.textContent = formatarAgendaDiaExtenso(calendarioDiaSelecionadoISO);
       if (inputData) inputData.value = calendarioDiaSelecionadoISO;
+      renderizarMarcosDoDia(calendarioDiaSelecionadoISO);
       const itensDoDia = agendaDoDiaCombinada(calendarioDiaSelecionadoISO);
       if (itensDoDia.length === 0) {
         lista.innerHTML = '<p class="agenda-dia-vazio">Nenhum compromisso neste dia.</p>';
@@ -17657,12 +18550,43 @@
         if (!Array.isArray(tarefasAgendaCache)) tarefasAgendaCache = [];
         await carregarStatusGoogleAgenda();
         await carregarEventosGoogleAgendaMes();
+        await carregarMarcosOperacionaisMes();
         montarCalendarioMes();
         preencherAgendaDiaSelecionado();
       } catch(e){console.error(e);}
     }
 
     // ── NOTAS ─────────────────────────────────────────────────────
+    function ajustarCategoriasNotasUI() {
+      const select = document.getElementById("nota-tipo");
+      if (!select) return;
+      const desktop = emLayoutDesktop();
+      const geral = select.querySelector('option[value="GERAL"]');
+      const trabalho = select.querySelector('option[value="TRABALHO"]');
+      if (geral) {
+        geral.hidden = desktop;
+        geral.disabled = desktop;
+      }
+      if (trabalho) trabalho.textContent = desktop ? "Trabalho" : "Profissional";
+      if (desktop && select.value === "GERAL") select.value = "TRABALHO";
+    }
+
+    function toggleFormNotaDesktop(forceOpen = null) {
+      if (!emLayoutDesktop()) return;
+      const screen = document.getElementById("screen-notas");
+      const btn = document.getElementById("btn-toggle-form-nota");
+      if (!screen || !btn) return;
+      const abrir = forceOpen === null ? !screen.classList.contains("notas-form-open") : !!forceOpen;
+      screen.classList.toggle("notas-form-open", abrir);
+      btn.classList.toggle("is-open", abrir);
+      btn.setAttribute("aria-expanded", abrir ? "true" : "false");
+      btn.querySelector("span").textContent = abrir ? "Fechar" : "Nova Nota";
+      if (abrir) {
+        ajustarCategoriasNotasUI();
+        setTimeout(() => document.getElementById("nota-texto")?.focus(), 50);
+      }
+    }
+
     async function salvarNota(texto,data,tipo) {
       const body=new URLSearchParams({texto,data:data||"",tipo:tipo||"GERAL"});
       const res=await fetch(API+"/notes",{method:"POST",headers:authHeaders({"Content-Type":"application/x-www-form-urlencoded"}),body});
@@ -17705,22 +18629,31 @@
           const textoEl=document.createElement("div"); textoEl.className=notaFeita?"nota-texto nota-status-feito":"nota-texto"; textoEl.textContent=nota.texto;
           const dataEl=document.createElement("div"); dataEl.className="nota-data"; dataEl.textContent=`${nota.data?formatarDataCurtaBR(nota.data):""} · ${nota.tipo||"GERAL"}`;
 
+          const categoria = document.createElement("span");
+          categoria.className = `nota-category-marker${notaPessoal ? " pessoal" : ""}`;
+          categoria.title = notaPessoal ? "Pessoal" : "Trabalho";
+          categoria.setAttribute("aria-label", notaPessoal ? "Categoria Pessoal" : "Categoria Trabalho");
+          if (emLayoutDesktop()) {
+            dataEl.textContent = `${nota.data ? formatarDataCurtaBR(nota.data) + " · " : ""}${notaPessoal ? "Pessoal" : "Trabalho"}`;
+          }
+
           dot.addEventListener("click", async (ev) => {
             ev.preventDefault();
             ev.stopPropagation();
             await atualizarStatusNota(nota.id, notaFeita ? "pendente" : "feito");
             await carregarNotas();
+            await atualizarResumoBar();
           });
 
-          info.appendChild(textoEl); info.appendChild(dataEl); div.appendChild(dot); div.appendChild(info);
+          info.appendChild(textoEl); info.appendChild(dataEl); div.appendChild(categoria); div.appendChild(dot); div.appendChild(info);
           adicionarSwipe(div,
-            ()=>{ mostrarFlashFull("success"); setTimeout(async()=>{ await atualizarStatusNota(nota.id, "feito"); await carregarNotas(); },FLASH_DURATION_MS); },
+            ()=>{ mostrarFlashFull("success"); setTimeout(async()=>{ await atualizarStatusNota(nota.id, "feito"); await carregarNotas(); await atualizarResumoBar(); },FLASH_DURATION_MS); },
             ()=>{
               mostrarFlashFull("danger");
               mostrarToastUndo(
                 `Nota será excluída`,
-                async () => { await fetch(API+"/notes_delete?"+new URLSearchParams({note_id:String(nota.id)}),{method:"POST",headers:authHeaders()}); await carregarNotas(); },
-                async () => { await carregarNotas(); }
+                async () => { await fetch(API+"/notes_delete?"+new URLSearchParams({note_id:String(nota.id)}),{method:"POST",headers:authHeaders()}); await carregarNotas(); await atualizarResumoBar(); },
+                async () => { await carregarNotas(); await atualizarResumoBar(); }
               );
             },
             { previewRightClass: "swipe-preview-right", previewLeftClass: "swipe-preview-left-danger" }
@@ -17997,6 +18930,9 @@
             setTimeout(carregarGestaoUsuariosAdmin, 120);
           }
         }
+        if (id === "screen-agenda") {
+          setTimeout(atualizarAgendaMesEDia, 20);
+        }
         if (id === "screen-financas") {
           atualizarLogoFinanceiroFinancas();
           atualizarPlanilhaFinanceiraFinancas();
@@ -18091,11 +19027,15 @@
         botao.addEventListener("click", () => aplicarTema(botao.dataset.themeOption));
       });
       document.getElementById("btn-rever-introducao-ajuda")?.addEventListener("click", () => abrirOnboarding({ forcar: true }));
+      document.getElementById("btn-toggle-form-nota")?.addEventListener("click", () => toggleFormNotaDesktop());
+      document.addEventListener("click", () => fecharMenusRotinaDesktop());
+      ajustarCategoriasNotasUI();
+      window.addEventListener("resize", ajustarCategoriasNotasUI);
 
-      document.getElementById("btn-cal-prev")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()-1); montarCalendarioMes(); });
-      document.getElementById("btn-cal-next")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()+1); montarCalendarioMes(); });
-      document.getElementById("btn-desktop-mini-prev")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()-1); montarCalendarioMes(); });
-      document.getElementById("btn-desktop-mini-next")?.addEventListener("click",()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()+1); montarCalendarioMes(); });
+      document.getElementById("btn-cal-prev")?.addEventListener("click",async()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()-1); await carregarMarcosOperacionaisMes(); montarCalendarioMes(); preencherAgendaDiaSelecionado(); });
+      document.getElementById("btn-cal-next")?.addEventListener("click",async()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()+1); await carregarMarcosOperacionaisMes(); montarCalendarioMes(); preencherAgendaDiaSelecionado(); });
+      document.getElementById("btn-desktop-mini-prev")?.addEventListener("click",async()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()-1); await carregarMarcosOperacionaisMes(); montarCalendarioMes(); preencherAgendaDiaSelecionado(); });
+      document.getElementById("btn-desktop-mini-next")?.addEventListener("click",async()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()+1); await carregarMarcosOperacionaisMes(); montarCalendarioMes(); preencherAgendaDiaSelecionado(); });
       document.getElementById("btn-voltar-calendario")?.addEventListener("click",()=>{ document.getElementById("calendar-container").style.display="block"; document.getElementById("agenda-dia-container").style.display="none"; });
 
       document.getElementById("btn-toggle-form-checklist")?.addEventListener("click", () => toggleFormChecklist());
@@ -18117,6 +19057,18 @@
       document.getElementById("agenda-form-wrap")?.addEventListener("click", (ev) => {
         if (ev.target?.id === "agenda-form-wrap") toggleFormAgenda(false);
       });
+      document.getElementById("btn-registrar-marco")?.addEventListener("click", () => toggleFormMarcoOperacional(true));
+      document.getElementById("btn-fechar-form-marco")?.addEventListener("click", () => toggleFormMarcoOperacional(false));
+      document.getElementById("btn-cancelar-form-marco")?.addEventListener("click", () => toggleFormMarcoOperacional(false));
+      document.getElementById("marco-form-wrap")?.addEventListener("click", (ev) => {
+        if (ev.target?.id === "marco-form-wrap") toggleFormMarcoOperacional(false);
+      });
+      document.getElementById("form-marco-operacional")?.addEventListener("submit", salvarMarcoOperacional);
+      document.getElementById("form-busca-marcos")?.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        await buscarMarcosOperacionais();
+      });
+      document.getElementById("btn-limpar-busca-marcos")?.addEventListener("click", limparBuscaMarcosOperacionais);
       document.getElementById("agenda-repetir")?.addEventListener("change", atualizarCampoRecorrenciaAgenda);
       document.getElementById("agenda-all-day")?.addEventListener("change", atualizarOpcoesDiaInteiroAgenda);
       document.getElementById("agenda-blocked")?.addEventListener("change", atualizarOpcoesDiaInteiroAgenda);
@@ -18238,7 +19190,15 @@
         const tipo =document.getElementById("nota-tipo").value;
         if(!texto) return;
         const btn=document.getElementById("btn-salvar-nota"); btn.disabled=true;
-        try { await salvarNota(texto,data,tipo); document.getElementById("nota-texto").value=""; document.getElementById("nota-data").value=""; document.getElementById("nota-tipo").value="GERAL"; await carregarNotas(); }
+        try {
+          await salvarNota(texto,data,tipo);
+          document.getElementById("nota-texto").value="";
+          document.getElementById("nota-data").value="";
+          document.getElementById("nota-tipo").value=emLayoutDesktop()?"TRABALHO":"GERAL";
+          await carregarNotas();
+          await atualizarResumoBar();
+          toggleFormNotaDesktop(false);
+        }
         finally{btn.disabled=false;}
       });
 
@@ -18269,7 +19229,8 @@
           const t = dados.tarefas?.length || 0;
           const c = dados.checklist?.length || 0;
           const n = dados.notas?.length || 0;
-          statusEl.textContent = `✅ Backup baixado: ${t} tarefas, ${c} rotinas, ${n} notas.`;
+          const m = dados.marcos_operacionais?.length || 0;
+          statusEl.textContent = `Backup baixado: ${t} tarefas, ${c} rotinas, ${n} notas e ${m} marcos.`;
           statusEl.style.color = "#10b981";
         } catch(e) {
           console.error(e);
