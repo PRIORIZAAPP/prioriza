@@ -9708,6 +9708,38 @@
         box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16) !important;
       }
 
+      /* SPRINT 05.1: refinamentos pós Product Review no Desktop */
+      .desktop-sidebar-status {
+        padding-top: 18px;
+        padding-bottom: 28px;
+      }
+
+      .desktop-status-day-next {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+
+      #card-agora .agora-horario {
+        font-size: 15px;
+        font-weight: 650;
+        color: #334155;
+      }
+
+      .timeline-row.agenda .timeline-stamp {
+        font-size: 19px;
+        font-weight: 750;
+        color: #172033;
+      }
+
+      .mic-button {
+        min-width: 164px;
+        padding-right: 18px;
+        padding-left: 18px;
+        gap: 10px;
+      }
+
       @keyframes sprint05Feedback {
         0% { opacity: 0; transform: translateY(6px) scale(0.96); }
         20%, 72% { opacity: 1; transform: translateY(0) scale(1); }
@@ -16050,7 +16082,7 @@
 
       statusEl.textContent = `Próximo em ${estado.faltamMin} min`;
       statusEl.classList.add("proximo");
-      acoesEl.appendChild(criarBotaoAgora("Preparar", "", () => {
+      acoesEl.appendChild(criarBotaoAgora(emLayoutDesktop() ? "Ver compromisso" : "Preparar", "", () => {
         prepararProximoCompromisso(tarefa);
       }));
     }
@@ -16354,9 +16386,10 @@
         const header = document.createElement("div");
         header.className = "timeline-row-head";
 
+        const categoriaAgenda = (String(item.origem || "").toUpperCase() === "PESSOAL") ? "Pessoal" : "Profissional";
         const kind = document.createElement("div");
         kind.className = "timeline-kind";
-        kind.textContent = (String(item.origem || "").toUpperCase() === "PESSOAL") ? "Pessoal" : "Compromisso";
+        kind.textContent = categoriaAgenda;
 
         const title = document.createElement("div");
         title.className = "timeline-title";
@@ -16364,14 +16397,19 @@
 
         const meta = document.createElement("div");
         meta.className = "timeline-meta";
-        meta.textContent = item._tipo === "agenda"
-          ? (obterResumoAgendaHojeDesktop(item) || "Prioriza")
-          : (obterMetaTimelineChecklist(item) || "Rotina do dia");
+        if (item._tipo === "agenda") {
+          const partesResumo = String(obterResumoAgendaHojeDesktop(item) || "")
+            .split(" · ")
+            .filter((parte) => parte.trim().toLowerCase() !== categoriaAgenda.toLowerCase());
+          meta.textContent = partesResumo.join(" · ");
+        } else {
+          meta.textContent = obterMetaTimelineChecklist(item) || "Rotina do dia";
+        }
 
         if (item._tipo === "agenda") header.appendChild(kind);
         header.appendChild(title);
         body.appendChild(header);
-        body.appendChild(meta);
+        if (meta.textContent) body.appendChild(meta);
 
         const actions = document.createElement("div");
         actions.className = "timeline-actions";
