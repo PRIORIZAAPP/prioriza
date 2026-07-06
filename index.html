@@ -9372,6 +9372,25 @@
         border-color: var(--cor-tema-escura);
         background: var(--cor-tema-escura);
       }
+
+      .btn-primary,
+      .btn-primary:hover,
+      .btn-primary:focus,
+      .btn-primary:focus-visible,
+      .btn-primary:active,
+      .modal-btn-ok:not(.verde),
+      .modal-btn-ok:not(.verde):hover,
+      .modal-btn-ok:not(.verde):focus,
+      .modal-btn-ok:not(.verde):focus-visible,
+      .modal-btn-ok:not(.verde):active {
+        color: #ffffff !important;
+      }
+
+      .btn-primary svg,
+      .modal-btn-ok:not(.verde) svg {
+        color: #ffffff !important;
+        stroke: currentColor;
+      }
       :where(.btn-secondary, .btn-outline, .btn-ghost-action, .modal-btn-cancel, .backup-label) {
         border: 1px solid var(--desktop-border);
         background: #ffffff;
