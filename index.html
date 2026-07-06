@@ -9253,15 +9253,6 @@
       #screen-notas.notas-form-open #form-nota { display: block; }
       #screen-notas .notas-list-card .card-header { display: none; }
       #screen-notas .notas-list-card { padding-top: 10px; }
-      #screen-notas .nota-category-marker {
-        width: 7px;
-        height: 7px;
-        border-radius: 999px;
-        flex: 0 0 auto;
-        background: #2563eb;
-      }
-      #screen-notas .nota-category-marker.pessoal { background: #8b5cf6; }
-
       .timeline-action-menu { position: relative; }
       .timeline-menu-trigger {
         width: 30px;
@@ -9321,6 +9312,397 @@
       #hoje-calendar-card .desktop-mini-day { min-height: 27px; }
       #hoje-calendar-card .desktop-mini-day { font-size: 11px; }
       #hoje-calendar-card .today-calendar-note { margin-top: 8px; font-size: 11px; }
+
+      /* SPRINT 05: polimento visual e consistência Desktop */
+      .app-shell {
+        --desktop-control-height: 36px;
+        --desktop-radius-control: 8px;
+        --desktop-radius-card: 10px;
+        --desktop-border: rgba(203, 213, 225, 0.72);
+        --desktop-border-soft: rgba(226, 232, 240, 0.92);
+        --desktop-surface: #ffffff;
+        --desktop-surface-soft: #f8fafc;
+        --desktop-text: #172033;
+        --desktop-text-muted: #64748b;
+        --desktop-shadow: 0 6px 18px rgba(15, 23, 42, 0.045);
+        --desktop-transition: 180ms ease;
+      }
+
+      :where(
+        .btn-primary,
+        .btn-secondary,
+        .btn-outline,
+        .btn-ghost-action,
+        .marco-register-btn,
+        .settings-placeholder-btn,
+        .settings-soft-btn,
+        .modal-btn-ok,
+        .modal-btn-cancel,
+        .financas-back-btn,
+        .backup-label
+      ) {
+        min-height: var(--desktop-control-height);
+        min-width: 88px;
+        padding: 0 13px;
+        border-radius: var(--desktop-radius-control);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1;
+        letter-spacing: 0;
+        box-shadow: none;
+        transition:
+          background-color var(--desktop-transition),
+          border-color var(--desktop-transition),
+          color var(--desktop-transition),
+          box-shadow var(--desktop-transition),
+          transform var(--desktop-transition),
+          opacity var(--desktop-transition);
+      }
+
+      :where(.btn-primary, .modal-btn-ok) {
+        border: 1px solid var(--cor-tema);
+        background: var(--cor-tema);
+        color: #ffffff;
+      }
+      :where(.btn-primary, .modal-btn-ok):not(:disabled):hover {
+        border-color: var(--cor-tema-escura);
+        background: var(--cor-tema-escura);
+      }
+      :where(.btn-secondary, .btn-outline, .btn-ghost-action, .modal-btn-cancel, .backup-label) {
+        border: 1px solid var(--desktop-border);
+        background: #ffffff;
+        color: #475569;
+      }
+
+      :where(.pessoal-btn, .desktop-status-btn, .agora-btn, .timeline-menu-item) {
+        min-height: 32px;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0;
+        transition: background-color var(--desktop-transition), border-color var(--desktop-transition), color var(--desktop-transition), transform var(--desktop-transition), opacity var(--desktop-transition);
+      }
+
+      :where(
+        .btn-primary,
+        .btn-secondary,
+        .btn-outline,
+        .btn-ghost-action,
+        .marco-register-btn,
+        .settings-placeholder-btn,
+        .settings-soft-btn,
+        .modal-btn-ok,
+        .modal-btn-cancel,
+        .financas-back-btn,
+        .backup-label
+      ):not(:disabled):hover {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 12px rgba(15, 23, 42, 0.08);
+      }
+
+      :where(button, .backup-label, [role="button"]):disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      :where(
+        .calendar-nav-btn,
+        .desktop-mini-calendar-btn,
+        .agenda-icon-btn,
+        .agenda-icon-link,
+        .mini-add-btn,
+        .timeline-icon-btn,
+        .timeline-menu-trigger,
+        .financas-item-action-btn,
+        .settings-back-btn,
+        .marco-search-btn
+      ) {
+        width: 34px;
+        min-width: 34px;
+        height: 34px;
+        min-height: 34px;
+        padding: 0;
+        border-radius: var(--desktop-radius-control);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          background-color var(--desktop-transition),
+          border-color var(--desktop-transition),
+          color var(--desktop-transition),
+          transform var(--desktop-transition),
+          opacity var(--desktop-transition);
+      }
+
+      :where(
+        .calendar-nav-btn,
+        .desktop-mini-calendar-btn,
+        .agenda-icon-btn,
+        .agenda-icon-link,
+        .mini-add-btn,
+        .timeline-icon-btn,
+        .timeline-menu-trigger,
+        .financas-item-action-btn,
+        .settings-back-btn,
+        .marco-search-btn
+      ):not(:disabled):hover {
+        transform: translateY(-1px);
+        background-color: #f1f5f9;
+      }
+
+      :where(button, a, input, select, textarea, [role="button"]):focus-visible {
+        outline: 2px solid rgba(var(--cor-tema-rgb), 0.34);
+        outline-offset: 2px;
+      }
+
+      :where(
+        #screen-agenda > .card,
+        #screen-checklist > .card,
+        #screen-pessoal > .card,
+        .settings-profile-card,
+        .settings-group-card,
+        .settings-detail-card,
+        #screen-financas .financas-premium-card,
+        #screen-financas .financas-kpi-card
+      ) {
+        border: 1px solid var(--desktop-border-soft);
+        border-radius: var(--desktop-radius-card);
+        background: var(--desktop-surface);
+        box-shadow: var(--desktop-shadow);
+      }
+
+      #screen-agenda > .card,
+      #screen-checklist > .card,
+      #screen-pessoal > .card {
+        padding: 18px;
+      }
+
+      :where(.screen.active, .settings-page, .settings-detail-page) {
+        color: var(--desktop-text);
+      }
+      .content > .screen.active { gap: 16px; }
+
+      :where(.card-header, .financas-card-header, .settings-section-head) {
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      :where(
+        .card-header h2,
+        .financas-card-title,
+        .settings-section-title h2,
+        .settings-detail-header h2,
+        .pessoal-panel h3,
+        .timeline-title,
+        .agora-item-titulo,
+        .pessoal-titulo,
+        .nota-texto
+      ) {
+        margin: 0;
+        color: var(--desktop-text);
+        font-size: 15px;
+        font-weight: 650;
+        line-height: 1.35;
+        letter-spacing: 0;
+      }
+
+      :where(.card-header svg, .settings-section-title svg) {
+        width: 20px;
+        height: 20px;
+        flex: 0 0 20px;
+      }
+
+      :where(
+        .secao-subtitulo,
+        .financas-card-subtitle,
+        .settings-note,
+        .settings-detail-footnote,
+        .timeline-meta,
+        .nota-data,
+        .pessoal-item-meta,
+        .check-sub,
+        .agenda-meta
+      ) {
+        color: var(--desktop-text-muted);
+        font-size: 12px;
+        line-height: 1.5;
+        letter-spacing: 0;
+      }
+
+      :where(label, .settings-label) {
+        color: #475569;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1.3;
+        letter-spacing: 0;
+      }
+
+      :where(
+        input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+        select
+      ) {
+        min-height: 38px;
+        border-radius: var(--desktop-radius-control);
+        border-color: var(--desktop-border);
+        background: #ffffff;
+        color: var(--desktop-text);
+        font-size: 13px;
+        transition: border-color var(--desktop-transition), box-shadow var(--desktop-transition), background-color var(--desktop-transition);
+      }
+
+      textarea {
+        border-radius: var(--desktop-radius-control);
+        border-color: var(--desktop-border);
+        background: #ffffff;
+        color: var(--desktop-text);
+        font-size: 13px;
+        line-height: 1.5;
+        transition: border-color var(--desktop-transition), box-shadow var(--desktop-transition), background-color var(--desktop-transition);
+      }
+
+      :where(input, select, textarea):not(:disabled):hover { border-color: #94a3b8; }
+      :where(input, select, textarea):focus {
+        border-color: rgba(var(--cor-tema-rgb), 0.56);
+        box-shadow: 0 0 0 3px rgba(var(--cor-tema-rgb), 0.09);
+      }
+
+      :where(
+        .timeline-empty,
+        .agenda-dia-vazio,
+        .checklist-empty,
+        .checklist-list-empty,
+        .pessoal-bloco-vazio,
+        #screen-financas .financas-empty,
+        #screen-ajustes .admin-empty-state,
+        #lista-notas > small,
+        #agenda-dia > small,
+        #checklist-dia > small,
+        #pessoal-checklist > small,
+        #pessoal-agenda-passados > small
+      ) {
+        min-height: 72px;
+        padding: 16px 18px;
+        border: 1px dashed #d8e0ea;
+        border-radius: var(--desktop-radius-control);
+        background: var(--desktop-surface-soft);
+        color: var(--desktop-text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      :where(
+        .agenda-item,
+        .checklist-item,
+        .nota-item,
+        .pessoal-item,
+        .settings-link-row,
+        #screen-financas .financas-fixed-item,
+        #screen-financas .financas-projecao-row,
+        #screen-financas .financas-debt-row
+      ) {
+        transition: background-color var(--desktop-transition), border-color var(--desktop-transition), box-shadow var(--desktop-transition), transform var(--desktop-transition), opacity var(--desktop-transition);
+      }
+
+      :where(
+        .agenda-item,
+        .checklist-item,
+        .nota-item,
+        .pessoal-item,
+        .settings-link-row,
+        #screen-financas .financas-fixed-item,
+        #screen-financas .financas-projecao-row,
+        #screen-financas .financas-debt-row
+      ):hover {
+        background-color: #f8fafc;
+      }
+
+      .app-main-column a {
+        transition: color var(--desktop-transition), opacity var(--desktop-transition);
+      }
+      .app-main-column a:hover { color: var(--cor-tema-escura); }
+
+      :where(.settings-profile-card, #screen-financas .financas-kpi-button, .theme-option) {
+        transition: border-color var(--desktop-transition), box-shadow var(--desktop-transition), transform var(--desktop-transition), background-color var(--desktop-transition);
+      }
+      :where(.settings-profile-card, #screen-financas .financas-kpi-button, .theme-option):hover {
+        border-color: rgba(var(--cor-tema-rgb), 0.24);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+        transform: translateY(-1px);
+      }
+
+      .nota-item {
+        min-height: 52px;
+        margin-bottom: 6px;
+        padding: 10px 12px;
+        border: 1px solid transparent;
+        border-radius: var(--desktop-radius-control);
+        background: #f8fafc;
+      }
+      .nota-item:hover { border-color: #e2e8f0; }
+      .nota-dot { width: 16px; height: 16px; }
+      .nota-dot.pessoal:not(.feito) { background: #8b5cf6; }
+      .nota-dot.feito { background: #16a34a; }
+
+      #screen-agenda .marcos-operacionais-toolbar,
+      #screen-checklist .filtros-row,
+      #screen-pessoal .pessoal-toolbar,
+      #screen-ajustes .settings-actions {
+        gap: 10px;
+      }
+
+      .modal-overlay { background: rgba(15, 23, 42, 0.42); backdrop-filter: blur(3px); }
+      .modal-box {
+        max-width: 400px;
+        padding: 18px;
+        border: 1px solid var(--desktop-border-soft);
+        border-radius: var(--desktop-radius-card);
+        background: #ffffff;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+      }
+
+      .full-flash-overlay {
+        inset: auto 24px 24px auto;
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        font-size: 20px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+        animation: sprint05Feedback 480ms ease-out forwards;
+        pointer-events: none;
+      }
+      .full-flash-overlay.success { background: rgba(22, 163, 74, 0.94); }
+      .full-flash-overlay.warning { background: rgba(202, 138, 4, 0.94); }
+      .full-flash-overlay.danger { background: rgba(220, 38, 38, 0.94); }
+
+      #toast-undo {
+        border-radius: 8px !important;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16) !important;
+      }
+
+      @keyframes sprint05Feedback {
+        0% { opacity: 0; transform: translateY(6px) scale(0.96); }
+        20%, 72% { opacity: 1; transform: translateY(0) scale(1); }
+        100% { opacity: 0; transform: translateY(3px) scale(0.98); }
+      }
+    }
+
+    @media (min-width: 1100px) and (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
     }
   </style>
   </head>
@@ -18598,7 +18980,7 @@
       try {
         const res=await fetch(API+"/notes",{headers:authHeaders()});
         let itens=(await res.json()); itens=(Array.isArray(itens)?itens:[]).filter(n=>n.ativo!==false);
-        if(itens.length===0){container.innerHTML="<small>Nenhuma anotação salva.</small>";return;}
+        if(itens.length===0){container.innerHTML=`<small>${emLayoutDesktop()?"Nenhuma nota encontrada.":"Nenhuma anotação salva."}</small>`;return;}
         itens.sort((a,b)=>(a.created_at||"").localeCompare(b.created_at||""));
         container.innerHTML="";
 
@@ -18622,17 +19004,14 @@
 
           const dot=document.createElement("button");
           dot.type = "button";
-          dot.className = "nota-dot" + (notaFeita ? " feito" : "");
+          dot.className = "nota-dot" + (notaPessoal ? " pessoal" : "") + (notaFeita ? " feito" : "");
           dot.title = notaFeita ? "Marcar como pendente" : "Marcar como feita";
+          dot.setAttribute("aria-label", `${notaFeita ? "Concluída" : "Pendente"} · ${notaPessoal ? "Pessoal" : "Trabalho"}`);
 
           const info=document.createElement("div"); info.className="nota-info";
           const textoEl=document.createElement("div"); textoEl.className=notaFeita?"nota-texto nota-status-feito":"nota-texto"; textoEl.textContent=nota.texto;
           const dataEl=document.createElement("div"); dataEl.className="nota-data"; dataEl.textContent=`${nota.data?formatarDataCurtaBR(nota.data):""} · ${nota.tipo||"GERAL"}`;
 
-          const categoria = document.createElement("span");
-          categoria.className = `nota-category-marker${notaPessoal ? " pessoal" : ""}`;
-          categoria.title = notaPessoal ? "Pessoal" : "Trabalho";
-          categoria.setAttribute("aria-label", notaPessoal ? "Categoria Pessoal" : "Categoria Trabalho");
           if (emLayoutDesktop()) {
             dataEl.textContent = `${nota.data ? formatarDataCurtaBR(nota.data) + " · " : ""}${notaPessoal ? "Pessoal" : "Trabalho"}`;
           }
@@ -18645,7 +19024,7 @@
             await atualizarResumoBar();
           });
 
-          info.appendChild(textoEl); info.appendChild(dataEl); div.appendChild(categoria); div.appendChild(dot); div.appendChild(info);
+          info.appendChild(textoEl); info.appendChild(dataEl); div.appendChild(dot); div.appendChild(info);
           adicionarSwipe(div,
             ()=>{ mostrarFlashFull("success"); setTimeout(async()=>{ await atualizarStatusNota(nota.id, "feito"); await carregarNotas(); await atualizarResumoBar(); },FLASH_DURATION_MS); },
             ()=>{
