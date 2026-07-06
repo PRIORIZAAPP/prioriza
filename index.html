@@ -9740,6 +9740,209 @@
         gap: 10px;
       }
 
+      /* SPRINT 05.2: Agenda e cadastro mais compactos no Desktop */
+      #screen-agenda > .agenda-calendar-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.85fr);
+        column-gap: 18px;
+        row-gap: 12px;
+        align-items: start;
+      }
+
+      #screen-agenda .agenda-calendar-topbar,
+      #screen-agenda .marcos-operacionais-toolbar,
+      #screen-agenda .marcos-search-results {
+        grid-column: 1 / -1;
+      }
+
+      #screen-agenda .marcos-operacionais-toolbar {
+        margin: 0;
+      }
+
+      #screen-agenda #calendar-container {
+        grid-column: 1;
+        margin: 0;
+        padding: 12px;
+        border-radius: 10px;
+      }
+
+      #screen-agenda .calendar-header {
+        margin-bottom: 8px;
+      }
+
+      #screen-agenda .calendar-header-title {
+        font-size: 17px;
+        font-weight: 650;
+        letter-spacing: 0;
+      }
+
+      #screen-agenda .calendar-grid {
+        gap: 4px;
+      }
+
+      #screen-agenda .calendar-weekday {
+        padding: 1px 0 4px;
+        font-size: 10px;
+        font-weight: 650;
+        letter-spacing: 0.04em;
+      }
+
+      #screen-agenda .calendar-day {
+        min-height: 42px;
+        padding: 5px;
+        gap: 2px;
+        border-radius: 8px;
+      }
+
+      #screen-agenda .calendar-day-number {
+        font-size: 13px;
+        font-weight: 650;
+      }
+
+      #screen-agenda .calendar-day-more {
+        min-width: 17px;
+        height: 17px;
+        padding: 0 4px;
+        border-radius: 999px;
+        background: #e8edf3;
+        color: #475569;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        font-weight: 650;
+      }
+
+      #screen-agenda .calendar-day-indicators {
+        min-height: 6px;
+        margin-top: 2px;
+        gap: 3px;
+      }
+
+      #screen-agenda .calendar-indicator {
+        width: 5px;
+        height: 5px;
+      }
+
+      #screen-agenda .calendar-indicator.blocked {
+        width: 14px;
+      }
+
+      #screen-agenda #agenda-dia-container {
+        grid-column: 2;
+        min-width: 0;
+        margin: 0;
+        padding: 8px 0 0 18px;
+        border-top: 0;
+        border-left: 1px solid #e2e8f0;
+      }
+
+      #screen-agenda .agenda-dia-header {
+        margin-bottom: 8px;
+      }
+
+      #screen-agenda .agenda-dia-kicker {
+        margin-bottom: 3px;
+        font-size: 10px;
+        letter-spacing: 0.06em;
+      }
+
+      #screen-agenda .agenda-dia-label {
+        font-size: 16px;
+        font-weight: 650;
+        letter-spacing: 0;
+      }
+
+      #screen-agenda #agenda-geral-lista {
+        max-height: 306px;
+        padding-right: 4px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+      }
+
+      #screen-agenda #agenda-geral-lista .agenda-item {
+        display: grid;
+        grid-template-columns: 48px minmax(0, 1fr) auto;
+        gap: 7px;
+        align-items: center;
+        min-height: 48px;
+        padding: 7px 0;
+      }
+
+      #screen-agenda #agenda-geral-lista .agenda-item.blocked {
+        margin: 4px 0;
+        padding: 7px;
+      }
+
+      #screen-agenda #agenda-geral-lista .agenda-horario {
+        width: auto;
+        font-size: 14px;
+        font-weight: 700;
+        color: #172033;
+      }
+
+      #screen-agenda #agenda-geral-lista .agenda-conteudo {
+        min-width: 0;
+        font-size: 12px;
+      }
+
+      #screen-agenda #agenda-geral-lista .agenda-titulo {
+        overflow: hidden;
+        color: #172033;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.3;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      #screen-agenda #agenda-geral-lista .agenda-tag {
+        margin-top: 2px;
+        padding: 1px 6px;
+        font-size: 10px;
+      }
+
+      #screen-agenda #agenda-geral-lista .agenda-meta {
+        margin-top: 2px;
+        overflow: hidden;
+        font-size: 11px;
+        line-height: 1.35;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      #screen-agenda #agenda-geral-lista .timeline-action-menu {
+        align-self: center;
+      }
+
+      #screen-agenda #agenda-geral-lista .timeline-menu-popover {
+        z-index: 60;
+      }
+
+      #screen-agenda .agenda-dia-vazio {
+        min-height: 88px;
+        padding: 12px;
+      }
+
+      #agenda-form-wrap .checklist-form-panel {
+        width: min(100%, 620px);
+        max-height: calc(100vh - 48px);
+        padding: 20px;
+        overflow-y: auto;
+      }
+
+      #agenda-form-wrap .form-identity-agenda {
+        padding: 12px;
+      }
+
+      #agenda-form-wrap #btn-salvar-compromisso:disabled {
+        border-color: #cbd5e1;
+        background: #e2e8f0;
+        color: #475569 !important;
+        opacity: 1;
+      }
+
       @keyframes sprint05Feedback {
         0% { opacity: 0; transform: translateY(6px) scale(0.96); }
         20%, 72% { opacity: 1; transform: translateY(0) scale(1); }
@@ -16231,27 +16434,29 @@
       }
     }
 
-    function fecharMenusRotinaDesktop(excecao = null) {
+    function fecharMenusAcoesDesktop(excecao = null) {
       document.querySelectorAll(".timeline-menu-popover").forEach((menu) => {
-        if (menu !== excecao) menu.hidden = true;
+        if (menu === excecao) return;
+        menu.hidden = true;
+        menu.parentElement?.querySelector(".timeline-menu-trigger")?.setAttribute("aria-expanded", "false");
       });
     }
 
-    function criarMenuRotinaDesktop(item) {
+    function criarMenuAcoesDesktop({ titulo, ariaLabel, itens = [] }) {
       const wrap = document.createElement("div");
       wrap.className = "timeline-action-menu";
       const trigger = document.createElement("button");
       trigger.type = "button";
       trigger.className = "timeline-menu-trigger";
-      trigger.title = "Ações da rotina";
-      trigger.setAttribute("aria-label", `Ações de ${item.titulo}`);
+      trigger.title = titulo;
+      trigger.setAttribute("aria-label", ariaLabel);
       trigger.setAttribute("aria-expanded", "false");
       trigger.innerHTML = `<svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><circle cx="56" cy="128" r="14"/><circle cx="128" cy="128" r="14"/><circle cx="200" cy="128" r="14"/></svg>`;
       const menu = document.createElement("div");
       menu.className = "timeline-menu-popover";
       menu.hidden = true;
 
-      const adicionarItem = (texto, acao, danger = false) => {
+      itens.forEach(({ texto, acao, danger = false }) => {
         const botao = document.createElement("button");
         botao.type = "button";
         botao.className = `timeline-menu-item${danger ? " danger" : ""}`;
@@ -16263,28 +16468,43 @@
           await acao();
         });
         menu.appendChild(botao);
-      };
-
-      adicionarItem("Editar", () => editarRotinaChecklist(item));
-      adicionarItem("Pular apenas hoje", async () => {
-        pularRotinaApenasHoje(item.id);
-        renderizarTimelineOperacionalDesktop();
       });
-      adicionarItem("Excluir", async () => {
-        if (!await modal.confirmar(`Remover definitivamente “${item.titulo}”?`, "Excluir rotina", "vermelho")) return;
-        await excluirChecklistItem(item.id);
-        await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
-      }, true);
 
       trigger.addEventListener("click", (ev) => {
         ev.stopPropagation();
         const abrir = menu.hidden;
-        fecharMenusRotinaDesktop(abrir ? menu : null);
+        fecharMenusAcoesDesktop(abrir ? menu : null);
         menu.hidden = !abrir;
         trigger.setAttribute("aria-expanded", abrir ? "true" : "false");
       });
       wrap.append(trigger, menu);
       return wrap;
+    }
+
+    function criarMenuRotinaDesktop(item) {
+      return criarMenuAcoesDesktop({
+        titulo: "Ações da rotina",
+        ariaLabel: `Ações de ${item.titulo}`,
+        itens: [
+          { texto: "Editar", acao: () => editarRotinaChecklist(item) },
+          {
+            texto: "Pular apenas hoje",
+            acao: async () => {
+              pularRotinaApenasHoje(item.id);
+              renderizarTimelineOperacionalDesktop();
+            }
+          },
+          {
+            texto: "Excluir",
+            danger: true,
+            acao: async () => {
+              if (!await modal.confirmar(`Remover definitivamente “${item.titulo}”?`, "Excluir rotina", "vermelho")) return;
+              await excluirChecklistItem(item.id);
+              await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
+            }
+          }
+        ]
+      });
     }
 
     function obterDadosTimelineOperacional() {
@@ -18844,10 +19064,15 @@
 
         const indicadores = indicadoresDoDia(iso);
         const excedentes = Math.max(0, indicadores.length - 3);
-        if (excedentes > 0) {
+        if ((emLayoutDesktop() && indicadores.length > 0) || excedentes > 0) {
           const more = document.createElement("span");
           more.className = "calendar-day-more";
-          more.textContent = `+${excedentes}`;
+          more.textContent = emLayoutDesktop() ? String(indicadores.length) : `+${excedentes}`;
+          if (emLayoutDesktop()) {
+            const rotuloEventos = indicadores.length === 1 ? "1 registro" : `${indicadores.length} registros`;
+            more.title = rotuloEventos;
+            cel.setAttribute("aria-label", `${dia.getDate()} de ${nomesMes[mes]}: ${rotuloEventos}`);
+          }
           topo.appendChild(more);
         }
 
@@ -18869,7 +19094,7 @@
           }
           montarCalendarioMes();
           preencherAgendaDiaSelecionado();
-          rolarParaAgendaDiaSelecionado();
+          if (!emLayoutDesktop()) rolarParaAgendaDiaSelecionado();
         });
         grid.appendChild(cel);
       }
@@ -18927,25 +19152,11 @@
             item.appendChild(link);
           }
         } else {
-          const btnCancelCal = document.createElement("button");
-          btnCancelCal.className = "agenda-icon-btn";
-          btnCancelCal.style.background = "#f3f4f6";
-          btnCancelCal.style.color = "#6b7280";
-          btnCancelCal.title = "Cancelar compromisso";
-          btnCancelCal.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M80 80l96 96M176 80l-96 96" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
-          btnCancelCal.addEventListener("click", async()=>{
+          const cancelarCompromisso = async () => {
             await cancelarTarefaAgenda(t);
-          });
-          item.appendChild(btnCancelCal);
+          };
 
-          // Botão editar na aba Agenda (calendário)
-          const btnEditCal = document.createElement("button");
-          btnEditCal.className = "agenda-icon-btn";
-          btnEditCal.style.background = "#dbeafe";
-          btnEditCal.style.color = "#1d4ed8";
-          btnEditCal.title = "Editar compromisso";
-          btnEditCal.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M180 32l44 44L72 228H28v-44L180 32z" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 60l44 44" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
-          btnEditCal.addEventListener("click", async()=>{
+          const editarCompromisso = async () => {
             const novoTitulo = await modal.perguntar("Título:","Editar compromisso", t.titulo);
             if (!novoTitulo?.trim()) return;
             const novaHora = await modal.perguntar("Hora de início (HH:MM):","Hora", t.hora_inicio||"08:00");
@@ -18959,22 +19170,54 @@
               await atualizarAgendaMesEDia();
               await carregarAgendaHoje();
             } catch(e){ console.error(e); await modal.alerta("Erro de conexão.","Erro"); }
-          });
-          item.appendChild(btnEditCal);
+          };
 
-          const btnDel=document.createElement("button");
-          btnDel.className="agenda-icon-btn";
-          btnDel.title="Excluir compromisso";
-          btnDel.innerHTML=`<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M96 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M160 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M40 72h176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M72 72l8-24h96l8 24" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M56 72l8 128a8 8 0 0 0 8 8h112a8 8 0 0 0 8-8l8-128" stroke="currentColor" stroke-width="20" stroke-linejoin="round"/></svg>`;
-          btnDel.addEventListener("click", async()=>{
+          const excluirCompromisso = () => {
             mostrarFlashFull("danger");
             mostrarToastUndo(
               `"${t.titulo}" será excluído`,
               async () => { await excluirTarefa(t.id); await carregarAgendaHoje(); await atualizarAgendaMesEDia(); },
               () => { /* não faz nada — tarefa NÃO foi excluída ainda */ }
             );
-          });
-          item.appendChild(btnDel);
+          };
+
+          if (emLayoutDesktop()) {
+            item.appendChild(criarMenuAcoesDesktop({
+              titulo: "Ações do compromisso",
+              ariaLabel: `Ações de ${t.titulo}`,
+              itens: [
+                { texto: "Editar", acao: editarCompromisso },
+                { texto: "Cancelar", acao: cancelarCompromisso },
+                { texto: "Excluir", acao: excluirCompromisso, danger: true }
+              ]
+            }));
+          } else {
+            const btnCancelCal = document.createElement("button");
+            btnCancelCal.className = "agenda-icon-btn";
+            btnCancelCal.style.background = "#f3f4f6";
+            btnCancelCal.style.color = "#6b7280";
+            btnCancelCal.title = "Cancelar compromisso";
+            btnCancelCal.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M80 80l96 96M176 80l-96 96" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
+            btnCancelCal.addEventListener("click", cancelarCompromisso);
+            item.appendChild(btnCancelCal);
+
+            // Botão editar na aba Agenda (calendário)
+            const btnEditCal = document.createElement("button");
+            btnEditCal.className = "agenda-icon-btn";
+            btnEditCal.style.background = "#dbeafe";
+            btnEditCal.style.color = "#1d4ed8";
+            btnEditCal.title = "Editar compromisso";
+            btnEditCal.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M180 32l44 44L72 228H28v-44L180 32z" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 60l44 44" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
+            btnEditCal.addEventListener("click", editarCompromisso);
+            item.appendChild(btnEditCal);
+
+            const btnDel=document.createElement("button");
+            btnDel.className="agenda-icon-btn";
+            btnDel.title="Excluir compromisso";
+            btnDel.innerHTML=`<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M96 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M160 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M40 72h176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M72 72l8-24h96l8 24" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M56 72l8 128a8 8 0 0 0 8 8h112a8 8 0 0 0 8-8l8-128" stroke="currentColor" stroke-width="20" stroke-linejoin="round"/></svg>`;
+            btnDel.addEventListener("click", excluirCompromisso);
+            item.appendChild(btnDel);
+          }
         }
 
         lista.appendChild(item);
@@ -19464,7 +19707,7 @@
       });
       document.getElementById("btn-rever-introducao-ajuda")?.addEventListener("click", () => abrirOnboarding({ forcar: true }));
       document.getElementById("btn-toggle-form-nota")?.addEventListener("click", () => toggleFormNotaDesktop());
-      document.addEventListener("click", () => fecharMenusRotinaDesktop());
+      document.addEventListener("click", () => fecharMenusAcoesDesktop());
       ajustarCategoriasNotasUI();
       window.addEventListener("resize", ajustarCategoriasNotasUI);
 
