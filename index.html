@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
   <head>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -10239,16 +10239,17 @@
 
       #screen-operacao .operacao-form-card {
         margin-bottom: 14px;
-        padding: 14px;
+        padding: 12px;
         border: 1px solid #dbe3ee;
         border-radius: 8px;
-        background: #f8fafc;
+        background: #ffffff;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
       }
 
       #screen-operacao .operacao-form-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
+        gap: 8px;
       }
 
       #screen-operacao .operacao-form-grid-4 {
@@ -10335,7 +10336,19 @@
         display: flex;
         justify-content: flex-end;
         gap: 8px;
-        margin-top: 12px;
+        margin-top: 10px;
+      }
+
+      #screen-operacao #operacao-submit-plantao {
+        background: #1d4ed8;
+        color: #ffffff;
+        border-color: #1d4ed8;
+        box-shadow: 0 8px 18px rgba(29, 78, 216, 0.22);
+      }
+
+      #screen-operacao #operacao-submit-plantao:hover {
+        background: #1e40af;
+        color: #ffffff;
       }
 
       #screen-operacao .operacao-detail-header {
@@ -10439,25 +10452,37 @@
         font-size: 17px;
       }
 
+      #screen-operacao .operacao-toolbar-inline {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
       #screen-operacao .operacao-calendar-grid {
         display: grid;
         grid-template-columns: repeat(7, minmax(0, 1fr));
-        gap: 6px;
-        margin-bottom: 14px;
+        gap: 5px;
+        margin-bottom: 0;
       }
 
       #screen-operacao .operacao-day-cell {
-        min-height: 78px;
-        padding: 8px;
+        min-height: 64px;
+        padding: 6px;
         border: 1px solid #dbe3ee;
         border-radius: 8px;
         background: #ffffff;
         text-align: left;
         cursor: pointer;
+        overflow: hidden;
       }
 
       #screen-operacao .operacao-day-cell:hover {
         border-color: rgba(var(--cor-tema-rgb), 0.42);
+      }
+
+      #screen-operacao .operacao-day-cell.operacao-weekend {
+        background: #fffbeb;
+        border-color: #fde68a;
       }
 
       #screen-operacao .operacao-day-number {
@@ -10469,8 +10494,34 @@
       #screen-operacao .operacao-day-note {
         margin-top: 5px;
         color: #64748b;
-        font-size: 11px;
+        font-size: 10.5px;
         line-height: 1.35;
+      }
+
+      #screen-operacao .operacao-day-shift {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 6px;
+        align-items: start;
+        padding-top: 2px;
+      }
+
+      #screen-operacao .operacao-day-shift + .operacao-day-shift {
+        margin-top: 3px;
+        border-top: 1px solid rgba(148, 163, 184, 0.28);
+      }
+
+      #screen-operacao .operacao-day-tech {
+        overflow: hidden;
+        color: #172033;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      #screen-operacao .operacao-day-hours {
+        color: #64748b;
+        text-align: right;
+        white-space: nowrap;
       }
 
       #screen-operacao .operacao-list-table {
@@ -11335,11 +11386,14 @@
                 <div class="operacao-section-head">
                   <div>
                     <h3>Escala</h3>
-                    <p>Planejamento por semana ou mês. Clique em um dia para alimentar o plantão.</p>
+                    <p>Monte a escala base do mês e use Movimentos para exceções.</p>
                   </div>
-                  <div class="operacao-segmented">
-                    <button class="active" type="button" data-operacao-escala-view="mes">Mês</button>
-                    <button type="button" data-operacao-escala-view="semana">Semana</button>
+                  <div class="operacao-toolbar-inline">
+                    <button id="btn-operacao-toggle-plantao" class="btn-secondary" type="button" hidden>Novo plantão</button>
+                    <div class="operacao-segmented">
+                      <button class="active" type="button" data-operacao-escala-view="mes">Mês</button>
+                      <button type="button" data-operacao-escala-view="semana">Semana</button>
+                    </div>
                   </div>
                 </div>
                 <form id="operacao-form-plantao" class="operacao-form-card">
@@ -11370,7 +11424,6 @@
                   </div>
                 </form>
                 <div id="operacao-escala-grade" class="operacao-calendar-grid"></div>
-                <div id="operacao-escala-lista" class="operacao-list-table"></div>
               </section>
 
               <section class="operacao-panel" data-operacao-panel="movimentos">
@@ -20496,6 +20549,39 @@
         return ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"][data.getDay()] || "";
       }
 
+      function primeiroNomeOperacao(nome) {
+        const limpo = String(nome || "").trim();
+        if (!limpo) return "--";
+        const partes = limpo.split(/\s+/).filter(Boolean);
+        if (partes.length <= 1) return partes[0];
+        return `${partes[0]} ${partes[1].charAt(0)}.`;
+      }
+
+      function inicioSemanaSegundaOperacao(data) {
+        const inicio = new Date(data);
+        const dia = inicio.getDay();
+        const deslocamento = dia === 0 ? -6 : 1 - dia;
+        inicio.setDate(inicio.getDate() + deslocamento);
+        return inicio;
+      }
+
+      function isoOperacao(data) {
+        const ano = data.getFullYear();
+        const mes = String(data.getMonth() + 1).padStart(2, "0");
+        const dia = String(data.getDate()).padStart(2, "0");
+        return `${ano}-${mes}-${dia}`;
+      }
+
+      function escaparTextoOperacao(valor) {
+        return String(valor ?? "").replace(/[&<>"']/g, (char) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          "\"": "&quot;",
+          "'": "&#39;"
+        }[char]));
+      }
+
       async function fetchOperacao(url, options = {}) {
         const resposta = await fetch(API + url, {
           ...options,
@@ -20650,10 +20736,34 @@
         if (submit) submit.textContent = operacaoState.plantaoModo === "recorrente" ? "Criar escala do mês" : "Adicionar plantão";
       }
 
+      function alternarFormularioPlantaoOperacao(aberto) {
+        const form = document.getElementById("operacao-form-plantao");
+        const botao = document.getElementById("btn-operacao-toggle-plantao");
+        if (!form || !botao) return;
+        form.hidden = !aberto;
+        botao.hidden = aberto;
+        if (aberto) setTimeout(() => document.getElementById("operacao-plantao-tecnico")?.focus(), 40);
+      }
+
+      function resumoDiaEscalaOperacao(itens) {
+        if (!itens.length) return "Livre";
+        const porTecnico = new Map();
+        itens.forEach((item) => {
+          const chave = item.tecnico || "--";
+          if (!porTecnico.has(chave)) porTecnico.set(chave, []);
+          porTecnico.get(chave).push(`${item.entrada || "--"}-${item.saida || "--"}`);
+        });
+        return Array.from(porTecnico.entries()).map(([tecnico, horarios]) => `
+          <div class="operacao-day-shift">
+            <span class="operacao-day-tech">${escaparTextoOperacao(primeiroNomeOperacao(tecnico))}</span>
+            <span class="operacao-day-hours">${horarios.map(escaparTextoOperacao).join("<br>")}</span>
+          </div>
+        `).join("");
+      }
+
       function renderizarEscalaOperacao() {
         const grade = document.getElementById("operacao-escala-grade");
-        const lista = document.getElementById("operacao-escala-lista");
-        if (!grade || !lista) return;
+        if (!grade) return;
         const [ano, mes] = (operacaoState.competencia || "").split("-").map(Number);
         const totalDias = new Date(ano, mes, 0).getDate();
         const porData = new Map();
@@ -20662,33 +20772,36 @@
           porData.get(item.data).push(item);
         });
         grade.innerHTML = "";
-        const limite = operacaoState.escalaView === "semana" ? Math.min(7, totalDias) : totalDias;
-        for (let dia = 1; dia <= limite; dia++) {
-          const iso = `${operacaoState.competencia}-${String(dia).padStart(2, "0")}`;
+        const datas = [];
+        if (operacaoState.escalaView === "semana") {
+          const hoje = new Date();
+          const dentroCompetencia = hoje.getFullYear() === ano && hoje.getMonth() + 1 === mes;
+          const referencia = dentroCompetencia ? hoje : new Date(ano, mes - 1, 1);
+          const inicio = inicioSemanaSegundaOperacao(referencia);
+          for (let i = 0; i < 7; i++) {
+            const data = new Date(inicio);
+            data.setDate(inicio.getDate() + i);
+            datas.push(data);
+          }
+        } else {
+          for (let dia = 1; dia <= totalDias; dia++) datas.push(new Date(ano, mes - 1, dia));
+        }
+        datas.forEach((data) => {
+          const iso = isoOperacao(data);
           const itens = porData.get(iso) || [];
           const cell = document.createElement("button");
           cell.type = "button";
           cell.className = "operacao-day-cell";
-          cell.innerHTML = `<div class="operacao-day-number">${String(dia).padStart(2, "0")} • ${diaSemanaCurtoOperacao(iso)}</div><div class="operacao-day-note"></div>`;
-          cell.querySelector(".operacao-day-note").textContent = itens.length ? itens.map((p) => `${p.tecnico} ${p.entrada}-${p.saida}`).join(" · ") : "Livre";
+          if (data.getDay() === 0 || data.getDay() === 6) cell.classList.add("operacao-weekend");
+          cell.innerHTML = `<div class="operacao-day-number">${String(data.getDate()).padStart(2, "0")} • ${diaSemanaCurtoOperacao(iso)}</div><div class="operacao-day-note"></div>`;
+          cell.querySelector(".operacao-day-note").innerHTML = resumoDiaEscalaOperacao(itens);
           cell.addEventListener("click", () => {
             definirModoPlantaoOperacao("unico");
+            alternarFormularioPlantaoOperacao(true);
             document.getElementById("operacao-plantao-data").value = iso;
             document.getElementById("operacao-plantao-tecnico")?.focus();
           });
           grade.appendChild(cell);
-        }
-        lista.innerHTML = "";
-        if (!operacaoState.escala.length) {
-          lista.innerHTML = '<div class="operacao-empty">Nenhum plantão cadastrado nesta competência.</div>';
-          return;
-        }
-        operacaoState.escala.forEach((item) => {
-          const row = document.createElement("div");
-          row.className = "operacao-row";
-          row.innerHTML = `<span>${item.data}</span><strong></strong><span>${item.entrada}</span><span>${item.saida}</span>`;
-          row.querySelector("strong").textContent = item.tecnico;
-          lista.appendChild(row);
         });
       }
 
@@ -20761,6 +20874,7 @@
             definirModoPlantaoOperacao("recorrente");
           }
           await carregarUnidadeOperacao();
+          alternarFormularioPlantaoOperacao(false);
         } catch (erro) {
           await modal.alerta(erro.message || "Não foi possível salvar o plantão.", "Operação");
         }
@@ -20835,6 +20949,10 @@
         });
         document.querySelectorAll("[data-operacao-plantao-modo]").forEach((btn) => {
           btn.addEventListener("click", () => definirModoPlantaoOperacao(btn.dataset.operacaoPlantaoModo));
+        });
+        document.getElementById("btn-operacao-toggle-plantao")?.addEventListener("click", () => {
+          definirModoPlantaoOperacao("recorrente");
+          alternarFormularioPlantaoOperacao(true);
         });
         document.getElementById("operacao-form-plantao")?.addEventListener("submit", salvarPlantaoOperacao);
         document.getElementById("operacao-form-movimento")?.addEventListener("submit", salvarMovimentoOperacao);
