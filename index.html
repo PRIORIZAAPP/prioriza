@@ -10256,11 +10256,32 @@
         grid-template-columns: repeat(4, minmax(0, 1fr));
       }
 
+      #screen-operacao .operacao-plantao-grid {
+        grid-template-columns: minmax(150px, 1fr) minmax(300px, 2fr) 94px 94px auto;
+        align-items: end;
+      }
+
+      #screen-operacao .operacao-plantao-grid #operacao-plantao-data-wrap:not([hidden]) {
+        display: block;
+      }
+
+      #screen-operacao .operacao-submit-cell {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        justify-content: flex-end;
+        min-height: 38px;
+      }
+
+      #screen-operacao .operacao-submit-cell button {
+        white-space: nowrap;
+      }
+
       #screen-operacao .operacao-mode-row {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
       }
 
       #screen-operacao .operacao-mode-row button,
@@ -10401,39 +10422,11 @@
         display: block;
       }
 
-      #screen-operacao .operacao-metrics {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 12px;
-        margin-bottom: 14px;
-      }
-
-      #screen-operacao .operacao-metrics > div,
       #screen-operacao .operacao-close-card {
         padding: 16px;
         border: 1px solid #dbe3ee;
         border-radius: 8px;
         background: #ffffff;
-      }
-
-      #screen-operacao .operacao-metrics span {
-        display: block;
-        color: #64748b;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-      }
-
-      #screen-operacao .operacao-metrics strong {
-        display: block;
-        margin-top: 6px;
-        color: #172033;
-        font-size: 18px;
-      }
-
-      #screen-operacao .operacao-shortcuts {
-        display: flex;
-        gap: 8px;
       }
 
       #screen-operacao .operacao-section-head,
@@ -10504,6 +10497,9 @@
         gap: 6px;
         align-items: start;
         padding-top: 2px;
+        width: 100%;
+        color: inherit;
+        text-align: left;
       }
 
       #screen-operacao .operacao-day-shift + .operacao-day-shift {
@@ -10519,9 +10515,79 @@
       }
 
       #screen-operacao .operacao-day-hours {
+        text-align: right;
+      }
+
+      #screen-operacao .operacao-shift-hour {
+        display: block;
+        min-height: 18px;
+        width: 100%;
+        border: 0;
+        border-radius: 4px;
+        background: transparent;
         color: #64748b;
+        padding: 0 2px;
+        font-size: 10.5px;
+        line-height: 1.25;
         text-align: right;
         white-space: nowrap;
+        cursor: pointer;
+      }
+
+      #screen-operacao .operacao-shift-hour:hover,
+      #screen-operacao .operacao-shift-hour.selected {
+        background: rgba(29, 78, 216, 0.1);
+        color: #1d4ed8;
+      }
+
+      #screen-operacao .operacao-shift-actions {
+        grid-column: 1 / -1;
+        display: flex;
+        gap: 5px;
+        margin-top: 4px;
+      }
+
+      #screen-operacao .operacao-shift-actions button {
+        min-height: 26px;
+        border-radius: 6px;
+        padding: 0 8px;
+        font-size: 11px;
+      }
+
+      #screen-operacao .operacao-team-table {
+        display: grid;
+        gap: 6px;
+      }
+
+      #screen-operacao .operacao-team-head,
+      #screen-operacao .operacao-team-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 120px 120px;
+        gap: 10px;
+        align-items: center;
+        padding: 9px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #172033;
+        font-size: 13px;
+      }
+
+      #screen-operacao .operacao-team-head {
+        background: #f8fafc;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      #screen-operacao .operacao-team-row strong {
+        font-weight: 700;
+      }
+
+      #screen-operacao .operacao-team-row span:nth-child(n+2),
+      #screen-operacao .operacao-team-head span:nth-child(n+2) {
+        text-align: right;
       }
 
       #screen-operacao .operacao-list-table {
@@ -11362,24 +11428,20 @@
               </div>
 
               <div class="operacao-tabs" role="tablist" aria-label="Navegação da unidade">
-                <button class="operacao-tab active" type="button" data-operacao-tab="resumo">Resumo</button>
+                <button class="operacao-tab active" type="button" data-operacao-tab="equipe">Equipe</button>
                 <button class="operacao-tab" type="button" data-operacao-tab="escala">Escala</button>
                 <button class="operacao-tab" type="button" data-operacao-tab="movimentos">Movimentos</button>
                 <button class="operacao-tab" type="button" data-operacao-tab="fechamento">Fechamento</button>
               </div>
 
-              <section class="operacao-panel active" data-operacao-panel="resumo">
-                <div class="operacao-metrics">
-                  <div><span>Competência</span><strong id="operacao-resumo-competencia">--</strong></div>
-                  <div><span>Status</span><strong id="operacao-resumo-status">--</strong></div>
-                  <div><span>Movimentos</span><strong id="operacao-resumo-movimentos">0</strong></div>
-                  <div><span>Plantões</span><strong id="operacao-resumo-plantoes">0</strong></div>
+              <section class="operacao-panel active" data-operacao-panel="equipe">
+                <div class="operacao-section-head">
+                  <div>
+                    <h3>Equipe</h3>
+                    <p>Técnicos previstos na unidade durante a competência selecionada.</p>
+                  </div>
                 </div>
-                <div class="operacao-shortcuts">
-                  <button class="btn-secondary" type="button" data-operacao-go="escala">Escala</button>
-                  <button class="btn-secondary" type="button" data-operacao-go="movimentos">Movimentos</button>
-                  <button class="btn-secondary" type="button" data-operacao-go="fechamento">Fechamento</button>
-                </div>
+                <div id="operacao-equipe-lista" class="operacao-team-table"></div>
               </section>
 
               <section class="operacao-panel" data-operacao-panel="escala">
@@ -11401,10 +11463,10 @@
                     <button class="active" type="button" data-operacao-plantao-modo="recorrente">Escala recorrente</button>
                     <button type="button" data-operacao-plantao-modo="unico">Plantão único</button>
                   </div>
-                  <div class="operacao-form-grid operacao-form-grid-4">
+                  <div class="operacao-form-grid operacao-plantao-grid">
                     <div><label for="operacao-plantao-tecnico">Técnico</label><input id="operacao-plantao-tecnico" type="text" /></div>
                     <div id="operacao-plantao-data-wrap" hidden><label for="operacao-plantao-data">Data</label><input id="operacao-plantao-data" type="date" /></div>
-                    <div id="operacao-plantao-dias-wrap" class="operacao-field-wide">
+                    <div id="operacao-plantao-dias-wrap">
                       <label>Dias da semana</label>
                       <div class="operacao-weekdays" id="operacao-plantao-dias">
                         <label class="operacao-weekday"><input type="checkbox" name="operacao-plantao-dia" value="0" />Seg</label>
@@ -11418,9 +11480,10 @@
                     </div>
                     <div><label for="operacao-plantao-entrada">Entrada</label><input id="operacao-plantao-entrada" type="time" /></div>
                     <div><label for="operacao-plantao-saida">Saída</label><input id="operacao-plantao-saida" type="time" /></div>
-                  </div>
-                  <div class="operacao-form-actions">
-                    <button id="operacao-submit-plantao" class="btn-primary" type="submit">Criar escala do mês</button>
+                    <div class="operacao-submit-cell">
+                      <button id="operacao-cancelar-edicao-plantao" class="btn-secondary" type="button" hidden>Cancelar</button>
+                      <button id="operacao-submit-plantao" class="btn-primary" type="submit">Criar escala do mês</button>
+                    </div>
                   </div>
                 </form>
                 <div id="operacao-escala-grade" class="operacao-calendar-grid"></div>
@@ -20519,9 +20582,11 @@
         resumo: null,
         escala: [],
         movimentos: [],
-        aba: "resumo",
+        aba: "equipe",
         escalaView: "mes",
         plantaoModo: "recorrente",
+        plantaoEditandoId: null,
+        plantaoSelecionadoId: null,
         carregado: false
       };
 
@@ -20580,6 +20645,22 @@
           "\"": "&quot;",
           "'": "&#39;"
         }[char]));
+      }
+
+      function minutosPlantaoOperacao(entrada, saida) {
+        const inicio = String(entrada || "").split(":").map(Number);
+        const fim = String(saida || "").split(":").map(Number);
+        if (inicio.length < 2 || fim.length < 2 || inicio.some(Number.isNaN) || fim.some(Number.isNaN)) return 0;
+        let totalInicio = inicio[0] * 60 + inicio[1];
+        let totalFim = fim[0] * 60 + fim[1];
+        if (totalFim < totalInicio) totalFim += 24 * 60;
+        return Math.max(0, totalFim - totalInicio);
+      }
+
+      function formatarHorasOperacao(minutos) {
+        const horas = Math.floor((Number(minutos) || 0) / 60);
+        const resto = (Number(minutos) || 0) % 60;
+        return resto ? `${horas}h${String(resto).padStart(2, "0")}` : `${horas}h`;
       }
 
       async function fetchOperacao(url, options = {}) {
@@ -20703,24 +20784,44 @@
         operacaoState.escala = Array.isArray(escala) ? escala : [];
         operacaoState.movimentos = Array.isArray(movimentos) ? movimentos : [];
         atualizarCabecalhoOperacao();
-        renderizarResumoOperacao();
+        renderizarEquipeOperacao();
         renderizarEscalaOperacao();
         renderizarMovimentosOperacao();
         renderizarFechamentoOperacao();
       }
 
       function ativarAbaOperacao(aba) {
-        operacaoState.aba = aba || "resumo";
+        operacaoState.aba = aba || "equipe";
         document.querySelectorAll("#screen-operacao .operacao-tab").forEach((btn) => btn.classList.toggle("active", btn.dataset.operacaoTab === operacaoState.aba));
         document.querySelectorAll("#screen-operacao .operacao-panel").forEach((panel) => panel.classList.toggle("active", panel.dataset.operacaoPanel === operacaoState.aba));
       }
 
-      function renderizarResumoOperacao() {
-        const resumo = operacaoState.resumo || {};
-        document.getElementById("operacao-resumo-competencia").textContent = formatarCompetenciaOperacao(resumo.competencia || operacaoState.competencia);
-        document.getElementById("operacao-resumo-status").textContent = resumo.status || "Não iniciado";
-        document.getElementById("operacao-resumo-movimentos").textContent = String(resumo.movimentos || 0);
-        document.getElementById("operacao-resumo-plantoes").textContent = String(resumo.plantoes || 0);
+      function renderizarEquipeOperacao() {
+        const lista = document.getElementById("operacao-equipe-lista");
+        if (!lista) return;
+        const porTecnico = new Map();
+        operacaoState.escala.forEach((plantao) => {
+          const tecnico = String(plantao.tecnico || "").trim() || "Sem técnico";
+          if (!porTecnico.has(tecnico)) porTecnico.set(tecnico, { tecnico, minutos: 0, plantoes: 0 });
+          const item = porTecnico.get(tecnico);
+          item.minutos += minutosPlantaoOperacao(plantao.entrada, plantao.saida);
+          item.plantoes += 1;
+        });
+        const equipe = Array.from(porTecnico.values()).sort((a, b) => a.tecnico.localeCompare(b.tecnico, "pt-BR"));
+        if (!equipe.length) {
+          lista.innerHTML = '<div class="operacao-empty">Nenhum técnico previsto nesta competência. Monte a escala para formar a equipe do mês.</div>';
+          return;
+        }
+        lista.innerHTML = `
+          <div class="operacao-team-head"><span>Técnico</span><span>Horas previstas</span><span>Plantões</span></div>
+          ${equipe.map((item) => `
+            <div class="operacao-team-row">
+              <strong>${escaparTextoOperacao(item.tecnico)}</strong>
+              <span>${formatarHorasOperacao(item.minutos)}</span>
+              <span>${item.plantoes} plantão(ões)</span>
+            </div>
+          `).join("")}
+        `;
       }
 
       function definirModoPlantaoOperacao(modo) {
@@ -20733,7 +20834,7 @@
         const submit = document.getElementById("operacao-submit-plantao");
         if (dataWrap) dataWrap.hidden = operacaoState.plantaoModo !== "unico";
         if (diasWrap) diasWrap.hidden = operacaoState.plantaoModo !== "recorrente";
-        if (submit) submit.textContent = operacaoState.plantaoModo === "recorrente" ? "Criar escala do mês" : "Adicionar plantão";
+        if (submit) submit.textContent = operacaoState.plantaoEditandoId ? "Salvar plantão" : (operacaoState.plantaoModo === "recorrente" ? "Criar escala do mês" : "Adicionar plantão");
       }
 
       function alternarFormularioPlantaoOperacao(aberto) {
@@ -20751,12 +20852,22 @@
         itens.forEach((item) => {
           const chave = item.tecnico || "--";
           if (!porTecnico.has(chave)) porTecnico.set(chave, []);
-          porTecnico.get(chave).push(`${item.entrada || "--"}-${item.saida || "--"}`);
+          porTecnico.get(chave).push(item);
         });
-        return Array.from(porTecnico.entries()).map(([tecnico, horarios]) => `
+        return Array.from(porTecnico.entries()).map(([tecnico, plantoes]) => `
           <div class="operacao-day-shift">
             <span class="operacao-day-tech">${escaparTextoOperacao(primeiroNomeOperacao(tecnico))}</span>
-            <span class="operacao-day-hours">${horarios.map(escaparTextoOperacao).join("<br>")}</span>
+            <span class="operacao-day-hours">${plantoes.map((plantao) => `
+              <button class="operacao-shift-hour ${operacaoState.plantaoSelecionadoId === plantao.id ? "selected" : ""}" type="button" data-operacao-plantao-id="${plantao.id}">
+                ${escaparTextoOperacao(`${plantao.entrada || "--"}-${plantao.saida || "--"}`)}
+              </button>
+            `).join("")}</span>
+            ${plantoes.some((plantao) => operacaoState.plantaoSelecionadoId === plantao.id) ? `
+              <div class="operacao-shift-actions">
+                <button class="btn-secondary" type="button" data-operacao-editar-plantao="${operacaoState.plantaoSelecionadoId}">Editar</button>
+                <button class="btn-secondary" type="button" data-operacao-excluir-plantao="${operacaoState.plantaoSelecionadoId}">Excluir</button>
+              </div>
+            ` : ""}
           </div>
         `).join("");
       }
@@ -20789,9 +20900,10 @@
         datas.forEach((data) => {
           const iso = isoOperacao(data);
           const itens = porData.get(iso) || [];
-          const cell = document.createElement("button");
-          cell.type = "button";
+          const cell = document.createElement("div");
           cell.className = "operacao-day-cell";
+          cell.tabIndex = 0;
+          cell.setAttribute("role", "button");
           if (data.getDay() === 0 || data.getDay() === 6) cell.classList.add("operacao-weekend");
           cell.innerHTML = `<div class="operacao-day-number">${String(data.getDate()).padStart(2, "0")} • ${diaSemanaCurtoOperacao(iso)}</div><div class="operacao-day-note"></div>`;
           cell.querySelector(".operacao-day-note").innerHTML = resumoDiaEscalaOperacao(itens);
@@ -20801,8 +20913,71 @@
             document.getElementById("operacao-plantao-data").value = iso;
             document.getElementById("operacao-plantao-tecnico")?.focus();
           });
+          cell.addEventListener("keydown", (ev) => {
+            if (ev.key === "Enter" || ev.key === " ") {
+              ev.preventDefault();
+              cell.click();
+            }
+          });
           grade.appendChild(cell);
         });
+        grade.querySelectorAll("[data-operacao-plantao-id]").forEach((btn) => {
+          btn.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            operacaoState.plantaoSelecionadoId = Number(btn.dataset.operacaoPlantaoId);
+            renderizarEscalaOperacao();
+          });
+        });
+        grade.querySelectorAll("[data-operacao-editar-plantao]").forEach((btn) => {
+          btn.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            iniciarEdicaoPlantaoOperacao(Number(btn.dataset.operacaoEditarPlantao));
+          });
+        });
+        grade.querySelectorAll("[data-operacao-excluir-plantao]").forEach((btn) => {
+          btn.addEventListener("click", async (ev) => {
+            ev.stopPropagation();
+            await excluirPlantaoOperacao(Number(btn.dataset.operacaoExcluirPlantao));
+          });
+        });
+      }
+
+      function cancelarEdicaoPlantaoOperacao() {
+        operacaoState.plantaoEditandoId = null;
+        document.getElementById("operacao-form-plantao")?.reset();
+        document.getElementById("operacao-plantao-data").value = dataPadraoCompetenciaOperacao();
+        document.getElementById("operacao-cancelar-edicao-plantao").hidden = true;
+        definirModoPlantaoOperacao("recorrente");
+      }
+
+      function iniciarEdicaoPlantaoOperacao(plantaoId) {
+        const plantao = operacaoState.escala.find((item) => Number(item.id) === Number(plantaoId));
+        if (!plantao) return;
+        operacaoState.plantaoEditandoId = Number(plantao.id);
+        definirModoPlantaoOperacao("unico");
+        alternarFormularioPlantaoOperacao(true);
+        document.getElementById("operacao-plantao-tecnico").value = plantao.tecnico || "";
+        document.getElementById("operacao-plantao-data").value = plantao.data || dataPadraoCompetenciaOperacao();
+        document.getElementById("operacao-plantao-entrada").value = plantao.entrada || "";
+        document.getElementById("operacao-plantao-saida").value = plantao.saida || "";
+        document.getElementById("operacao-cancelar-edicao-plantao").hidden = false;
+        definirModoPlantaoOperacao("unico");
+        document.getElementById("operacao-plantao-tecnico")?.focus();
+      }
+
+      async function excluirPlantaoOperacao(plantaoId) {
+        const plantao = operacaoState.escala.find((item) => Number(item.id) === Number(plantaoId));
+        if (!plantao || !operacaoState.unidade?.id) return;
+        const ok = await modal.confirmar(`Excluir plantão de ${plantao.tecnico} em ${plantao.data}?`, "Excluir plantão", "vermelho");
+        if (!ok) return;
+        try {
+          await fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}/escala/${plantao.id}`, { method: "DELETE" });
+          operacaoState.plantaoSelecionadoId = null;
+          if (operacaoState.plantaoEditandoId === plantao.id) cancelarEdicaoPlantaoOperacao();
+          await carregarUnidadeOperacao();
+        } catch (erro) {
+          await modal.alerta(erro.message || "Não foi possível excluir o plantão.", "Operação");
+        }
       }
 
       function renderizarMovimentosOperacao() {
@@ -20841,7 +21016,24 @@
             entrada: document.getElementById("operacao-plantao-entrada")?.value || "",
             saida: document.getElementById("operacao-plantao-saida")?.value || ""
           };
-          if (operacaoState.plantaoModo === "recorrente") {
+          if (operacaoState.plantaoEditandoId) {
+            const payload = {
+              tecnico: basePayload.tecnico,
+              data: document.getElementById("operacao-plantao-data")?.value || "",
+              entrada: basePayload.entrada,
+              saida: basePayload.saida
+            };
+            if (!payload.tecnico || !payload.data || !payload.entrada || !payload.saida) {
+              await modal.alerta("Preencha técnico, data, entrada e saída.", "Operação");
+              return;
+            }
+            await fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}/escala/${operacaoState.plantaoEditandoId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+            cancelarEdicaoPlantaoOperacao();
+          } else if (operacaoState.plantaoModo === "recorrente") {
             const diasSemana = Array.from(document.querySelectorAll('input[name="operacao-plantao-dia"]:checked')).map((input) => Number(input.value));
             if (!basePayload.tecnico || !basePayload.entrada || !basePayload.saida || !diasSemana.length) {
               await modal.alerta("Preencha técnico, dias da semana, entrada e saída.", "Operação");
@@ -20873,6 +21065,7 @@
             document.getElementById("operacao-plantao-data").value = dataPadraoCompetenciaOperacao();
             definirModoPlantaoOperacao("recorrente");
           }
+          operacaoState.plantaoSelecionadoId = null;
           await carregarUnidadeOperacao();
           alternarFormularioPlantaoOperacao(false);
         } catch (erro) {
@@ -20948,12 +21141,16 @@
           });
         });
         document.querySelectorAll("[data-operacao-plantao-modo]").forEach((btn) => {
-          btn.addEventListener("click", () => definirModoPlantaoOperacao(btn.dataset.operacaoPlantaoModo));
+          btn.addEventListener("click", () => {
+            if (operacaoState.plantaoEditandoId) cancelarEdicaoPlantaoOperacao();
+            definirModoPlantaoOperacao(btn.dataset.operacaoPlantaoModo);
+          });
         });
         document.getElementById("btn-operacao-toggle-plantao")?.addEventListener("click", () => {
           definirModoPlantaoOperacao("recorrente");
           alternarFormularioPlantaoOperacao(true);
         });
+        document.getElementById("operacao-cancelar-edicao-plantao")?.addEventListener("click", cancelarEdicaoPlantaoOperacao);
         document.getElementById("operacao-form-plantao")?.addEventListener("submit", salvarPlantaoOperacao);
         document.getElementById("operacao-form-movimento")?.addEventListener("submit", salvarMovimentoOperacao);
         document.getElementById("btn-operacao-validar")?.addEventListener("click", validarCompetenciaOperacao);
