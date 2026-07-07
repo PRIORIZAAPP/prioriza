@@ -193,6 +193,40 @@ class Tarefa(Base):
         }
 
 
+class MarcoOperacional(Base):
+    __tablename__ = "marcos_operacionais"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    titulo = Column(String, nullable=False)
+    data = Column(String, nullable=False, index=True)  # YYYY-MM-DD
+    categoria = Column(String, nullable=False, index=True)
+    severidade = Column(String, nullable=False, index=True)
+    descricao = Column(Text, default="")
+    ativo = Column(Boolean, default=True, nullable=False)
+    criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    atualizado_em = Column(
+        DateTime,
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "titulo": self.titulo or "",
+            "data": self.data,
+            "categoria": self.categoria or "Outro",
+            "severidade": self.severidade or "Baixa",
+            "descricao": self.descricao or "",
+            "ativo": bool(self.ativo),
+            "criado_em": self.criado_em.isoformat() if self.criado_em else None,
+            "atualizado_em": self.atualizado_em.isoformat() if self.atualizado_em else None,
+        }
+
+
 class ChecklistItem(Base):
     __tablename__ = "checklist"
 
@@ -555,6 +589,22 @@ class ResumoFinanceiroOut(BaseModel):
     saidas_mes: float
     saldo_mes: float
     despesas_por_categoria: dict[str, float] = {}
+
+
+class MarcoOperacionalCreate(BaseModel):
+    titulo: str = Field(..., min_length=1, max_length=180)
+    data: str = Field(..., min_length=10, max_length=10)
+    categoria: str = Field(..., min_length=1, max_length=40)
+    severidade: str = Field(..., min_length=1, max_length=20)
+    descricao: str = Field(default="", max_length=5000)
+
+
+class MarcoOperacionalUpdate(BaseModel):
+    titulo: Optional[str] = Field(default=None, min_length=1, max_length=180)
+    data: Optional[str] = Field(default=None, min_length=10, max_length=10)
+    categoria: Optional[str] = Field(default=None, min_length=1, max_length=40)
+    severidade: Optional[str] = Field(default=None, min_length=1, max_length=20)
+    descricao: Optional[str] = Field(default=None, max_length=5000)
 
 
 # ============================================================
@@ -1016,6 +1066,11 @@ def rodar_migracoes_automaticas():
     except Exception as e:
         print(f"[MIGRAÇÃO] Aviso ao criar contas_fixas_status_mensal: {e}")
 
+    try:
+        MarcoOperacional.__table__.create(bind=engine, checkfirst=True)
+    except Exception as e:
+        print(f"[MIGRAÇÃO] Aviso ao criar marcos_operacionais: {e}")
+
     for tabela in ("tarefas", "checklist", "notes", "push_subscriptions", "google_calendar_tokens"):
         try:
             with engine.connect() as conn:
@@ -1039,6 +1094,43 @@ def validar_data_iso(data_str: str) -> bool:
         return True
     except Exception:
         return False
+
+
+MARCOS_CATEGORIAS = {
+    "ti": "TI",
+    "operacao": "Operação",
+    "equipamento": "Equipamento",
+    "gestao": "Gestão",
+    "contrato": "Contrato",
+    "auditoria": "Auditoria",
+    "qualidade": "Qualidade",
+    "incidente": "Incidente",
+    "outro": "Outro",
+}
+MARCOS_SEVERIDADES = {
+    "baixa": "Baixa",
+    "media": "Média",
+    "alta": "Alta",
+    "critica": "Crítica",
+}
+
+
+def _chave_texto_marco(valor: str) -> str:
+    return unicodedata.normalize("NFKD", (valor or "").strip()).encode("ascii", "ignore").decode("ascii").lower()
+
+
+def normalizar_categoria_marco(valor: str) -> str:
+    categoria = MARCOS_CATEGORIAS.get(_chave_texto_marco(valor))
+    if not categoria:
+        raise HTTPException(status_code=400, detail="Categoria de Marco Operacional inválida.")
+    return categoria
+
+
+def normalizar_severidade_marco(valor: str) -> str:
+    severidade = MARCOS_SEVERIDADES.get(_chave_texto_marco(valor))
+    if not severidade:
+        raise HTTPException(status_code=400, detail="Severidade de Marco Operacional inválida.")
+    return severidade
 
 
 def normalizar_tipo_financeiro(tipo: str) -> str:
@@ -3363,6 +3455,143 @@ def desfazer_confirmacao_conta_fixa_financeira(
 # TAREFAS / EVENTOS LOCAIS
 # ============================================================
 
+@app.get("/marcos-operacionais")
+def listar_marcos_operacionais(
+    data: Optional[str] = Query(default=None),
+    data_from: Optional[str] = Query(default=None),
+    data_to: Optional[str] = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    for valor in (data, data_from, data_to):
+        if valor and not validar_data_iso(valor):
+            raise HTTPException(status_code=400, detail="Data inválida. Use YYYY-MM-DD.")
+    consulta = db.query(MarcoOperacional).filter(
+        MarcoOperacional.user_id == current_user.id,
+        MarcoOperacional.ativo == True,
+    )
+    if data:
+        consulta = consulta.filter(MarcoOperacional.data == data)
+    else:
+        if data_from:
+            consulta = consulta.filter(MarcoOperacional.data >= data_from)
+        if data_to:
+            consulta = consulta.filter(MarcoOperacional.data <= data_to)
+    marcos = consulta.order_by(MarcoOperacional.data.desc(), MarcoOperacional.id.desc()).limit(500).all()
+    return [marco.to_dict() for marco in marcos]
+
+
+@app.get("/marcos-operacionais/buscar")
+def buscar_marcos_operacionais(
+    q: str = Query(..., min_length=2, max_length=120),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    termo = q.strip()
+    if len(termo) < 2:
+        raise HTTPException(status_code=400, detail="Digite pelo menos 2 caracteres para buscar.")
+    padrao = f"%{termo}%"
+    marcos = (
+        db.query(MarcoOperacional)
+        .filter(
+            MarcoOperacional.user_id == current_user.id,
+            MarcoOperacional.ativo == True,
+            (
+                MarcoOperacional.titulo.ilike(padrao)
+                | MarcoOperacional.descricao.ilike(padrao)
+                | MarcoOperacional.categoria.ilike(padrao)
+                | MarcoOperacional.severidade.ilike(padrao)
+            ),
+        )
+        .order_by(MarcoOperacional.data.desc(), MarcoOperacional.id.desc())
+        .limit(100)
+        .all()
+    )
+    return [marco.to_dict() for marco in marcos]
+
+
+@app.post("/marcos-operacionais", status_code=201)
+def criar_marco_operacional(
+    payload: MarcoOperacionalCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    titulo = payload.titulo.strip()
+    data_marco = payload.data.strip()
+    if not titulo:
+        raise HTTPException(status_code=400, detail="Título obrigatório.")
+    if not validar_data_iso(data_marco):
+        raise HTTPException(status_code=400, detail="Data inválida. Use YYYY-MM-DD.")
+    marco = MarcoOperacional(
+        user_id=current_user.id,
+        titulo=titulo,
+        data=data_marco,
+        categoria=normalizar_categoria_marco(payload.categoria),
+        severidade=normalizar_severidade_marco(payload.severidade),
+        descricao=(payload.descricao or "").strip(),
+        ativo=True,
+    )
+    db.add(marco)
+    db.commit()
+    db.refresh(marco)
+    return marco.to_dict()
+
+
+@app.put("/marcos-operacionais/{marco_id}")
+def editar_marco_operacional(
+    marco_id: int,
+    payload: MarcoOperacionalUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    marco = db.query(MarcoOperacional).filter(
+        MarcoOperacional.id == marco_id,
+        MarcoOperacional.user_id == current_user.id,
+        MarcoOperacional.ativo == True,
+    ).first()
+    if not marco:
+        raise HTTPException(status_code=404, detail="Marco Operacional não encontrado.")
+    if payload.titulo is not None:
+        titulo = payload.titulo.strip()
+        if not titulo:
+            raise HTTPException(status_code=400, detail="Título obrigatório.")
+        marco.titulo = titulo
+    if payload.data is not None:
+        data_marco = payload.data.strip()
+        if not validar_data_iso(data_marco):
+            raise HTTPException(status_code=400, detail="Data inválida. Use YYYY-MM-DD.")
+        marco.data = data_marco
+    if payload.categoria is not None:
+        marco.categoria = normalizar_categoria_marco(payload.categoria)
+    if payload.severidade is not None:
+        marco.severidade = normalizar_severidade_marco(payload.severidade)
+    if payload.descricao is not None:
+        marco.descricao = payload.descricao.strip()
+    marco.atualizado_em = datetime.now(UTC)
+    db.commit()
+    db.refresh(marco)
+    return marco.to_dict()
+
+
+@app.delete("/marcos-operacionais/{marco_id}")
+def desativar_marco_operacional(
+    marco_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    marco = db.query(MarcoOperacional).filter(
+        MarcoOperacional.id == marco_id,
+        MarcoOperacional.user_id == current_user.id,
+        MarcoOperacional.ativo == True,
+    ).first()
+    if not marco:
+        raise HTTPException(status_code=404, detail="Marco Operacional não encontrado.")
+    marco.ativo = False
+    marco.atualizado_em = datetime.now(UTC)
+    db.commit()
+    return {"ok": True, "id": marco.id}
+
+
 @app.get("/tarefas")
 def listar_tarefas(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     tarefas = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.user_id == current_user.id).order_by(Tarefa.data, Tarefa.hora_inicio, Tarefa.id).all()
@@ -3973,12 +4202,14 @@ def exportar_backup(db: Session = Depends(get_db), current_user: User = Depends(
     tarefas = db.query(Tarefa).filter(Tarefa.user_id == current_user.id, Tarefa.ativo == True).all()
     checklist = db.query(ChecklistItem).filter(ChecklistItem.user_id == current_user.id, ChecklistItem.ativo == True).all()
     notas = db.query(Note).filter(Note.user_id == current_user.id, Note.ativo == True).all()
+    marcos = db.query(MarcoOperacional).filter(MarcoOperacional.user_id == current_user.id, MarcoOperacional.ativo == True).all()
     return {
-        "versao": "2.0",
+        "versao": "2.1",
         "exportado_em": datetime.now(UTC).isoformat(),
         "tarefas": [t.to_dict() for t in tarefas],
         "checklist": [c.to_dict(incluir_pode_hoje=True) for c in checklist],
         "notas": [n.to_dict() for n in notas],
+        "marcos_operacionais": [m.to_dict() for m in marcos],
     }
 
 
@@ -3993,7 +4224,8 @@ async def importar_backup(request: Request, db: Session = Depends(get_db), curre
     tarefas_raw = dados.get("tarefas", [])
     checklist_raw = dados.get("checklist", [])
     notas_raw = dados.get("notas", [])
-    importadas = {"tarefas": 0, "checklist": 0, "notas": 0, "erros": []}
+    marcos_raw = dados.get("marcos_operacionais", [])
+    importadas = {"tarefas": 0, "checklist": 0, "notas": 0, "marcos_operacionais": 0, "erros": []}
 
     for t in tarefas_raw:
         try:
@@ -4073,11 +4305,31 @@ async def importar_backup(request: Request, db: Session = Depends(get_db), curre
         except Exception as e:
             importadas["erros"].append(f"Nota '{(n.get('texto') or '?')[:30]}': {e}")
 
+    for m in marcos_raw:
+        try:
+            titulo = (m.get("titulo") or "").strip()
+            data_marco = (m.get("data") or "").strip()
+            if not titulo or not validar_data_iso(data_marco):
+                continue
+            novo_marco = MarcoOperacional(
+                user_id=user_id,
+                titulo=titulo,
+                data=data_marco,
+                categoria=normalizar_categoria_marco(m.get("categoria") or "Outro"),
+                severidade=normalizar_severidade_marco(m.get("severidade") or "Baixa"),
+                descricao=(m.get("descricao") or "").strip(),
+                ativo=True,
+            )
+            db.add(novo_marco)
+            importadas["marcos_operacionais"] += 1
+        except Exception as e:
+            importadas["erros"].append(f"Marco '{m.get('titulo', '?')}': {e}")
+
     db.commit()
     return {
         "ok": True,
         "importadas": importadas,
-        "mensagem": f"Restauração concluída: {importadas['tarefas']} tarefas, {importadas['checklist']} rotinas, {importadas['notas']} notas importadas.",
+        "mensagem": f"Restauração concluída: {importadas['tarefas']} tarefas, {importadas['checklist']} rotinas, {importadas['notas']} notas e {importadas['marcos_operacionais']} marcos importados.",
     }
 
 
