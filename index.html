@@ -9386,6 +9386,16 @@
         color: #ffffff !important;
       }
 
+      .btn-primary:disabled,
+      .btn-primary:disabled:hover,
+      .btn-primary:disabled:focus,
+      .btn-primary:disabled:active {
+        border-color: #cbd5e1;
+        background: #e8eef8;
+        color: #475569 !important;
+        opacity: 1;
+      }
+
       .btn-primary svg,
       .modal-btn-ok:not(.verde) svg {
         color: #ffffff !important;
@@ -19033,7 +19043,12 @@
           body: JSON.stringify(payload),
         });
         const dados = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(dados?.detail || "Não foi possível salvar o Marco Operacional.");
+        if (!res.ok) {
+          if (res.status === 404) {
+            throw new Error("Rota de Marcos Operacionais não encontrada. Reinicie o backend do PRIORIZA usando o main.py atualizado.");
+          }
+          throw new Error(dados?.detail || "Não foi possível salvar o Marco Operacional.");
+        }
         calendarioDiaSelecionadoISO = payload.data;
         const [ano, mes] = payload.data.split("-").map(Number);
         calendarioMesAtual = new Date(ano, mes - 1, 1);
