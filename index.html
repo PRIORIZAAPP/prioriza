@@ -10150,6 +10150,309 @@
         opacity: 1;
       }
 
+      #screen-operacao .operacao-shell {
+        padding: 22px;
+      }
+
+      #screen-operacao .operacao-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      #screen-operacao .operacao-header h2 {
+        margin: 2px 0 4px;
+        color: #172033;
+        font-size: 24px;
+        line-height: 1.1;
+      }
+
+      #screen-operacao .operacao-header p,
+      #screen-operacao .operacao-section-head p {
+        margin: 0;
+        color: #64748b;
+        font-size: 13px;
+      }
+
+      #screen-operacao .operacao-kicker {
+        margin: 0;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      #screen-operacao .operacao-unidades-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      #screen-operacao .operacao-unit-card {
+        min-height: 132px;
+        padding: 16px;
+        border: 1px solid #dbe3ee;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #172033;
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+      }
+
+      #screen-operacao .operacao-unit-card:hover {
+        border-color: rgba(var(--cor-tema-rgb), 0.42);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+        transform: translateY(-1px);
+      }
+
+      #screen-operacao .operacao-unit-title {
+        margin: 0 0 6px;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      #screen-operacao .operacao-unit-meta {
+        color: #64748b;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      #screen-operacao .operacao-status {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        margin-top: 14px;
+        padding: 0 9px;
+        border-radius: 999px;
+        background: #eef2f7;
+        color: #475569;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      #screen-operacao .operacao-status.andamento { background: #eff6ff; color: #1d4ed8; }
+      #screen-operacao .operacao-status.fechado { background: #ecfdf5; color: #15803d; }
+
+      #screen-operacao .operacao-form-card {
+        margin-bottom: 14px;
+        padding: 14px;
+        border: 1px solid #dbe3ee;
+        border-radius: 8px;
+        background: #f8fafc;
+      }
+
+      #screen-operacao .operacao-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      #screen-operacao .operacao-form-grid-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      #screen-operacao .operacao-field-wide {
+        grid-column: span 2;
+      }
+
+      #screen-operacao label {
+        display: block;
+        margin-bottom: 4px;
+        color: #475569;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      #screen-operacao input,
+      #screen-operacao select {
+        width: 100%;
+        min-height: 38px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #172033;
+        font-size: 13px;
+      }
+
+      #screen-operacao .operacao-form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      #screen-operacao .operacao-detail-header {
+        align-items: center;
+      }
+
+      #screen-operacao .operacao-competencia-input {
+        width: 168px;
+      }
+
+      #screen-operacao .operacao-tabs,
+      #screen-operacao .operacao-segmented {
+        display: inline-flex;
+        gap: 4px;
+        padding: 4px;
+        border: 1px solid #dbe3ee;
+        border-radius: 8px;
+        background: #f1f5f9;
+      }
+
+      #screen-operacao .operacao-tabs {
+        margin-bottom: 14px;
+      }
+
+      #screen-operacao .operacao-tab,
+      #screen-operacao .operacao-segmented button {
+        min-height: 32px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: #475569;
+        padding: 0 12px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      #screen-operacao .operacao-tab.active,
+      #screen-operacao .operacao-segmented button.active {
+        background: #ffffff;
+        color: #172033;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+      }
+
+      #screen-operacao .operacao-panel {
+        display: none;
+      }
+
+      #screen-operacao .operacao-panel.active {
+        display: block;
+      }
+
+      #screen-operacao .operacao-metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      #screen-operacao .operacao-metrics > div,
+      #screen-operacao .operacao-close-card {
+        padding: 16px;
+        border: 1px solid #dbe3ee;
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      #screen-operacao .operacao-metrics span {
+        display: block;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      #screen-operacao .operacao-metrics strong {
+        display: block;
+        margin-top: 6px;
+        color: #172033;
+        font-size: 18px;
+      }
+
+      #screen-operacao .operacao-shortcuts {
+        display: flex;
+        gap: 8px;
+      }
+
+      #screen-operacao .operacao-section-head,
+      #screen-operacao .operacao-close-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 12px;
+      }
+
+      #screen-operacao .operacao-section-head h3,
+      #screen-operacao .operacao-close-card h3 {
+        margin: 0 0 4px;
+        color: #172033;
+        font-size: 17px;
+      }
+
+      #screen-operacao .operacao-calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+
+      #screen-operacao .operacao-day-cell {
+        min-height: 78px;
+        padding: 8px;
+        border: 1px solid #dbe3ee;
+        border-radius: 8px;
+        background: #ffffff;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      #screen-operacao .operacao-day-cell:hover {
+        border-color: rgba(var(--cor-tema-rgb), 0.42);
+      }
+
+      #screen-operacao .operacao-day-number {
+        color: #172033;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      #screen-operacao .operacao-day-note {
+        margin-top: 5px;
+        color: #64748b;
+        font-size: 11px;
+        line-height: 1.35;
+      }
+
+      #screen-operacao .operacao-list-table {
+        display: grid;
+        gap: 6px;
+      }
+
+      #screen-operacao .operacao-row {
+        display: grid;
+        grid-template-columns: 110px minmax(0, 1fr) 150px 150px;
+        gap: 10px;
+        align-items: center;
+        min-height: 42px;
+        padding: 9px 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #172033;
+        font-size: 12px;
+      }
+
+      #screen-operacao .operacao-row small {
+        color: #64748b;
+      }
+
+      #screen-operacao .operacao-empty {
+        grid-column: 1 / -1;
+        padding: 22px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 8px;
+        background: #f8fafc;
+        color: #64748b;
+        text-align: center;
+      }
+
       @keyframes sprint05Feedback {
         0% { opacity: 0; transform: translateY(6px) scale(0.96); }
         20%, 72% { opacity: 1; transform: translateY(0) scale(1); }
@@ -10390,16 +10693,15 @@
               <span>Pessoal</span>
             </div>
 
-            <div class="nav-item" data-target="screen-financas">
+            <div class="nav-item" data-target="screen-operacao">
               <svg viewBox="0 0 256 256" fill="none" color="currentColor">
-                <rect x="40" y="48" width="176" height="160" rx="8" fill="currentColor" opacity="0.2"/>
-                <rect x="40" y="48" width="176" height="160" rx="8" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
-                <line x1="72" y1="88" x2="184" y2="88" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>
-                <rect x="76" y="128" width="26" height="48" rx="4" fill="currentColor" opacity="0.45"/>
-                <rect x="115" y="108" width="26" height="68" rx="4" fill="currentColor" opacity="0.65"/>
-                <rect x="154" y="140" width="26" height="36" rx="4" fill="currentColor"/>
+                <rect x="40" y="56" width="176" height="144" rx="10" fill="currentColor" opacity="0.16"/>
+                <rect x="40" y="56" width="176" height="144" rx="10" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/>
+                <path d="M80 56V40h96v16" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M78 112h100M78 148h64" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>
+                <circle cx="188" cy="148" r="14" fill="currentColor"/>
               </svg>
-              <span>Painel Financeiro</span>
+              <span>Operação</span>
             </div>
 
             <div class="nav-item" data-target="screen-notas">
@@ -10905,6 +11207,146 @@
             <div id="pessoal-rotinas-box" class="pessoal-panel pessoal-panel--rotinas">
               <h3 id="pessoal-rotinas-title" style="margin:4px 0 8px 0;font-size:14px;color:#111827">Checklist pessoal</h3>
               <div id="pessoal-checklist"><small>Carregando...</small></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ ABA OPERAÇÃO ══ -->
+        <div class="screen" id="screen-operacao">
+          <div class="card operacao-shell">
+            <div class="operacao-list-view" id="operacao-list-view">
+              <div class="operacao-header">
+                <div>
+                  <p class="operacao-kicker">Módulo Operação</p>
+                  <h2>Operação</h2>
+                  <p>Gestão operacional das unidades por competência mensal.</p>
+                </div>
+                <button id="btn-operacao-nova-unidade" class="btn-primary" type="button">+ Nova Unidade</button>
+              </div>
+
+              <form id="operacao-form-unidade" class="operacao-form-card" hidden>
+                <div class="operacao-form-grid">
+                  <div>
+                    <label for="operacao-unidade-nome">Nome da unidade</label>
+                    <input id="operacao-unidade-nome" type="text" placeholder="Ex: HGG - Diagnóstico" />
+                  </div>
+                  <div>
+                    <label for="operacao-unidade-sigla">Sigla opcional</label>
+                    <input id="operacao-unidade-sigla" type="text" placeholder="Ex: HGG" />
+                  </div>
+                </div>
+                <div class="operacao-form-actions">
+                  <button id="btn-operacao-cancelar-unidade" class="btn-secondary" type="button">Cancelar</button>
+                  <button class="btn-primary" type="submit">Salvar unidade</button>
+                </div>
+              </form>
+
+              <div id="operacao-unidades-lista" class="operacao-unidades-grid">
+                <div class="operacao-empty">Carregando unidades...</div>
+              </div>
+            </div>
+
+            <div class="operacao-detail-view" id="operacao-detail-view" hidden>
+              <div class="operacao-header operacao-detail-header">
+                <button id="btn-operacao-voltar" class="btn-secondary" type="button">Voltar</button>
+                <div>
+                  <p class="operacao-kicker">Unidade</p>
+                  <h2 id="operacao-unidade-titulo">Unidade</h2>
+                  <p id="operacao-unidade-subtitulo">Competência atual</p>
+                </div>
+                <input id="operacao-competencia" class="operacao-competencia-input" type="month" />
+              </div>
+
+              <div class="operacao-tabs" role="tablist" aria-label="Navegação da unidade">
+                <button class="operacao-tab active" type="button" data-operacao-tab="resumo">Resumo</button>
+                <button class="operacao-tab" type="button" data-operacao-tab="escala">Escala</button>
+                <button class="operacao-tab" type="button" data-operacao-tab="movimentos">Movimentos</button>
+                <button class="operacao-tab" type="button" data-operacao-tab="fechamento">Fechamento</button>
+              </div>
+
+              <section class="operacao-panel active" data-operacao-panel="resumo">
+                <div class="operacao-metrics">
+                  <div><span>Competência</span><strong id="operacao-resumo-competencia">--</strong></div>
+                  <div><span>Status</span><strong id="operacao-resumo-status">--</strong></div>
+                  <div><span>Movimentos</span><strong id="operacao-resumo-movimentos">0</strong></div>
+                  <div><span>Plantões</span><strong id="operacao-resumo-plantoes">0</strong></div>
+                </div>
+                <div class="operacao-shortcuts">
+                  <button class="btn-secondary" type="button" data-operacao-go="escala">Escala</button>
+                  <button class="btn-secondary" type="button" data-operacao-go="movimentos">Movimentos</button>
+                  <button class="btn-secondary" type="button" data-operacao-go="fechamento">Fechamento</button>
+                </div>
+              </section>
+
+              <section class="operacao-panel" data-operacao-panel="escala">
+                <div class="operacao-section-head">
+                  <div>
+                    <h3>Escala</h3>
+                    <p>Planejamento por semana ou mês. Clique em um dia para alimentar o plantão.</p>
+                  </div>
+                  <div class="operacao-segmented">
+                    <button class="active" type="button" data-operacao-escala-view="mes">Mês</button>
+                    <button type="button" data-operacao-escala-view="semana">Semana</button>
+                  </div>
+                </div>
+                <form id="operacao-form-plantao" class="operacao-form-card">
+                  <div class="operacao-form-grid operacao-form-grid-4">
+                    <div><label for="operacao-plantao-tecnico">Técnico</label><input id="operacao-plantao-tecnico" type="text" /></div>
+                    <div><label for="operacao-plantao-data">Data</label><input id="operacao-plantao-data" type="date" /></div>
+                    <div><label for="operacao-plantao-entrada">Entrada</label><input id="operacao-plantao-entrada" type="time" /></div>
+                    <div><label for="operacao-plantao-saida">Saída</label><input id="operacao-plantao-saida" type="time" /></div>
+                  </div>
+                  <div class="operacao-form-actions">
+                    <button class="btn-primary" type="submit">Adicionar plantão</button>
+                  </div>
+                </form>
+                <div id="operacao-escala-grade" class="operacao-calendar-grid"></div>
+                <div id="operacao-escala-lista" class="operacao-list-table"></div>
+              </section>
+
+              <section class="operacao-panel" data-operacao-panel="movimentos">
+                <div class="operacao-section-head">
+                  <div>
+                    <h3>Movimentos</h3>
+                    <p>Alterações do mês registradas separadas da escala planejada.</p>
+                  </div>
+                </div>
+                <form id="operacao-form-movimento" class="operacao-form-card">
+                  <div class="operacao-form-grid operacao-form-grid-4">
+                    <div>
+                      <label for="operacao-movimento-tipo">Tipo</label>
+                      <select id="operacao-movimento-tipo">
+                        <option>Troca</option>
+                        <option>Cobertura</option>
+                        <option>Hora Extra</option>
+                        <option>Falta</option>
+                        <option>Ajuste Manual</option>
+                      </select>
+                    </div>
+                    <div><label for="operacao-movimento-data">Data</label><input id="operacao-movimento-data" type="date" /></div>
+                    <div><label for="operacao-movimento-previsto">Técnico previsto</label><input id="operacao-movimento-previsto" type="text" /></div>
+                    <div><label for="operacao-movimento-realizado">Técnico realizado</label><input id="operacao-movimento-realizado" type="text" /></div>
+                    <div><label for="operacao-movimento-entrada">Entrada</label><input id="operacao-movimento-entrada" type="time" /></div>
+                    <div><label for="operacao-movimento-saida">Saída</label><input id="operacao-movimento-saida" type="time" /></div>
+                    <div class="operacao-field-wide"><label for="operacao-movimento-observacao">Observação</label><input id="operacao-movimento-observacao" type="text" /></div>
+                  </div>
+                  <div class="operacao-form-actions">
+                    <button class="btn-primary" type="submit">Adicionar movimento</button>
+                  </div>
+                </form>
+                <div id="operacao-movimentos-lista" class="operacao-list-table"></div>
+              </section>
+
+              <section class="operacao-panel" data-operacao-panel="fechamento">
+                <div class="operacao-close-card">
+                  <div>
+                    <p class="operacao-kicker">Fechamento mensal</p>
+                    <h3 id="operacao-fechamento-competencia">Competência</h3>
+                    <p id="operacao-fechamento-resumo">Status e movimentos da competência.</p>
+                  </div>
+                  <button id="btn-operacao-validar" class="btn-primary" type="button">Validar Competência</button>
+                </div>
+              </section>
             </div>
           </div>
         </div>
@@ -19948,6 +20390,347 @@
       atualizarRelogio();
       setInterval(atualizarRelogio, 60000);
 
+      const operacaoState = {
+        unidades: [],
+        unidade: null,
+        competencia: new Date().toISOString().slice(0, 7),
+        resumo: null,
+        escala: [],
+        movimentos: [],
+        aba: "resumo",
+        escalaView: "mes",
+        carregado: false
+      };
+
+      function classeStatusOperacao(status) {
+        const normalizado = String(status || "").toLowerCase();
+        if (normalizado.includes("fechado")) return "fechado";
+        if (normalizado.includes("andamento")) return "andamento";
+        return "";
+      }
+
+      function formatarCompetenciaOperacao(valor) {
+        if (!valor || !/^\d{4}-\d{2}$/.test(valor)) return "--";
+        const [ano, mes] = valor.split("-").map(Number);
+        const nomes = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+        return `${nomes[(mes || 1) - 1]} de ${ano}`;
+      }
+
+      function dataPadraoCompetenciaOperacao() {
+        const base = operacaoState.competencia || new Date().toISOString().slice(0, 7);
+        return `${base}-01`;
+      }
+
+      async function fetchOperacao(url, options = {}) {
+        const resposta = await fetch(API + url, {
+          ...options,
+          headers: authHeaders(options.headers || {})
+        });
+        const dados = await resposta.json().catch(() => ({}));
+        if (!resposta.ok) throw new Error(dados?.detail || "Não foi possível concluir a ação.");
+        return dados;
+      }
+
+      function renderizarUnidadesOperacao() {
+        const lista = document.getElementById("operacao-unidades-lista");
+        if (!lista) return;
+        lista.innerHTML = "";
+        if (!operacaoState.unidades.length) {
+          const vazio = document.createElement("div");
+          vazio.className = "operacao-empty";
+          vazio.textContent = "Nenhuma unidade cadastrada. Crie a primeira unidade para iniciar a operação.";
+          lista.appendChild(vazio);
+          return;
+        }
+        operacaoState.unidades.forEach((unidade) => {
+          const competencia = unidade.competencia_atual || {};
+          const card = document.createElement("button");
+          card.type = "button";
+          card.className = "operacao-unit-card";
+          card.innerHTML = `
+            <div class="operacao-unit-title"></div>
+            <div class="operacao-unit-meta"></div>
+            <span class="operacao-status ${classeStatusOperacao(competencia.status)}"></span>
+          `;
+          card.querySelector(".operacao-unit-title").textContent = unidade.sigla ? `${unidade.sigla} · ${unidade.nome}` : unidade.nome;
+          card.querySelector(".operacao-unit-meta").textContent = `Competência ${formatarCompetenciaOperacao(competencia.competencia || operacaoState.competencia)}`;
+          card.querySelector(".operacao-status").textContent = competencia.status || "Não iniciado";
+          card.addEventListener("click", () => abrirUnidadeOperacao(unidade.id));
+          lista.appendChild(card);
+        });
+      }
+
+      async function carregarUnidadesOperacao() {
+        const lista = document.getElementById("operacao-unidades-lista");
+        if (lista) lista.innerHTML = '<div class="operacao-empty">Carregando unidades...</div>';
+        try {
+          operacaoState.unidades = await fetchOperacao("/operacao/unidades");
+          operacaoState.carregado = true;
+          renderizarUnidadesOperacao();
+        } catch (erro) {
+          if (lista) lista.innerHTML = `<div class="operacao-empty">${erro.message || "Não foi possível carregar unidades."}</div>`;
+        }
+      }
+
+      function alternarFormularioUnidadeOperacao(aberto) {
+        const form = document.getElementById("operacao-form-unidade");
+        if (!form) return;
+        form.hidden = !aberto;
+        if (aberto) setTimeout(() => document.getElementById("operacao-unidade-nome")?.focus(), 40);
+      }
+
+      async function salvarUnidadeOperacao(ev) {
+        ev.preventDefault();
+        const nome = document.getElementById("operacao-unidade-nome")?.value.trim() || "";
+        const sigla = document.getElementById("operacao-unidade-sigla")?.value.trim() || "";
+        if (!nome) {
+          await modal.alerta("Informe o nome da unidade.", "Operação");
+          return;
+        }
+        try {
+          await fetchOperacao("/operacao/unidades", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nome, sigla })
+          });
+          document.getElementById("operacao-form-unidade")?.reset();
+          alternarFormularioUnidadeOperacao(false);
+          await carregarUnidadesOperacao();
+        } catch (erro) {
+          await modal.alerta(erro.message || "Não foi possível salvar a unidade.", "Operação");
+        }
+      }
+
+      async function abrirUnidadeOperacao(unidadeId) {
+        const listaView = document.getElementById("operacao-list-view");
+        const detailView = document.getElementById("operacao-detail-view");
+        if (!listaView || !detailView) return;
+        try {
+          operacaoState.unidade = await fetchOperacao(`/operacao/unidades/${unidadeId}?` + new URLSearchParams({ competencia: operacaoState.competencia }));
+          listaView.hidden = true;
+          detailView.hidden = false;
+          document.getElementById("operacao-competencia").value = operacaoState.competencia;
+          atualizarCabecalhoOperacao();
+          await carregarUnidadeOperacao();
+        } catch (erro) {
+          await modal.alerta(erro.message || "Não foi possível abrir a unidade.", "Operação");
+        }
+      }
+
+      function voltarListaOperacao() {
+        document.getElementById("operacao-detail-view").hidden = true;
+        document.getElementById("operacao-list-view").hidden = false;
+        operacaoState.unidade = null;
+        carregarUnidadesOperacao();
+      }
+
+      function atualizarCabecalhoOperacao() {
+        const unidade = operacaoState.unidade || {};
+        document.getElementById("operacao-unidade-titulo").textContent = unidade.sigla ? `${unidade.sigla} · ${unidade.nome}` : (unidade.nome || "Unidade");
+        document.getElementById("operacao-unidade-subtitulo").textContent = `Competência ${formatarCompetenciaOperacao(operacaoState.competencia)}`;
+      }
+
+      async function carregarUnidadeOperacao() {
+        if (!operacaoState.unidade?.id) return;
+        const params = new URLSearchParams({ competencia: operacaoState.competencia });
+        const [resumo, escala, movimentos] = await Promise.all([
+          fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}/resumo?${params}`),
+          fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}/escala?${params}`),
+          fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}/movimentos?${params}`)
+        ]);
+        operacaoState.resumo = resumo.competencia || {};
+        operacaoState.escala = Array.isArray(escala) ? escala : [];
+        operacaoState.movimentos = Array.isArray(movimentos) ? movimentos : [];
+        atualizarCabecalhoOperacao();
+        renderizarResumoOperacao();
+        renderizarEscalaOperacao();
+        renderizarMovimentosOperacao();
+        renderizarFechamentoOperacao();
+      }
+
+      function ativarAbaOperacao(aba) {
+        operacaoState.aba = aba || "resumo";
+        document.querySelectorAll("#screen-operacao .operacao-tab").forEach((btn) => btn.classList.toggle("active", btn.dataset.operacaoTab === operacaoState.aba));
+        document.querySelectorAll("#screen-operacao .operacao-panel").forEach((panel) => panel.classList.toggle("active", panel.dataset.operacaoPanel === operacaoState.aba));
+      }
+
+      function renderizarResumoOperacao() {
+        const resumo = operacaoState.resumo || {};
+        document.getElementById("operacao-resumo-competencia").textContent = formatarCompetenciaOperacao(resumo.competencia || operacaoState.competencia);
+        document.getElementById("operacao-resumo-status").textContent = resumo.status || "Não iniciado";
+        document.getElementById("operacao-resumo-movimentos").textContent = String(resumo.movimentos || 0);
+        document.getElementById("operacao-resumo-plantoes").textContent = String(resumo.plantoes || 0);
+      }
+
+      function renderizarEscalaOperacao() {
+        const grade = document.getElementById("operacao-escala-grade");
+        const lista = document.getElementById("operacao-escala-lista");
+        if (!grade || !lista) return;
+        const [ano, mes] = (operacaoState.competencia || "").split("-").map(Number);
+        const totalDias = new Date(ano, mes, 0).getDate();
+        const porData = new Map();
+        operacaoState.escala.forEach((item) => {
+          if (!porData.has(item.data)) porData.set(item.data, []);
+          porData.get(item.data).push(item);
+        });
+        grade.innerHTML = "";
+        const limite = operacaoState.escalaView === "semana" ? Math.min(7, totalDias) : totalDias;
+        for (let dia = 1; dia <= limite; dia++) {
+          const iso = `${operacaoState.competencia}-${String(dia).padStart(2, "0")}`;
+          const itens = porData.get(iso) || [];
+          const cell = document.createElement("button");
+          cell.type = "button";
+          cell.className = "operacao-day-cell";
+          cell.innerHTML = `<div class="operacao-day-number">${dia}</div><div class="operacao-day-note"></div>`;
+          cell.querySelector(".operacao-day-note").textContent = itens.length ? itens.map((p) => `${p.tecnico} ${p.entrada}-${p.saida}`).join(" · ") : "Livre";
+          cell.addEventListener("click", () => {
+            document.getElementById("operacao-plantao-data").value = iso;
+            document.getElementById("operacao-plantao-tecnico")?.focus();
+          });
+          grade.appendChild(cell);
+        }
+        lista.innerHTML = "";
+        if (!operacaoState.escala.length) {
+          lista.innerHTML = '<div class="operacao-empty">Nenhum plantão cadastrado nesta competência.</div>';
+          return;
+        }
+        operacaoState.escala.forEach((item) => {
+          const row = document.createElement("div");
+          row.className = "operacao-row";
+          row.innerHTML = `<span>${item.data}</span><strong></strong><span>${item.entrada}</span><span>${item.saida}</span>`;
+          row.querySelector("strong").textContent = item.tecnico;
+          lista.appendChild(row);
+        });
+      }
+
+      function renderizarMovimentosOperacao() {
+        const lista = document.getElementById("operacao-movimentos-lista");
+        if (!lista) return;
+        lista.innerHTML = "";
+        if (!operacaoState.movimentos.length) {
+          lista.innerHTML = '<div class="operacao-empty">Nenhum movimento registrado nesta competência.</div>';
+          return;
+        }
+        operacaoState.movimentos.forEach((item) => {
+          const row = document.createElement("div");
+          row.className = "operacao-row";
+          row.innerHTML = `<span>${item.data}</span><strong></strong><span></span><small></small>`;
+          row.querySelector("strong").textContent = item.tipo;
+          row.querySelector("span:nth-of-type(2)").textContent = item.tecnico_realizado || item.tecnico_previsto || "--";
+          row.querySelector("small").textContent = item.observacao || `${item.entrada || "--"} - ${item.saida || "--"}`;
+          lista.appendChild(row);
+        });
+      }
+
+      function renderizarFechamentoOperacao() {
+        const resumo = operacaoState.resumo || {};
+        document.getElementById("operacao-fechamento-competencia").textContent = formatarCompetenciaOperacao(resumo.competencia || operacaoState.competencia);
+        document.getElementById("operacao-fechamento-resumo").textContent = `${resumo.status || "Não iniciado"} · ${resumo.movimentos || 0} movimento(s)`;
+        document.getElementById("btn-operacao-validar").disabled = resumo.status === "Fechado";
+      }
+
+      async function salvarPlantaoOperacao(ev) {
+        ev.preventDefault();
+        if (!operacaoState.unidade?.id) return;
+        const payload = {
+          competencia: operacaoState.competencia,
+          tecnico: document.getElementById("operacao-plantao-tecnico")?.value.trim() || "",
+          data: document.getElementById("operacao-plantao-data")?.value || "",
+          entrada: document.getElementById("operacao-plantao-entrada")?.value || "",
+          saida: document.getElementById("operacao-plantao-saida")?.value || ""
+        };
+        if (!payload.tecnico || !payload.data || !payload.entrada || !payload.saida) {
+          await modal.alerta("Preencha técnico, data, entrada e saída.", "Operação");
+          return;
+        }
+        try {
+          await fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}/escala`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          ev.target.reset();
+          document.getElementById("operacao-plantao-data").value = dataPadraoCompetenciaOperacao();
+          await carregarUnidadeOperacao();
+        } catch (erro) {
+          await modal.alerta(erro.message || "Não foi possível salvar o plantão.", "Operação");
+        }
+      }
+
+      async function salvarMovimentoOperacao(ev) {
+        ev.preventDefault();
+        if (!operacaoState.unidade?.id) return;
+        const payload = {
+          competencia: operacaoState.competencia,
+          tipo: document.getElementById("operacao-movimento-tipo")?.value || "Troca",
+          data: document.getElementById("operacao-movimento-data")?.value || "",
+          tecnico_previsto: document.getElementById("operacao-movimento-previsto")?.value.trim() || "",
+          tecnico_realizado: document.getElementById("operacao-movimento-realizado")?.value.trim() || "",
+          entrada: document.getElementById("operacao-movimento-entrada")?.value || "",
+          saida: document.getElementById("operacao-movimento-saida")?.value || "",
+          observacao: document.getElementById("operacao-movimento-observacao")?.value.trim() || ""
+        };
+        if (!payload.data) {
+          await modal.alerta("Informe a data do movimento.", "Operação");
+          return;
+        }
+        try {
+          await fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}/movimentos`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          ev.target.reset();
+          document.getElementById("operacao-movimento-data").value = dataPadraoCompetenciaOperacao();
+          await carregarUnidadeOperacao();
+        } catch (erro) {
+          await modal.alerta(erro.message || "Não foi possível salvar o movimento.", "Operação");
+        }
+      }
+
+      async function validarCompetenciaOperacao() {
+        if (!operacaoState.unidade?.id) return;
+        const ok = await modal.confirmar("Validar e fechar esta competência?", "Operação");
+        if (!ok) return;
+        try {
+          await fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}/fechamento/validar`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ competencia: operacaoState.competencia })
+          });
+          await carregarUnidadeOperacao();
+        } catch (erro) {
+          await modal.alerta(erro.message || "Não foi possível validar a competência.", "Operação");
+        }
+      }
+
+      function vincularOperacaoUI() {
+        document.getElementById("btn-operacao-nova-unidade")?.addEventListener("click", () => alternarFormularioUnidadeOperacao(true));
+        document.getElementById("btn-operacao-cancelar-unidade")?.addEventListener("click", () => alternarFormularioUnidadeOperacao(false));
+        document.getElementById("operacao-form-unidade")?.addEventListener("submit", salvarUnidadeOperacao);
+        document.getElementById("btn-operacao-voltar")?.addEventListener("click", voltarListaOperacao);
+        document.getElementById("operacao-competencia")?.addEventListener("change", async (ev) => {
+          operacaoState.competencia = ev.target.value || new Date().toISOString().slice(0, 7);
+          document.getElementById("operacao-plantao-data").value = dataPadraoCompetenciaOperacao();
+          document.getElementById("operacao-movimento-data").value = dataPadraoCompetenciaOperacao();
+          await carregarUnidadeOperacao();
+        });
+        document.querySelectorAll("[data-operacao-tab]").forEach((btn) => btn.addEventListener("click", () => ativarAbaOperacao(btn.dataset.operacaoTab)));
+        document.querySelectorAll("[data-operacao-go]").forEach((btn) => btn.addEventListener("click", () => ativarAbaOperacao(btn.dataset.operacaoGo)));
+        document.querySelectorAll("[data-operacao-escala-view]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            operacaoState.escalaView = btn.dataset.operacaoEscalaView || "mes";
+            document.querySelectorAll("[data-operacao-escala-view]").forEach((item) => item.classList.toggle("active", item === btn));
+            renderizarEscalaOperacao();
+          });
+        });
+        document.getElementById("operacao-form-plantao")?.addEventListener("submit", salvarPlantaoOperacao);
+        document.getElementById("operacao-form-movimento")?.addEventListener("submit", salvarMovimentoOperacao);
+        document.getElementById("btn-operacao-validar")?.addEventListener("click", validarCompetenciaOperacao);
+        document.getElementById("operacao-plantao-data").value = dataPadraoCompetenciaOperacao();
+        document.getElementById("operacao-movimento-data").value = dataPadraoCompetenciaOperacao();
+      }
+
       // Navegação
       const navItems=document.querySelectorAll(".bottom-nav .nav-item, .desktop-sidebar .nav-item"); const screens=document.querySelectorAll(".screen");
       function atualizarVisibilidadeFabsDesktop(telaAtivaId) {
@@ -19990,6 +20773,9 @@
         }
         if (id === "screen-agenda") {
           setTimeout(atualizarAgendaMesEDia, 20);
+        }
+        if (id === "screen-operacao") {
+          setTimeout(carregarUnidadesOperacao, 20);
         }
         if (id === "screen-financas") {
           atualizarLogoFinanceiroFinancas();
@@ -20087,6 +20873,7 @@
       });
       document.getElementById("btn-rever-introducao-ajuda")?.addEventListener("click", () => abrirOnboarding({ forcar: true }));
       document.getElementById("btn-toggle-form-nota")?.addEventListener("click", () => toggleFormNotaDesktop());
+      vincularOperacaoUI();
       document.addEventListener("click", () => fecharMenusAcoesDesktop());
       ajustarCategoriasNotasUI();
       window.addEventListener("resize", ajustarCategoriasNotasUI);
