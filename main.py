@@ -1371,6 +1371,22 @@ def obter_plantao_operacao(db: Session, user_id: int, unidade_id: int, plantao_i
     return plantao
 
 
+def obter_movimento_operacao(db: Session, user_id: int, unidade_id: int, movimento_id: int) -> OperacaoMovimento:
+    movimento = (
+        db.query(OperacaoMovimento)
+        .filter(
+            OperacaoMovimento.id == movimento_id,
+            OperacaoMovimento.user_id == user_id,
+            OperacaoMovimento.unidade_id == unidade_id,
+            OperacaoMovimento.ativo == True,
+        )
+        .first()
+    )
+    if not movimento:
+        raise HTTPException(status_code=404, detail="Movimento não encontrado.")
+    return movimento
+
+
 def obter_ou_criar_competencia_operacao(db: Session, user_id: int, unidade_id: int, competencia: str) -> OperacaoCompetencia:
     competencia = (competencia or "").strip()
     if not validar_competencia_operacao(competencia):
@@ -4184,6 +4200,22 @@ def criar_movimento_operacao(
     db.commit()
     db.refresh(movimento)
     return movimento.to_dict()
+
+
+@app.delete("/operacao/unidades/{unidade_id}/movimentos/{movimento_id}")
+def excluir_movimento_operacao(
+    unidade_id: int,
+    movimento_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    unidade = obter_unidade_operacao(db, current_user.id, unidade_id)
+    movimento = obter_movimento_operacao(db, current_user.id, unidade.id, movimento_id)
+    movimento.ativo = False
+    comp = obter_ou_criar_competencia_operacao(db, current_user.id, unidade.id, movimento.competencia)
+    comp.atualizado_em = datetime.now(UTC)
+    db.commit()
+    return {"ok": True}
 
 
 @app.post("/operacao/unidades/{unidade_id}/fechamento/validar")
