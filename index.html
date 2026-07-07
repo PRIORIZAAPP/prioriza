@@ -10458,6 +10458,91 @@
         margin-bottom: 0;
       }
 
+      #screen-operacao .operacao-month-sheet-wrap {
+        overflow-x: auto;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      #screen-operacao .operacao-month-sheet {
+        width: 100%;
+        min-width: 1120px;
+        border-collapse: collapse;
+        color: #111827;
+        font-size: 11px;
+        table-layout: fixed;
+      }
+
+      #screen-operacao .operacao-month-sheet th,
+      #screen-operacao .operacao-month-sheet td {
+        height: 24px;
+        border: 1px solid #1f2937;
+        padding: 2px 4px;
+        overflow: hidden;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      #screen-operacao .operacao-month-sheet .sheet-title th {
+        height: 30px;
+        background: #059669;
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+
+      #screen-operacao .operacao-month-sheet .sheet-head-primary th {
+        background: #bfdbfe;
+        font-weight: 700;
+      }
+
+      #screen-operacao .operacao-month-sheet .sheet-head-primary .sheet-day,
+      #screen-operacao .operacao-month-sheet .sheet-head-week .sheet-day {
+        width: 34px;
+        background: #d1d5db;
+      }
+
+      #screen-operacao .operacao-month-sheet .sheet-head-week th {
+        background: #e5e7eb;
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      #screen-operacao .operacao-month-sheet .sheet-name {
+        width: 210px;
+        text-align: left;
+      }
+
+      #screen-operacao .operacao-month-sheet .sheet-time {
+        width: 78px;
+      }
+
+      #screen-operacao .operacao-month-sheet .sheet-total {
+        width: 92px;
+        background: #b6d7a8;
+        font-weight: 700;
+      }
+
+      #screen-operacao .operacao-month-sheet .sheet-weekend {
+        background: #fef9c3 !important;
+      }
+
+      #screen-operacao .operacao-month-sheet tbody td:first-child {
+        text-align: left;
+      }
+
+      #screen-operacao .operacao-month-sheet tfoot td {
+        background: #b6d7a8;
+        font-weight: 700;
+      }
+
+      #screen-operacao .operacao-month-sheet .sheet-footer-label {
+        text-align: right;
+      }
+
       #screen-operacao .operacao-day-cell {
         min-height: 64px;
         padding: 6px;
@@ -20663,6 +20748,12 @@
         return resto ? `${horas}h${String(resto).padStart(2, "0")}` : `${horas}h`;
       }
 
+      function formatarHorasPlanilhaOperacao(minutos) {
+        const valor = (Number(minutos) || 0) / 60;
+        if (!valor) return "";
+        return Number.isInteger(valor) ? String(valor) : valor.toFixed(1).replace(".", ",");
+      }
+
       async function fetchOperacao(url, options = {}) {
         const resposta = await fetch(API + url, {
           ...options,
@@ -20872,31 +20963,93 @@
         `).join("");
       }
 
-      function renderizarEscalaOperacao() {
-        const grade = document.getElementById("operacao-escala-grade");
-        if (!grade) return;
-        const [ano, mes] = (operacaoState.competencia || "").split("-").map(Number);
-        const totalDias = new Date(ano, mes, 0).getDate();
-        const porData = new Map();
-        operacaoState.escala.forEach((item) => {
-          if (!porData.has(item.data)) porData.set(item.data, []);
-          porData.get(item.data).push(item);
+      function renderizarEscalaMesOperacao(grade, ano, mes, totalDias) {
+        const dias = Array.from({ length: totalDias }, (_, index) => {
+          const data = new Date(ano, mes - 1, index + 1);
+          return { data, iso: isoOperacao(data), dia: index + 1, semana: diaSemanaCurtoOperacao(isoOperacao(data)) };
         });
-        grade.innerHTML = "";
-        const datas = [];
-        if (operacaoState.escalaView === "semana") {
-          const hoje = new Date();
-          const dentroCompetencia = hoje.getFullYear() === ano && hoje.getMonth() + 1 === mes;
-          const referencia = dentroCompetencia ? hoje : new Date(ano, mes - 1, 1);
-          const inicio = inicioSemanaSegundaOperacao(referencia);
-          for (let i = 0; i < 7; i++) {
-            const data = new Date(inicio);
-            data.setDate(inicio.getDate() + i);
-            datas.push(data);
+        const linhas = new Map();
+        const totaisDia = new Map();
+        let totalGeral = 0;
+        operacaoState.escala.forEach((plantao) => {
+          const chave = `${plantao.tecnico || ""}|${plantao.entrada || ""}|${plantao.saida || ""}`;
+          if (!linhas.has(chave)) {
+            linhas.set(chave, {
+              tecnico: plantao.tecnico || "Sem técnico",
+              entrada: plantao.entrada || "--",
+              saida: plantao.saida || "--",
+              dias: new Map(),
+              total: 0
+            });
           }
-        } else {
-          for (let dia = 1; dia <= totalDias; dia++) datas.push(new Date(ano, mes - 1, dia));
+          const minutos = minutosPlantaoOperacao(plantao.entrada, plantao.saida);
+          const linha = linhas.get(chave);
+          linha.dias.set(plantao.data, (linha.dias.get(plantao.data) || 0) + minutos);
+          linha.total += minutos;
+          totaisDia.set(plantao.data, (totaisDia.get(plantao.data) || 0) + minutos);
+          totalGeral += minutos;
+        });
+        const ordenadas = Array.from(linhas.values()).sort((a, b) => {
+          const tecnico = a.tecnico.localeCompare(b.tecnico, "pt-BR");
+          if (tecnico) return tecnico;
+          return `${a.entrada}-${a.saida}`.localeCompare(`${b.entrada}-${b.saida}`, "pt-BR");
+        });
+        if (!ordenadas.length) {
+          grade.innerHTML = '<div class="operacao-empty">Nenhum plantão cadastrado nesta competência.</div>';
+          return;
         }
+        const titulo = `${operacaoState.unidade?.sigla || operacaoState.unidade?.nome || "Operação"} - ${formatarCompetenciaOperacao(operacaoState.competencia)}`.toUpperCase();
+        grade.innerHTML = `
+          <table class="operacao-month-sheet">
+            <thead>
+              <tr class="sheet-title"><th colspan="${totalDias + 3}">${escaparTextoOperacao(titulo)}</th></tr>
+              <tr class="sheet-head-primary">
+                <th class="sheet-name" rowspan="2">Nome</th>
+                <th class="sheet-time" rowspan="2">Horário</th>
+                ${dias.map((dia) => `<th class="sheet-day ${dia.data.getDay() === 0 || dia.data.getDay() === 6 ? "sheet-weekend" : ""}">${dia.dia}</th>`).join("")}
+                <th class="sheet-total" rowspan="2">Total</th>
+              </tr>
+              <tr class="sheet-head-week">
+                ${dias.map((dia) => `<th class="sheet-day ${dia.data.getDay() === 0 || dia.data.getDay() === 6 ? "sheet-weekend" : ""}">${escaparTextoOperacao(dia.semana)}</th>`).join("")}
+              </tr>
+            </thead>
+            <tbody>
+              ${ordenadas.map((linha) => `
+                <tr>
+                  <td>${escaparTextoOperacao(linha.tecnico)}</td>
+                  <td>${escaparTextoOperacao(`${linha.entrada} às ${linha.saida}`)}</td>
+                  ${dias.map((dia) => `<td class="${dia.data.getDay() === 0 || dia.data.getDay() === 6 ? "sheet-weekend" : ""}">${formatarHorasPlanilhaOperacao(linha.dias.get(dia.iso) || 0)}</td>`).join("")}
+                  <td class="sheet-total">${formatarHorasPlanilhaOperacao(linha.total)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td class="sheet-footer-label" colspan="2">Total de horas diárias</td>
+                ${dias.map((dia) => `<td class="${dia.data.getDay() === 0 || dia.data.getDay() === 6 ? "sheet-weekend" : ""}">${formatarHorasPlanilhaOperacao(totaisDia.get(dia.iso) || 0)}</td>`).join("")}
+                <td class="sheet-total">${formatarHorasPlanilhaOperacao(totalGeral)}</td>
+              </tr>
+              <tr>
+                <td class="sheet-footer-label" colspan="${totalDias + 2}">Total geral da competência</td>
+                <td class="sheet-total">${formatarHorasPlanilhaOperacao(totalGeral)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        `;
+      }
+
+      function renderizarEscalaSemanaOperacao(grade, ano, mes, porData) {
+        const datas = [];
+        const hoje = new Date();
+        const dentroCompetencia = hoje.getFullYear() === ano && hoje.getMonth() + 1 === mes;
+        const referencia = dentroCompetencia ? hoje : new Date(ano, mes - 1, 1);
+        const inicio = inicioSemanaSegundaOperacao(referencia);
+        for (let i = 0; i < 7; i++) {
+          const data = new Date(inicio);
+          data.setDate(inicio.getDate() + i);
+          datas.push(data);
+        }
+        grade.innerHTML = "";
         datas.forEach((data) => {
           const iso = isoOperacao(data);
           const itens = porData.get(iso) || [];
@@ -20940,6 +21093,31 @@
             await excluirPlantaoOperacao(Number(btn.dataset.operacaoExcluirPlantao));
           });
         });
+      }
+
+      function renderizarEscalaOperacao() {
+        const grade = document.getElementById("operacao-escala-grade");
+        if (!grade) return;
+        const [ano, mes] = (operacaoState.competencia || "").split("-").map(Number);
+        const totalDias = new Date(ano, mes, 0).getDate();
+        const porData = new Map();
+        operacaoState.escala.forEach((item) => {
+          if (!porData.has(item.data)) porData.set(item.data, []);
+          porData.get(item.data).push(item);
+        });
+        const form = document.getElementById("operacao-form-plantao");
+        const botao = document.getElementById("btn-operacao-toggle-plantao");
+        if (operacaoState.escalaView === "mes") {
+          if (operacaoState.plantaoEditandoId) cancelarEdicaoPlantaoOperacao();
+          if (form) form.hidden = true;
+          if (botao) botao.hidden = true;
+          grade.className = "operacao-month-sheet-wrap";
+          renderizarEscalaMesOperacao(grade, ano, mes, totalDias);
+          return;
+        }
+        grade.className = "operacao-calendar-grid";
+        if (form?.hidden && !operacaoState.plantaoEditandoId && botao) botao.hidden = false;
+        renderizarEscalaSemanaOperacao(grade, ano, mes, porData);
       }
 
       function cancelarEdicaoPlantaoOperacao() {
