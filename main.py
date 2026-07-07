@@ -736,6 +736,14 @@ class OperacaoPlantaoCreate(BaseModel):
     saida: str = Field(..., min_length=1, max_length=12)
 
 
+class OperacaoEscalaRecorrenteCreate(BaseModel):
+    competencia: str = Field(..., min_length=7, max_length=7)
+    tecnico: str = Field(..., min_length=1, max_length=160)
+    dias_semana: list[int]
+    entrada: str = Field(..., min_length=1, max_length=12)
+    saida: str = Field(..., min_length=1, max_length=12)
+
+
 class OperacaoMovimentoCreate(BaseModel):
     competencia: str = Field(..., min_length=7, max_length=7)
     tipo: str = Field(..., min_length=1, max_length=40)
@@ -3969,6 +3977,80 @@ def criar_plantao_operacao(
     db.commit()
     db.refresh(plantao)
     return plantao.to_dict()
+
+
+@app.post("/operacao/unidades/{unidade_id}/escala/recorrente", status_code=201)
+def criar_escala_recorrente_operacao(
+    unidade_id: int,
+    payload: OperacaoEscalaRecorrenteCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    unidade = obter_unidade_operacao(db, current_user.id, unidade_id)
+    comp = obter_ou_criar_competencia_operacao(db, current_user.id, unidade.id, payload.competencia)
+    tecnico = payload.tecnico.strip()
+    entrada = payload.entrada.strip()
+    saida = payload.saida.strip()
+    dias_semana = sorted(set(payload.dias_semana or []))
+    if not tecnico:
+        raise HTTPException(status_code=400, detail="Informe o técnico.")
+    if not entrada or not saida:
+        raise HTTPException(status_code=400, detail="Informe entrada e saída.")
+    if any(dia < 0 or dia > 6 for dia in dias_semana):
+        raise HTTPException(status_code=400, detail="Dias da semana inválidos.")
+    try:
+        ano, mes = [int(parte) for parte in payload.competencia.split("-")]
+        cursor = date(ano, mes, 1)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Competência inválida. Use YYYY-MM.")
+
+    criados: list[OperacaoPlantao] = []
+    ignorados = 0
+    while cursor.month == mes:
+        if cursor.weekday() in dias_semana:
+            data_iso = cursor.isoformat()
+            existe = (
+                db.query(OperacaoPlantao)
+                .filter(
+                    OperacaoPlantao.user_id == current_user.id,
+                    OperacaoPlantao.unidade_id == unidade.id,
+                    OperacaoPlantao.competencia == payload.competencia,
+                    OperacaoPlantao.data == data_iso,
+                    OperacaoPlantao.tecnico == tecnico,
+                    OperacaoPlantao.entrada == entrada,
+                    OperacaoPlantao.saida == saida,
+                    OperacaoPlantao.ativo == True,
+                )
+                .first()
+            )
+            if existe:
+                ignorados += 1
+            else:
+                plantao = OperacaoPlantao(
+                    user_id=current_user.id,
+                    unidade_id=unidade.id,
+                    competencia=payload.competencia,
+                    tecnico=tecnico,
+                    data=data_iso,
+                    entrada=entrada,
+                    saida=saida,
+                    ativo=True,
+                )
+                db.add(plantao)
+                criados.append(plantao)
+        cursor += timedelta(days=1)
+
+    if comp.status != OPERACAO_STATUS_FECHADO and criados:
+        comp.status = OPERACAO_STATUS_EM_ANDAMENTO
+    comp.atualizado_em = datetime.now(UTC)
+    db.commit()
+    for plantao in criados:
+        db.refresh(plantao)
+    return {
+        "criados": len(criados),
+        "ignorados": ignorados,
+        "itens": [plantao.to_dict() for plantao in criados],
+    }
 
 
 @app.get("/operacao/unidades/{unidade_id}/movimentos")
