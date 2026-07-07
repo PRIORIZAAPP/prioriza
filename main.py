@@ -387,6 +387,122 @@ class ContaFixaStatusMensal(Base):
         }
 
 
+class OperacaoUnidade(Base):
+    __tablename__ = "operacao_unidades"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    nome = Column(String, nullable=False, index=True)
+    sigla = Column(String, default="")
+    ativo = Column(Boolean, default=True, nullable=False)
+    criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    atualizado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "nome": self.nome or "",
+            "sigla": self.sigla or "",
+            "ativo": bool(self.ativo),
+            "criado_em": self.criado_em.isoformat() if self.criado_em else None,
+            "atualizado_em": self.atualizado_em.isoformat() if self.atualizado_em else None,
+        }
+
+
+class OperacaoCompetencia(Base):
+    __tablename__ = "operacao_competencias"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    unidade_id = Column(Integer, nullable=False, index=True)
+    competencia = Column(String, nullable=False, index=True)  # YYYY-MM
+    status = Column(String, default="Não iniciado", nullable=False, index=True)
+    criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    atualizado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+
+    def to_dict(self, movimentos: int = 0, plantoes: int = 0):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "unidade_id": self.unidade_id,
+            "competencia": self.competencia,
+            "status": self.status or "Não iniciado",
+            "movimentos": int(movimentos or 0),
+            "plantoes": int(plantoes or 0),
+            "criado_em": self.criado_em.isoformat() if self.criado_em else None,
+            "atualizado_em": self.atualizado_em.isoformat() if self.atualizado_em else None,
+        }
+
+
+class OperacaoPlantao(Base):
+    __tablename__ = "operacao_plantoes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    unidade_id = Column(Integer, nullable=False, index=True)
+    competencia = Column(String, nullable=False, index=True)
+    tecnico = Column(String, nullable=False, index=True)
+    data = Column(String, nullable=False, index=True)
+    entrada = Column(String, nullable=False)
+    saida = Column(String, nullable=False)
+    ativo = Column(Boolean, default=True, nullable=False)
+    criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    atualizado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "unidade_id": self.unidade_id,
+            "competencia": self.competencia,
+            "tecnico": self.tecnico or "",
+            "data": self.data,
+            "entrada": self.entrada or "",
+            "saida": self.saida or "",
+            "ativo": bool(self.ativo),
+            "criado_em": self.criado_em.isoformat() if self.criado_em else None,
+            "atualizado_em": self.atualizado_em.isoformat() if self.atualizado_em else None,
+        }
+
+
+class OperacaoMovimento(Base):
+    __tablename__ = "operacao_movimentos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    unidade_id = Column(Integer, nullable=False, index=True)
+    competencia = Column(String, nullable=False, index=True)
+    tipo = Column(String, nullable=False, index=True)
+    data = Column(String, nullable=False, index=True)
+    tecnico_previsto = Column(String, default="")
+    tecnico_realizado = Column(String, default="")
+    entrada = Column(String, default="")
+    saida = Column(String, default="")
+    observacao = Column(Text, default="")
+    ativo = Column(Boolean, default=True, nullable=False)
+    criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    atualizado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "unidade_id": self.unidade_id,
+            "competencia": self.competencia,
+            "tipo": self.tipo or "",
+            "data": self.data,
+            "tecnico_previsto": self.tecnico_previsto or "",
+            "tecnico_realizado": self.tecnico_realizado or "",
+            "entrada": self.entrada or "",
+            "saida": self.saida or "",
+            "observacao": self.observacao or "",
+            "ativo": bool(self.ativo),
+            "criado_em": self.criado_em.isoformat() if self.criado_em else None,
+            "atualizado_em": self.atualizado_em.isoformat() if self.atualizado_em else None,
+        }
+
+
 class Note(Base):
     __tablename__ = "notes"
 
@@ -605,6 +721,34 @@ class MarcoOperacionalUpdate(BaseModel):
     categoria: Optional[str] = Field(default=None, min_length=1, max_length=40)
     severidade: Optional[str] = Field(default=None, min_length=1, max_length=20)
     descricao: Optional[str] = Field(default=None, max_length=5000)
+
+
+class OperacaoUnidadeCreate(BaseModel):
+    nome: str = Field(..., min_length=1, max_length=160)
+    sigla: str = Field(default="", max_length=24)
+
+
+class OperacaoPlantaoCreate(BaseModel):
+    competencia: str = Field(..., min_length=7, max_length=7)
+    tecnico: str = Field(..., min_length=1, max_length=160)
+    data: str = Field(..., min_length=10, max_length=10)
+    entrada: str = Field(..., min_length=1, max_length=12)
+    saida: str = Field(..., min_length=1, max_length=12)
+
+
+class OperacaoMovimentoCreate(BaseModel):
+    competencia: str = Field(..., min_length=7, max_length=7)
+    tipo: str = Field(..., min_length=1, max_length=40)
+    data: str = Field(..., min_length=10, max_length=10)
+    tecnico_previsto: str = Field(default="", max_length=160)
+    tecnico_realizado: str = Field(default="", max_length=160)
+    entrada: str = Field(default="", max_length=12)
+    saida: str = Field(default="", max_length=12)
+    observacao: str = Field(default="", max_length=2000)
+
+
+class OperacaoCompetenciaValidar(BaseModel):
+    competencia: str = Field(..., min_length=7, max_length=7)
 
 
 # ============================================================
@@ -1071,6 +1215,12 @@ def rodar_migracoes_automaticas():
     except Exception as e:
         print(f"[MIGRAÇÃO] Aviso ao criar marcos_operacionais: {e}")
 
+    for modelo_operacao in (OperacaoUnidade, OperacaoCompetencia, OperacaoPlantao, OperacaoMovimento):
+        try:
+            modelo_operacao.__table__.create(bind=engine, checkfirst=True)
+        except Exception as e:
+            print(f"[MIGRAÇÃO] Aviso ao criar {modelo_operacao.__tablename__}: {e}")
+
     for tabela in ("tarefas", "checklist", "notes", "push_subscriptions", "google_calendar_tokens"):
         try:
             with engine.connect() as conn:
@@ -1140,6 +1290,103 @@ def normalizar_tipo_financeiro(tipo: str) -> str:
     if valor in {"despesa", "saida", "saída"}:
         return "despesa"
     return ""
+
+
+OPERACAO_STATUS_NAO_INICIADO = "Não iniciado"
+OPERACAO_STATUS_EM_ANDAMENTO = "Em andamento"
+OPERACAO_STATUS_FECHADO = "Fechado"
+OPERACAO_MOVIMENTO_TIPOS = {
+    "troca": "Troca",
+    "cobertura": "Cobertura",
+    "hora extra": "Hora Extra",
+    "hora_extra": "Hora Extra",
+    "falta": "Falta",
+    "ajuste manual": "Ajuste Manual",
+    "ajuste_manual": "Ajuste Manual",
+}
+
+
+def competencia_atual_operacao() -> str:
+    hoje = date.today()
+    return f"{hoje.year:04d}-{hoje.month:02d}"
+
+
+def validar_competencia_operacao(valor: str) -> bool:
+    try:
+        datetime.strptime((valor or "").strip(), "%Y-%m")
+        return True
+    except Exception:
+        return False
+
+
+def normalizar_tipo_movimento_operacao(valor: str) -> str:
+    chave = unicodedata.normalize("NFKD", (valor or "").strip()).encode("ascii", "ignore").decode("utf-8").lower()
+    tipo = OPERACAO_MOVIMENTO_TIPOS.get(chave)
+    if not tipo:
+        raise HTTPException(status_code=400, detail="Tipo de movimento inválido.")
+    return tipo
+
+
+def obter_unidade_operacao(db: Session, user_id: int, unidade_id: int) -> OperacaoUnidade:
+    unidade = (
+        db.query(OperacaoUnidade)
+        .filter(OperacaoUnidade.id == unidade_id, OperacaoUnidade.user_id == user_id, OperacaoUnidade.ativo == True)
+        .first()
+    )
+    if not unidade:
+        raise HTTPException(status_code=404, detail="Unidade não encontrada.")
+    return unidade
+
+
+def obter_ou_criar_competencia_operacao(db: Session, user_id: int, unidade_id: int, competencia: str) -> OperacaoCompetencia:
+    competencia = (competencia or "").strip()
+    if not validar_competencia_operacao(competencia):
+        raise HTTPException(status_code=400, detail="Competência inválida. Use YYYY-MM.")
+    registro = (
+        db.query(OperacaoCompetencia)
+        .filter(
+            OperacaoCompetencia.user_id == user_id,
+            OperacaoCompetencia.unidade_id == unidade_id,
+            OperacaoCompetencia.competencia == competencia,
+        )
+        .first()
+    )
+    if registro:
+        return registro
+    registro = OperacaoCompetencia(
+        user_id=user_id,
+        unidade_id=unidade_id,
+        competencia=competencia,
+        status=OPERACAO_STATUS_NAO_INICIADO,
+    )
+    db.add(registro)
+    db.flush()
+    return registro
+
+
+def resumo_competencia_operacao(db: Session, user_id: int, unidade_id: int, competencia: str) -> dict[str, Any]:
+    comp = obter_ou_criar_competencia_operacao(db, user_id, unidade_id, competencia)
+    movimentos = (
+        db.query(OperacaoMovimento)
+        .filter(
+            OperacaoMovimento.user_id == user_id,
+            OperacaoMovimento.unidade_id == unidade_id,
+            OperacaoMovimento.competencia == competencia,
+            OperacaoMovimento.ativo == True,
+        )
+        .count()
+    )
+    plantoes = (
+        db.query(OperacaoPlantao)
+        .filter(
+            OperacaoPlantao.user_id == user_id,
+            OperacaoPlantao.unidade_id == unidade_id,
+            OperacaoPlantao.competencia == competencia,
+            OperacaoPlantao.ativo == True,
+        )
+        .count()
+    )
+    return comp.to_dict(movimentos=movimentos, plantoes=plantoes)
 
 
 def calcular_resumo_financeiro(db: Session, user_id: int, hoje_iso: Optional[str] = None) -> dict[str, float]:
@@ -3590,6 +3837,210 @@ def desativar_marco_operacional(
     marco.atualizado_em = datetime.now(UTC)
     db.commit()
     return {"ok": True, "id": marco.id}
+
+
+@app.get("/operacao/unidades")
+def listar_unidades_operacao(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    competencia = competencia_atual_operacao()
+    unidades = (
+        db.query(OperacaoUnidade)
+        .filter(OperacaoUnidade.user_id == current_user.id, OperacaoUnidade.ativo == True)
+        .order_by(OperacaoUnidade.nome.asc(), OperacaoUnidade.id.desc())
+        .all()
+    )
+    saida = []
+    for unidade in unidades:
+        dados = unidade.to_dict()
+        dados["competencia_atual"] = resumo_competencia_operacao(db, current_user.id, unidade.id, competencia)
+        saida.append(dados)
+    db.commit()
+    return saida
+
+
+@app.post("/operacao/unidades", status_code=201)
+def criar_unidade_operacao(
+    payload: OperacaoUnidadeCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    nome = payload.nome.strip()
+    if not nome:
+        raise HTTPException(status_code=400, detail="Informe o nome da unidade.")
+    unidade = OperacaoUnidade(
+        user_id=current_user.id,
+        nome=nome,
+        sigla=(payload.sigla or "").strip(),
+        ativo=True,
+    )
+    db.add(unidade)
+    db.commit()
+    db.refresh(unidade)
+    comp = resumo_competencia_operacao(db, current_user.id, unidade.id, competencia_atual_operacao())
+    db.commit()
+    dados = unidade.to_dict()
+    dados["competencia_atual"] = comp
+    return dados
+
+
+@app.get("/operacao/unidades/{unidade_id}")
+def obter_unidade_operacao_endpoint(
+    unidade_id: int,
+    competencia: Optional[str] = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    unidade = obter_unidade_operacao(db, current_user.id, unidade_id)
+    competencia_ref = competencia or competencia_atual_operacao()
+    dados = unidade.to_dict()
+    dados["competencia_atual"] = resumo_competencia_operacao(db, current_user.id, unidade.id, competencia_ref)
+    db.commit()
+    return dados
+
+
+@app.get("/operacao/unidades/{unidade_id}/resumo")
+def resumo_unidade_operacao(
+    unidade_id: int,
+    competencia: Optional[str] = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    unidade = obter_unidade_operacao(db, current_user.id, unidade_id)
+    competencia_ref = competencia or competencia_atual_operacao()
+    resumo = resumo_competencia_operacao(db, current_user.id, unidade.id, competencia_ref)
+    db.commit()
+    return {"unidade": unidade.to_dict(), "competencia": resumo}
+
+
+@app.get("/operacao/unidades/{unidade_id}/escala")
+def listar_escala_operacao(
+    unidade_id: int,
+    competencia: str = Query(..., min_length=7, max_length=7),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    unidade = obter_unidade_operacao(db, current_user.id, unidade_id)
+    obter_ou_criar_competencia_operacao(db, current_user.id, unidade.id, competencia)
+    itens = (
+        db.query(OperacaoPlantao)
+        .filter(
+            OperacaoPlantao.user_id == current_user.id,
+            OperacaoPlantao.unidade_id == unidade.id,
+            OperacaoPlantao.competencia == competencia,
+            OperacaoPlantao.ativo == True,
+        )
+        .order_by(OperacaoPlantao.data.asc(), OperacaoPlantao.entrada.asc(), OperacaoPlantao.id.asc())
+        .all()
+    )
+    db.commit()
+    return [item.to_dict() for item in itens]
+
+
+@app.post("/operacao/unidades/{unidade_id}/escala", status_code=201)
+def criar_plantao_operacao(
+    unidade_id: int,
+    payload: OperacaoPlantaoCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    unidade = obter_unidade_operacao(db, current_user.id, unidade_id)
+    if not validar_data_iso(payload.data):
+        raise HTTPException(status_code=400, detail="Data inválida. Use YYYY-MM-DD.")
+    comp = obter_ou_criar_competencia_operacao(db, current_user.id, unidade.id, payload.competencia)
+    tecnico = payload.tecnico.strip()
+    if not tecnico:
+        raise HTTPException(status_code=400, detail="Informe o técnico.")
+    plantao = OperacaoPlantao(
+        user_id=current_user.id,
+        unidade_id=unidade.id,
+        competencia=payload.competencia,
+        tecnico=tecnico,
+        data=payload.data.strip(),
+        entrada=payload.entrada.strip(),
+        saida=payload.saida.strip(),
+        ativo=True,
+    )
+    if comp.status != OPERACAO_STATUS_FECHADO:
+        comp.status = OPERACAO_STATUS_EM_ANDAMENTO
+    comp.atualizado_em = datetime.now(UTC)
+    db.add(plantao)
+    db.commit()
+    db.refresh(plantao)
+    return plantao.to_dict()
+
+
+@app.get("/operacao/unidades/{unidade_id}/movimentos")
+def listar_movimentos_operacao(
+    unidade_id: int,
+    competencia: str = Query(..., min_length=7, max_length=7),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    unidade = obter_unidade_operacao(db, current_user.id, unidade_id)
+    obter_ou_criar_competencia_operacao(db, current_user.id, unidade.id, competencia)
+    itens = (
+        db.query(OperacaoMovimento)
+        .filter(
+            OperacaoMovimento.user_id == current_user.id,
+            OperacaoMovimento.unidade_id == unidade.id,
+            OperacaoMovimento.competencia == competencia,
+            OperacaoMovimento.ativo == True,
+        )
+        .order_by(OperacaoMovimento.data.asc(), OperacaoMovimento.id.asc())
+        .all()
+    )
+    db.commit()
+    return [item.to_dict() for item in itens]
+
+
+@app.post("/operacao/unidades/{unidade_id}/movimentos", status_code=201)
+def criar_movimento_operacao(
+    unidade_id: int,
+    payload: OperacaoMovimentoCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    unidade = obter_unidade_operacao(db, current_user.id, unidade_id)
+    if not validar_data_iso(payload.data):
+        raise HTTPException(status_code=400, detail="Data inválida. Use YYYY-MM-DD.")
+    comp = obter_ou_criar_competencia_operacao(db, current_user.id, unidade.id, payload.competencia)
+    movimento = OperacaoMovimento(
+        user_id=current_user.id,
+        unidade_id=unidade.id,
+        competencia=payload.competencia,
+        tipo=normalizar_tipo_movimento_operacao(payload.tipo),
+        data=payload.data.strip(),
+        tecnico_previsto=(payload.tecnico_previsto or "").strip(),
+        tecnico_realizado=(payload.tecnico_realizado or "").strip(),
+        entrada=(payload.entrada or "").strip(),
+        saida=(payload.saida or "").strip(),
+        observacao=(payload.observacao or "").strip(),
+        ativo=True,
+    )
+    if comp.status != OPERACAO_STATUS_FECHADO:
+        comp.status = OPERACAO_STATUS_EM_ANDAMENTO
+    comp.atualizado_em = datetime.now(UTC)
+    db.add(movimento)
+    db.commit()
+    db.refresh(movimento)
+    return movimento.to_dict()
+
+
+@app.post("/operacao/unidades/{unidade_id}/fechamento/validar")
+def validar_competencia_operacao_endpoint(
+    unidade_id: int,
+    payload: OperacaoCompetenciaValidar,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    unidade = obter_unidade_operacao(db, current_user.id, unidade_id)
+    comp = obter_ou_criar_competencia_operacao(db, current_user.id, unidade.id, payload.competencia)
+    comp.status = OPERACAO_STATUS_FECHADO
+    comp.atualizado_em = datetime.now(UTC)
+    db.commit()
+    return resumo_competencia_operacao(db, current_user.id, unidade.id, payload.competencia)
 
 
 @app.get("/tarefas")
