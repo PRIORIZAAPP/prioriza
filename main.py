@@ -1316,6 +1316,8 @@ OPERACAO_MOVIMENTO_TIPOS = {
     "hora extra": "Hora Extra",
     "hora_extra": "Hora Extra",
     "falta": "Falta",
+    "correcao": "Correção",
+    "correção": "Correção",
     "ajuste manual": "Ajuste Manual",
     "ajuste_manual": "Ajuste Manual",
 }
