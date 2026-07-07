@@ -10361,15 +10361,42 @@
       }
 
       #screen-operacao #operacao-submit-plantao {
-        background: #1d4ed8;
+        background: var(--cor-tema);
         color: #ffffff;
-        border-color: #1d4ed8;
-        box-shadow: 0 8px 18px rgba(29, 78, 216, 0.22);
+        border-color: var(--cor-tema);
+        box-shadow: 0 8px 18px rgba(var(--cor-tema-rgb), 0.22);
       }
 
-      #screen-operacao #operacao-submit-plantao:hover {
-        background: #1e40af;
-        color: #ffffff;
+      #screen-operacao .btn-primary {
+        background: var(--cor-tema);
+        color: #ffffff !important;
+        border-color: var(--cor-tema);
+      }
+
+      #screen-operacao .btn-primary:hover {
+        filter: brightness(0.94);
+        color: #ffffff !important;
+      }
+
+      #screen-operacao .btn-secondary {
+        background: #ffffff;
+        color: var(--cor-tema);
+        border-color: rgba(var(--cor-tema-rgb), 0.42);
+      }
+
+      #screen-operacao .btn-secondary:hover {
+        background: rgba(var(--cor-tema-rgb), 0.08);
+        color: var(--cor-tema);
+      }
+
+      #screen-operacao .btn-primary:disabled,
+      #screen-operacao .btn-secondary:disabled {
+        background: #e2e8f0;
+        border-color: #cbd5e1;
+        color: #64748b !important;
+        cursor: not-allowed;
+        filter: none;
+        box-shadow: none;
       }
 
       #screen-operacao .operacao-detail-header {
@@ -10460,74 +10487,72 @@
 
       #screen-operacao .operacao-month-sheet-wrap {
         overflow-x: auto;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
+        border: 1px solid rgba(var(--cor-tema-rgb), 0.24);
+        border-radius: 0;
         background: #ffffff;
       }
 
       #screen-operacao .operacao-month-sheet {
         width: 100%;
-        min-width: 1120px;
+        min-width: 1180px;
         border-collapse: collapse;
         color: #111827;
-        font-size: 11px;
+        font-size: 10px;
         table-layout: fixed;
       }
 
       #screen-operacao .operacao-month-sheet th,
       #screen-operacao .operacao-month-sheet td {
-        height: 24px;
-        border: 1px solid #1f2937;
-        padding: 2px 4px;
+        height: 20px;
+        border: 1px solid #d1d5db;
+        padding: 1px 3px;
         overflow: hidden;
         text-align: center;
         white-space: nowrap;
       }
 
-      #screen-operacao .operacao-month-sheet .sheet-title th {
-        height: 30px;
-        background: #059669;
-        color: #ffffff;
-        font-size: 16px;
-        font-weight: 800;
-        letter-spacing: 0.02em;
-        text-transform: uppercase;
-      }
-
       #screen-operacao .operacao-month-sheet .sheet-head-primary th {
-        background: #bfdbfe;
+        background: var(--cor-tema);
+        color: #ffffff;
         font-weight: 700;
       }
 
       #screen-operacao .operacao-month-sheet .sheet-head-primary .sheet-day,
       #screen-operacao .operacao-month-sheet .sheet-head-week .sheet-day {
-        width: 34px;
-        background: #d1d5db;
+        width: 29px;
+        background: rgba(var(--cor-tema-rgb), 0.12);
+        color: #172033;
       }
 
       #screen-operacao .operacao-month-sheet .sheet-head-week th {
-        background: #e5e7eb;
-        font-size: 10px;
-        font-weight: 700;
+        background: #f8fafc;
+        color: #64748b;
+        font-size: 9px;
+        font-weight: 600;
       }
 
       #screen-operacao .operacao-month-sheet .sheet-name {
-        width: 210px;
+        left: 0;
+        width: 138px;
         text-align: left;
       }
 
       #screen-operacao .operacao-month-sheet .sheet-time {
-        width: 78px;
+        left: 138px;
+        width: 66px;
       }
 
       #screen-operacao .operacao-month-sheet .sheet-total {
-        width: 92px;
-        background: #b6d7a8;
+        right: 0;
+        width: 62px;
+        background: var(--cor-tema);
+        color: #ffffff;
         font-weight: 700;
       }
 
       #screen-operacao .operacao-month-sheet .sheet-weekend {
-        background: #fef9c3 !important;
+        background: #fef9c3;
+        color: #172033;
       }
 
       #screen-operacao .operacao-month-sheet tbody td:first-child {
@@ -10535,12 +10560,79 @@
       }
 
       #screen-operacao .operacao-month-sheet tfoot td {
-        background: #b6d7a8;
+        background: rgba(var(--cor-tema-rgb), 0.14);
+        color: #172033;
         font-weight: 700;
       }
 
       #screen-operacao .operacao-month-sheet .sheet-footer-label {
         text-align: right;
+      }
+
+      #screen-operacao .operacao-month-sheet .sheet-sticky-left,
+      #screen-operacao .operacao-month-sheet .sheet-total {
+        position: sticky;
+        z-index: 2;
+      }
+
+      #screen-operacao .operacao-month-sheet thead .sheet-sticky-left,
+      #screen-operacao .operacao-month-sheet thead .sheet-total {
+        z-index: 4;
+      }
+
+      #screen-operacao .operacao-month-sheet .sheet-sticky-left {
+        background: #ffffff;
+      }
+
+      #screen-operacao .operacao-month-sheet thead .sheet-sticky-left {
+        background: var(--cor-tema);
+        color: #ffffff;
+      }
+
+      #screen-operacao .operacao-month-sheet tfoot .sheet-sticky-left {
+        background: rgba(var(--cor-tema-rgb), 0.14);
+      }
+
+      #screen-operacao .operacao-month-cell-filled {
+        background: rgba(var(--cor-tema-rgb), 0.08);
+        cursor: pointer;
+      }
+
+      #screen-operacao .operacao-month-cell-filled.sheet-weekend {
+        background: #fef9c3;
+      }
+
+      #screen-operacao .operacao-month-cell-filled:hover,
+      #screen-operacao .operacao-month-cell-filled.selected {
+        outline: 2px solid rgba(var(--cor-tema-rgb), 0.52);
+        outline-offset: -2px;
+      }
+
+      #screen-operacao .operacao-month-action {
+        margin-bottom: 8px;
+        padding: 10px;
+        border: 1px solid rgba(var(--cor-tema-rgb), 0.22);
+        background: #f8fafc;
+      }
+
+      #screen-operacao .operacao-month-action h4 {
+        margin: 0 0 4px;
+        color: #172033;
+        font-size: 13px;
+      }
+
+      #screen-operacao .operacao-month-action p {
+        margin: 0;
+        color: #64748b;
+        font-size: 12px;
+      }
+
+      #screen-operacao .operacao-month-correction {
+        display: grid;
+        grid-template-columns: minmax(150px, 1fr) 92px 92px minmax(180px, 1.4fr) auto;
+        gap: 8px;
+        align-items: end;
+        margin-top: 8px;
       }
 
       #screen-operacao .operacao-day-cell {
@@ -20672,6 +20764,7 @@
         plantaoModo: "recorrente",
         plantaoEditandoId: null,
         plantaoSelecionadoId: null,
+        escalaMensalSelecao: null,
         carregado: false
       };
 
@@ -20979,12 +21072,15 @@
               entrada: plantao.entrada || "--",
               saida: plantao.saida || "--",
               dias: new Map(),
+              plantoesPorDia: new Map(),
               total: 0
             });
           }
           const minutos = minutosPlantaoOperacao(plantao.entrada, plantao.saida);
           const linha = linhas.get(chave);
           linha.dias.set(plantao.data, (linha.dias.get(plantao.data) || 0) + minutos);
+          if (!linha.plantoesPorDia.has(plantao.data)) linha.plantoesPorDia.set(plantao.data, []);
+          linha.plantoesPorDia.get(plantao.data).push(plantao);
           linha.total += minutos;
           totaisDia.set(plantao.data, (totaisDia.get(plantao.data) || 0) + minutos);
           totalGeral += minutos;
@@ -20998,14 +21094,32 @@
           grade.innerHTML = '<div class="operacao-empty">Nenhum plantão cadastrado nesta competência.</div>';
           return;
         }
-        const titulo = `${operacaoState.unidade?.sigla || operacaoState.unidade?.nome || "Operação"} - ${formatarCompetenciaOperacao(operacaoState.competencia)}`.toUpperCase();
+        const selecao = operacaoState.escalaMensalSelecao;
+        const linhaSelecionada = selecao ? ordenadas.find((linha) => `${linha.tecnico}|${linha.entrada}|${linha.saida}` === selecao.linhaKey) : null;
+        const plantoesSelecionados = linhaSelecionada?.plantoesPorDia.get(selecao?.data) || [];
+        const painel = plantoesSelecionados.length ? `
+          <div class="operacao-month-action">
+            <h4>Visualizar plantão</h4>
+            <p>${escaparTextoOperacao(primeiroNomeOperacao(linhaSelecionada.tecnico))} · ${escaparTextoOperacao(selecao.data)} · ${escaparTextoOperacao(`${linhaSelecionada.entrada} às ${linhaSelecionada.saida}`)} · ${formatarHorasOperacao(linhaSelecionada.dias.get(selecao.data) || 0)}</p>
+            <div class="operacao-month-correction">
+              <div><label for="operacao-correcao-tecnico">Técnico realizado</label><input id="operacao-correcao-tecnico" type="text" value="${escaparTextoOperacao(linhaSelecionada.tecnico)}" /></div>
+              <div><label for="operacao-correcao-entrada">Entrada</label><input id="operacao-correcao-entrada" type="time" value="${escaparTextoOperacao(linhaSelecionada.entrada)}" /></div>
+              <div><label for="operacao-correcao-saida">Saída</label><input id="operacao-correcao-saida" type="time" value="${escaparTextoOperacao(linhaSelecionada.saida)}" /></div>
+              <div><label for="operacao-correcao-observacao">Observação</label><input id="operacao-correcao-observacao" type="text" placeholder="Motivo da correção" /></div>
+              <div class="operacao-submit-cell">
+                <button class="btn-secondary" type="button" data-operacao-fechar-correcao>Fechar</button>
+                <button class="btn-primary" type="button" data-operacao-salvar-correcao>Corrigir plantão</button>
+              </div>
+            </div>
+          </div>
+        ` : "";
         grade.innerHTML = `
+          ${painel}
           <table class="operacao-month-sheet">
             <thead>
-              <tr class="sheet-title"><th colspan="${totalDias + 3}">${escaparTextoOperacao(titulo)}</th></tr>
               <tr class="sheet-head-primary">
-                <th class="sheet-name" rowspan="2">Nome</th>
-                <th class="sheet-time" rowspan="2">Horário</th>
+                <th class="sheet-name sheet-sticky-left" rowspan="2">Nome</th>
+                <th class="sheet-time sheet-sticky-left" rowspan="2">Horário</th>
                 ${dias.map((dia) => `<th class="sheet-day ${dia.data.getDay() === 0 || dia.data.getDay() === 6 ? "sheet-weekend" : ""}">${dia.dia}</th>`).join("")}
                 <th class="sheet-total" rowspan="2">Total</th>
               </tr>
@@ -21016,16 +21130,21 @@
             <tbody>
               ${ordenadas.map((linha) => `
                 <tr>
-                  <td>${escaparTextoOperacao(linha.tecnico)}</td>
-                  <td>${escaparTextoOperacao(`${linha.entrada} às ${linha.saida}`)}</td>
-                  ${dias.map((dia) => `<td class="${dia.data.getDay() === 0 || dia.data.getDay() === 6 ? "sheet-weekend" : ""}">${formatarHorasPlanilhaOperacao(linha.dias.get(dia.iso) || 0)}</td>`).join("")}
+                  <td class="sheet-sticky-left">${escaparTextoOperacao(primeiroNomeOperacao(linha.tecnico))}</td>
+                  <td class="sheet-sticky-left">${escaparTextoOperacao(`${linha.entrada} às ${linha.saida}`)}</td>
+                  ${dias.map((dia) => {
+                    const minutos = linha.dias.get(dia.iso) || 0;
+                    const linhaKey = `${linha.tecnico}|${linha.entrada}|${linha.saida}`;
+                    const selected = selecao?.linhaKey === linhaKey && selecao?.data === dia.iso;
+                    return `<td class="${dia.data.getDay() === 0 || dia.data.getDay() === 6 ? "sheet-weekend" : ""} ${minutos ? "operacao-month-cell-filled" : ""} ${selected ? "selected" : ""}" ${minutos ? `data-operacao-month-cell="1" data-linha-key="${escaparTextoOperacao(linhaKey)}" data-data="${dia.iso}"` : ""}>${formatarHorasPlanilhaOperacao(minutos)}</td>`;
+                  }).join("")}
                   <td class="sheet-total">${formatarHorasPlanilhaOperacao(linha.total)}</td>
                 </tr>
               `).join("")}
             </tbody>
             <tfoot>
               <tr>
-                <td class="sheet-footer-label" colspan="2">Total de horas diárias</td>
+                <td class="sheet-footer-label sheet-sticky-left" colspan="2">Total de horas diárias</td>
                 ${dias.map((dia) => `<td class="${dia.data.getDay() === 0 || dia.data.getDay() === 6 ? "sheet-weekend" : ""}">${formatarHorasPlanilhaOperacao(totaisDia.get(dia.iso) || 0)}</td>`).join("")}
                 <td class="sheet-total">${formatarHorasPlanilhaOperacao(totalGeral)}</td>
               </tr>
@@ -21036,6 +21155,17 @@
             </tfoot>
           </table>
         `;
+        grade.querySelectorAll("[data-operacao-month-cell]").forEach((cell) => {
+          cell.addEventListener("click", () => {
+            operacaoState.escalaMensalSelecao = { linhaKey: cell.dataset.linhaKey, data: cell.dataset.data };
+            renderizarEscalaOperacao();
+          });
+        });
+        grade.querySelector("[data-operacao-fechar-correcao]")?.addEventListener("click", () => {
+          operacaoState.escalaMensalSelecao = null;
+          renderizarEscalaOperacao();
+        });
+        grade.querySelector("[data-operacao-salvar-correcao]")?.addEventListener("click", salvarCorrecaoMensalOperacao);
       }
 
       function renderizarEscalaSemanaOperacao(grade, ano, mes, porData) {
@@ -21155,6 +21285,43 @@
           await carregarUnidadeOperacao();
         } catch (erro) {
           await modal.alerta(erro.message || "Não foi possível excluir o plantão.", "Operação");
+        }
+      }
+
+      async function salvarCorrecaoMensalOperacao() {
+        const selecao = operacaoState.escalaMensalSelecao;
+        if (!selecao || !operacaoState.unidade?.id) return;
+        const [tecnicoPrevisto, entradaPrevista, saidaPrevista] = String(selecao.linhaKey || "").split("|");
+        const tecnicoRealizado = document.getElementById("operacao-correcao-tecnico")?.value.trim() || "";
+        const entrada = document.getElementById("operacao-correcao-entrada")?.value || "";
+        const saida = document.getElementById("operacao-correcao-saida")?.value || "";
+        const observacaoUsuario = document.getElementById("operacao-correcao-observacao")?.value.trim() || "";
+        if (!tecnicoRealizado || !entrada || !saida) {
+          await modal.alerta("Preencha técnico realizado, entrada e saída.", "Operação");
+          return;
+        }
+        const observacaoBase = `Correção da escala mensal. Previsto: ${tecnicoPrevisto || "--"} ${entradaPrevista || "--"}-${saidaPrevista || "--"}.`;
+        const payload = {
+          competencia: operacaoState.competencia,
+          tipo: "Correção",
+          data: selecao.data,
+          tecnico_previsto: tecnicoPrevisto || "",
+          tecnico_realizado: tecnicoRealizado,
+          entrada,
+          saida,
+          observacao: observacaoUsuario ? `${observacaoBase} ${observacaoUsuario}` : observacaoBase
+        };
+        try {
+          await fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}/movimentos`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          operacaoState.escalaMensalSelecao = null;
+          await carregarUnidadeOperacao();
+          await modal.alerta("Correção registrada em Movimentos. A escala original foi preservada.", "Operação");
+        } catch (erro) {
+          await modal.alerta(erro.message || "Não foi possível registrar a correção.", "Operação");
         }
       }
 
@@ -21314,6 +21481,7 @@
         document.querySelectorAll("[data-operacao-escala-view]").forEach((btn) => {
           btn.addEventListener("click", () => {
             operacaoState.escalaView = btn.dataset.operacaoEscalaView || "mes";
+            operacaoState.escalaMensalSelecao = null;
             document.querySelectorAll("[data-operacao-escala-view]").forEach((item) => item.classList.toggle("active", item === btn));
             renderizarEscalaOperacao();
           });
