@@ -10778,7 +10778,7 @@
 
       #screen-operacao .operacao-row {
         display: grid;
-        grid-template-columns: 110px minmax(0, 1fr) 150px 150px;
+        grid-template-columns: 110px minmax(0, 1fr) 150px minmax(0, 1fr) auto;
         gap: 10px;
         align-items: center;
         min-height: 42px;
@@ -10792,6 +10792,11 @@
 
       #screen-operacao .operacao-row small {
         color: #64748b;
+      }
+
+      #screen-operacao .operacao-row .operacao-row-actions {
+        display: flex;
+        justify-content: flex-end;
       }
 
       #screen-operacao .operacao-empty {
@@ -20877,7 +20882,8 @@
             if (previsto.saida && plantao.saida !== previsto.saida) return false;
             return true;
           });
-          if (idx >= 0) efetiva.splice(idx, 1);
+          if (idx < 0) return;
+          efetiva.splice(idx, 1);
           if (movimento.tecnico_realizado && movimento.entrada && movimento.saida) {
             efetiva.push({
               id: `movimento-${movimento.id}`,
@@ -21147,6 +21153,7 @@
         const selecao = operacaoState.escalaMensalSelecao;
         const linhaSelecionada = selecao ? ordenadas.find((linha) => `${linha.tecnico}|${linha.entrada}|${linha.saida}` === selecao.linhaKey) : null;
         const plantoesSelecionados = linhaSelecionada?.plantoesPorDia.get(selecao?.data) || [];
+        const movimentoCorrecaoSelecionado = plantoesSelecionados.find((plantao) => plantao.movimento_id);
         const painel = plantoesSelecionados.length ? `
           <div class="operacao-month-action">
             <h4>Visualizar plantão</h4>
@@ -21158,6 +21165,7 @@
               <div><label for="operacao-correcao-observacao">Observação</label><input id="operacao-correcao-observacao" type="text" placeholder="Motivo da correção" /></div>
               <div class="operacao-submit-cell">
                 <button class="btn-secondary" type="button" data-operacao-fechar-correcao>Fechar</button>
+                ${movimentoCorrecaoSelecionado ? `<button class="btn-secondary" type="button" data-operacao-excluir-movimento="${movimentoCorrecaoSelecionado.movimento_id}">Excluir correção</button>` : ""}
                 <button class="btn-primary" type="button" data-operacao-salvar-correcao>Corrigir plantão</button>
               </div>
             </div>
@@ -21214,6 +21222,9 @@
         grade.querySelector("[data-operacao-fechar-correcao]")?.addEventListener("click", () => {
           operacaoState.escalaMensalSelecao = null;
           renderizarEscalaOperacao();
+        });
+        grade.querySelector("[data-operacao-excluir-movimento]")?.addEventListener("click", async (ev) => {
+          await excluirMovimentoOperacao(Number(ev.currentTarget.dataset.operacaoExcluirMovimento));
         });
         grade.querySelector("[data-operacao-salvar-correcao]")?.addEventListener("click", salvarCorrecaoMensalOperacao);
       }
@@ -21386,12 +21397,29 @@
         operacaoState.movimentos.forEach((item) => {
           const row = document.createElement("div");
           row.className = "operacao-row";
-          row.innerHTML = `<span>${item.data}</span><strong></strong><span></span><small></small>`;
+          row.innerHTML = `<span>${item.data}</span><strong></strong><span></span><small></small><div class="operacao-row-actions"><button class="btn-secondary" type="button" data-operacao-excluir-movimento="${item.id}">Excluir</button></div>`;
           row.querySelector("strong").textContent = item.tipo;
           row.querySelector("span:nth-of-type(2)").textContent = item.tecnico_realizado || item.tecnico_previsto || "--";
           row.querySelector("small").textContent = item.observacao || `${item.entrada || "--"} - ${item.saida || "--"}`;
           lista.appendChild(row);
         });
+        lista.querySelectorAll("[data-operacao-excluir-movimento]").forEach((btn) => {
+          btn.addEventListener("click", async () => excluirMovimentoOperacao(Number(btn.dataset.operacaoExcluirMovimento)));
+        });
+      }
+
+      async function excluirMovimentoOperacao(movimentoId) {
+        const movimento = operacaoState.movimentos.find((item) => Number(item.id) === Number(movimentoId));
+        if (!movimento || !operacaoState.unidade?.id) return;
+        const ok = await modal.confirmar(`Excluir movimento de ${movimento.data}?`, "Excluir movimento", "vermelho");
+        if (!ok) return;
+        try {
+          await fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}/movimentos/${movimento.id}`, { method: "DELETE" });
+          operacaoState.escalaMensalSelecao = null;
+          await carregarUnidadeOperacao();
+        } catch (erro) {
+          await modal.alerta(erro.message || "Não foi possível excluir o movimento.", "Operação");
+        }
       }
 
       function renderizarFechamentoOperacao() {
