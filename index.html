@@ -9400,7 +9400,12 @@
       #btn-salvar-marco:disabled:hover,
       #btn-salvar-marco:disabled:focus,
       #btn-salvar-marco:disabled:focus-visible,
-      #btn-salvar-marco:disabled:active {
+      #btn-salvar-marco:disabled:active,
+      #marco-form-wrap #btn-salvar-marco:disabled,
+      #marco-form-wrap #btn-salvar-marco:disabled:hover,
+      #marco-form-wrap #btn-salvar-marco:disabled:focus,
+      #marco-form-wrap #btn-salvar-marco:disabled:focus-visible,
+      #marco-form-wrap #btn-salvar-marco:disabled:active {
         border-color: #cbd5e1 !important;
         background: #e8eef8 !important;
         color: #334155 !important;
@@ -9803,6 +9808,22 @@
         min-width: 38px;
         flex: 0 0 38px;
         padding: 0;
+      }
+
+      #screen-agenda #btn-limpar-busca-marcos {
+        display: none;
+      }
+
+      #screen-agenda .marco-search-form.is-open.has-query #btn-limpar-busca-marcos {
+        display: inline-flex;
+      }
+
+      #screen-agenda .marco-search-form:not(.is-open) #btn-expandir-busca-marcos {
+        display: inline-flex;
+      }
+
+      #screen-agenda .marco-search-form:not(.is-open) #btn-limpar-busca-marcos {
+        display: none !important;
       }
 
       #screen-agenda .marco-search-form.is-open {
@@ -19111,6 +19132,7 @@
       const screen = document.getElementById("screen-agenda");
       if (!container) return;
       form?.classList.add("is-open");
+      form?.classList.add("has-query");
       screen?.classList.add("is-searching");
       container.hidden = false;
       container.innerHTML = '<p class="marcos-search-heading">Buscando registros...</p>';
@@ -19152,6 +19174,7 @@
       }
       if (limpar) limpar.hidden = true;
       form?.classList.remove("is-open");
+      form?.classList.remove("has-query");
       screen?.classList.remove("is-searching");
     }
 
@@ -20113,7 +20136,10 @@
         await buscarMarcosOperacionais();
       });
       document.getElementById("busca-marcos-texto")?.addEventListener("input", (ev) => {
-        if (!String(ev.target.value || "").trim()) limparBuscaMarcosOperacionais();
+        const form = document.getElementById("form-busca-marcos");
+        const temTexto = Boolean(String(ev.target.value || "").trim());
+        form?.classList.toggle("has-query", temTexto);
+        if (!temTexto) limparBuscaMarcosOperacionais();
       });
       document.getElementById("btn-limpar-busca-marcos")?.addEventListener("click", (ev) => {
         ev.preventDefault();
