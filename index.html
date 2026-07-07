@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pt-BR">
   <head>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -10255,6 +10255,59 @@
         grid-template-columns: repeat(4, minmax(0, 1fr));
       }
 
+      #screen-operacao .operacao-mode-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      #screen-operacao .operacao-mode-row button,
+      #screen-operacao .operacao-weekday {
+        min-height: 34px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #334155;
+        padding: 0 12px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      #screen-operacao .operacao-mode-row button.active {
+        border-color: rgba(var(--cor-tema-rgb), 0.36);
+        background: rgba(var(--cor-tema-rgb), 0.12);
+        color: var(--cor-tema);
+      }
+
+      #screen-operacao .operacao-weekdays {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        min-height: 38px;
+      }
+
+      #screen-operacao .operacao-weekday {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+      }
+
+      #screen-operacao .operacao-weekday input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #screen-operacao .operacao-weekday:has(input:checked) {
+        border-color: #172033;
+        background: #172033;
+        color: #ffffff;
+      }
+
       #screen-operacao .operacao-field-wide {
         grid-column: span 2;
       }
@@ -11290,14 +11343,30 @@
                   </div>
                 </div>
                 <form id="operacao-form-plantao" class="operacao-form-card">
+                  <div class="operacao-mode-row" aria-label="Tipo de cadastro da escala">
+                    <button class="active" type="button" data-operacao-plantao-modo="recorrente">Escala recorrente</button>
+                    <button type="button" data-operacao-plantao-modo="unico">Plantão único</button>
+                  </div>
                   <div class="operacao-form-grid operacao-form-grid-4">
                     <div><label for="operacao-plantao-tecnico">Técnico</label><input id="operacao-plantao-tecnico" type="text" /></div>
-                    <div><label for="operacao-plantao-data">Data</label><input id="operacao-plantao-data" type="date" /></div>
+                    <div id="operacao-plantao-data-wrap" hidden><label for="operacao-plantao-data">Data</label><input id="operacao-plantao-data" type="date" /></div>
+                    <div id="operacao-plantao-dias-wrap" class="operacao-field-wide">
+                      <label>Dias da semana</label>
+                      <div class="operacao-weekdays" id="operacao-plantao-dias">
+                        <label class="operacao-weekday"><input type="checkbox" name="operacao-plantao-dia" value="0" />Seg</label>
+                        <label class="operacao-weekday"><input type="checkbox" name="operacao-plantao-dia" value="1" />Ter</label>
+                        <label class="operacao-weekday"><input type="checkbox" name="operacao-plantao-dia" value="2" />Qua</label>
+                        <label class="operacao-weekday"><input type="checkbox" name="operacao-plantao-dia" value="3" />Qui</label>
+                        <label class="operacao-weekday"><input type="checkbox" name="operacao-plantao-dia" value="4" />Sex</label>
+                        <label class="operacao-weekday"><input type="checkbox" name="operacao-plantao-dia" value="5" />Sáb</label>
+                        <label class="operacao-weekday"><input type="checkbox" name="operacao-plantao-dia" value="6" />Dom</label>
+                      </div>
+                    </div>
                     <div><label for="operacao-plantao-entrada">Entrada</label><input id="operacao-plantao-entrada" type="time" /></div>
                     <div><label for="operacao-plantao-saida">Saída</label><input id="operacao-plantao-saida" type="time" /></div>
                   </div>
                   <div class="operacao-form-actions">
-                    <button class="btn-primary" type="submit">Adicionar plantão</button>
+                    <button id="operacao-submit-plantao" class="btn-primary" type="submit">Criar escala do mês</button>
                   </div>
                 </form>
                 <div id="operacao-escala-grade" class="operacao-calendar-grid"></div>
@@ -20399,6 +20468,7 @@
         movimentos: [],
         aba: "resumo",
         escalaView: "mes",
+        plantaoModo: "recorrente",
         carregado: false
       };
 
@@ -20419,6 +20489,11 @@
       function dataPadraoCompetenciaOperacao() {
         const base = operacaoState.competencia || new Date().toISOString().slice(0, 7);
         return `${base}-01`;
+      }
+
+      function diaSemanaCurtoOperacao(dataIso) {
+        const data = new Date(`${dataIso}T00:00:00`);
+        return ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"][data.getDay()] || "";
       }
 
       async function fetchOperacao(url, options = {}) {
@@ -20562,6 +20637,19 @@
         document.getElementById("operacao-resumo-plantoes").textContent = String(resumo.plantoes || 0);
       }
 
+      function definirModoPlantaoOperacao(modo) {
+        operacaoState.plantaoModo = modo === "unico" ? "unico" : "recorrente";
+        document.querySelectorAll("[data-operacao-plantao-modo]").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.operacaoPlantaoModo === operacaoState.plantaoModo);
+        });
+        const dataWrap = document.getElementById("operacao-plantao-data-wrap");
+        const diasWrap = document.getElementById("operacao-plantao-dias-wrap");
+        const submit = document.getElementById("operacao-submit-plantao");
+        if (dataWrap) dataWrap.hidden = operacaoState.plantaoModo !== "unico";
+        if (diasWrap) diasWrap.hidden = operacaoState.plantaoModo !== "recorrente";
+        if (submit) submit.textContent = operacaoState.plantaoModo === "recorrente" ? "Criar escala do mês" : "Adicionar plantão";
+      }
+
       function renderizarEscalaOperacao() {
         const grade = document.getElementById("operacao-escala-grade");
         const lista = document.getElementById("operacao-escala-lista");
@@ -20581,9 +20669,10 @@
           const cell = document.createElement("button");
           cell.type = "button";
           cell.className = "operacao-day-cell";
-          cell.innerHTML = `<div class="operacao-day-number">${dia}</div><div class="operacao-day-note"></div>`;
+          cell.innerHTML = `<div class="operacao-day-number">${String(dia).padStart(2, "0")} • ${diaSemanaCurtoOperacao(iso)}</div><div class="operacao-day-note"></div>`;
           cell.querySelector(".operacao-day-note").textContent = itens.length ? itens.map((p) => `${p.tecnico} ${p.entrada}-${p.saida}`).join(" · ") : "Livre";
           cell.addEventListener("click", () => {
+            definirModoPlantaoOperacao("unico");
             document.getElementById("operacao-plantao-data").value = iso;
             document.getElementById("operacao-plantao-tecnico")?.focus();
           });
@@ -20632,25 +20721,45 @@
       async function salvarPlantaoOperacao(ev) {
         ev.preventDefault();
         if (!operacaoState.unidade?.id) return;
-        const payload = {
-          competencia: operacaoState.competencia,
-          tecnico: document.getElementById("operacao-plantao-tecnico")?.value.trim() || "",
-          data: document.getElementById("operacao-plantao-data")?.value || "",
-          entrada: document.getElementById("operacao-plantao-entrada")?.value || "",
-          saida: document.getElementById("operacao-plantao-saida")?.value || ""
-        };
-        if (!payload.tecnico || !payload.data || !payload.entrada || !payload.saida) {
-          await modal.alerta("Preencha técnico, data, entrada e saída.", "Operação");
-          return;
-        }
         try {
-          await fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}/escala`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-          });
-          ev.target.reset();
-          document.getElementById("operacao-plantao-data").value = dataPadraoCompetenciaOperacao();
+          const basePayload = {
+            competencia: operacaoState.competencia,
+            tecnico: document.getElementById("operacao-plantao-tecnico")?.value.trim() || "",
+            entrada: document.getElementById("operacao-plantao-entrada")?.value || "",
+            saida: document.getElementById("operacao-plantao-saida")?.value || ""
+          };
+          if (operacaoState.plantaoModo === "recorrente") {
+            const diasSemana = Array.from(document.querySelectorAll('input[name="operacao-plantao-dia"]:checked')).map((input) => Number(input.value));
+            if (!basePayload.tecnico || !basePayload.entrada || !basePayload.saida || !diasSemana.length) {
+              await modal.alerta("Preencha técnico, dias da semana, entrada e saída.", "Operação");
+              return;
+            }
+            const resultado = await fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}/escala/recorrente`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ ...basePayload, dias_semana: diasSemana })
+            });
+            document.getElementById("operacao-plantao-tecnico").value = "";
+            document.querySelectorAll('input[name="operacao-plantao-dia"]').forEach((input) => { input.checked = false; });
+            await modal.alerta(`${resultado.criados || 0} plantão(ões) criado(s) na competência.${resultado.ignorados ? ` ${resultado.ignorados} duplicado(s) ignorado(s).` : ""}`, "Operação");
+          } else {
+            const payload = {
+              ...basePayload,
+              data: document.getElementById("operacao-plantao-data")?.value || ""
+            };
+            if (!payload.tecnico || !payload.data || !payload.entrada || !payload.saida) {
+              await modal.alerta("Preencha técnico, data, entrada e saída.", "Operação");
+              return;
+            }
+            await fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}/escala`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+            ev.target.reset();
+            document.getElementById("operacao-plantao-data").value = dataPadraoCompetenciaOperacao();
+            definirModoPlantaoOperacao("recorrente");
+          }
           await carregarUnidadeOperacao();
         } catch (erro) {
           await modal.alerta(erro.message || "Não foi possível salvar o plantão.", "Operação");
@@ -20724,11 +20833,15 @@
             renderizarEscalaOperacao();
           });
         });
+        document.querySelectorAll("[data-operacao-plantao-modo]").forEach((btn) => {
+          btn.addEventListener("click", () => definirModoPlantaoOperacao(btn.dataset.operacaoPlantaoModo));
+        });
         document.getElementById("operacao-form-plantao")?.addEventListener("submit", salvarPlantaoOperacao);
         document.getElementById("operacao-form-movimento")?.addEventListener("submit", salvarMovimentoOperacao);
         document.getElementById("btn-operacao-validar")?.addEventListener("click", validarCompetenciaOperacao);
         document.getElementById("operacao-plantao-data").value = dataPadraoCompetenciaOperacao();
         document.getElementById("operacao-movimento-data").value = dataPadraoCompetenciaOperacao();
+        definirModoPlantaoOperacao("recorrente");
       }
 
       // Navegação
