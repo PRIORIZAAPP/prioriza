@@ -10602,6 +10602,10 @@
         background: #fef9c3;
       }
 
+      #screen-operacao .operacao-month-cell-corrected {
+        box-shadow: inset 0 -2px 0 rgba(var(--cor-tema-rgb), 0.72);
+      }
+
       #screen-operacao .operacao-month-cell-filled:hover,
       #screen-operacao .operacao-month-cell-filled.selected {
         outline: 2px solid rgba(var(--cor-tema-rgb), 0.52);
@@ -20847,6 +20851,50 @@
         return Number.isInteger(valor) ? String(valor) : valor.toFixed(1).replace(".", ",");
       }
 
+      function chaveTextoOperacao(valor) {
+        return String(valor || "").trim().toLocaleLowerCase("pt-BR");
+      }
+
+      function extrairPrevistoCorrecaoOperacao(movimento) {
+        const observacao = String(movimento?.observacao || "");
+        const match = observacao.match(/Previsto:\s*(.*?)\s+(\d{2}:\d{2})-(\d{2}:\d{2})/i);
+        return {
+          tecnico: (match?.[1] || movimento?.tecnico_previsto || "").trim(),
+          entrada: match?.[2] || "",
+          saida: match?.[3] || ""
+        };
+      }
+
+      function escalaComCorrecoesOperacao() {
+        const efetiva = operacaoState.escala.map((plantao) => ({ ...plantao, corrigido: false }));
+        const correcoes = operacaoState.movimentos.filter((movimento) => chaveTextoOperacao(movimento.tipo).includes("corre"));
+        correcoes.forEach((movimento) => {
+          const previsto = extrairPrevistoCorrecaoOperacao(movimento);
+          const idx = efetiva.findIndex((plantao) => {
+            if (plantao.data !== movimento.data) return false;
+            if (previsto.tecnico && chaveTextoOperacao(plantao.tecnico) !== chaveTextoOperacao(previsto.tecnico)) return false;
+            if (previsto.entrada && plantao.entrada !== previsto.entrada) return false;
+            if (previsto.saida && plantao.saida !== previsto.saida) return false;
+            return true;
+          });
+          if (idx >= 0) efetiva.splice(idx, 1);
+          if (movimento.tecnico_realizado && movimento.entrada && movimento.saida) {
+            efetiva.push({
+              id: `movimento-${movimento.id}`,
+              competencia: movimento.competencia || operacaoState.competencia,
+              tecnico: movimento.tecnico_realizado,
+              data: movimento.data,
+              entrada: movimento.entrada,
+              saida: movimento.saida,
+              ativo: true,
+              corrigido: true,
+              movimento_id: movimento.id
+            });
+          }
+        });
+        return efetiva;
+      }
+
       async function fetchOperacao(url, options = {}) {
         const resposta = await fetch(API + url, {
           ...options,
@@ -21064,7 +21112,7 @@
         const linhas = new Map();
         const totaisDia = new Map();
         let totalGeral = 0;
-        operacaoState.escala.forEach((plantao) => {
+        escalaComCorrecoesOperacao().forEach((plantao) => {
           const chave = `${plantao.tecnico || ""}|${plantao.entrada || ""}|${plantao.saida || ""}`;
           if (!linhas.has(chave)) {
             linhas.set(chave, {
@@ -21073,6 +21121,7 @@
               saida: plantao.saida || "--",
               dias: new Map(),
               plantoesPorDia: new Map(),
+              corrigidosPorDia: new Set(),
               total: 0
             });
           }
@@ -21081,6 +21130,7 @@
           linha.dias.set(plantao.data, (linha.dias.get(plantao.data) || 0) + minutos);
           if (!linha.plantoesPorDia.has(plantao.data)) linha.plantoesPorDia.set(plantao.data, []);
           linha.plantoesPorDia.get(plantao.data).push(plantao);
+          if (plantao.corrigido) linha.corrigidosPorDia.add(plantao.data);
           linha.total += minutos;
           totaisDia.set(plantao.data, (totaisDia.get(plantao.data) || 0) + minutos);
           totalGeral += minutos;
@@ -21136,7 +21186,7 @@
                     const minutos = linha.dias.get(dia.iso) || 0;
                     const linhaKey = `${linha.tecnico}|${linha.entrada}|${linha.saida}`;
                     const selected = selecao?.linhaKey === linhaKey && selecao?.data === dia.iso;
-                    return `<td class="${dia.data.getDay() === 0 || dia.data.getDay() === 6 ? "sheet-weekend" : ""} ${minutos ? "operacao-month-cell-filled" : ""} ${selected ? "selected" : ""}" ${minutos ? `data-operacao-month-cell="1" data-linha-key="${escaparTextoOperacao(linhaKey)}" data-data="${dia.iso}"` : ""}>${formatarHorasPlanilhaOperacao(minutos)}</td>`;
+                    return `<td class="${dia.data.getDay() === 0 || dia.data.getDay() === 6 ? "sheet-weekend" : ""} ${minutos ? "operacao-month-cell-filled" : ""} ${linha.corrigidosPorDia.has(dia.iso) ? "operacao-month-cell-corrected" : ""} ${selected ? "selected" : ""}" ${minutos ? `data-operacao-month-cell="1" data-linha-key="${escaparTextoOperacao(linhaKey)}" data-data="${dia.iso}"` : ""}>${formatarHorasPlanilhaOperacao(minutos)}</td>`;
                   }).join("")}
                   <td class="sheet-total">${formatarHorasPlanilhaOperacao(linha.total)}</td>
                 </tr>
@@ -21479,11 +21529,15 @@
         document.querySelectorAll("[data-operacao-tab]").forEach((btn) => btn.addEventListener("click", () => ativarAbaOperacao(btn.dataset.operacaoTab)));
         document.querySelectorAll("[data-operacao-go]").forEach((btn) => btn.addEventListener("click", () => ativarAbaOperacao(btn.dataset.operacaoGo)));
         document.querySelectorAll("[data-operacao-escala-view]").forEach((btn) => {
-          btn.addEventListener("click", () => {
+          btn.addEventListener("click", async () => {
             operacaoState.escalaView = btn.dataset.operacaoEscalaView || "mes";
             operacaoState.escalaMensalSelecao = null;
             document.querySelectorAll("[data-operacao-escala-view]").forEach((item) => item.classList.toggle("active", item === btn));
-            renderizarEscalaOperacao();
+            if (operacaoState.unidade?.id) {
+              await carregarUnidadeOperacao();
+            } else {
+              renderizarEscalaOperacao();
+            }
           });
         });
         document.querySelectorAll("[data-operacao-plantao-modo]").forEach((btn) => {
