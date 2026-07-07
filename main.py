@@ -736,6 +736,13 @@ class OperacaoPlantaoCreate(BaseModel):
     saida: str = Field(..., min_length=1, max_length=12)
 
 
+class OperacaoPlantaoUpdate(BaseModel):
+    tecnico: str = Field(..., min_length=1, max_length=160)
+    data: str = Field(..., min_length=10, max_length=10)
+    entrada: str = Field(..., min_length=1, max_length=12)
+    saida: str = Field(..., min_length=1, max_length=12)
+
+
 class OperacaoEscalaRecorrenteCreate(BaseModel):
     competencia: str = Field(..., min_length=7, max_length=7)
     tecnico: str = Field(..., min_length=1, max_length=160)
@@ -1344,6 +1351,22 @@ def obter_unidade_operacao(db: Session, user_id: int, unidade_id: int) -> Operac
     if not unidade:
         raise HTTPException(status_code=404, detail="Unidade não encontrada.")
     return unidade
+
+
+def obter_plantao_operacao(db: Session, user_id: int, unidade_id: int, plantao_id: int) -> OperacaoPlantao:
+    plantao = (
+        db.query(OperacaoPlantao)
+        .filter(
+            OperacaoPlantao.id == plantao_id,
+            OperacaoPlantao.user_id == user_id,
+            OperacaoPlantao.unidade_id == unidade_id,
+            OperacaoPlantao.ativo == True,
+        )
+        .first()
+    )
+    if not plantao:
+        raise HTTPException(status_code=404, detail="Plantão não encontrado.")
+    return plantao
 
 
 def obter_ou_criar_competencia_operacao(db: Session, user_id: int, unidade_id: int, competencia: str) -> OperacaoCompetencia:
@@ -3977,6 +4000,57 @@ def criar_plantao_operacao(
     db.commit()
     db.refresh(plantao)
     return plantao.to_dict()
+
+
+@app.patch("/operacao/unidades/{unidade_id}/escala/{plantao_id}")
+def atualizar_plantao_operacao(
+    unidade_id: int,
+    plantao_id: int,
+    payload: OperacaoPlantaoUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    unidade = obter_unidade_operacao(db, current_user.id, unidade_id)
+    plantao = obter_plantao_operacao(db, current_user.id, unidade.id, plantao_id)
+    if not validar_data_iso(payload.data):
+        raise HTTPException(status_code=400, detail="Data inválida. Use YYYY-MM-DD.")
+    tecnico = payload.tecnico.strip()
+    entrada = payload.entrada.strip()
+    saida = payload.saida.strip()
+    if not tecnico:
+        raise HTTPException(status_code=400, detail="Informe o técnico.")
+    if not entrada or not saida:
+        raise HTTPException(status_code=400, detail="Informe entrada e saída.")
+    plantao.tecnico = tecnico
+    plantao.data = payload.data.strip()
+    plantao.competencia = plantao.data[:7]
+    plantao.entrada = entrada
+    plantao.saida = saida
+    plantao.atualizado_em = datetime.now(UTC)
+    comp = obter_ou_criar_competencia_operacao(db, current_user.id, unidade.id, plantao.competencia)
+    if comp.status != OPERACAO_STATUS_FECHADO:
+        comp.status = OPERACAO_STATUS_EM_ANDAMENTO
+    comp.atualizado_em = datetime.now(UTC)
+    db.commit()
+    db.refresh(plantao)
+    return plantao.to_dict()
+
+
+@app.delete("/operacao/unidades/{unidade_id}/escala/{plantao_id}")
+def excluir_plantao_operacao(
+    unidade_id: int,
+    plantao_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    unidade = obter_unidade_operacao(db, current_user.id, unidade_id)
+    plantao = obter_plantao_operacao(db, current_user.id, unidade.id, plantao_id)
+    plantao.ativo = False
+    plantao.atualizado_em = datetime.now(UTC)
+    comp = obter_ou_criar_competencia_operacao(db, current_user.id, unidade.id, plantao.competencia)
+    comp.atualizado_em = datetime.now(UTC)
+    db.commit()
+    return {"ok": True}
 
 
 @app.post("/operacao/unidades/{unidade_id}/escala/recorrente", status_code=201)
