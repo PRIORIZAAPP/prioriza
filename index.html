@@ -10151,7 +10151,7 @@
       }
 
       #screen-operacao .operacao-shell {
-        padding: 16px;
+        padding: 12px;
       }
 
       #screen-operacao .operacao-header {
@@ -10203,10 +10203,7 @@
         transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
       }
 
-      #screen-operacao .operacao-unit-logo,
       #screen-operacao .operacao-unit-logo-thumb {
-        width: 40px;
-        height: 40px;
         border: 1px solid #dbe3ee;
         border-radius: 8px;
         object-fit: contain;
@@ -10418,10 +10415,96 @@
 
       #screen-operacao .operacao-detail-header {
         align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
       }
 
       #screen-operacao .operacao-competencia-input {
-        width: 168px;
+        width: 166px;
+        border: 0;
+        background: transparent;
+        text-align: center;
+      }
+
+      #screen-operacao .operacao-unit-heading {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+
+      #screen-operacao .operacao-back-icon {
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: #64748b;
+        font-size: 28px;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      #screen-operacao .operacao-back-icon:hover {
+        background: #f1f5f9;
+        color: #334155;
+      }
+
+      #screen-operacao .operacao-logo-slot {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 180px;
+        width: 180px;
+        height: 68px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #64748b;
+        font-size: 12px;
+        cursor: pointer;
+        overflow: hidden;
+      }
+
+      #screen-operacao .operacao-logo-slot:hover {
+        border-color: rgba(var(--cor-tema-rgb), 0.44);
+        color: var(--cor-tema);
+      }
+
+      #screen-operacao .operacao-logo-slot.has-logo {
+        border-style: solid;
+      }
+
+      #screen-operacao .operacao-logo-slot img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      #screen-operacao .operacao-month-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        margin-left: auto;
+        padding: 4px;
+        border: 1px solid #dbe3ee;
+        border-radius: 10px;
+        background: #ffffff;
+      }
+
+      #screen-operacao .operacao-month-nav button {
+        width: 30px;
+        height: 30px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: #64748b;
+        font-size: 22px;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      #screen-operacao .operacao-month-nav button:hover {
+        background: #f1f5f9;
+        color: #334155;
       }
 
       #screen-operacao .operacao-tabs,
@@ -10479,7 +10562,7 @@
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
       }
 
       #screen-operacao .operacao-section-head h3,
@@ -10504,6 +10587,7 @@
 
       #screen-operacao .operacao-month-sheet-wrap {
         overflow-x: auto;
+        margin-inline: -4px;
         border: 1px solid rgba(var(--cor-tema-rgb), 0.24);
         border-radius: 0;
         background: #ffffff;
@@ -10511,7 +10595,7 @@
 
       #screen-operacao .operacao-month-sheet {
         width: 100%;
-        min-width: 1180px;
+        min-width: 1120px;
         border-collapse: collapse;
         color: #111827;
         font-size: 10px;
@@ -11651,16 +11735,22 @@
 
             <div class="operacao-detail-view" id="operacao-detail-view" hidden>
               <div class="operacao-header operacao-detail-header">
-                <button id="btn-operacao-voltar" class="btn-secondary" type="button">Voltar</button>
-                <img id="operacao-unidade-logo-view" class="operacao-unit-logo" alt="" hidden />
-                <div>
+                <button id="btn-operacao-voltar" class="operacao-back-icon" type="button" aria-label="Voltar">‹</button>
+                <button id="btn-operacao-logo-unidade" class="operacao-logo-slot" type="button">
+                  <img id="operacao-unidade-logo-view" alt="" hidden />
+                  <span id="operacao-logo-placeholder">Adicionar logo</span>
+                </button>
+                <div class="operacao-unit-heading">
                   <p class="operacao-kicker">Unidade</p>
                   <h2 id="operacao-unidade-titulo">Unidade</h2>
                   <p id="operacao-unidade-subtitulo">Competência atual</p>
                 </div>
-                <button id="btn-operacao-logo-unidade" class="btn-secondary" type="button">Logo</button>
                 <input id="operacao-logo-unidade-editar" type="file" accept="image/*" hidden />
-                <input id="operacao-competencia" class="operacao-competencia-input" type="month" />
+                <div class="operacao-month-nav">
+                  <button id="btn-operacao-mes-anterior" type="button" aria-label="Competência anterior">‹</button>
+                  <input id="operacao-competencia" class="operacao-competencia-input" type="month" />
+                  <button id="btn-operacao-mes-proximo" type="button" aria-label="Próxima competência">›</button>
+                </div>
               </div>
 
               <div class="operacao-tabs" role="tablist" aria-label="Navegação da unidade">
@@ -21104,10 +21194,14 @@
         document.getElementById("operacao-unidade-titulo").textContent = unidade.sigla ? `${unidade.sigla} · ${unidade.nome}` : (unidade.nome || "Unidade");
         document.getElementById("operacao-unidade-subtitulo").textContent = `${formatarCompetenciaOperacao(operacaoState.competencia)} · ${resumo.status || "Não iniciado"}`;
         const logo = document.getElementById("operacao-unidade-logo-view");
+        const slot = document.getElementById("btn-operacao-logo-unidade");
+        const placeholder = document.getElementById("operacao-logo-placeholder");
         if (logo) {
           logo.src = unidade.logo_url || "";
           logo.hidden = !unidade.logo_url;
         }
+        if (slot) slot.classList.toggle("has-logo", !!unidade.logo_url);
+        if (placeholder) placeholder.hidden = !!unidade.logo_url;
       }
 
       async function carregarUnidadeOperacao() {
@@ -21126,6 +21220,18 @@
         renderizarEscalaOperacao();
         renderizarMovimentosOperacao();
         renderizarFechamentoOperacao();
+      }
+
+      async function mudarCompetenciaOperacao(deltaMeses) {
+        const base = operacaoState.competencia || new Date().toISOString().slice(0, 7);
+        const [ano, mes] = base.split("-").map(Number);
+        const data = new Date(ano, (mes || 1) - 1 + deltaMeses, 1);
+        operacaoState.competencia = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}`;
+        const input = document.getElementById("operacao-competencia");
+        if (input) input.value = operacaoState.competencia;
+        document.getElementById("operacao-plantao-data").value = dataPadraoCompetenciaOperacao();
+        document.getElementById("operacao-movimento-data").value = dataPadraoCompetenciaOperacao();
+        await carregarUnidadeOperacao();
       }
 
       function ativarAbaOperacao(aba) {
@@ -21751,6 +21857,8 @@
           await atualizarLogoUnidadeOperacao(ev.target.files?.[0] || null);
           ev.target.value = "";
         });
+        document.getElementById("btn-operacao-mes-anterior")?.addEventListener("click", () => mudarCompetenciaOperacao(-1));
+        document.getElementById("btn-operacao-mes-proximo")?.addEventListener("click", () => mudarCompetenciaOperacao(1));
         document.getElementById("operacao-competencia")?.addEventListener("change", async (ev) => {
           operacaoState.competencia = ev.target.value || new Date().toISOString().slice(0, 7);
           document.getElementById("operacao-plantao-data").value = dataPadraoCompetenciaOperacao();
