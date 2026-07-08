@@ -394,6 +394,8 @@ class OperacaoUnidade(Base):
     user_id = Column(Integer, nullable=False, index=True)
     nome = Column(String, nullable=False, index=True)
     sigla = Column(String, default="")
+    logo_url = Column(Text, default="")
+    modalidades_tecnicos = Column(Text, default="")
     ativo = Column(Boolean, default=True, nullable=False)
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     atualizado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
@@ -404,6 +406,8 @@ class OperacaoUnidade(Base):
             "user_id": self.user_id,
             "nome": self.nome or "",
             "sigla": self.sigla or "",
+            "logo_url": self.logo_url or "",
+            "modalidades_tecnicos": self.modalidades_tecnicos or "",
             "ativo": bool(self.ativo),
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
             "atualizado_em": self.atualizado_em.isoformat() if self.atualizado_em else None,
@@ -726,6 +730,8 @@ class MarcoOperacionalUpdate(BaseModel):
 class OperacaoUnidadeCreate(BaseModel):
     nome: str = Field(..., min_length=1, max_length=160)
     sigla: str = Field(default="", max_length=24)
+    logo_url: str = Field(default="", max_length=500000)
+    modalidades_tecnicos: str = Field(default="", max_length=20000)
 
 
 class OperacaoPlantaoCreate(BaseModel):
@@ -1106,7 +1112,7 @@ def _sql_tipo_coluna(nome_coluna: str) -> str:
         return "TIMESTAMP" if not IS_SQLITE else "DATETIME"
     if nome_coluna in ("descricao", "local", "hora_fim", "tipo_evento", "origem_evento", "google_event_id"):
         return "VARCHAR"
-    if nome_coluna in ("google_html_link", "avatar_url"):
+    if nome_coluna in ("google_html_link", "avatar_url", "logo_url", "modalidades_tecnicos"):
         return "TEXT"
     return "VARCHAR"
 
@@ -1236,6 +1242,9 @@ def rodar_migracoes_automaticas():
         except Exception as e:
             print(f"[MIGRAÇÃO] Aviso ao criar {modelo_operacao.__tablename__}: {e}")
 
+    garantir_coluna_tabela("operacao_unidades", "logo_url")
+    garantir_coluna_tabela("operacao_unidades", "modalidades_tecnicos")
+
     for tabela in ("tarefas", "checklist", "notes", "push_subscriptions", "google_calendar_tokens"):
         try:
             with engine.connect() as conn:
@@ -1318,6 +1327,8 @@ OPERACAO_MOVIMENTO_TIPOS = {
     "falta": "Falta",
     "correcao": "Correção",
     "correção": "Correção",
+    "exclusao": "Exclusão",
+    "exclusão": "Exclusão",
     "ajuste manual": "Ajuste Manual",
     "ajuste_manual": "Ajuste Manual",
 }
@@ -3922,6 +3933,8 @@ def criar_unidade_operacao(
         user_id=current_user.id,
         nome=nome,
         sigla=(payload.sigla or "").strip(),
+        logo_url=(payload.logo_url or "").strip(),
+        modalidades_tecnicos=(payload.modalidades_tecnicos or "").strip(),
         ativo=True,
     )
     db.add(unidade)
@@ -3931,6 +3944,30 @@ def criar_unidade_operacao(
     db.commit()
     dados = unidade.to_dict()
     dados["competencia_atual"] = comp
+    return dados
+
+
+@app.patch("/operacao/unidades/{unidade_id}")
+def atualizar_unidade_operacao(
+    unidade_id: int,
+    payload: OperacaoUnidadeCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    unidade = obter_unidade_operacao(db, current_user.id, unidade_id)
+    nome = payload.nome.strip()
+    if not nome:
+        raise HTTPException(status_code=400, detail="Informe o nome da unidade.")
+    unidade.nome = nome
+    unidade.sigla = (payload.sigla or "").strip()
+    unidade.logo_url = (payload.logo_url or "").strip()
+    unidade.modalidades_tecnicos = (payload.modalidades_tecnicos or "").strip()
+    unidade.atualizado_em = datetime.now(UTC)
+    db.commit()
+    db.refresh(unidade)
+    dados = unidade.to_dict()
+    dados["competencia_atual"] = resumo_competencia_operacao(db, current_user.id, unidade.id, competencia_atual_operacao())
+    db.commit()
     return dados
 
 
