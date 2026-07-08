@@ -10464,6 +10464,14 @@
         overflow: hidden;
       }
 
+      #screen-operacao .operacao-header-side {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        margin-left: auto;
+      }
+
       #screen-operacao .operacao-logo-slot:hover {
         border-color: rgba(var(--cor-tema-rgb), 0.44);
         color: var(--cor-tema);
@@ -10483,7 +10491,6 @@
         display: inline-flex;
         align-items: center;
         gap: 2px;
-        margin-left: auto;
         padding: 4px;
         border: 1px solid #dbe3ee;
         border-radius: 10px;
@@ -10840,7 +10847,11 @@
 
       #screen-operacao .operacao-team-table {
         display: grid;
-        gap: 6px;
+        gap: 0;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #ffffff;
       }
 
       #screen-operacao .operacao-team-head,
@@ -10849,9 +10860,10 @@
         grid-template-columns: minmax(0, 1fr) minmax(130px, 1fr) 120px 90px auto;
         gap: 10px;
         align-items: center;
-        padding: 7px 10px;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
+        min-height: 36px;
+        padding: 6px 10px;
+        border: 0;
+        border-bottom: 1px solid #e2e8f0;
         background: #ffffff;
         color: #172033;
         font-size: 13px;
@@ -10863,6 +10875,10 @@
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
+      }
+
+      #screen-operacao .operacao-team-row:last-child {
+        border-bottom: 0;
       }
 
       #screen-operacao .operacao-team-row strong {
@@ -10897,6 +10913,43 @@
       #screen-operacao .operacao-muted {
         color: #94a3b8;
         font-size: 11px;
+      }
+
+      #screen-operacao .operacao-editor-panel {
+        margin-bottom: 12px;
+      }
+
+      #screen-operacao .operacao-editor-card {
+        padding: 12px;
+        border: 1px solid rgba(var(--cor-tema-rgb), 0.22);
+        border-radius: 8px;
+        background: #f8fafc;
+      }
+
+      #screen-operacao .operacao-modalidade-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      #screen-operacao .operacao-modalidade-option {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 30px;
+        padding: 0 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #334155;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      #screen-operacao .operacao-modalidade-option:has(input:checked) {
+        border-color: rgba(var(--cor-tema-rgb), 0.48);
+        background: rgba(var(--cor-tema-rgb), 0.1);
+        color: var(--cor-tema);
       }
 
       #screen-operacao .operacao-list-table {
@@ -11745,11 +11798,13 @@
                   <h2 id="operacao-unidade-titulo">Unidade</h2>
                   <p id="operacao-unidade-subtitulo">Competência atual</p>
                 </div>
-                <input id="operacao-logo-unidade-editar" type="file" accept="image/*" hidden />
-                <div class="operacao-month-nav">
-                  <button id="btn-operacao-mes-anterior" type="button" aria-label="Competência anterior">‹</button>
-                  <input id="operacao-competencia" class="operacao-competencia-input" type="month" />
-                  <button id="btn-operacao-mes-proximo" type="button" aria-label="Próxima competência">›</button>
+                <div class="operacao-header-side">
+                  <input id="operacao-logo-unidade-editar" type="file" accept="image/*" hidden />
+                  <div class="operacao-month-nav">
+                    <button id="btn-operacao-mes-anterior" type="button" aria-label="Competência anterior">‹</button>
+                    <input id="operacao-competencia" class="operacao-competencia-input" type="month" />
+                    <button id="btn-operacao-mes-proximo" type="button" aria-label="Próxima competência">›</button>
+                  </div>
                 </div>
               </div>
 
@@ -11769,6 +11824,31 @@
                 </div>
                 <div id="operacao-equipe-lista" class="operacao-team-table"></div>
               </section>
+
+              <div id="operacao-tecnico-editor" class="operacao-editor-panel" hidden>
+                <div class="operacao-editor-card">
+                  <div class="operacao-section-head">
+                    <div>
+                      <h3>Editar técnico</h3>
+                      <p>Dados de exibição da equipe nesta unidade.</p>
+                    </div>
+                    <button id="btn-operacao-fechar-tecnico" class="btn-secondary" type="button">Fechar</button>
+                  </div>
+                  <div class="operacao-form-grid">
+                    <div class="operacao-field-wide">
+                      <label for="operacao-tecnico-nome">Nome completo</label>
+                      <input id="operacao-tecnico-nome" type="text" readonly />
+                    </div>
+                    <div class="operacao-field-wide">
+                      <label>Modalidades</label>
+                      <div id="operacao-tecnico-modalidades" class="operacao-modalidade-options"></div>
+                    </div>
+                  </div>
+                  <div class="operacao-form-actions">
+                    <button id="btn-operacao-salvar-tecnico" class="btn-primary" type="button">Salvar</button>
+                  </div>
+                </div>
+              </div>
 
               <section class="operacao-panel" data-operacao-panel="escala">
                 <div class="operacao-section-head">
@@ -20914,6 +20994,7 @@
         plantaoEditandoId: null,
         plantaoSelecionadoId: null,
         escalaMensalSelecao: null,
+        tecnicoEditando: "",
         carregado: false
       };
 
@@ -21191,8 +21272,10 @@
       function atualizarCabecalhoOperacao() {
         const unidade = operacaoState.unidade || {};
         const resumo = operacaoState.resumo || unidade.competencia_atual || {};
+        const status = resumo.status || "Não iniciado";
+        const statusIcone = status.toLowerCase().includes("fechado") ? "✓" : (status.toLowerCase().includes("andamento") ? "◷" : "○");
         document.getElementById("operacao-unidade-titulo").textContent = unidade.sigla ? `${unidade.sigla} · ${unidade.nome}` : (unidade.nome || "Unidade");
-        document.getElementById("operacao-unidade-subtitulo").textContent = `${formatarCompetenciaOperacao(operacaoState.competencia)} · ${resumo.status || "Não iniciado"}`;
+        document.getElementById("operacao-unidade-subtitulo").textContent = `${formatarCompetenciaOperacao(operacaoState.competencia)} · ${statusIcone} ${status}`;
         const logo = document.getElementById("operacao-unidade-logo-view");
         const slot = document.getElementById("btn-operacao-logo-unidade");
         const placeholder = document.getElementById("operacao-logo-placeholder");
@@ -21261,7 +21344,7 @@
           <div class="operacao-team-head"><span>Técnico</span><span>Modalidades</span><span>Horas previstas</span><span>Plantões</span><span></span></div>
           ${equipe.map((item) => `
             <div class="operacao-team-row">
-              <strong>${escaparTextoOperacao(primeiroNomeOperacao(item.tecnico))}</strong>
+              <strong>${escaparTextoOperacao(item.tecnico)}</strong>
               <span class="operacao-modality-chips">${(modalidades[item.tecnico] || []).length ? modalidades[item.tecnico].map((m) => `<span class="operacao-modality-chip">${escaparTextoOperacao(m)}</span>`).join("") : '<span class="operacao-muted">Sem modalidade</span>'}</span>
               <span>${formatarHorasOperacao(item.minutos)}</span>
               <span>${item.plantoes} plantão(ões)</span>
@@ -21270,17 +21353,41 @@
           `).join("")}
         `;
         lista.querySelectorAll("[data-operacao-modalidades]").forEach((btn) => {
-          btn.addEventListener("click", () => editarModalidadesTecnicoOperacao(btn.dataset.operacaoModalidades));
+          btn.addEventListener("click", () => abrirEditorTecnicoOperacao(btn.dataset.operacaoModalidades));
         });
       }
 
-      async function editarModalidadesTecnicoOperacao(tecnico) {
+      function abrirEditorTecnicoOperacao(tecnico) {
+        if (!tecnico) return;
+        operacaoState.tecnicoEditando = tecnico;
+        const atuais = modalidadesUnidadeOperacao();
+        const selecionadas = new Set(atuais[tecnico] || []);
+        const painel = document.getElementById("operacao-tecnico-editor");
+        const nome = document.getElementById("operacao-tecnico-nome");
+        const opcoes = document.getElementById("operacao-tecnico-modalidades");
+        if (!painel || !nome || !opcoes) return;
+        nome.value = tecnico;
+        opcoes.innerHTML = ["RM", "TC", "RX", "DO", "MG", "CC"].map((modalidade) => `
+          <label class="operacao-modalidade-option">
+            <input type="checkbox" value="${modalidade}" ${selecionadas.has(modalidade) ? "checked" : ""} />
+            ${modalidade}
+          </label>
+        `).join("");
+        painel.hidden = false;
+        painel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      function fecharEditorTecnicoOperacao() {
+        operacaoState.tecnicoEditando = "";
+        const painel = document.getElementById("operacao-tecnico-editor");
+        if (painel) painel.hidden = true;
+      }
+
+      async function salvarEditorTecnicoOperacao() {
+        const tecnico = operacaoState.tecnicoEditando;
         if (!operacaoState.unidade?.id || !tecnico) return;
         const atuais = modalidadesUnidadeOperacao();
-        const valorAtual = (atuais[tecnico] || []).join(", ");
-        const resposta = await modal.prompt("Informe modalidades separadas por vírgula: RM, TC, RX, DO, MG, CC", "Modalidades", valorAtual);
-        if (resposta === null) return;
-        const modalidades = normalizarModalidadesOperacao(resposta);
+        const modalidades = Array.from(document.querySelectorAll("#operacao-tecnico-modalidades input:checked")).map((input) => input.value);
         atuais[tecnico] = modalidades;
         try {
           const payload = {
@@ -21294,6 +21401,7 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
           });
+          fecharEditorTecnicoOperacao();
           renderizarEquipeOperacao();
           atualizarCabecalhoOperacao();
         } catch (erro) {
@@ -21852,6 +21960,8 @@
         document.getElementById("btn-operacao-cancelar-unidade")?.addEventListener("click", () => alternarFormularioUnidadeOperacao(false));
         document.getElementById("operacao-form-unidade")?.addEventListener("submit", salvarUnidadeOperacao);
         document.getElementById("btn-operacao-voltar")?.addEventListener("click", voltarListaOperacao);
+        document.getElementById("btn-operacao-fechar-tecnico")?.addEventListener("click", fecharEditorTecnicoOperacao);
+        document.getElementById("btn-operacao-salvar-tecnico")?.addEventListener("click", salvarEditorTecnicoOperacao);
         document.getElementById("btn-operacao-logo-unidade")?.addEventListener("click", () => document.getElementById("operacao-logo-unidade-editar")?.click());
         document.getElementById("operacao-logo-unidade-editar")?.addEventListener("change", async (ev) => {
           await atualizarLogoUnidadeOperacao(ev.target.files?.[0] || null);
