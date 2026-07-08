@@ -10203,6 +10203,20 @@
         transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
       }
 
+      #screen-operacao .operacao-unit-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      #screen-operacao .operacao-unit-edit {
+        min-height: 28px;
+        padding: 0 10px;
+        font-size: 11px;
+      }
+
       #screen-operacao .operacao-unit-logo-thumb {
         border: 1px solid #dbe3ee;
         border-radius: 8px;
@@ -10239,7 +10253,7 @@
         display: inline-flex;
         align-items: center;
         min-height: 24px;
-        margin-top: 14px;
+        margin-top: 0;
         padding: 0 9px;
         border-radius: 999px;
         background: #eef2f7;
@@ -11789,16 +11803,16 @@
             <div class="operacao-detail-view" id="operacao-detail-view" hidden>
               <div class="operacao-header operacao-detail-header">
                 <button id="btn-operacao-voltar" class="operacao-back-icon" type="button" aria-label="Voltar">‹</button>
-                <button id="btn-operacao-logo-unidade" class="operacao-logo-slot" type="button">
-                  <img id="operacao-unidade-logo-view" alt="" hidden />
-                  <span id="operacao-logo-placeholder">Adicionar logo</span>
-                </button>
                 <div class="operacao-unit-heading">
                   <p class="operacao-kicker">Unidade</p>
                   <h2 id="operacao-unidade-titulo">Unidade</h2>
                   <p id="operacao-unidade-subtitulo">Competência atual</p>
                 </div>
                 <div class="operacao-header-side">
+                  <button id="btn-operacao-logo-unidade" class="operacao-logo-slot" type="button">
+                    <img id="operacao-unidade-logo-view" alt="" hidden />
+                    <span id="operacao-logo-placeholder">Adicionar logo</span>
+                  </button>
                   <input id="operacao-logo-unidade-editar" type="file" accept="image/*" hidden />
                   <div class="operacao-month-nav">
                     <button id="btn-operacao-mes-anterior" type="button" aria-label="Competência anterior">‹</button>
@@ -20984,6 +20998,7 @@
       const operacaoState = {
         unidades: [],
         unidade: null,
+        unidadeEditandoId: null,
         competencia: new Date().toISOString().slice(0, 7),
         resumo: null,
         escala: [],
@@ -21181,14 +21196,18 @@
         }
         operacaoState.unidades.forEach((unidade) => {
           const competencia = unidade.competencia_atual || {};
-          const card = document.createElement("button");
-          card.type = "button";
+          const card = document.createElement("div");
           card.className = "operacao-unit-card";
+          card.tabIndex = 0;
+          card.setAttribute("role", "button");
           card.innerHTML = `
             <img class="operacao-unit-logo-thumb" alt="" hidden />
             <div class="operacao-unit-title"></div>
             <div class="operacao-unit-meta"></div>
-            <span class="operacao-status ${classeStatusOperacao(competencia.status)}"></span>
+            <div class="operacao-unit-footer">
+              <span class="operacao-status ${classeStatusOperacao(competencia.status)}"></span>
+              <button class="btn-secondary operacao-unit-edit" type="button">Editar</button>
+            </div>
           `;
           const logo = card.querySelector(".operacao-unit-logo-thumb");
           if (unidade.logo_url) {
@@ -21198,7 +21217,17 @@
           card.querySelector(".operacao-unit-title").textContent = unidade.sigla ? `${unidade.sigla} · ${unidade.nome}` : unidade.nome;
           card.querySelector(".operacao-unit-meta").textContent = `Competência ${formatarCompetenciaOperacao(competencia.competencia || operacaoState.competencia)}`;
           card.querySelector(".operacao-status").textContent = competencia.status || "Não iniciado";
+          card.querySelector(".operacao-unit-edit").addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            iniciarEdicaoUnidadeOperacao(unidade);
+          });
           card.addEventListener("click", () => abrirUnidadeOperacao(unidade.id));
+          card.addEventListener("keydown", (ev) => {
+            if (ev.key === "Enter" || ev.key === " ") {
+              ev.preventDefault();
+              abrirUnidadeOperacao(unidade.id);
+            }
+          });
           lista.appendChild(card);
         });
       }
@@ -21219,7 +21248,26 @@
         const form = document.getElementById("operacao-form-unidade");
         if (!form) return;
         form.hidden = !aberto;
+        if (!aberto) {
+          operacaoState.unidadeEditandoId = null;
+          form.reset();
+          const submit = form.querySelector('button[type="submit"]');
+          if (submit) submit.textContent = "Salvar unidade";
+        }
         if (aberto) setTimeout(() => document.getElementById("operacao-unidade-nome")?.focus(), 40);
+      }
+
+      function iniciarEdicaoUnidadeOperacao(unidade) {
+        if (!unidade?.id) return;
+        operacaoState.unidadeEditandoId = unidade.id;
+        document.getElementById("operacao-unidade-nome").value = unidade.nome || "";
+        document.getElementById("operacao-unidade-sigla").value = unidade.sigla || "";
+        const logoInput = document.getElementById("operacao-unidade-logo");
+        if (logoInput) logoInput.value = "";
+        const form = document.getElementById("operacao-form-unidade");
+        const submit = form?.querySelector('button[type="submit"]');
+        if (submit) submit.textContent = "Salvar alterações";
+        alternarFormularioUnidadeOperacao(true);
       }
 
       async function salvarUnidadeOperacao(ev) {
@@ -21232,11 +21280,19 @@
           return;
         }
         try {
-          const logo_url = await arquivoParaDataUrlOperacao(logoFile);
-          await fetchOperacao("/operacao/unidades", {
-            method: "POST",
+          const unidadeAtual = operacaoState.unidades.find((unidade) => Number(unidade.id) === Number(operacaoState.unidadeEditandoId));
+          const logo_url = logoFile ? await arquivoParaDataUrlOperacao(logoFile) : (unidadeAtual?.logo_url || "");
+          const payload = {
+            nome,
+            sigla,
+            logo_url,
+            modalidades_tecnicos: unidadeAtual?.modalidades_tecnicos || ""
+          };
+          const editando = !!operacaoState.unidadeEditandoId;
+          await fetchOperacao(editando ? `/operacao/unidades/${operacaoState.unidadeEditandoId}` : "/operacao/unidades", {
+            method: editando ? "PATCH" : "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nome, sigla, logo_url, modalidades_tecnicos: "" })
+            body: JSON.stringify(payload)
           });
           document.getElementById("operacao-form-unidade")?.reset();
           alternarFormularioUnidadeOperacao(false);
@@ -21956,7 +22012,10 @@
       }
 
       function vincularOperacaoUI() {
-        document.getElementById("btn-operacao-nova-unidade")?.addEventListener("click", () => alternarFormularioUnidadeOperacao(true));
+        document.getElementById("btn-operacao-nova-unidade")?.addEventListener("click", () => {
+          alternarFormularioUnidadeOperacao(false);
+          alternarFormularioUnidadeOperacao(true);
+        });
         document.getElementById("btn-operacao-cancelar-unidade")?.addEventListener("click", () => alternarFormularioUnidadeOperacao(false));
         document.getElementById("operacao-form-unidade")?.addEventListener("submit", salvarUnidadeOperacao);
         document.getElementById("btn-operacao-voltar")?.addEventListener("click", voltarListaOperacao);
