@@ -620,7 +620,7 @@
         color: var(--cor-topbar-suave);
         max-width: 200px;
         line-height: 1.3;
-        text-align: right;
+        text-align: left;
         opacity: 0.98;
         display: none;
       }
@@ -10151,7 +10151,7 @@
       }
 
       #screen-operacao .operacao-shell {
-        padding: 22px;
+        padding: 16px;
       }
 
       #screen-operacao .operacao-header {
@@ -10201,6 +10201,23 @@
         text-align: left;
         cursor: pointer;
         transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+      }
+
+      #screen-operacao .operacao-unit-logo,
+      #screen-operacao .operacao-unit-logo-thumb {
+        width: 40px;
+        height: 40px;
+        border: 1px solid #dbe3ee;
+        border-radius: 8px;
+        object-fit: contain;
+        background: #ffffff;
+      }
+
+      #screen-operacao .operacao-unit-logo-thumb {
+        float: right;
+        width: 34px;
+        height: 34px;
+        margin-left: 8px;
       }
 
       #screen-operacao .operacao-unit-card:hover {
@@ -10480,8 +10497,8 @@
 
       #screen-operacao .operacao-calendar-grid {
         display: grid;
-        grid-template-columns: repeat(7, minmax(0, 1fr));
-        gap: 5px;
+        grid-template-columns: 1fr;
+        gap: 8px;
         margin-bottom: 0;
       }
 
@@ -10640,8 +10657,8 @@
       }
 
       #screen-operacao .operacao-day-cell {
-        min-height: 64px;
-        padding: 6px;
+        min-height: 72px;
+        padding: 10px;
         border: 1px solid #dbe3ee;
         border-radius: 8px;
         background: #ffffff;
@@ -10674,8 +10691,8 @@
 
       #screen-operacao .operacao-day-shift {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 6px;
+        grid-template-columns: 120px minmax(0, 1fr);
+        gap: 12px;
         align-items: start;
         padding-top: 2px;
         width: 100%;
@@ -10696,13 +10713,15 @@
       }
 
       #screen-operacao .operacao-day-hours {
-        text-align: right;
+        display: grid;
+        gap: 3px;
+        text-align: left;
       }
 
       #screen-operacao .operacao-shift-hour {
         display: block;
         min-height: 18px;
-        width: 100%;
+        width: fit-content;
         border: 0;
         border-radius: 4px;
         background: transparent;
@@ -10743,10 +10762,10 @@
       #screen-operacao .operacao-team-head,
       #screen-operacao .operacao-team-row {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 120px 120px;
+        grid-template-columns: minmax(0, 1fr) minmax(130px, 1fr) 120px 90px auto;
         gap: 10px;
         align-items: center;
-        padding: 9px 12px;
+        padding: 7px 10px;
         border: 1px solid #e2e8f0;
         border-radius: 8px;
         background: #ffffff;
@@ -10766,9 +10785,34 @@
         font-weight: 700;
       }
 
-      #screen-operacao .operacao-team-row span:nth-child(n+2),
-      #screen-operacao .operacao-team-head span:nth-child(n+2) {
+      #screen-operacao .operacao-team-row span:nth-child(3),
+      #screen-operacao .operacao-team-row span:nth-child(4),
+      #screen-operacao .operacao-team-head span:nth-child(3),
+      #screen-operacao .operacao-team-head span:nth-child(4) {
         text-align: right;
+      }
+
+      #screen-operacao .operacao-modality-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      #screen-operacao .operacao-modality-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 20px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: rgba(var(--cor-tema-rgb), 0.1);
+        color: var(--cor-tema);
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      #screen-operacao .operacao-muted {
+        color: #94a3b8;
+        font-size: 11px;
       }
 
       #screen-operacao .operacao-list-table {
@@ -11573,9 +11617,8 @@
             <div class="operacao-list-view" id="operacao-list-view">
               <div class="operacao-header">
                 <div>
-                  <p class="operacao-kicker">Módulo Operação</p>
                   <h2>Operação</h2>
-                  <p>Gestão operacional das unidades por competência mensal.</p>
+                  <p>Unidades e fechamentos mensais.</p>
                 </div>
                 <button id="btn-operacao-nova-unidade" class="btn-primary" type="button">+ Nova Unidade</button>
               </div>
@@ -11589,6 +11632,10 @@
                   <div>
                     <label for="operacao-unidade-sigla">Sigla opcional</label>
                     <input id="operacao-unidade-sigla" type="text" placeholder="Ex: HGG" />
+                  </div>
+                  <div class="operacao-field-wide">
+                    <label for="operacao-unidade-logo">Logo opcional</label>
+                    <input id="operacao-unidade-logo" type="file" accept="image/*" />
                   </div>
                 </div>
                 <div class="operacao-form-actions">
@@ -11605,11 +11652,14 @@
             <div class="operacao-detail-view" id="operacao-detail-view" hidden>
               <div class="operacao-header operacao-detail-header">
                 <button id="btn-operacao-voltar" class="btn-secondary" type="button">Voltar</button>
+                <img id="operacao-unidade-logo-view" class="operacao-unit-logo" alt="" hidden />
                 <div>
                   <p class="operacao-kicker">Unidade</p>
                   <h2 id="operacao-unidade-titulo">Unidade</h2>
                   <p id="operacao-unidade-subtitulo">Competência atual</p>
                 </div>
+                <button id="btn-operacao-logo-unidade" class="btn-secondary" type="button">Logo</button>
+                <input id="operacao-logo-unidade-editar" type="file" accept="image/*" hidden />
                 <input id="operacao-competencia" class="operacao-competencia-input" type="month" />
               </div>
 
@@ -20801,12 +20851,18 @@
         return ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"][data.getDay()] || "";
       }
 
+      function diaSemanaLongoOperacao(dataIso) {
+        const data = new Date(`${dataIso}T00:00:00`);
+        return ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"][data.getDay()] || "";
+      }
+
       function primeiroNomeOperacao(nome) {
         const limpo = String(nome || "").trim();
         if (!limpo) return "--";
-        const partes = limpo.split(/\s+/).filter(Boolean);
+        const titulo = limpo.toLocaleLowerCase("pt-BR").replace(/(^|\s)(\p{L})/gu, (_, espaco, letra) => `${espaco}${letra.toLocaleUpperCase("pt-BR")}`);
+        const partes = titulo.split(/\s+/).filter(Boolean);
         if (partes.length <= 1) return partes[0];
-        return `${partes[0]} ${partes[1].charAt(0)}.`;
+        return `${partes[0]} ${partes[1].charAt(0).toLocaleUpperCase("pt-BR")}.`;
       }
 
       function inicioSemanaSegundaOperacao(data) {
@@ -20856,6 +20912,32 @@
         return Number.isInteger(valor) ? String(valor) : valor.toFixed(1).replace(".", ",");
       }
 
+      function modalidadesUnidadeOperacao() {
+        try {
+          return JSON.parse(operacaoState.unidade?.modalidades_tecnicos || "{}") || {};
+        } catch {
+          return {};
+        }
+      }
+
+      function normalizarModalidadesOperacao(valor) {
+        const permitidas = new Set(["RM", "TC", "RX", "DO", "MG", "CC"]);
+        return String(valor || "")
+          .split(",")
+          .map((item) => item.trim().toLocaleUpperCase("pt-BR"))
+          .filter((item, index, arr) => permitidas.has(item) && arr.indexOf(item) === index);
+      }
+
+      async function arquivoParaDataUrlOperacao(file) {
+        if (!file) return "";
+        return await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ""));
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
       function chaveTextoOperacao(valor) {
         return String(valor || "").trim().toLocaleLowerCase("pt-BR");
       }
@@ -20872,8 +20954,11 @@
 
       function escalaComCorrecoesOperacao() {
         const efetiva = operacaoState.escala.map((plantao) => ({ ...plantao, corrigido: false }));
-        const correcoes = operacaoState.movimentos.filter((movimento) => chaveTextoOperacao(movimento.tipo).includes("corre"));
-        correcoes.forEach((movimento) => {
+        const movimentosEscala = operacaoState.movimentos.filter((movimento) => {
+          const tipo = chaveTextoOperacao(movimento.tipo);
+          return tipo.includes("corre") || tipo.includes("exclus");
+        });
+        movimentosEscala.forEach((movimento) => {
           const previsto = extrairPrevistoCorrecaoOperacao(movimento);
           const idx = efetiva.findIndex((plantao) => {
             if (plantao.data !== movimento.data) return false;
@@ -20884,6 +20969,7 @@
           });
           if (idx < 0) return;
           efetiva.splice(idx, 1);
+          if (chaveTextoOperacao(movimento.tipo).includes("exclus")) return;
           if (movimento.tecnico_realizado && movimento.entrada && movimento.saida) {
             efetiva.push({
               id: `movimento-${movimento.id}`,
@@ -20928,10 +21014,16 @@
           card.type = "button";
           card.className = "operacao-unit-card";
           card.innerHTML = `
+            <img class="operacao-unit-logo-thumb" alt="" hidden />
             <div class="operacao-unit-title"></div>
             <div class="operacao-unit-meta"></div>
             <span class="operacao-status ${classeStatusOperacao(competencia.status)}"></span>
           `;
+          const logo = card.querySelector(".operacao-unit-logo-thumb");
+          if (unidade.logo_url) {
+            logo.src = unidade.logo_url;
+            logo.hidden = false;
+          }
           card.querySelector(".operacao-unit-title").textContent = unidade.sigla ? `${unidade.sigla} · ${unidade.nome}` : unidade.nome;
           card.querySelector(".operacao-unit-meta").textContent = `Competência ${formatarCompetenciaOperacao(competencia.competencia || operacaoState.competencia)}`;
           card.querySelector(".operacao-status").textContent = competencia.status || "Não iniciado";
@@ -20963,15 +21055,17 @@
         ev.preventDefault();
         const nome = document.getElementById("operacao-unidade-nome")?.value.trim() || "";
         const sigla = document.getElementById("operacao-unidade-sigla")?.value.trim() || "";
+        const logoFile = document.getElementById("operacao-unidade-logo")?.files?.[0] || null;
         if (!nome) {
           await modal.alerta("Informe o nome da unidade.", "Operação");
           return;
         }
         try {
+          const logo_url = await arquivoParaDataUrlOperacao(logoFile);
           await fetchOperacao("/operacao/unidades", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nome, sigla })
+            body: JSON.stringify({ nome, sigla, logo_url, modalidades_tecnicos: "" })
           });
           document.getElementById("operacao-form-unidade")?.reset();
           alternarFormularioUnidadeOperacao(false);
@@ -21006,8 +21100,14 @@
 
       function atualizarCabecalhoOperacao() {
         const unidade = operacaoState.unidade || {};
+        const resumo = operacaoState.resumo || unidade.competencia_atual || {};
         document.getElementById("operacao-unidade-titulo").textContent = unidade.sigla ? `${unidade.sigla} · ${unidade.nome}` : (unidade.nome || "Unidade");
-        document.getElementById("operacao-unidade-subtitulo").textContent = `Competência ${formatarCompetenciaOperacao(operacaoState.competencia)}`;
+        document.getElementById("operacao-unidade-subtitulo").textContent = `${formatarCompetenciaOperacao(operacaoState.competencia)} · ${resumo.status || "Não iniciado"}`;
+        const logo = document.getElementById("operacao-unidade-logo-view");
+        if (logo) {
+          logo.src = unidade.logo_url || "";
+          logo.hidden = !unidade.logo_url;
+        }
       }
 
       async function carregarUnidadeOperacao() {
@@ -21038,7 +21138,8 @@
         const lista = document.getElementById("operacao-equipe-lista");
         if (!lista) return;
         const porTecnico = new Map();
-        operacaoState.escala.forEach((plantao) => {
+        const modalidades = modalidadesUnidadeOperacao();
+        escalaComCorrecoesOperacao().forEach((plantao) => {
           const tecnico = String(plantao.tecnico || "").trim() || "Sem técnico";
           if (!porTecnico.has(tecnico)) porTecnico.set(tecnico, { tecnico, minutos: 0, plantoes: 0 });
           const item = porTecnico.get(tecnico);
@@ -21051,15 +21152,69 @@
           return;
         }
         lista.innerHTML = `
-          <div class="operacao-team-head"><span>Técnico</span><span>Horas previstas</span><span>Plantões</span></div>
+          <div class="operacao-team-head"><span>Técnico</span><span>Modalidades</span><span>Horas previstas</span><span>Plantões</span><span></span></div>
           ${equipe.map((item) => `
             <div class="operacao-team-row">
-              <strong>${escaparTextoOperacao(item.tecnico)}</strong>
+              <strong>${escaparTextoOperacao(primeiroNomeOperacao(item.tecnico))}</strong>
+              <span class="operacao-modality-chips">${(modalidades[item.tecnico] || []).length ? modalidades[item.tecnico].map((m) => `<span class="operacao-modality-chip">${escaparTextoOperacao(m)}</span>`).join("") : '<span class="operacao-muted">Sem modalidade</span>'}</span>
               <span>${formatarHorasOperacao(item.minutos)}</span>
               <span>${item.plantoes} plantão(ões)</span>
+              <button class="btn-secondary" type="button" data-operacao-modalidades="${escaparTextoOperacao(item.tecnico)}">Editar</button>
             </div>
           `).join("")}
         `;
+        lista.querySelectorAll("[data-operacao-modalidades]").forEach((btn) => {
+          btn.addEventListener("click", () => editarModalidadesTecnicoOperacao(btn.dataset.operacaoModalidades));
+        });
+      }
+
+      async function editarModalidadesTecnicoOperacao(tecnico) {
+        if (!operacaoState.unidade?.id || !tecnico) return;
+        const atuais = modalidadesUnidadeOperacao();
+        const valorAtual = (atuais[tecnico] || []).join(", ");
+        const resposta = await modal.prompt("Informe modalidades separadas por vírgula: RM, TC, RX, DO, MG, CC", "Modalidades", valorAtual);
+        if (resposta === null) return;
+        const modalidades = normalizarModalidadesOperacao(resposta);
+        atuais[tecnico] = modalidades;
+        try {
+          const payload = {
+            nome: operacaoState.unidade.nome || "",
+            sigla: operacaoState.unidade.sigla || "",
+            logo_url: operacaoState.unidade.logo_url || "",
+            modalidades_tecnicos: JSON.stringify(atuais)
+          };
+          operacaoState.unidade = await fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          renderizarEquipeOperacao();
+          atualizarCabecalhoOperacao();
+        } catch (erro) {
+          await modal.alerta(erro.message || "Não foi possível salvar modalidades.", "Operação");
+        }
+      }
+
+      async function atualizarLogoUnidadeOperacao(file) {
+        if (!file || !operacaoState.unidade?.id) return;
+        try {
+          const logo_url = await arquivoParaDataUrlOperacao(file);
+          const payload = {
+            nome: operacaoState.unidade.nome || "",
+            sigla: operacaoState.unidade.sigla || "",
+            logo_url,
+            modalidades_tecnicos: operacaoState.unidade.modalidades_tecnicos || ""
+          };
+          operacaoState.unidade = await fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          atualizarCabecalhoOperacao();
+          await carregarUnidadesOperacao();
+        } catch (erro) {
+          await modal.alerta(erro.message || "Não foi possível atualizar a logo.", "Operação");
+        }
       }
 
       function definirModoPlantaoOperacao(modo) {
@@ -21096,14 +21251,18 @@
           <div class="operacao-day-shift">
             <span class="operacao-day-tech">${escaparTextoOperacao(primeiroNomeOperacao(tecnico))}</span>
             <span class="operacao-day-hours">${plantoes.map((plantao) => `
-              <button class="operacao-shift-hour ${operacaoState.plantaoSelecionadoId === plantao.id ? "selected" : ""}" type="button" data-operacao-plantao-id="${plantao.id}">
-                ${escaparTextoOperacao(`${plantao.entrada || "--"}-${plantao.saida || "--"}`)}
+              <button class="operacao-shift-hour ${String(operacaoState.plantaoSelecionadoId) === String(plantao.id) ? "selected" : ""}" type="button" data-operacao-plantao-id="${plantao.id}">
+                ${escaparTextoOperacao(`${plantao.entrada || "--"} às ${plantao.saida || "--"}`)}
               </button>
             `).join("")}</span>
-            ${plantoes.some((plantao) => operacaoState.plantaoSelecionadoId === plantao.id) ? `
+            ${plantoes.some((plantao) => String(operacaoState.plantaoSelecionadoId) === String(plantao.id)) ? `
               <div class="operacao-shift-actions">
-                <button class="btn-secondary" type="button" data-operacao-editar-plantao="${operacaoState.plantaoSelecionadoId}">Editar</button>
-                <button class="btn-secondary" type="button" data-operacao-excluir-plantao="${operacaoState.plantaoSelecionadoId}">Excluir</button>
+                ${String(operacaoState.plantaoSelecionadoId).startsWith("movimento-") ? `
+                  <button class="btn-secondary" type="button" data-operacao-excluir-movimento="${String(operacaoState.plantaoSelecionadoId).replace("movimento-", "")}">Excluir movimento</button>
+                ` : `
+                  <button class="btn-secondary" type="button" data-operacao-editar-plantao="${operacaoState.plantaoSelecionadoId}">Editar</button>
+                  <button class="btn-secondary" type="button" data-operacao-excluir-plantao="${operacaoState.plantaoSelecionadoId}">Excluir</button>
+                `}
               </div>
             ` : ""}
           </div>
@@ -21166,6 +21325,7 @@
               <div class="operacao-submit-cell">
                 <button class="btn-secondary" type="button" data-operacao-fechar-correcao>Fechar</button>
                 ${movimentoCorrecaoSelecionado ? `<button class="btn-secondary" type="button" data-operacao-excluir-movimento="${movimentoCorrecaoSelecionado.movimento_id}">Excluir correção</button>` : ""}
+                ${movimentoCorrecaoSelecionado ? "" : `<button class="btn-secondary" type="button" data-operacao-excluir-mensal>Excluir este plantão</button>`}
                 <button class="btn-primary" type="button" data-operacao-salvar-correcao>Corrigir plantão</button>
               </div>
             </div>
@@ -21226,6 +21386,7 @@
         grade.querySelector("[data-operacao-excluir-movimento]")?.addEventListener("click", async (ev) => {
           await excluirMovimentoOperacao(Number(ev.currentTarget.dataset.operacaoExcluirMovimento));
         });
+        grade.querySelector("[data-operacao-excluir-mensal]")?.addEventListener("click", salvarExclusaoMensalOperacao);
         grade.querySelector("[data-operacao-salvar-correcao]")?.addEventListener("click", salvarCorrecaoMensalOperacao);
       }
 
@@ -21249,7 +21410,7 @@
           cell.tabIndex = 0;
           cell.setAttribute("role", "button");
           if (data.getDay() === 0 || data.getDay() === 6) cell.classList.add("operacao-weekend");
-          cell.innerHTML = `<div class="operacao-day-number">${String(data.getDate()).padStart(2, "0")} • ${diaSemanaCurtoOperacao(iso)}</div><div class="operacao-day-note"></div>`;
+          cell.innerHTML = `<div class="operacao-day-number">${diaSemanaLongoOperacao(iso)} - ${String(data.getDate()).padStart(2, "0")}/${String(data.getMonth() + 1).padStart(2, "0")}</div><div class="operacao-day-note"></div>`;
           cell.querySelector(".operacao-day-note").innerHTML = resumoDiaEscalaOperacao(itens);
           cell.addEventListener("click", () => {
             definirModoPlantaoOperacao("unico");
@@ -21268,7 +21429,7 @@
         grade.querySelectorAll("[data-operacao-plantao-id]").forEach((btn) => {
           btn.addEventListener("click", (ev) => {
             ev.stopPropagation();
-            operacaoState.plantaoSelecionadoId = Number(btn.dataset.operacaoPlantaoId);
+            operacaoState.plantaoSelecionadoId = btn.dataset.operacaoPlantaoId;
             renderizarEscalaOperacao();
           });
         });
@@ -21284,6 +21445,12 @@
             await excluirPlantaoOperacao(Number(btn.dataset.operacaoExcluirPlantao));
           });
         });
+        grade.querySelectorAll("[data-operacao-excluir-movimento]").forEach((btn) => {
+          btn.addEventListener("click", async (ev) => {
+            ev.stopPropagation();
+            await excluirMovimentoOperacao(Number(btn.dataset.operacaoExcluirMovimento));
+          });
+        });
       }
 
       function renderizarEscalaOperacao() {
@@ -21292,7 +21459,7 @@
         const [ano, mes] = (operacaoState.competencia || "").split("-").map(Number);
         const totalDias = new Date(ano, mes, 0).getDate();
         const porData = new Map();
-        operacaoState.escala.forEach((item) => {
+        escalaComCorrecoesOperacao().forEach((item) => {
           if (!porData.has(item.data)) porData.set(item.data, []);
           porData.get(item.data).push(item);
         });
@@ -21386,6 +21553,37 @@
         }
       }
 
+      async function salvarExclusaoMensalOperacao() {
+        const selecao = operacaoState.escalaMensalSelecao;
+        if (!selecao || !operacaoState.unidade?.id) return;
+        const [tecnicoPrevisto, entradaPrevista, saidaPrevista] = String(selecao.linhaKey || "").split("|");
+        const ok = await modal.confirmar(`Excluir este plantão apenas em ${selecao.data}?`, "Excluir plantão", "vermelho");
+        if (!ok) return;
+        const observacaoBase = `Exclusão da escala mensal. Previsto: ${tecnicoPrevisto || "--"} ${entradaPrevista || "--"}-${saidaPrevista || "--"}.`;
+        const payload = {
+          competencia: operacaoState.competencia,
+          tipo: "Exclusão",
+          data: selecao.data,
+          tecnico_previsto: tecnicoPrevisto || "",
+          tecnico_realizado: "",
+          entrada: entradaPrevista || "",
+          saida: saidaPrevista || "",
+          observacao: observacaoBase
+        };
+        try {
+          await fetchOperacao(`/operacao/unidades/${operacaoState.unidade.id}/movimentos`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          operacaoState.escalaMensalSelecao = null;
+          await carregarUnidadeOperacao();
+          await modal.alerta("Exclusão registrada em Movimentos. A escala recorrente foi preservada.", "Operação");
+        } catch (erro) {
+          await modal.alerta(erro.message || "Não foi possível registrar a exclusão.", "Operação");
+        }
+      }
+
       function renderizarMovimentosOperacao() {
         const lista = document.getElementById("operacao-movimentos-lista");
         if (!lista) return;
@@ -21399,7 +21597,7 @@
           row.className = "operacao-row";
           row.innerHTML = `<span>${item.data}</span><strong></strong><span></span><small></small><div class="operacao-row-actions"><button class="btn-secondary" type="button" data-operacao-excluir-movimento="${item.id}">Excluir</button></div>`;
           row.querySelector("strong").textContent = item.tipo;
-          row.querySelector("span:nth-of-type(2)").textContent = item.tecnico_realizado || item.tecnico_previsto || "--";
+          row.querySelector("span:nth-of-type(2)").textContent = primeiroNomeOperacao(item.tecnico_realizado || item.tecnico_previsto || "--");
           row.querySelector("small").textContent = item.observacao || `${item.entrada || "--"} - ${item.saida || "--"}`;
           lista.appendChild(row);
         });
@@ -21548,6 +21746,11 @@
         document.getElementById("btn-operacao-cancelar-unidade")?.addEventListener("click", () => alternarFormularioUnidadeOperacao(false));
         document.getElementById("operacao-form-unidade")?.addEventListener("submit", salvarUnidadeOperacao);
         document.getElementById("btn-operacao-voltar")?.addEventListener("click", voltarListaOperacao);
+        document.getElementById("btn-operacao-logo-unidade")?.addEventListener("click", () => document.getElementById("operacao-logo-unidade-editar")?.click());
+        document.getElementById("operacao-logo-unidade-editar")?.addEventListener("change", async (ev) => {
+          await atualizarLogoUnidadeOperacao(ev.target.files?.[0] || null);
+          ev.target.value = "";
+        });
         document.getElementById("operacao-competencia")?.addEventListener("change", async (ev) => {
           operacaoState.competencia = ev.target.value || new Date().toISOString().slice(0, 7);
           document.getElementById("operacao-plantao-data").value = dataPadraoCompetenciaOperacao();
