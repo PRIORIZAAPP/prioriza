@@ -10381,6 +10381,42 @@
         font-size: 13px;
       }
 
+      #screen-operacao .operacao-logo-input {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 46px;
+        padding: 6px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      #screen-operacao .operacao-logo-input input[type="file"] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        min-height: 1px;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #screen-operacao .operacao-logo-input span {
+        flex: 1 1 auto;
+        min-width: 0;
+        color: #64748b;
+        font-size: 13px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      #screen-operacao .operacao-logo-input .danger {
+        border-color: #fecaca;
+        background: #fff7f7;
+        color: #b91c1c !important;
+      }
+
       #screen-operacao .operacao-form-actions {
         display: flex;
         justify-content: flex-end;
@@ -10466,9 +10502,15 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        flex: 0 0 180px;
-        width: 180px;
-        height: 68px;
+        flex: 0 0 220px;
+        align-self: flex-end;
+        width: 220px;
+        min-width: 220px;
+        max-width: 220px;
+        height: 78px;
+        min-height: 78px;
+        max-height: 78px;
+        padding: 8px 12px;
         border: 1px dashed #cbd5e1;
         border-radius: 10px;
         background: #ffffff;
@@ -10498,6 +10540,8 @@
       #screen-operacao .operacao-logo-slot img {
         max-width: 100%;
         max-height: 100%;
+        width: 100%;
+        height: 100%;
         object-fit: contain;
       }
 
@@ -10871,16 +10915,16 @@
       #screen-operacao .operacao-team-head,
       #screen-operacao .operacao-team-row {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(130px, 1fr) 120px 90px auto;
-        gap: 10px;
+        grid-template-columns: minmax(0, 1.25fr) minmax(130px, 1fr) 112px auto;
+        gap: 8px;
         align-items: center;
-        min-height: 36px;
-        padding: 6px 10px;
+        min-height: 30px;
+        padding: 4px 10px;
         border: 0;
         border-bottom: 1px solid #e2e8f0;
         background: #ffffff;
         color: #172033;
-        font-size: 13px;
+        font-size: 12px;
       }
 
       #screen-operacao .operacao-team-head {
@@ -10900,9 +10944,7 @@
       }
 
       #screen-operacao .operacao-team-row span:nth-child(3),
-      #screen-operacao .operacao-team-row span:nth-child(4),
-      #screen-operacao .operacao-team-head span:nth-child(3),
-      #screen-operacao .operacao-team-head span:nth-child(4) {
+      #screen-operacao .operacao-team-head span:nth-child(3) {
         text-align: right;
       }
 
@@ -10915,7 +10957,7 @@
       #screen-operacao .operacao-modality-chip {
         display: inline-flex;
         align-items: center;
-        min-height: 20px;
+        min-height: 18px;
         padding: 0 6px;
         border-radius: 999px;
         background: rgba(var(--cor-tema-rgb), 0.1);
@@ -10930,14 +10972,28 @@
       }
 
       #screen-operacao .operacao-editor-panel {
-        margin-bottom: 12px;
+        position: fixed;
+        inset: 0;
+        z-index: 1200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(15, 23, 42, 0.38);
+        backdrop-filter: blur(3px);
+      }
+
+      #screen-operacao .operacao-editor-panel[hidden] {
+        display: none;
       }
 
       #screen-operacao .operacao-editor-card {
-        padding: 12px;
+        width: min(560px, 100%);
+        padding: 16px;
         border: 1px solid rgba(var(--cor-tema-rgb), 0.22);
-        border-radius: 8px;
-        background: #f8fafc;
+        border-radius: 14px;
+        background: #ffffff;
+        box-shadow: 0 24px 80px rgba(15, 23, 42, 0.24);
       }
 
       #screen-operacao .operacao-modalidade-options {
@@ -11786,7 +11842,12 @@
                   </div>
                   <div class="operacao-field-wide">
                     <label for="operacao-unidade-logo">Logo opcional</label>
-                    <input id="operacao-unidade-logo" type="file" accept="image/*" />
+                    <div class="operacao-logo-input">
+                      <input id="operacao-unidade-logo" type="file" accept="image/*" />
+                      <button id="btn-operacao-escolher-logo-form" class="btn-secondary" type="button">Escolher logo</button>
+                      <span id="operacao-logo-arquivo-form">Nenhum arquivo selecionado</span>
+                      <button id="btn-operacao-remover-logo-form" class="btn-secondary danger" type="button" hidden>Remover logo</button>
+                    </div>
                   </div>
                 </div>
                 <div class="operacao-form-actions">
@@ -20999,6 +21060,7 @@
         unidades: [],
         unidade: null,
         unidadeEditandoId: null,
+        unidadeLogoRemovida: false,
         competencia: new Date().toISOString().slice(0, 7),
         resumo: null,
         escala: [],
@@ -21116,12 +21178,46 @@
 
       async function arquivoParaDataUrlOperacao(file) {
         if (!file) return "";
-        return await new Promise((resolve, reject) => {
+        const dataUrl = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(String(reader.result || ""));
           reader.onerror = reject;
           reader.readAsDataURL(file);
         });
+        if (!String(file.type || "").startsWith("image/") || file.type === "image/svg+xml") return dataUrl;
+
+        const img = await new Promise((resolve, reject) => {
+          const imagem = new Image();
+          imagem.onload = () => resolve(imagem);
+          imagem.onerror = reject;
+          imagem.src = dataUrl;
+        });
+        const limite = 460000;
+        const maxLargura = 900;
+        const maxAltura = 360;
+        let escala = Math.min(1, maxLargura / img.naturalWidth, maxAltura / img.naturalHeight);
+        let qualidade = 0.86;
+        let resultado = dataUrl;
+
+        for (let tentativa = 0; tentativa < 8; tentativa += 1) {
+          const largura = Math.max(1, Math.round(img.naturalWidth * escala));
+          const altura = Math.max(1, Math.round(img.naturalHeight * escala));
+          const canvas = document.createElement("canvas");
+          canvas.width = largura;
+          canvas.height = altura;
+          const ctx = canvas.getContext("2d");
+          ctx.clearRect(0, 0, largura, altura);
+          ctx.drawImage(img, 0, 0, largura, altura);
+          resultado = canvas.toDataURL("image/webp", qualidade);
+          if (resultado.length <= limite) return resultado;
+          escala *= 0.82;
+          qualidade = Math.max(0.68, qualidade - 0.04);
+        }
+
+        if (resultado.length > limite) {
+          throw new Error("A logo é muito grande. Tente uma imagem menor ou mais recortada.");
+        }
+        return resultado;
       }
 
       function chaveTextoOperacao(valor) {
@@ -21179,8 +21275,19 @@
           headers: authHeaders(options.headers || {})
         });
         const dados = await resposta.json().catch(() => ({}));
-        if (!resposta.ok) throw new Error(dados?.detail || "Não foi possível concluir a ação.");
+        if (!resposta.ok) throw new Error(mensagemErroApiOperacao(dados));
         return dados;
+      }
+
+      function mensagemErroApiOperacao(dados) {
+        const detalhe = dados?.detail;
+        if (Array.isArray(detalhe)) {
+          return detalhe.map((item) => item?.msg || item?.message || JSON.stringify(item)).filter(Boolean).join(" ") || "Não foi possível concluir a ação.";
+        }
+        if (detalhe && typeof detalhe === "object") {
+          return detalhe.msg || detalhe.message || JSON.stringify(detalhe);
+        }
+        return detalhe || dados?.message || "Não foi possível concluir a ação.";
       }
 
       function renderizarUnidadesOperacao() {
@@ -21250,20 +21357,39 @@
         form.hidden = !aberto;
         if (!aberto) {
           operacaoState.unidadeEditandoId = null;
+          operacaoState.unidadeLogoRemovida = false;
           form.reset();
+          atualizarControleLogoFormularioOperacao();
           const submit = form.querySelector('button[type="submit"]');
           if (submit) submit.textContent = "Salvar unidade";
         }
         if (aberto) setTimeout(() => document.getElementById("operacao-unidade-nome")?.focus(), 40);
       }
 
+      function atualizarControleLogoFormularioOperacao() {
+        const input = document.getElementById("operacao-unidade-logo");
+        const nomeArquivo = document.getElementById("operacao-logo-arquivo-form");
+        const remover = document.getElementById("btn-operacao-remover-logo-form");
+        const unidadeAtual = operacaoState.unidades.find((unidade) => Number(unidade.id) === Number(operacaoState.unidadeEditandoId));
+        const temArquivo = !!input?.files?.[0];
+        const temLogoSalva = !!unidadeAtual?.logo_url && !operacaoState.unidadeLogoRemovida;
+        if (nomeArquivo) {
+          nomeArquivo.textContent = temArquivo
+            ? input.files[0].name
+            : (temLogoSalva ? "Logo cadastrada" : "Nenhum arquivo selecionado");
+        }
+        if (remover) remover.hidden = !temLogoSalva && !temArquivo;
+      }
+
       function iniciarEdicaoUnidadeOperacao(unidade) {
         if (!unidade?.id) return;
         operacaoState.unidadeEditandoId = unidade.id;
+        operacaoState.unidadeLogoRemovida = false;
         document.getElementById("operacao-unidade-nome").value = unidade.nome || "";
         document.getElementById("operacao-unidade-sigla").value = unidade.sigla || "";
         const logoInput = document.getElementById("operacao-unidade-logo");
         if (logoInput) logoInput.value = "";
+        atualizarControleLogoFormularioOperacao();
         const form = document.getElementById("operacao-form-unidade");
         const submit = form?.querySelector('button[type="submit"]');
         if (submit) submit.textContent = "Salvar alterações";
@@ -21281,7 +21407,9 @@
         }
         try {
           const unidadeAtual = operacaoState.unidades.find((unidade) => Number(unidade.id) === Number(operacaoState.unidadeEditandoId));
-          const logo_url = logoFile ? await arquivoParaDataUrlOperacao(logoFile) : (unidadeAtual?.logo_url || "");
+          const logo_url = logoFile
+            ? await arquivoParaDataUrlOperacao(logoFile)
+            : (operacaoState.unidadeLogoRemovida ? "" : (unidadeAtual?.logo_url || ""));
           const payload = {
             nome,
             sigla,
@@ -21397,13 +21525,12 @@
           return;
         }
         lista.innerHTML = `
-          <div class="operacao-team-head"><span>Técnico</span><span>Modalidades</span><span>Horas previstas</span><span>Plantões</span><span></span></div>
+          <div class="operacao-team-head"><span>Técnico</span><span>Modalidades</span><span>Horas previstas</span><span></span></div>
           ${equipe.map((item) => `
             <div class="operacao-team-row">
               <strong>${escaparTextoOperacao(item.tecnico)}</strong>
               <span class="operacao-modality-chips">${(modalidades[item.tecnico] || []).length ? modalidades[item.tecnico].map((m) => `<span class="operacao-modality-chip">${escaparTextoOperacao(m)}</span>`).join("") : '<span class="operacao-muted">Sem modalidade</span>'}</span>
               <span>${formatarHorasOperacao(item.minutos)}</span>
-              <span>${item.plantoes} plantão(ões)</span>
               <button class="btn-secondary" type="button" data-operacao-modalidades="${escaparTextoOperacao(item.tecnico)}">Editar</button>
             </div>
           `).join("")}
@@ -21430,7 +21557,6 @@
           </label>
         `).join("");
         painel.hidden = false;
-        painel.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
 
       function fecharEditorTecnicoOperacao() {
@@ -22018,8 +22144,22 @@
         });
         document.getElementById("btn-operacao-cancelar-unidade")?.addEventListener("click", () => alternarFormularioUnidadeOperacao(false));
         document.getElementById("operacao-form-unidade")?.addEventListener("submit", salvarUnidadeOperacao);
+        document.getElementById("btn-operacao-escolher-logo-form")?.addEventListener("click", () => document.getElementById("operacao-unidade-logo")?.click());
+        document.getElementById("operacao-unidade-logo")?.addEventListener("change", () => {
+          operacaoState.unidadeLogoRemovida = false;
+          atualizarControleLogoFormularioOperacao();
+        });
+        document.getElementById("btn-operacao-remover-logo-form")?.addEventListener("click", () => {
+          const input = document.getElementById("operacao-unidade-logo");
+          if (input) input.value = "";
+          operacaoState.unidadeLogoRemovida = true;
+          atualizarControleLogoFormularioOperacao();
+        });
         document.getElementById("btn-operacao-voltar")?.addEventListener("click", voltarListaOperacao);
         document.getElementById("btn-operacao-fechar-tecnico")?.addEventListener("click", fecharEditorTecnicoOperacao);
+        document.getElementById("operacao-tecnico-editor")?.addEventListener("click", (ev) => {
+          if (ev.target?.id === "operacao-tecnico-editor") fecharEditorTecnicoOperacao();
+        });
         document.getElementById("btn-operacao-salvar-tecnico")?.addEventListener("click", salvarEditorTecnicoOperacao);
         document.getElementById("btn-operacao-logo-unidade")?.addEventListener("click", () => document.getElementById("operacao-logo-unidade-editar")?.click());
         document.getElementById("operacao-logo-unidade-editar")?.addEventListener("change", async (ev) => {
