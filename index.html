@@ -13364,15 +13364,78 @@
         .join("") || "PR";
     }
 
+    function chaveAvatarPerfilLocal(user = authUser) {
+      const id = user?.id || user?.email || "local";
+      return `prioriza_avatar_cache_${id}`;
+    }
+
+    function obterAvatarPerfilLocal(user = authUser) {
+      try {
+        return localStorage.getItem(chaveAvatarPerfilLocal(user)) || "";
+      } catch {
+        return "";
+      }
+    }
+
+    function salvarAvatarPerfilLocal(user, dataUrl) {
+      if (!user || !dataUrl) return;
+      try {
+        localStorage.setItem(chaveAvatarPerfilLocal(user), dataUrl);
+      } catch (e) {
+        console.warn("[PRIORIZA] Não foi possível manter cache local do avatar:", e);
+      }
+    }
+
+    function removerAvatarPerfilLocal(user = authUser) {
+      try {
+        localStorage.removeItem(chaveAvatarPerfilLocal(user));
+      } catch {}
+    }
+
+    async function prepararAvatarPerfilLocal(arquivo) {
+      if (!arquivo || !String(arquivo.type || "").startsWith("image/")) return "";
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = reject;
+        reader.readAsDataURL(arquivo);
+      });
+      if (arquivo.type === "image/gif") return dataUrl;
+
+      const img = await new Promise((resolve, reject) => {
+        const imagem = new Image();
+        imagem.onload = () => resolve(imagem);
+        imagem.onerror = reject;
+        imagem.src = dataUrl;
+      });
+      const max = 320;
+      const escala = Math.min(1, max / img.naturalWidth, max / img.naturalHeight);
+      const largura = Math.max(1, Math.round(img.naturalWidth * escala));
+      const altura = Math.max(1, Math.round(img.naturalHeight * escala));
+      const canvas = document.createElement("canvas");
+      canvas.width = largura;
+      canvas.height = altura;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, largura, altura);
+      ctx.drawImage(img, 0, 0, largura, altura);
+      return canvas.toDataURL("image/webp", 0.86);
+    }
+
     function renderizarAvatarPerfil(el, nome, avatarUrl) {
       if (!el) return;
       const iniciais = obterIniciaisUsuario(nome);
-      if (avatarUrl) {
+      const avatarLocal = obterAvatarPerfilLocal();
+      const fonteAvatar = avatarUrl || avatarLocal;
+      if (fonteAvatar) {
         el.classList.add("has-photo");
-        el.innerHTML = `<img src="${textoSeguro(avatarUrl)}" alt="Foto de perfil de ${textoSeguro(nome || "usuário")}" loading="lazy" />`;
+        el.innerHTML = `<img src="${textoSeguro(fonteAvatar)}" alt="Foto de perfil de ${textoSeguro(nome || "usuário")}" loading="lazy" />`;
         const img = el.querySelector("img");
         if (img) {
           img.addEventListener("error", () => {
+            if (avatarUrl && avatarLocal && img.src !== avatarLocal) {
+              img.src = avatarLocal;
+              return;
+            }
             el.classList.remove("has-photo");
             el.textContent = iniciais;
           }, { once: true });
@@ -13385,7 +13448,7 @@
 
     function atualizarAcoesAvatarPerfil() {
       const btnRemover = document.getElementById("btn-remover-avatar");
-      if (btnRemover) btnRemover.hidden = !authUser?.avatar_url;
+      if (btnRemover) btnRemover.hidden = !authUser?.avatar_url && !obterAvatarPerfilLocal();
     }
 
     function preencherContaLogada() {
@@ -13479,12 +13542,14 @@
       }
       if (btnRemover) btnRemover.disabled = true;
       try {
+        const avatarLocalDataUrl = await prepararAvatarPerfilLocal(arquivo);
         const res = await apiFetch(API + "/auth/profile/avatar", {
           method: "POST",
           body: formData,
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data?.detail || "Não foi possível atualizar a foto de perfil.");
+        salvarAvatarPerfilLocal(data?.user || authUser, avatarLocalDataUrl);
         atualizarUsuarioAutenticado(data?.user);
         await modal.alerta(data?.message || "Foto de perfil atualizada com sucesso.", "Perfil");
       } catch (e) {
@@ -13500,7 +13565,7 @@
     }
 
     async function removerAvatarPerfil() {
-      if (!authUser?.avatar_url) return;
+      if (!authUser?.avatar_url && !obterAvatarPerfilLocal()) return;
       const ok = await modal.confirmar("Remover a foto de perfil atual?", "Remover foto", "vermelho");
       if (!ok) return;
       const btnRemover = document.getElementById("btn-remover-avatar");
@@ -13514,6 +13579,7 @@
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data?.detail || "Não foi possível remover a foto de perfil.");
+        removerAvatarPerfilLocal(authUser);
         atualizarUsuarioAutenticado(data?.user);
       } catch (e) {
         await modal.alerta(e.message || "Não foi possível remover a foto de perfil.", "Perfil");
