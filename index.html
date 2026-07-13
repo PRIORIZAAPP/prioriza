@@ -4622,6 +4622,19 @@
         will-change: transform;
       }
       .checklist-item:hover { background: rgba(248, 250, 252, 0.9); }
+      .checklist-item.has-action-menu {
+        overflow: visible;
+        z-index: 2;
+      }
+      .checklist-item.has-action-menu .timeline-action-menu {
+        flex-shrink: 0;
+        margin-left: 2px;
+      }
+      .checklist-item.has-action-menu .timeline-menu-popover {
+        top: calc(100% + 4px);
+        bottom: auto;
+        z-index: 80;
+      }
       .checklist-item.pessoal { background: transparent; }
       .check-status {
         width: 22px; height: 22px; border-radius: 999px; border: 1.75px solid #cbd5e1;
@@ -19221,6 +19234,31 @@
               await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
             });
             div.appendChild(btnRemover);
+          } else {
+            div.classList.add("has-action-menu");
+            div.appendChild(criarMenuAcoesDesktop({
+              titulo: "Ações da rotina",
+              ariaLabel: `Ações de ${item.titulo}`,
+              itens: [
+                { texto: "Editar", acao: () => editarRotinaChecklist(item) },
+                {
+                  texto: "Pular apenas hoje",
+                  acao: async () => {
+                    pularRotinaApenasHoje(item.id);
+                    await recarregarBlocosComRolagem({ checklistHoje: true, resumo: true });
+                  }
+                },
+                {
+                  texto: "Excluir",
+                  danger: true,
+                  acao: async () => {
+                    if (!await modal.confirmar(`Remover definitivamente “${item.titulo}”?`, "Excluir rotina", "vermelho")) return;
+                    await excluirChecklistItem(item.id);
+                    await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
+                  }
+                }
+              ]
+            }));
           }
 
           adicionarSwipe(div,
