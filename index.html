@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pt-BR">
   <head>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -649,6 +649,11 @@
         border-bottom: 1px solid #dde5ef;
       }
       .resumo-bar svg { flex-shrink: 0; }
+      .resumo-bar #resumo-text {
+        min-width: 0;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+      }
       .resumo-bar { box-shadow: 0 4px 10px rgba(15,23,42,0.05); }
 
       /* ── CONTENT ── */
@@ -17301,7 +17306,44 @@
       document.querySelectorAll("[data-resumo-espelho]").forEach((item) => { item.textContent = resumoEspelho; });
     }
 
+    function formatarStatusDoDiaMobile(status) {
+      const ordem = ["rotinas", "agenda", "notas"];
+      const categorias = ordem
+        .map((chave) => status.categorias.find((categoria) => categoria.chave === chave))
+        .filter(Boolean);
+      if (!categorias.length) return `0 ações`;
+      const partes = categorias.map((categoria) => `✓ ${categoria.rotulo} ${categoria.total}`);
+      partes.push(`${status.total} ${status.total === 1 ? "ação" : "ações"}`);
+      return partes.join(" · ");
+    }
+
+    function renderizarStatusDoDiaMobile(status) {
+      if (emLayoutDesktop()) return;
+      definirResumoVisual(formatarStatusDoDiaMobile(status));
+    }
+
     let statusDoDiaPromise = null;
+
+    async function atualizarStatusDoDiaMobile() {
+      if (emLayoutDesktop()) return null;
+      const buscarLista = async (url) => {
+        try {
+          const res = await fetch(url, { headers: authHeaders() });
+          if (!res.ok) return [];
+          const dados = await res.json();
+          return Array.isArray(dados) ? dados : [];
+        } catch {
+          return [];
+        }
+      };
+      const [checklist, notas] = await Promise.all([
+        buscarLista(API + "/checklist"),
+        buscarLista(API + "/notes"),
+      ]);
+      const status = calcularStatusDoDia({ tarefas: tarefasAgendaCache, checklist, notas });
+      renderizarStatusDoDiaMobile(status);
+      return status;
+    }
 
     async function atualizarStatusDoDiaDesktop() {
       if (!emLayoutDesktop()) return null;
@@ -18791,18 +18833,7 @@
         if (emLayoutDesktop()) {
           await atualizarStatusDoDiaDesktop();
         } else {
-          try {
-            const resC = await fetch(API+"/checklist",{headers:authHeaders()});
-            const chkItens = await resC.json();
-            const chkBase = Array.isArray(chkItens) ? chkItens.filter(i => i.ativo !== false) : [];
-            const chkVisiveisHoje = chkBase.filter(i => i.pode_mostrar_hoje !== false);
-            const chkConcluidasOcultas = chkBase.filter(i => i.pode_mostrar_hoje === false && ehStatusFeito(i.status));
-            const chkFeitos = chkVisiveisHoje.filter(i => ehStatusFeito(i.status)).length + chkConcluidasOcultas.length;
-            const chkTotal  = chkVisiveisHoje.length + chkConcluidasOcultas.length;
-            definirResumoVisual(`${feitos} tarefa${feitos!==1?"s":""} concluída${feitos!==1?"s":""} · ${andamento} em andamento · ${chkFeitos}/${chkTotal} rotinas`);
-          } catch {
-            definirResumoVisual(`${feitos} tarefa${feitos!==1?"s":""} concluída${feitos!==1?"s":""} · ${andamento} em andamento`);
-          }
+          await atualizarStatusDoDiaMobile();
         }
 
         const combinadaHoje = agendaDoDiaCombinada(dataHojeISO());
@@ -19021,26 +19052,7 @@
         await atualizarStatusDoDiaDesktop();
         return;
       }
-      // Conta a partir do cache local (já atualizado pela bolinha)
-      const hojeItens = tarefasAgendaCache.filter(t => t.ativo !== false && !ehStatusCancelada(t.status) && dataEhHoje(t.data || ""));
-      let feitos = 0, andamento = 0;
-      hojeItens.forEach(t => {
-        if (ehStatusFeito(t.status))    feitos++;
-        if (ehStatusAndamento(t.status)) andamento++;
-      });
-      // Busca checklist para complementar
-      try {
-        const resC = await fetch(API+"/checklist",{headers:authHeaders()});
-        const chkItens = await resC.json();
-        const chkBase = Array.isArray(chkItens) ? chkItens.filter(i => i.ativo !== false) : [];
-        const chkVisiveisHoje = chkBase.filter(i => i.pode_mostrar_hoje !== false);
-        const chkConcluidasOcultas = chkBase.filter(i => i.pode_mostrar_hoje === false && ehStatusFeito(i.status));
-        const chkFeitos = chkVisiveisHoje.filter(i => ehStatusFeito(i.status)).length + chkConcluidasOcultas.length;
-        const chkTotal  = chkVisiveisHoje.length + chkConcluidasOcultas.length;
-        definirResumoVisual(`${feitos} tarefa${feitos!==1?"s":""} concluída${feitos!==1?"s":""} · ${andamento} em andamento · ${chkFeitos}/${chkTotal} rotinas`);
-      } catch {
-        definirResumoVisual(`${feitos} tarefa${feitos!==1?"s":""} concluída${feitos!==1?"s":""} · ${andamento} em andamento`);
-      }
+      await atualizarStatusDoDiaMobile();
     }
 
     // ── ATUALIZAR SÓ O RESUMO (via servidor – usado após checklist) ──────────────
