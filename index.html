@@ -20652,6 +20652,21 @@
       return item;
     }
 
+    function rolarTimelineParaPrimeiroCompromissoDesktop(lista) {
+      if (!lista || !emLayoutDesktop()) return;
+      window.setTimeout(() => {
+        const primeiro = lista.querySelector("[data-agenda-primeiro-evento='true']");
+        if (!primeiro) {
+          lista.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+        const listaRect = lista.getBoundingClientRect();
+        const itemRect = primeiro.getBoundingClientRect();
+        const destino = Math.max(0, lista.scrollTop + itemRect.top - listaRect.top - 18);
+        lista.scrollTo({ top: destino, behavior: "smooth" });
+      }, 80);
+    }
+
     function preencherAgendaTimelineDesktop(lista, itensDoDia) {
       const horaInicial = 6;
       const horaFinal = 22;
@@ -20687,16 +20702,18 @@
 
       const lane = document.createElement("div");
       lane.className = "agenda-timeline-lane";
-      itensComHorario.forEach((t) => {
+      itensComHorario.forEach((t, index) => {
         const inicio = Math.min(Math.max(t.inicio_min ?? inicioDia, inicioDia), fimDia);
         const fim = Math.min(Math.max(t.fim_min ?? (inicio + 60), inicio + 15), fimDia);
         const card = criarCardTimelineAgenda(t);
+        if (index === 0) card.dataset.agendaPrimeiroEvento = "true";
         card.style.top = `${((inicio - inicioDia) / 60) * alturaHora}px`;
         card.style.minHeight = `${Math.max(34, ((fim - inicio) / 60) * alturaHora - 4)}px`;
         lane.appendChild(card);
       });
       timeline.appendChild(lane);
       lista.appendChild(timeline);
+      rolarTimelineParaPrimeiroCompromissoDesktop(lista);
     }
 
     function preencherAgendaDiaSelecionado() {
