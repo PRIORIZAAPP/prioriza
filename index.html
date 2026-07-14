@@ -8596,9 +8596,31 @@
       #screen-hoje.screen.active > #card-agora { grid-area: agora; }
       #screen-hoje.screen.active > #hoje-operational-timeline-card { grid-area: timeline; }
       #screen-hoje.screen.active > #hoje-calendar-card { grid-area: calendar; }
+      #screen-hoje.screen.active > #hoje-all-done-card { grid-area: done; }
+      #screen-hoje.screen.active > #hoje-resumo-dia-card { grid-area: summary; }
+      #screen-hoje.screen.active > #hoje-historico-card { grid-area: history; }
+      #screen-hoje.screen.active > #hoje-proximas-card { grid-area: next; }
+      #screen-hoje.screen.active > #hoje-estatisticas-card { grid-area: stats; }
       #screen-hoje.screen.active > #hoje-agenda-card,
       #screen-hoje.screen.active > #hoje-checklist-card {
         display: none !important;
+      }
+
+      #screen-hoje.screen.active.hoje-adaptativo {
+        grid-template-areas:
+          "agora calendar"
+          "timeline calendar"
+          "summary next"
+          "history stats";
+      }
+
+      #screen-hoje.screen.active.hoje-adaptativo.hoje-tudo-em-dia {
+        grid-template-areas:
+          "agora calendar"
+          "timeline calendar"
+          "done next"
+          "summary next"
+          "history stats";
       }
 
       .app-shell[data-active-screen="screen-hoje"] #card-agora {
@@ -8612,6 +8634,94 @@
         border: none;
         border-radius: 0;
         box-shadow: none;
+      }
+
+      #screen-hoje .hoje-adaptive-card {
+        display: none;
+        padding: 16px 0;
+        border-top: 1px solid rgba(148,163,184,0.18);
+      }
+
+      #screen-hoje.hoje-adaptativo .hoje-adaptive-card:not([hidden]) {
+        display: block;
+      }
+
+      .hoje-adaptive-title {
+        margin: 0 0 10px;
+        font-size: 12px;
+        font-weight: 750;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #64748b;
+      }
+
+      .hoje-adaptive-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .hoje-adaptive-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        min-height: 24px;
+        color: #334155;
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      .hoje-adaptive-row strong {
+        color: #0f172a;
+        font-weight: 650;
+      }
+
+      .hoje-adaptive-muted {
+        color: #94a3b8;
+        font-size: 12px;
+      }
+
+      .hoje-done-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        border: 1px solid rgba(22, 163, 74, 0.16);
+        border-radius: 14px;
+        background: rgba(240, 253, 244, 0.62);
+      }
+
+      .hoje-done-card svg {
+        flex: 0 0 auto;
+        color: #16a34a;
+      }
+
+      .hoje-done-card strong {
+        display: block;
+        margin-bottom: 2px;
+        color: #14532d;
+        font-size: 14px;
+      }
+
+      .hoje-done-card span {
+        color: #475569;
+        font-size: 12px;
+      }
+
+      .hoje-next-group {
+        display: grid;
+        gap: 5px;
+        padding-bottom: 8px;
+      }
+
+      .hoje-next-group-title {
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .hoje-next-item {
+        color: #0f172a;
+        font-size: 13px;
       }
 
       #card-agora {
@@ -11397,6 +11507,12 @@
             <div id="desktop-mini-calendar" class="desktop-mini-calendar"><small>Carregando calendário...</small></div>
             <div id="desktop-calendar-note" class="today-calendar-note">Selecione um dia para abrir a agenda completa.</div>
           </div>
+
+          <div class="card hoje-adaptive-card" id="hoje-all-done-card" hidden></div>
+          <div class="card hoje-adaptive-card" id="hoje-resumo-dia-card" hidden></div>
+          <div class="card hoje-adaptive-card" id="hoje-historico-card" hidden></div>
+          <div class="card hoje-adaptive-card" id="hoje-proximas-card" hidden></div>
+          <div class="card hoje-adaptive-card" id="hoje-estatisticas-card" hidden></div>
 
           <div class="card" id="hoje-agenda-card">
             <div class="card-header">
@@ -17810,6 +17926,187 @@
       }
     }
 
+    function formatarHoraRegistroHoje(valor, fallback = "") {
+      if (!valor) return fallback || "--:--";
+      const data = new Date(valor);
+      if (!Number.isNaN(data.getTime())) {
+        return `${String(data.getHours()).padStart(2, "0")}:${String(data.getMinutes()).padStart(2, "0")}`;
+      }
+      return String(valor || fallback || "--:--").slice(0, 5);
+    }
+
+    function inicioSemanaISO(data = new Date()) {
+      const d = new Date(data.getFullYear(), data.getMonth(), data.getDate());
+      const diff = (d.getDay() + 6) % 7;
+      d.setDate(d.getDate() - diff);
+      return dateToISO(d);
+    }
+
+    function rotuloDataProximaAtividade(iso) {
+      const hoje = dataHojeISO();
+      const amanha = new Date();
+      amanha.setDate(amanha.getDate() + 1);
+      const amanhaISO = dateToISO(amanha);
+      if (iso === hoje) return "Hoje";
+      if (iso === amanhaISO) return "Amanhã";
+      const [ano, mes, dia] = String(iso || "").split("-").map(Number);
+      const data = new Date(ano, (mes || 1) - 1, dia || 1);
+      if (Number.isNaN(data.getTime())) return "Sem data";
+      return data.toLocaleDateString("pt-BR", { weekday: "long" }).replace(/^./, (letra) => letra.toUpperCase());
+    }
+
+    function esconderLayoutAdaptativoHoje() {
+      const tela = document.getElementById("screen-hoje");
+      tela?.classList.remove("hoje-adaptativo");
+      tela?.classList.remove("hoje-tudo-em-dia");
+      ["hoje-all-done-card", "hoje-resumo-dia-card", "hoje-historico-card", "hoje-proximas-card", "hoje-estatisticas-card"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.hidden = true;
+          el.innerHTML = "";
+        }
+      });
+    }
+
+    function renderizarLayoutAdaptativoHoje(itensTimeline = []) {
+      const tela = document.getElementById("screen-hoje");
+      if (!tela || !emLayoutDesktop()) {
+        esconderLayoutAdaptativoHoje();
+        return;
+      }
+
+      if (itensTimeline.length > 3) {
+        esconderLayoutAdaptativoHoje();
+        return;
+      }
+
+      tela.classList.add("hoje-adaptativo");
+      const hoje = dataHojeISO();
+      const inicioSemana = inicioSemanaISO();
+      const inicioMes = hoje.slice(0, 8) + "01";
+      const agendaHoje = agendaDoDiaCombinada(hoje).filter((item) => item.ativo !== false && !ehStatusCancelada(item.status));
+      const agendaConcluida = agendaHoje.filter((item) => ehStatusFeito(item.status));
+      const agendaPendente = agendaHoje.filter((item) => !ehStatusFeito(item.status));
+      const rotinasHoje = checklistHojeCache.filter((item) => item.ativo !== false && !rotinaFoiPuladaHoje(item.id));
+      const rotinasConcluidas = rotinasHoje.filter((item) => normalizarStatusChecklist(item.status || "pendente") === "feito");
+      const rotinasPendentes = rotinasHoje.filter((item) => normalizarStatusChecklist(item.status || "pendente") !== "feito");
+      const minutosRestantes = agendaPendente
+        .filter((item) => !item.all_day && !item.blocked)
+        .reduce((soma, item) => soma + Math.max(0, Number(item.duracao_min || 0)), 0);
+
+      const totalPrevisto = agendaHoje.length + rotinasHoje.length;
+      const totalPendente = agendaPendente.length + rotinasPendentes.length;
+      const tudoEmDia = totalPrevisto > 0 && totalPendente === 0;
+      tela.classList.toggle("hoje-tudo-em-dia", tudoEmDia);
+
+      const doneCard = document.getElementById("hoje-all-done-card");
+      if (doneCard) {
+        doneCard.hidden = !tudoEmDia;
+        doneCard.innerHTML = doneCard.hidden ? "" : `
+          <div class="hoje-done-card">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M9 12.5l2 2 4-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <div><strong>Tudo em dia</strong><span>Todas as atividades previstas para hoje foram concluídas.</span></div>
+          </div>
+        `;
+      }
+
+      const resumo = document.getElementById("hoje-resumo-dia-card");
+      if (resumo) {
+        resumo.hidden = false;
+        resumo.innerHTML = `
+          <div class="hoje-adaptive-title">Resumo do dia</div>
+          <div class="hoje-adaptive-list">
+            <div class="hoje-adaptive-row"><span>Rotinas concluídas</span><strong>${rotinasConcluidas.length}</strong></div>
+            <div class="hoje-adaptive-row"><span>Rotinas pendentes</span><strong>${rotinasPendentes.length}</strong></div>
+            <div class="hoje-adaptive-row"><span>Agenda do dia</span><strong>${agendaHoje.length}</strong></div>
+            ${minutosRestantes ? `<div class="hoje-adaptive-row"><span>Tempo estimado restante</span><strong>${Math.round(minutosRestantes / 60 * 10) / 10}h</strong></div>` : ""}
+          </div>
+        `;
+      }
+
+      const historicoItens = [
+        ...agendaConcluida.map((item) => ({
+          hora: item.hora_inicio || "",
+          titulo: item.titulo || "Compromisso sem título",
+          ordem: horaParaMinutos(item.hora_inicio) ?? 9999
+        })),
+        ...rotinasConcluidas.map((item) => ({
+          hora: formatarHoraRegistroHoje(item.ultimo_exec),
+          titulo: item.titulo || "Rotina sem título",
+          ordem: item.ultimo_exec ? new Date(item.ultimo_exec).getHours() * 60 + new Date(item.ultimo_exec).getMinutes() : 9999
+        }))
+      ].sort((a, b) => a.ordem - b.ordem);
+
+      const historico = document.getElementById("hoje-historico-card");
+      if (historico) {
+        historico.hidden = false;
+        historico.innerHTML = `
+          <div class="hoje-adaptive-title">Histórico das tarefas concluídas</div>
+          <div class="hoje-adaptive-list">
+            ${historicoItens.length ? historicoItens.map((item) => `
+              <div class="hoje-adaptive-row"><span>${textoSeguro(item.hora)}&nbsp;&nbsp;${textoSeguro(item.titulo)}</span></div>
+            `).join("") : `<div class="hoje-adaptive-muted">Nenhuma tarefa concluída hoje.</div>`}
+          </div>
+        `;
+      }
+
+      const futuras = [...tarefasAgendaCache, ...googleAgendaCache]
+        .filter((item) => item?.ativo !== false && !ehStatusCancelada(item.status) && !ehStatusFeito(item.status))
+        .map(normalizarTarefaAgenda)
+        .filter((item) => normalizarDataParaISO(item.data || "") > hoje)
+        .sort((a, b) => `${normalizarDataParaISO(a.data || "")} ${a.hora_inicio || ""}`.localeCompare(`${normalizarDataParaISO(b.data || "")} ${b.hora_inicio || ""}`))
+        .slice(0, 5);
+      const proximasPorData = futuras.reduce((acc, item) => {
+        const data = normalizarDataParaISO(item.data || "") || "";
+        if (!acc.has(data)) acc.set(data, []);
+        acc.get(data).push(item);
+        return acc;
+      }, new Map());
+      const proximas = document.getElementById("hoje-proximas-card");
+      if (proximas) {
+        proximas.hidden = false;
+        proximas.innerHTML = `
+          <div class="hoje-adaptive-title">Próximas atividades</div>
+          <div class="hoje-adaptive-list">
+            ${futuras.length ? Array.from(proximasPorData.entries()).map(([data, itens]) => `
+              <div class="hoje-next-group">
+                <div class="hoje-next-group-title">${textoSeguro(rotuloDataProximaAtividade(data))}</div>
+                ${itens.map((item) => `<div class="hoje-next-item">• ${textoSeguro(item.titulo || "Atividade sem título")}</div>`).join("")}
+              </div>
+            `).join("") : `<div class="hoje-adaptive-muted">Nenhuma atividade futura pendente.</div>`}
+          </div>
+        `;
+      }
+
+      const checklistAtivo = checklistHojeCache.filter((item) => item.ativo !== false);
+      const concluidasHoje = checklistAtivo.filter((item) => dataLocalDeRegistro(item.ultimo_exec) === hoje).length;
+      const concluidasSemana = checklistAtivo.filter((item) => {
+        const data = dataLocalDeRegistro(item.ultimo_exec);
+        return data && data >= inicioSemana && data <= hoje;
+      }).length;
+      const concluidasMes = checklistAtivo.filter((item) => {
+        const data = dataLocalDeRegistro(item.ultimo_exec);
+        return data && data >= inicioMes && data <= hoje;
+      }).length;
+      const atrasadasHoje = checklistAtivo.filter((item) => Number(item.dias_para_proxima ?? 0) < 0 && normalizarStatusChecklist(item.status || "pendente") !== "feito").length;
+      const estatisticas = document.getElementById("hoje-estatisticas-card");
+      if (estatisticas) {
+        estatisticas.hidden = false;
+        estatisticas.innerHTML = `
+          <div class="hoje-adaptive-title">Estatísticas</div>
+          <div class="hoje-adaptive-list">
+            <div class="hoje-adaptive-row"><span>Rotinas concluídas hoje</span><strong>${concluidasHoje}</strong></div>
+            <div class="hoje-adaptive-row"><span>Rotinas concluídas na semana</span><strong>${concluidasSemana}</strong></div>
+            <div class="hoje-adaptive-row"><span>Rotinas concluídas no mês</span><strong>${concluidasMes}</strong></div>
+            ${atrasadasHoje === 0 ? `<div class="hoje-adaptive-row"><span>Dias consecutivos sem tarefas atrasadas</span><strong>1</strong></div>` : ""}
+          </div>
+        `;
+      }
+    }
+
     function obterMetaTimelineChecklist(item) {
       return obterRotuloOrigemChecklist(item);
     }
@@ -17974,13 +18271,17 @@
       const desktop = emLayoutDesktop();
       card.hidden = !desktop;
       if (linkAgenda) linkAgenda.style.display = "none";
-      if (!desktop) return;
+      if (!desktop) {
+        esconderLayoutAdaptativoHoje();
+        return;
+      }
 
       const itens = obterDadosTimelineOperacional();
       container.innerHTML = "";
 
       if (itens.length === 0) {
         container.innerHTML = `<div class="timeline-empty">Nenhuma pendência crítica no momento. Abra a Agenda para planejar o restante do dia.</div>`;
+        renderizarLayoutAdaptativoHoje(itens);
         return;
       }
 
@@ -18187,6 +18488,7 @@
         row.appendChild(actions);
         (item._tipo === "agenda" ? agendaList : checklistList).appendChild(row);
       });
+      renderizarLayoutAdaptativoHoje(itens);
     }
 
     // ── LOCAIS ───────────────────────────────────────────────────
