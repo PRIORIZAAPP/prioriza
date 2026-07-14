@@ -4679,11 +4679,16 @@
       .checklist-item-actions {
         display: flex;
         align-items: center;
-        gap: 4px;
-        opacity: 0.42;
+        gap: 8px;
+        margin-left: auto;
+        opacity: 1;
+        flex-shrink: 0;
         transition: opacity 0.16s ease;
       }
       .checklist-item:hover .checklist-item-actions { opacity: 1; }
+      .checklist-item-actions .check-badge {
+        margin-left: 0;
+      }
       .checklist-item-action {
         width: 28px;
         height: 28px;
@@ -11201,6 +11206,48 @@
         transition-duration: 0.01ms !important;
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
+      }
+    }
+
+    .checklist-item .check-info {
+      min-width: 0;
+    }
+
+    .checklist-item .checklist-item-actions {
+      margin-left: auto;
+      opacity: 1;
+    }
+
+    .checklist-item .checklist-item-actions .check-badge {
+      flex-shrink: 0;
+    }
+
+    #hoje-checklist-card .checklist-item .checklist-item-actions {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    #hoje-checklist-card .checklist-item .timeline-action-menu {
+      margin-left: 0;
+    }
+
+    @media (max-width: 640px) {
+      .checklist-item {
+        gap: 8px;
+      }
+
+      .checklist-item .checklist-item-actions {
+        gap: 6px;
+      }
+
+      .check-badge {
+        min-height: 18px;
+        padding: 0 7px;
+        font-size: 9px;
       }
     }
   </style>
@@ -19488,6 +19535,12 @@
           info.appendChild(tituloEl); info.appendChild(sub);
           div.appendChild(bolinha); div.appendChild(info);
 
+          const actions = document.createElement("div");
+          actions.className = "checklist-item-actions";
+          const badge = obterBadgeChecklist(item, status);
+          const badgeEl = criarBadgeChecklistElemento(badge);
+          if (badgeEl) actions.appendChild(badgeEl);
+
           const executarAcaoChecklistHoje = async (novoStatus, grupoAcoes) => {
             const statusAnterior = bolinha.dataset.status || item.status || "pendente";
             grupoAcoes?.__setDisabled?.(true);
@@ -19533,10 +19586,10 @@
               await excluirChecklistItem(item.id);
               await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
             });
-            div.appendChild(btnRemover);
+            actions.appendChild(btnRemover);
           } else {
             div.classList.add("has-action-menu");
-            div.appendChild(criarMenuAcoesDesktop({
+            actions.appendChild(criarMenuAcoesDesktop({
               titulo: "Ações da rotina",
               ariaLabel: `Ações de ${item.titulo}`,
               itens: [
@@ -19560,6 +19613,7 @@
               ]
             }));
           }
+          if (actions.childElementCount) div.appendChild(actions);
 
           adicionarSwipe(div,
             ()=>{ mostrarFlashFull("success"); setTimeout(async()=>{ definirEstadoVisualChecklistHoje(div, bolinha, "feito"); const ok = await atualizarStatusChecklist(item.id,"feito"); if (!ok) { definirEstadoVisualChecklistHoje(div, bolinha, item.status || "pendente"); return; } item.status = "feito"; await atualizarResumoBar(); sincronizarChecklistHojeEmSegundoPlano(); },FLASH_DURATION_MS); },
@@ -19598,6 +19652,14 @@
       return null;
     }
 
+    function criarBadgeChecklistElemento(badge) {
+      if (!badge) return null;
+      const badgeEl = document.createElement("span");
+      badgeEl.className = `check-badge ${badge.classe}`;
+      badgeEl.textContent = badge.texto;
+      return badgeEl;
+    }
+
     function criarElementoChecklistItem(item) {
       const status = normalizarStatusChecklist(item.status || "pendente");
       const origem = (item.origem || "").toUpperCase();
@@ -19629,12 +19691,6 @@
       const metaTexto = document.createElement("span");
       metaTexto.textContent = metaPartes.join(" • ");
       sub.appendChild(metaTexto);
-      if (badge) {
-        const badgeEl = document.createElement("span");
-        badgeEl.className = `check-badge ${badge.classe}`;
-        badgeEl.textContent = badge.texto;
-        sub.appendChild(badgeEl);
-      }
 
       info.appendChild(tituloEl);
       info.appendChild(sub);
@@ -19656,6 +19712,8 @@
 
       const actions = document.createElement("div");
       actions.className = "checklist-item-actions";
+      const badgeEl = criarBadgeChecklistElemento(badge);
+      if (badgeEl) actions.appendChild(badgeEl);
       actions.appendChild(btnDel);
 
       div.appendChild(bolinha);
