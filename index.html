@@ -18084,6 +18084,11 @@
       renderizarProximasAtividadesHoje();
     }
 
+    function esconderLayoutAdaptativoHoje() {
+      document.getElementById("screen-hoje")?.classList.remove("hoje-adaptativo");
+      document.getElementById("hoje-proximas-card")?.setAttribute("hidden", "");
+    }
+
     function obterMetaTimelineChecklist(item) {
       return obterRotuloOrigemChecklist(item);
     }
