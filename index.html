@@ -577,6 +577,28 @@
         opacity: 0.96;
         text-shadow: none;
       }
+      .demo-mode-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 24px;
+        padding: 0 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(180, 83, 9, 0.22);
+        background: #fffbeb;
+        color: #92400e;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .demo-mode-badge[hidden] {
+        display: none !important;
+      }
+      .demo-mode-badge svg {
+        width: 13px;
+        height: 13px;
+        flex-shrink: 0;
+      }
       .topbar-right { display: flex; flex-direction: row; align-items: center; gap: 8px; }
       .mic-button {
         border-radius: 999px;
@@ -11395,6 +11417,13 @@
           </div>
         </div>
         <div class="topbar-right">
+          <div id="demo-mode-badge" class="demo-mode-badge" hidden>
+            <svg viewBox="0 0 24 24" fill="none" color="currentColor" aria-hidden="true">
+              <path d="M12 4.5 19 8.5v7L12 19.5 5 15.5v-7l7-4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M12 12 19 8.5M12 12 5 8.5M12 12v7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Modo demonstração</span>
+          </div>
           <button id="btn-mic-universal" class="mic-button" title="Comando de voz">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mic-svg">
@@ -12767,6 +12796,11 @@
               </div>
 
               <div class="settings-group-card">
+                <button class="settings-link-row" type="button" data-settings-open="primeiros-passos">
+                  <span class="settings-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" color="currentColor"><path d="M5 12.5 11 4l8 11h-5l-3 5v-5H6a1 1 0 0 1-1-2.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                  <span class="settings-link-text">Primeiros passos</span>
+                  <span class="settings-chevron" aria-hidden="true">›</span>
+                </button>
                 <button class="settings-link-row" type="button" data-settings-open="notificacoes">
                   <span class="settings-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" color="currentColor"><path d="M6.5 15.5h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 15.5v-4a4 4 0 1 1 8 0v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 18a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
                   <span class="settings-link-text">Notificações</span>
@@ -12986,6 +13020,39 @@
                       <span>Lembretes inteligentes, resumo da manhã, checklist atrasado e horário silencioso.</span>
                     </div>
                   </div>
+                </div>
+              </section>
+
+              <section class="settings-detail-page" data-settings-page="primeiros-passos" hidden>
+                <div class="settings-detail-header">
+                  <button class="settings-back-btn" type="button" data-settings-close>‹</button>
+                  <h2>Primeiros passos</h2>
+                </div>
+                <div class="settings-detail-card">
+                  <div class="settings-body-copy">
+                    <p>Revise a introdução do Prioriza ou gerencie os dados de demonstração da sua conta.</p>
+                  </div>
+                  <div class="settings-detail-list" style="margin-top:10px;">
+                    <div class="settings-detail-item">
+                      <strong>Tutorial</strong>
+                      <span>Disponível quando você quiser rever o funcionamento básico do app.</span>
+                    </div>
+                  </div>
+                  <div class="settings-actions settings-placeholder-grid" style="margin-top:12px;">
+                    <button class="settings-placeholder-btn" type="button" id="btn-ver-tutorial-primeiros-passos">Ver tutorial</button>
+                  </div>
+                </div>
+                <div class="settings-detail-card">
+                  <div class="settings-detail-list">
+                    <div class="settings-detail-item">
+                      <strong id="demo-settings-title">Dados de demonstração</strong>
+                      <span id="demo-settings-copy">Verificando status dos dados de demonstração.</span>
+                    </div>
+                  </div>
+                  <div class="settings-actions settings-placeholder-grid" style="margin-top:12px;">
+                    <button class="settings-placeholder-btn" type="button" id="btn-remover-demo-ajustes">Remover dados de demonstração</button>
+                  </div>
+                  <div id="demo-settings-status" class="settings-note"></div>
                 </div>
               </section>
 
@@ -13668,6 +13735,9 @@
       detail.scrollTo({ top: 0, behavior: "smooth" });
       if (chave === "privacidade") {
         carregarSessoesRecentes();
+      }
+      if (chave === "primeiros-passos") {
+        carregarStatusDemo();
       }
     }
 
@@ -16914,6 +16984,144 @@
       showAuthScreen("login");
     }
 
+    let demoStatusAtual = null;
+    let demoPromptEmAndamento = false;
+
+    function atualizarSeloDemo() {
+      const ativo = !!demoStatusAtual?.demo_data_active;
+      document.getElementById("demo-mode-badge")?.toggleAttribute("hidden", !ativo);
+      atualizarAjustesDemo();
+    }
+
+    function atualizarAjustesDemo() {
+      const titulo = document.getElementById("demo-settings-title");
+      const texto = document.getElementById("demo-settings-copy");
+      const botao = document.getElementById("btn-remover-demo-ajustes");
+      const status = document.getElementById("demo-settings-status");
+      if (!titulo || !texto || !botao) return;
+      const ativo = !!demoStatusAtual?.demo_data_active;
+      titulo.textContent = ativo ? "Dados de demonstração ativos" : "Dados de demonstração removidos";
+      texto.textContent = ativo
+        ? "Você ainda possui tarefas, compromissos e anotações de exemplo no Prioriza."
+        : "Os dados de demonstração não estão ativos nesta conta.";
+      botao.hidden = !ativo;
+      if (status && !ativo) status.textContent = "";
+    }
+
+    async function carregarStatusDemo({ mostrarBoasVindas = false } = {}) {
+      if (!getAuthToken()) return null;
+      try {
+        const res = await nativeFetch(API + "/demo/status", { headers: authHeaders() });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.detail || "Não foi possível verificar a demonstração.");
+        demoStatusAtual = data?.demo || null;
+        if (data?.user) authUser = { ...(authUser || {}), ...data.user };
+        atualizarSeloDemo();
+        if (mostrarBoasVindas) await talvezMostrarBoasVindasDemo();
+        return demoStatusAtual;
+      } catch (e) {
+        console.warn("[PRIORIZA] Status da demonstração indisponível:", e);
+        return null;
+      }
+    }
+
+    async function talvezMostrarBoasVindasDemo() {
+      if (!demoStatusAtual?.demo_data_active || demoStatusAtual.demo_welcome_seen) return;
+      await modal.alerta(
+        "Para facilitar seus primeiros passos, preparamos algumas tarefas, compromissos e anotações de demonstração.\n\nEssas informações são apenas exemplos e poderão ser removidas automaticamente quando você começar a cadastrar seus próprios dados.",
+        "Bem-vindo ao Prioriza",
+        "Explorar o Prioriza"
+      );
+      try {
+        const res = await nativeFetch(API + "/demo/welcome-seen", { method: "POST", headers: authHeaders() });
+        const data = await res.json().catch(() => ({}));
+        if (data?.demo) demoStatusAtual = data.demo;
+        if (data?.user) authUser = { ...(authUser || {}), ...data.user };
+      } catch (e) {
+        console.warn("[PRIORIZA] Não foi possível marcar boas-vindas da demo:", e);
+      }
+      atualizarSeloDemo();
+    }
+
+    function rotaCriacaoRealDemo(url, options = {}) {
+      const metodo = String(options?.method || "GET").toUpperCase();
+      if (metodo !== "POST") return false;
+      let pathname = "";
+      try {
+        pathname = new URL(String(url || ""), window.location.origin).pathname;
+      } catch {
+        pathname = String(url || "").split("?")[0];
+      }
+      if (pathname === "/tarefas") return true;
+      if (pathname === "/checklist_criar") return true;
+      if (pathname === "/notes") return true;
+      if (pathname === "/marcos-operacionais") return true;
+      if (pathname === "/operacao/unidades") return true;
+      if (/^\/operacao\/unidades\/\d+\/escala(\/recorrente)?$/.test(pathname)) return true;
+      if (/^\/operacao\/unidades\/\d+\/movimentos$/.test(pathname)) return true;
+      return false;
+    }
+
+    async function recarregarTelasAposDemo() {
+      await Promise.allSettled([
+        carregarAgendaHoje(),
+        atualizarAgendaMesEDia(),
+        carregarChecklistHoje(),
+        carregarChecklistGeral(),
+        carregarPessoalLista(),
+        carregarNotas(),
+        (typeof carregarUnidadesOperacao === "function" ? carregarUnidadesOperacao() : Promise.resolve()),
+      ]);
+      await atualizarResumoBar();
+      atualizarSeloDemo();
+    }
+
+    async function removerDadosDemo({ origem = "manual" } = {}) {
+      const statusEl = document.getElementById("demo-settings-status");
+      if (statusEl && origem === "ajustes") statusEl.textContent = "Removendo dados de demonstração...";
+      try {
+        const res = await nativeFetch(API + "/demo/remove", { method: "POST", headers: authHeaders() });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.detail || "Não foi possível remover os dados de demonstração.");
+        demoStatusAtual = data?.demo || null;
+        if (data?.user) authUser = { ...(authUser || {}), ...data.user };
+        await recarregarTelasAposDemo();
+        if (statusEl && origem === "ajustes") statusEl.textContent = "Dados de demonstração removidos.";
+        return true;
+      } catch (e) {
+        if (statusEl && origem === "ajustes") statusEl.textContent = e.message || "Não foi possível remover os dados.";
+        else await modal.alerta(e.message || "Não foi possível remover os dados de demonstração.", "Modo demonstração");
+        return false;
+      }
+    }
+
+    async function avaliarPromptRemocaoDemoAposCriacaoReal() {
+      if (demoPromptEmAndamento) return;
+      demoPromptEmAndamento = true;
+      try {
+        const status = await carregarStatusDemo();
+        if (!status?.demo_data_active || status.demo_removal_prompt_seen) return;
+        const remover = await modal.confirmar(
+          "Você começou a utilizar o Prioriza com informações reais.\n\nDeseja remover agora as tarefas, compromissos e anotações de demonstração?",
+          "Remover dados de demonstração?",
+          "vermelho",
+          "Remover demonstração",
+          "Manter por enquanto"
+        );
+        if (remover) {
+          await removerDadosDemo();
+        } else {
+          const res = await nativeFetch(API + "/demo/removal-prompt-seen", { method: "POST", headers: authHeaders() });
+          const data = await res.json().catch(() => ({}));
+          if (data?.demo) demoStatusAtual = data.demo;
+          if (data?.user) authUser = { ...(authUser || {}), ...data.user };
+          atualizarSeloDemo();
+        }
+      } finally {
+        demoPromptEmAndamento = false;
+      }
+    }
+
     function limparUrlResetSenha() {
       try {
         const url = new URL(window.location.href);
@@ -16933,6 +17141,9 @@
       const ignorar401 = rota.includes("/auth/login") || rota.includes("/auth/register") || rota.includes("/auth/forgot-password") || rota.includes("/auth/reset-password");
       if (resposta.status === 401 && !ignorar401) {
         handleUnauthorized();
+      }
+      if (resposta.ok && rotaCriacaoRealDemo(url, opts)) {
+        window.setTimeout(() => avaliarPromptRemocaoDemoAposCriacaoReal(), 250);
       }
       return resposta;
     }
@@ -17245,6 +17456,19 @@
       document.getElementById("btn-onboarding-prev")?.addEventListener("click", voltarOnboarding);
       document.getElementById("btn-onboarding-next")?.addEventListener("click", avancarOnboarding);
       document.getElementById("btn-rever-introducao")?.addEventListener("click", () => abrirOnboarding({ forcar: true }));
+      document.getElementById("btn-ver-tutorial-primeiros-passos")?.addEventListener("click", () => abrirOnboarding({ forcar: true }));
+      document.getElementById("btn-rever-introducao-ajuda")?.addEventListener("click", () => abrirOnboarding({ forcar: true }));
+      document.getElementById("btn-remover-demo-ajustes")?.addEventListener("click", async () => {
+        const ok = await modal.confirmar(
+          "Remover somente as tarefas, compromissos, notas e dados operacionais de demonstração desta conta?",
+          "Remover dados de demonstração",
+          "vermelho",
+          "Remover dados",
+          "Cancelar"
+        );
+        if (!ok) return;
+        await removerDadosDemo({ origem: "ajustes" });
+      });
     }
 
     function agendarOnboardingPrimeiroAcesso() {
@@ -17336,7 +17560,7 @@
       showAppShell();
       await initPromise;
       resetAuthTransitionState();
-      agendarOnboardingPrimeiroAcesso();
+      await carregarStatusDemo({ mostrarBoasVindas: true });
     }
 
     let tarefasAgendaCache = [];
@@ -17372,13 +17596,14 @@
       btnCancel.addEventListener("click", () => { _fechar(); if (_resolve) _resolve({ ok: false, valor: "" }); });
       overlay.addEventListener("click", (e) => { if (e.target === overlay) { _fechar(); if (_resolve) _resolve({ ok: false, valor: "" }); } });
 
-      function _abrir({ titulo = "", mensagem = "", tipo = "alerta", placeholder = "", corBotaoOk = "" }) {
+      function _abrir({ titulo = "", mensagem = "", tipo = "alerta", placeholder = "", corBotaoOk = "", okText = "", cancelText = "" }) {
         return new Promise((resolve) => {
           _resolve = resolve;
           tituloEl.textContent = titulo;
           msgEl.textContent    = mensagem;
           btnOk.className      = "modal-btn-ok" + (corBotaoOk ? " " + corBotaoOk : "");
-          btnOk.textContent    = tipo === "confirmar" ? "Confirmar" : "OK";
+          btnOk.textContent    = okText || (tipo === "confirmar" ? "Confirmar" : "OK");
+          btnCancel.textContent = cancelText || "Cancelar";
           btnCancel.style.display = (tipo === "confirmar" || tipo === "prompt") ? "inline-block" : "none";
           if (tipo === "prompt") {
             inputEl.style.display = "block"; inputEl.value = ""; inputEl.placeholder = placeholder || "";
@@ -17389,9 +17614,9 @@
       }
 
       return {
-        async alerta(mensagem, titulo = "Aviso") { await _abrir({ titulo, mensagem, tipo: "alerta" }); },
-        async confirmar(mensagem, titulo = "Confirmar", corBotaoOk = "") {
-          const r = await _abrir({ titulo, mensagem, tipo: "confirmar", corBotaoOk }); return r.ok;
+        async alerta(mensagem, titulo = "Aviso", okText = "") { await _abrir({ titulo, mensagem, tipo: "alerta", okText }); },
+        async confirmar(mensagem, titulo = "Confirmar", corBotaoOk = "", okText = "", cancelText = "") {
+          const r = await _abrir({ titulo, mensagem, tipo: "confirmar", corBotaoOk, okText, cancelText }); return r.ok;
         },
         async perguntar(mensagem, titulo = "", placeholder = "") {
           const r = await _abrir({ titulo, mensagem, tipo: "prompt", placeholder }); return r.ok ? r.valor : null;
@@ -22779,7 +23004,6 @@
       document.querySelectorAll("[data-theme-option]").forEach((botao) => {
         botao.addEventListener("click", () => aplicarTema(botao.dataset.themeOption));
       });
-      document.getElementById("btn-rever-introducao-ajuda")?.addEventListener("click", () => abrirOnboarding({ forcar: true }));
       document.getElementById("btn-toggle-form-nota")?.addEventListener("click", () => toggleFormNotaDesktop());
       vincularOperacaoUI();
       document.addEventListener("click", () => fecharMenusAcoesDesktop());
@@ -23115,7 +23339,7 @@
       showAppShell();
       mostrarSplashDiaria();
       await garantirAppAutenticadoInicializado();
-      agendarOnboardingPrimeiroAcesso();
+      await carregarStatusDemo({ mostrarBoasVindas: true });
     });
 
     // ═══════════════════════════════════════════════════════════════
