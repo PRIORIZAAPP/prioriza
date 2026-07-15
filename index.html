@@ -12904,6 +12904,15 @@
                     <button class="settings-placeholder-btn" type="button" data-settings-open="privacidade">Ver sessões recentes</button>
                   </div>
                 </div>
+                <div class="settings-detail-card">
+                  <div class="settings-body-copy">
+                    <p>Excluir sua conta remove definitivamente seus dados do PRIORIZA e libera o e-mail para um novo cadastro.</p>
+                  </div>
+                  <div class="settings-actions settings-placeholder-grid" style="margin-top:12px;">
+                    <button id="btn-excluir-conta" class="btn-outline danger" type="button">Excluir conta</button>
+                  </div>
+                  <div id="excluir-conta-status" class="settings-note"></div>
+                </div>
               </section>
 
               <section class="settings-detail-page" data-settings-page="google" hidden>
@@ -13865,6 +13874,51 @@
         if (btn) {
           btn.disabled = false;
           btn.textContent = "Salvar nova senha";
+        }
+      }
+    }
+
+    async function excluirContaAtual() {
+      const statusEl = document.getElementById("excluir-conta-status");
+      const btn = document.getElementById("btn-excluir-conta");
+      if (statusEl) statusEl.textContent = "";
+
+      const ok = await modal.confirmar(
+        "Essa ação exclui sua conta e todos os dados vinculados a ela. O e-mail ficará livre para um novo cadastro.",
+        "Excluir conta",
+        "vermelho",
+        "Continuar",
+        "Cancelar"
+      );
+      if (!ok) return;
+
+      const confirmacao = window.prompt("Digite EXCLUIR para confirmar a exclusão definitiva da conta.");
+      if ((confirmacao || "").trim().toUpperCase() !== "EXCLUIR") {
+        if (statusEl) statusEl.textContent = "Exclusão cancelada. A confirmação digitada não confere.";
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Excluindo...";
+      }
+      try {
+        const res = await apiFetch(API + "/auth/account", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirmacao: "EXCLUIR" }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.detail || "Não foi possível excluir a conta.");
+        authUser = null;
+        clearAuthToken();
+        await modal.alerta(data?.message || "Conta excluída com sucesso.", "Conta excluída");
+        window.location.reload();
+      } catch (e) {
+        if (statusEl) statusEl.textContent = e.message || "Não foi possível excluir a conta.";
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Excluir conta";
         }
       }
     }
@@ -22979,6 +23033,9 @@
       document.getElementById("form-alterar-senha-ajustes")?.addEventListener("submit", async (ev) => {
         ev.preventDefault();
         await alterarSenhaConta();
+      });
+      document.getElementById("btn-excluir-conta")?.addEventListener("click", async () => {
+        await excluirContaAtual();
       });
       document.getElementById("btn-atualizar-sessoes")?.addEventListener("click", async () => {
         await carregarSessoesRecentes();
