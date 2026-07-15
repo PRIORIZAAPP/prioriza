@@ -1501,26 +1501,30 @@ def remover_dados_demo_usuario(db: Session, user: User) -> dict[str, Any]:
 def excluir_conta_usuario(db: Session, user: User) -> dict[str, int]:
     user_id = garantir_user_id(user.id, "exclusão de conta")
     avatar_anterior = user.avatar_url
-    removidos = {
-        "contas_fixas_status_mensal": db.query(ContaFixaStatusMensal).filter(ContaFixaStatusMensal.user_id == user_id).delete(synchronize_session=False),
-        "lancamentos_financeiros": db.query(LancamentoFinanceiro).filter(LancamentoFinanceiro.user_id == user_id).delete(synchronize_session=False),
-        "fontes_renda_financeiras": db.query(FonteRendaFinanceira).filter(FonteRendaFinanceira.user_id == user_id).delete(synchronize_session=False),
-        "contas_fixas_financeiras": db.query(ContaFixaFinanceira).filter(ContaFixaFinanceira.user_id == user_id).delete(synchronize_session=False),
-        "operacao_movimentos": db.query(OperacaoMovimento).filter(OperacaoMovimento.user_id == user_id).delete(synchronize_session=False),
-        "operacao_plantoes": db.query(OperacaoPlantao).filter(OperacaoPlantao.user_id == user_id).delete(synchronize_session=False),
-        "operacao_competencias": db.query(OperacaoCompetencia).filter(OperacaoCompetencia.user_id == user_id).delete(synchronize_session=False),
-        "operacao_unidades": db.query(OperacaoUnidade).filter(OperacaoUnidade.user_id == user_id).delete(synchronize_session=False),
-        "marcos_operacionais": db.query(MarcoOperacional).filter(MarcoOperacional.user_id == user_id).delete(synchronize_session=False),
-        "tarefas": db.query(Tarefa).filter(Tarefa.user_id == user_id).delete(synchronize_session=False),
-        "checklist": db.query(ChecklistItem).filter(ChecklistItem.user_id == user_id).delete(synchronize_session=False),
-        "notes": db.query(Note).filter(Note.user_id == user_id).delete(synchronize_session=False),
-        "push_subscriptions": db.query(PushSubscription).filter(PushSubscription.user_id == user_id).delete(synchronize_session=False),
-        "google_calendar_tokens": db.query(GoogleCalendarToken).filter(GoogleCalendarToken.user_id == user_id).delete(synchronize_session=False),
-        "password_reset_tokens": db.query(PasswordResetToken).filter(PasswordResetToken.user_id == user_id).delete(synchronize_session=False),
-        "user_access_logs": db.query(UserAccessLog).filter(UserAccessLog.user_id == user_id).delete(synchronize_session=False),
-    }
-    db.delete(user)
-    db.commit()
+    try:
+        removidos = {
+            "contas_fixas_status_mensal": db.query(ContaFixaStatusMensal).filter(ContaFixaStatusMensal.user_id == user_id).delete(synchronize_session=False),
+            "lancamentos_financeiros": db.query(LancamentoFinanceiro).filter(LancamentoFinanceiro.user_id == user_id).delete(synchronize_session=False),
+            "fontes_renda_financeiras": db.query(FonteRendaFinanceira).filter(FonteRendaFinanceira.user_id == user_id).delete(synchronize_session=False),
+            "contas_fixas_financeiras": db.query(ContaFixaFinanceira).filter(ContaFixaFinanceira.user_id == user_id).delete(synchronize_session=False),
+            "operacao_movimentos": db.query(OperacaoMovimento).filter(OperacaoMovimento.user_id == user_id).delete(synchronize_session=False),
+            "operacao_plantoes": db.query(OperacaoPlantao).filter(OperacaoPlantao.user_id == user_id).delete(synchronize_session=False),
+            "operacao_competencias": db.query(OperacaoCompetencia).filter(OperacaoCompetencia.user_id == user_id).delete(synchronize_session=False),
+            "operacao_unidades": db.query(OperacaoUnidade).filter(OperacaoUnidade.user_id == user_id).delete(synchronize_session=False),
+            "marcos_operacionais": db.query(MarcoOperacional).filter(MarcoOperacional.user_id == user_id).delete(synchronize_session=False),
+            "tarefas": db.query(Tarefa).filter(Tarefa.user_id == user_id).delete(synchronize_session=False),
+            "checklist": db.query(ChecklistItem).filter(ChecklistItem.user_id == user_id).delete(synchronize_session=False),
+            "notes": db.query(Note).filter(Note.user_id == user_id).delete(synchronize_session=False),
+            "push_subscriptions": db.query(PushSubscription).filter(PushSubscription.user_id == user_id).delete(synchronize_session=False),
+            "google_calendar_tokens": db.query(GoogleCalendarToken).filter(GoogleCalendarToken.user_id == user_id).delete(synchronize_session=False),
+            "password_reset_tokens": db.query(PasswordResetToken).filter(PasswordResetToken.user_id == user_id).delete(synchronize_session=False),
+            "user_access_logs": db.query(UserAccessLog).filter(UserAccessLog.user_id == user_id).delete(synchronize_session=False),
+        }
+        db.delete(user)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     _apagar_avatar_local(avatar_anterior)
     return {chave: int(valor or 0) for chave, valor in removidos.items()}
 
@@ -3027,12 +3031,21 @@ async def auth_excluir_conta(
         payload = await request.json()
     except Exception:
         payload = {}
+    senha = str(payload.get("senha") or "")
     confirmacao = str(payload.get("confirmacao") or "").strip().upper()
     if confirmacao != "EXCLUIR":
-        raise HTTPException(status_code=400, detail="Digite EXCLUIR para confirmar a exclusão da conta.")
+        raise HTTPException(status_code=400, detail="Digite EXCLUIR para confirmar.")
+    if not senha:
+        raise HTTPException(status_code=400, detail="Informe sua senha atual.")
+    if not verificar_senha(senha, current_user.senha_hash):
+        raise HTTPException(status_code=401, detail="Senha atual incorreta.")
 
     email = current_user.email
-    removidos = excluir_conta_usuario(db, current_user)
+    try:
+        removidos = excluir_conta_usuario(db, current_user)
+    except Exception as e:
+        print(f"[AUTH] Erro ao excluir conta {email}: {e}")
+        raise HTTPException(status_code=500, detail="Não foi possível excluir sua conta.")
     return {
         "ok": True,
         "message": "Conta excluída com sucesso.",
