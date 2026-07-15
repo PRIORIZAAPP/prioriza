@@ -64,6 +64,10 @@
         margin: 0; padding: 0;
         color: #0f172a;
       }
+      body.modal-aberto {
+        overflow: hidden;
+        touch-action: none;
+      }
       .auth-screen {
         position: fixed;
         inset: 0;
@@ -1461,7 +1465,13 @@
       }
 
       /* ── BOTTOM NAV ── */
-      .bottom-nav-wrapper { position: sticky; bottom: 0; background: #0f172a; z-index: 20; }
+      .bottom-nav-wrapper {
+        position: sticky;
+        bottom: 0;
+        background: #0f172a;
+        z-index: 20;
+        padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
+      }
       .bottom-nav {
         max-width: 480px; margin: 0 auto;
         display: flex; justify-content: space-around; align-items: stretch;
@@ -1587,6 +1597,7 @@
       }
       .checklist-form-panel {
         width: min(100%, 520px);
+        max-height: min(88dvh, 720px);
         border-radius: 22px 22px 18px 18px;
         border: 1px solid rgba(226, 232, 240, 0.92);
         background: rgba(255,255,255,0.98);
@@ -1595,7 +1606,9 @@
         display: flex;
         flex-direction: column;
         gap: 12px;
-        overflow: visible;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
       }
       .checklist-form-handle {
         width: 42px;
@@ -1706,8 +1719,14 @@
         }
       }
       @media (max-width: 640px) {
+        .checklist-form-wrap {
+          align-items: flex-end;
+          padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px));
+        }
         .checklist-form-panel {
           width: min(100%, 520px);
+          max-height: min(88dvh, 720px);
+          padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
         }
       }
       .checklist-delete-btn {
@@ -5242,6 +5261,10 @@
         padding: 20px 18px 16px;
         width: 100%;
         max-width: 360px;
+        max-height: min(88dvh, 720px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
         box-shadow: 0 10px 25px rgba(15,23,42,0.3);
         animation: modalZoomIn 0.18s ease-out;
       }
@@ -5273,6 +5296,90 @@
       .modal-btn-cancel {
         background: #e5e7eb; color: #111827; border: none; border-radius: 999px;
         padding: 7px 16px; font-size: 13px; cursor: pointer;
+      }
+      .account-delete-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 1100;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        background: rgba(15, 23, 42, 0.58);
+        backdrop-filter: blur(4px);
+      }
+      .account-delete-modal.is-open {
+        display: flex;
+      }
+      .account-delete-card {
+        width: min(100%, 430px);
+        max-height: min(88dvh, 720px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 22px;
+        border: 1px solid rgba(226, 232, 240, 0.94);
+        background: rgba(255,255,255,0.98);
+        box-shadow: 0 24px 52px rgba(15, 23, 42, 0.24);
+        padding: 20px;
+      }
+      .account-delete-title {
+        margin: 0 0 8px;
+        font-size: 20px;
+        line-height: 1.15;
+        color: #111827;
+      }
+      .account-delete-copy {
+        margin: 0 0 16px;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #64748b;
+      }
+      .account-delete-form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .account-delete-form label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 650;
+        color: #475569;
+      }
+      .account-delete-form input {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 11px 12px;
+        font-size: 16px;
+        color: #111827;
+        background: #fff;
+      }
+      .account-delete-error {
+        min-height: 18px;
+        font-size: 12px;
+        line-height: 1.45;
+        color: #dc2626;
+      }
+      .account-delete-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 4px;
+      }
+      .account-delete-actions button {
+        min-height: 42px;
+      }
+      .account-delete-actions .danger {
+        background: #dc2626;
+        color: #fff;
+        border-color: #dc2626;
+      }
+      .account-delete-actions .danger:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
       }
     
 
@@ -5955,7 +6062,7 @@
         position: absolute;
         inset: 0;
         z-index: 14;
-        padding: 2px 2px 8px;
+        padding: 2px 2px calc(100px + env(safe-area-inset-bottom, 0px));
         background: linear-gradient(180deg, rgba(244, 247, 251, 0.98) 0%, rgba(248, 250, 252, 0.99) 100%);
         opacity: 0;
         transform: translateX(22px);
@@ -6291,15 +6398,15 @@
           border-radius: 20px;
         }
         #screen-ajustes .settings-native-shell.settings-detail-open {
-          min-height: calc(100dvh - 190px);
-          max-height: calc(100dvh - 190px);
+          min-height: calc(100dvh - var(--layout-header-offset) - 66px);
+          max-height: calc(100dvh - var(--layout-header-offset) - 66px);
           overflow: hidden;
         }
         #screen-ajustes .settings-detail-view {
           position: absolute;
           inset: 0;
           z-index: 20;
-          padding: 2px 2px 8px;
+          padding: 2px 2px calc(36px + env(safe-area-inset-bottom, 0px));
           margin-top: 0;
           background: rgba(248, 250, 252, 0.98);
           opacity: 0;
@@ -11289,6 +11396,28 @@
       </div>
     </div>
 
+    <div id="account-delete-modal" class="account-delete-modal" role="dialog" aria-modal="true" aria-labelledby="account-delete-title" aria-hidden="true">
+      <div class="account-delete-card">
+        <h2 id="account-delete-title" class="account-delete-title">Excluir conta</h2>
+        <p class="account-delete-copy">Esta ação é permanente e não poderá ser desfeita. Todos os seus dados serão excluídos.</p>
+        <form id="form-excluir-conta" class="account-delete-form">
+          <label for="excluir-conta-senha">
+            Senha atual
+            <input id="excluir-conta-senha" type="password" autocomplete="current-password" />
+          </label>
+          <label for="excluir-conta-confirmacao">
+            Digite EXCLUIR para confirmar
+            <input id="excluir-conta-confirmacao" type="text" autocomplete="off" />
+          </label>
+          <div id="excluir-conta-modal-erro" class="account-delete-error" aria-live="polite"></div>
+          <div class="account-delete-actions">
+            <button id="btn-cancelar-exclusao-conta" class="modal-btn-cancel" type="button">Cancelar</button>
+            <button id="btn-confirmar-exclusao-conta" class="modal-btn-ok vermelho danger" type="submit" disabled>Excluir minha conta</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <div id="splash-screen" class="splash-screen" aria-hidden="true">
       <div class="splash-inner">
         <img id="splash-logo" class="splash-logo" alt="Prioriza" />
@@ -13878,48 +14007,85 @@
       }
     }
 
-    async function excluirContaAtual() {
+    function atualizarBotaoExclusaoConta() {
+      const senha = document.getElementById("excluir-conta-senha")?.value || "";
+      const confirmacao = document.getElementById("excluir-conta-confirmacao")?.value || "";
+      const btn = document.getElementById("btn-confirmar-exclusao-conta");
+      if (btn) btn.disabled = !(senha.trim() && confirmacao.trim() === "EXCLUIR");
+    }
+
+    function fecharModalExclusaoConta() {
+      const modalEl = document.getElementById("account-delete-modal");
+      const form = document.getElementById("form-excluir-conta");
+      const erro = document.getElementById("excluir-conta-modal-erro");
+      if (!modalEl) return;
+      modalEl.classList.remove("is-open");
+      modalEl.setAttribute("aria-hidden", "true");
+      form?.reset();
+      if (erro) erro.textContent = "";
+      document.querySelectorAll("#form-excluir-conta input, #form-excluir-conta button").forEach((el) => {
+        el.disabled = false;
+      });
+      atualizarBotaoExclusaoConta();
+      atualizarBloqueioRolagemFundo();
+    }
+
+    function abrirModalExclusaoConta() {
       const statusEl = document.getElementById("excluir-conta-status");
-      const btn = document.getElementById("btn-excluir-conta");
+      const modalEl = document.getElementById("account-delete-modal");
+      const erro = document.getElementById("excluir-conta-modal-erro");
       if (statusEl) statusEl.textContent = "";
+      if (erro) erro.textContent = "";
+      if (!modalEl) return;
+      modalEl.classList.add("is-open");
+      modalEl.setAttribute("aria-hidden", "false");
+      atualizarBotaoExclusaoConta();
+      atualizarBloqueioRolagemFundo();
+      window.setTimeout(() => document.getElementById("excluir-conta-senha")?.focus(), 80);
+    }
 
-      const ok = await modal.confirmar(
-        "Essa ação exclui sua conta e todos os dados vinculados a ela. O e-mail ficará livre para um novo cadastro.",
-        "Excluir conta",
-        "vermelho",
-        "Continuar",
-        "Cancelar"
-      );
-      if (!ok) return;
-
-      const confirmacao = window.prompt("Digite EXCLUIR para confirmar a exclusão definitiva da conta.");
-      if ((confirmacao || "").trim().toUpperCase() !== "EXCLUIR") {
-        if (statusEl) statusEl.textContent = "Exclusão cancelada. A confirmação digitada não confere.";
+    async function excluirContaAtual(ev = null) {
+      ev?.preventDefault?.();
+      const senhaEl = document.getElementById("excluir-conta-senha");
+      const confirmacaoEl = document.getElementById("excluir-conta-confirmacao");
+      const erro = document.getElementById("excluir-conta-modal-erro");
+      const btn = document.getElementById("btn-confirmar-exclusao-conta");
+      const btnCancelar = document.getElementById("btn-cancelar-exclusao-conta");
+      const senha = senhaEl?.value || "";
+      const confirmacao = confirmacaoEl?.value || "";
+      if (erro) erro.textContent = "";
+      if (!senha.trim() || confirmacao.trim() !== "EXCLUIR") {
+        if (erro) erro.textContent = "Informe sua senha atual e digite EXCLUIR para confirmar.";
+        atualizarBotaoExclusaoConta();
         return;
       }
-
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = "Excluindo...";
-      }
+      document.querySelectorAll("#form-excluir-conta input, #form-excluir-conta button").forEach((el) => {
+        el.disabled = true;
+      });
+      if (btn) btn.textContent = "Excluindo conta...";
       try {
         const res = await apiFetch(API + "/auth/account", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ confirmacao: "EXCLUIR" }),
+          body: JSON.stringify({ senha, confirmacao: "EXCLUIR" }),
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data?.detail || "Não foi possível excluir a conta.");
+        if (!res.ok) throw new Error(data?.detail || "Não foi possível excluir sua conta.");
+        limparAvatarPerfilLocal(authUser);
         authUser = null;
         clearAuthToken();
+        demoStatusAtual = null;
+        fecharModalExclusaoConta();
         await modal.alerta(data?.message || "Conta excluída com sucesso.", "Conta excluída");
         window.location.reload();
       } catch (e) {
-        if (statusEl) statusEl.textContent = e.message || "Não foi possível excluir a conta.";
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = "Excluir conta";
-        }
+        if (erro) erro.textContent = e.message || "Não foi possível excluir sua conta.";
+        document.querySelectorAll("#form-excluir-conta input, #form-excluir-conta button").forEach((el) => {
+          el.disabled = false;
+        });
+        if (btn) btn.textContent = "Excluir minha conta";
+        if (btnCancelar) btnCancelar.textContent = "Cancelar";
+        atualizarBotaoExclusaoConta();
       }
     }
 
@@ -17635,6 +17801,28 @@
     }
 
     // ── MODAL ────────────────────────────────────────────────────
+    function atualizarBloqueioRolagemFundo() {
+      const overlayAberto = document.querySelector(
+        ".checklist-form-wrap.open, .modal-overlay.aberto, .account-delete-modal.is-open"
+      );
+      document.body.classList.toggle("modal-aberto", Boolean(overlayAberto));
+    }
+
+    function rolarCampoSobrepostoParaVisivel(elemento) {
+      const el = elemento instanceof Element ? elemento : null;
+      if (!el) return;
+      const painel = el.closest(".checklist-form-panel, .modal-box, .account-delete-card");
+      if (!painel) return;
+      const campo = el.getBoundingClientRect();
+      const area = painel.getBoundingClientRect();
+      const foraDaArea = campo.top < area.top + 12 || campo.bottom > area.bottom - 12;
+      if (foraDaArea) {
+        window.setTimeout(() => {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 80);
+      }
+    }
+
     const modal = (() => {
       const overlay   = document.getElementById("modal-overlay");
       const tituloEl  = document.getElementById("modal-titulo");
@@ -17644,7 +17832,7 @@
       const btnCancel = document.getElementById("modal-btn-cancel");
       let _resolve = null;
 
-      function _fechar() { overlay.classList.remove("aberto"); }
+      function _fechar() { overlay.classList.remove("aberto"); atualizarBloqueioRolagemFundo(); }
 
       btnOk.addEventListener("click", () => { _fechar(); if (_resolve) _resolve({ ok: true, valor: inputEl.value }); });
       btnCancel.addEventListener("click", () => { _fechar(); if (_resolve) _resolve({ ok: false, valor: "" }); });
@@ -17664,6 +17852,7 @@
             setTimeout(() => inputEl.focus(), 50);
           } else { inputEl.style.display = "none"; }
           overlay.classList.add("aberto");
+          atualizarBloqueioRolagemFundo();
         });
       }
 
@@ -20156,6 +20345,7 @@
       const abrir = forceOpen === null ? !wrap.classList.contains("open") : !!forceOpen;
       wrap.hidden = !abrir;
       wrap.classList.toggle("open", abrir);
+      atualizarBloqueioRolagemFundo();
       btn.classList.toggle("is-open", abrir);
       btn.setAttribute("aria-expanded", abrir ? "true" : "false");
       btn.setAttribute("aria-label", abrir ? "Fechar formulário de rotina" : "Nova rotina");
@@ -20184,6 +20374,7 @@
       const abrir = forceOpen === null ? !wrap.classList.contains("open") : !!forceOpen;
       wrap.hidden = !abrir;
       wrap.classList.toggle("open", abrir);
+      atualizarBloqueioRolagemFundo();
       btn.classList.toggle("is-open", abrir);
       btn.setAttribute("aria-expanded", abrir ? "true" : "false");
       btn.setAttribute("aria-label", abrir ? "Fechar formulário de compromisso" : "Novo compromisso");
@@ -20764,6 +20955,7 @@
       const abrir = forceOpen === null ? !wrap.classList.contains("open") : !!forceOpen;
       wrap.hidden = !abrir;
       wrap.classList.toggle("open", abrir);
+      atualizarBloqueioRolagemFundo();
       if (!abrir) return;
       const editando = !!marco?.id;
       document.getElementById("marco-form-title").textContent = editando ? "Editar Marco Operacional" : "Novo Marco Operacional";
@@ -21747,6 +21939,11 @@
       } catch (e) {
         console.warn("[PRIORIZA] Logout simbólico falhou:", e);
       }
+      toggleFormChecklist(false);
+      toggleFormAgenda(false);
+      toggleFormMarcoOperacional(false);
+      fecharModalExclusaoConta();
+      document.body.classList.remove("modal-aberto");
       authUser = null;
       clearAuthToken();
       window.location.reload();
@@ -22933,6 +23130,10 @@
 
       function abrirTela(id, opts = {}) {
         if (!id) return;
+        toggleFormChecklist(false);
+        toggleFormAgenda(false);
+        toggleFormMarcoOperacional(false);
+        fecharModalExclusaoConta();
         if (id === "screen-financas" && window.matchMedia("(max-width: 1099px)").matches) {
           id = "screen-hoje";
         }
@@ -23035,7 +23236,30 @@
         await alterarSenhaConta();
       });
       document.getElementById("btn-excluir-conta")?.addEventListener("click", async () => {
-        await excluirContaAtual();
+        abrirModalExclusaoConta();
+      });
+      document.getElementById("form-excluir-conta")?.addEventListener("submit", excluirContaAtual);
+      document.getElementById("btn-cancelar-exclusao-conta")?.addEventListener("click", fecharModalExclusaoConta);
+      document.getElementById("account-delete-modal")?.addEventListener("click", (ev) => {
+        if (ev.target?.id === "account-delete-modal") fecharModalExclusaoConta();
+      });
+      document.querySelectorAll("#excluir-conta-senha, #excluir-conta-confirmacao").forEach((input) => {
+        input.addEventListener("input", atualizarBotaoExclusaoConta);
+      });
+      document.addEventListener("focusin", (ev) => {
+        if (ev.target?.matches?.(".checklist-form-panel input, .checklist-form-panel textarea, .checklist-form-panel select, .modal-box input, .account-delete-card input")) {
+          rolarCampoSobrepostoParaVisivel(ev.target);
+        }
+      });
+      document.addEventListener("keydown", (ev) => {
+        if (ev.key !== "Escape") return;
+        if (document.getElementById("account-delete-modal")?.classList.contains("is-open")) {
+          fecharModalExclusaoConta();
+          return;
+        }
+        if (document.getElementById("marco-form-wrap")?.classList.contains("open")) toggleFormMarcoOperacional(false);
+        if (document.getElementById("agenda-form-wrap")?.classList.contains("open")) toggleFormAgenda(false);
+        if (document.getElementById("checklist-form-wrap")?.classList.contains("open")) toggleFormChecklist(false);
       });
       document.getElementById("btn-atualizar-sessoes")?.addEventListener("click", async () => {
         await carregarSessoesRecentes();
