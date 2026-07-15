@@ -120,6 +120,11 @@ class User(Base):
     is_admin = Column(Boolean, default=False, nullable=False)
     avatar_url = Column(Text, nullable=True)
     avatar_updated_at = Column(DateTime, nullable=True)
+    demo_data_created = Column(Boolean, default=False, nullable=False)
+    demo_data_active = Column(Boolean, default=False, nullable=False)
+    demo_welcome_seen = Column(Boolean, default=False, nullable=False)
+    demo_removal_prompt_seen = Column(Boolean, default=False, nullable=False)
+    onboarding_completed = Column(Boolean, default=False, nullable=False)
 
     def to_dict(self):
         avatar_url = self.avatar_url
@@ -136,6 +141,11 @@ class User(Base):
             "is_admin": bool(self.is_admin),
             "avatar_url": avatar_url,
             "avatar_updated_at": self.avatar_updated_at.isoformat() if self.avatar_updated_at else None,
+            "demo_data_created": bool(self.demo_data_created),
+            "demo_data_active": bool(self.demo_data_active),
+            "demo_welcome_seen": bool(self.demo_welcome_seen),
+            "demo_removal_prompt_seen": bool(self.demo_removal_prompt_seen),
+            "onboarding_completed": bool(self.onboarding_completed),
         }
 
 
@@ -163,6 +173,7 @@ class Tarefa(Base):
     all_day = Column(Boolean, default=False)
     blocked = Column(Boolean, default=False)
     ativo = Column(Boolean, default=True)
+    is_demo = Column(Boolean, default=False, nullable=False)
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC))
 
     def to_dict(self):
@@ -189,6 +200,7 @@ class Tarefa(Base):
             "all_day": bool(self.all_day),
             "blocked": bool(self.blocked),
             "ativo": self.ativo,
+            "is_demo": bool(self.is_demo),
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
         }
 
@@ -239,6 +251,7 @@ class ChecklistItem(Base):
     status = Column(String, default="pendente")
     ativo = Column(Boolean, default=True)
     ultimo_exec = Column(DateTime, nullable=True)
+    is_demo = Column(Boolean, default=False, nullable=False)
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC))
 
     def to_dict(self, incluir_pode_hoje: bool = False):
@@ -259,6 +272,7 @@ class ChecklistItem(Base):
             "status": self.status,
             "status_exibicao": status_exibicao,
             "ativo": self.ativo,
+            "is_demo": bool(self.is_demo),
             "ultimo_exec": self.ultimo_exec.isoformat() if self.ultimo_exec else None,
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
         }
@@ -397,6 +411,7 @@ class OperacaoUnidade(Base):
     logo_url = Column(Text, default="")
     modalidades_tecnicos = Column(Text, default="")
     ativo = Column(Boolean, default=True, nullable=False)
+    is_demo = Column(Boolean, default=False, nullable=False)
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     atualizado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
@@ -409,6 +424,7 @@ class OperacaoUnidade(Base):
             "logo_url": self.logo_url or "",
             "modalidades_tecnicos": self.modalidades_tecnicos or "",
             "ativo": bool(self.ativo),
+            "is_demo": bool(self.is_demo),
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
             "atualizado_em": self.atualizado_em.isoformat() if self.atualizado_em else None,
         }
@@ -422,6 +438,7 @@ class OperacaoCompetencia(Base):
     unidade_id = Column(Integer, nullable=False, index=True)
     competencia = Column(String, nullable=False, index=True)  # YYYY-MM
     status = Column(String, default="Não iniciado", nullable=False, index=True)
+    is_demo = Column(Boolean, default=False, nullable=False)
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     atualizado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
@@ -432,6 +449,7 @@ class OperacaoCompetencia(Base):
             "unidade_id": self.unidade_id,
             "competencia": self.competencia,
             "status": self.status or "Não iniciado",
+            "is_demo": bool(self.is_demo),
             "movimentos": int(movimentos or 0),
             "plantoes": int(plantoes or 0),
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
@@ -451,6 +469,7 @@ class OperacaoPlantao(Base):
     entrada = Column(String, nullable=False)
     saida = Column(String, nullable=False)
     ativo = Column(Boolean, default=True, nullable=False)
+    is_demo = Column(Boolean, default=False, nullable=False)
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     atualizado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
@@ -465,6 +484,7 @@ class OperacaoPlantao(Base):
             "entrada": self.entrada or "",
             "saida": self.saida or "",
             "ativo": bool(self.ativo),
+            "is_demo": bool(self.is_demo),
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
             "atualizado_em": self.atualizado_em.isoformat() if self.atualizado_em else None,
         }
@@ -485,6 +505,7 @@ class OperacaoMovimento(Base):
     saida = Column(String, default="")
     observacao = Column(Text, default="")
     ativo = Column(Boolean, default=True, nullable=False)
+    is_demo = Column(Boolean, default=False, nullable=False)
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
     atualizado_em = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
@@ -502,6 +523,7 @@ class OperacaoMovimento(Base):
             "saida": self.saida or "",
             "observacao": self.observacao or "",
             "ativo": bool(self.ativo),
+            "is_demo": bool(self.is_demo),
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
             "atualizado_em": self.atualizado_em.isoformat() if self.atualizado_em else None,
         }
@@ -517,6 +539,7 @@ class Note(Base):
     tipo = Column(String, default="GERAL")
     status = Column(String, default="pendente")
     ativo = Column(Boolean, default=True)
+    is_demo = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(UTC))
 
     def to_dict(self):
@@ -527,6 +550,7 @@ class Note(Base):
             "tipo": self.tipo,
             "status": self.status,
             "ativo": self.ativo,
+            "is_demo": bool(self.is_demo),
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 
@@ -1106,7 +1130,19 @@ def _sql_tipo_coluna(nome_coluna: str) -> str:
         return "REAL" if IS_SQLITE else "DOUBLE PRECISION"
     if nome_coluna == "total_acessos":
         return "INTEGER"
-    if nome_coluna in ("ativo", "is_admin", "sincronizado_google", "all_day", "blocked"):
+    if nome_coluna in (
+        "ativo",
+        "is_admin",
+        "sincronizado_google",
+        "all_day",
+        "blocked",
+        "is_demo",
+        "demo_data_created",
+        "demo_data_active",
+        "demo_welcome_seen",
+        "demo_removal_prompt_seen",
+        "onboarding_completed",
+    ):
         return "BOOLEAN"
     if nome_coluna in ("criado_em", "ultimo_acesso", "ultima_sync_google", "avatar_updated_at"):
         return "TIMESTAMP" if not IS_SQLITE else "DATETIME"
@@ -1124,7 +1160,15 @@ def _sql_default_coluna(nome_coluna: str) -> str:
         return " DEFAULT 0"
     if nome_coluna == "total_acessos":
         return " DEFAULT 0"
-    if nome_coluna == "is_admin":
+    if nome_coluna in (
+        "is_admin",
+        "is_demo",
+        "demo_data_created",
+        "demo_data_active",
+        "demo_welcome_seen",
+        "demo_removal_prompt_seen",
+        "onboarding_completed",
+    ):
         return " DEFAULT false" if not IS_SQLITE else " DEFAULT 0"
     if nome_coluna in ("descricao", "local", "hora_fim"):
         return " DEFAULT ''"
@@ -1135,16 +1179,16 @@ def _sql_default_coluna(nome_coluna: str) -> str:
     return ""
 
 
-def garantir_coluna_tabela(nome_tabela: str, nome_coluna: str):
+def garantir_coluna_tabela(nome_tabela: str, nome_coluna: str) -> bool:
     try:
         insp = inspect(engine)
         colunas_existentes = {c["name"] for c in insp.get_columns(nome_tabela)}
     except Exception as e:
         print(f"[MIGRAÇÃO] Não foi possível inspecionar {nome_tabela}: {e}")
-        return
+        return False
 
     if nome_coluna in colunas_existentes:
-        return
+        return False
 
     sql = (
         f"ALTER TABLE {nome_tabela} ADD COLUMN {nome_coluna} "
@@ -1153,8 +1197,10 @@ def garantir_coluna_tabela(nome_tabela: str, nome_coluna: str):
     ok, erro = executar_sql_seguro(sql)
     if ok:
         print(f"[MIGRAÇÃO] Coluna criada: {nome_tabela}.{nome_coluna}")
+        return True
     else:
         print(f"[MIGRAÇÃO] Falha ao criar {nome_tabela}.{nome_coluna}: {erro}")
+        return False
 
 
 def preencher_nulos_coluna(nome_tabela: str, nome_coluna: str, valor_sql: str):
@@ -1169,14 +1215,39 @@ def preencher_nulos_coluna(nome_tabela: str, nome_coluna: str, valor_sql: str):
 def rodar_migracoes_automaticas():
     init_db()
 
+    colunas_demo_usuario = (
+        "demo_data_created",
+        "demo_data_active",
+        "demo_welcome_seen",
+        "demo_removal_prompt_seen",
+        "onboarding_completed",
+    )
+    criou_coluna_demo_usuario = False
+
     for coluna in ("ultimo_acesso", "total_acessos", "is_admin", "avatar_url", "avatar_updated_at"):
         garantir_coluna_tabela("users", coluna)
+    for coluna in colunas_demo_usuario:
+        criou_coluna_demo_usuario = garantir_coluna_tabela("users", coluna) or criou_coluna_demo_usuario
 
     for coluna in ("user_id", "token_hash", "expires_at", "used_at", "created_at"):
         garantir_coluna_tabela("password_reset_tokens", coluna)
 
     preencher_nulos_coluna("users", "total_acessos", "0")
     preencher_nulos_coluna("users", "is_admin", "false" if not IS_SQLITE else "0")
+    if criou_coluna_demo_usuario:
+        bool_true = "true" if not IS_SQLITE else "1"
+        bool_false = "false" if not IS_SQLITE else "0"
+        executar_sql_seguro(
+            "UPDATE users SET "
+            f"demo_data_created = {bool_true}, "
+            f"demo_data_active = {bool_false}, "
+            f"demo_welcome_seen = {bool_true}, "
+            f"demo_removal_prompt_seen = {bool_true}, "
+            f"onboarding_completed = {bool_true}"
+        )
+        print("[MIGRAÇÃO] Usuários existentes marcados sem dados de demonstração automática.")
+    for coluna in colunas_demo_usuario:
+        preencher_nulos_coluna("users", coluna, "false" if not IS_SQLITE else "0")
 
     colunas_tarefas = [
         "user_id",
@@ -1191,12 +1262,15 @@ def rodar_migracoes_automaticas():
         "ultima_sync_google",
         "all_day",
         "blocked",
+        "is_demo",
     ]
     for coluna in colunas_tarefas:
         garantir_coluna_tabela("tarefas", coluna)
 
     for tabela in ("checklist", "notes", "push_subscriptions", "google_calendar_tokens"):
         garantir_coluna_tabela(tabela, "user_id")
+    for tabela in ("checklist", "notes"):
+        garantir_coluna_tabela(tabela, "is_demo")
 
     try:
         PushSubscription.__table__.create(bind=engine, checkfirst=True)
@@ -1244,6 +1318,8 @@ def rodar_migracoes_automaticas():
 
     garantir_coluna_tabela("operacao_unidades", "logo_url")
     garantir_coluna_tabela("operacao_unidades", "modalidades_tecnicos")
+    for tabela in ("operacao_unidades", "operacao_competencias", "operacao_plantoes", "operacao_movimentos"):
+        garantir_coluna_tabela(tabela, "is_demo")
 
     for tabela in ("tarefas", "checklist", "notes", "push_subscriptions", "google_calendar_tokens"):
         try:
@@ -1268,6 +1344,177 @@ def validar_data_iso(data_str: str) -> bool:
         return True
     except Exception:
         return False
+
+
+def _bool_sql(valor: bool) -> str:
+    if IS_SQLITE:
+        return "1" if valor else "0"
+    return "true" if valor else "false"
+
+
+def _proxima_data_weekday(base: date, weekday: int) -> date:
+    delta = (weekday - base.weekday()) % 7
+    if delta == 0:
+        delta = 7
+    return base + timedelta(days=delta)
+
+
+def _contar_demo_ativos(db: Session, user_id: int) -> dict[str, int]:
+    return {
+        "tarefas": db.query(Tarefa).filter(Tarefa.user_id == user_id, Tarefa.ativo == True, Tarefa.is_demo == True).count(),
+        "checklist": db.query(ChecklistItem).filter(ChecklistItem.user_id == user_id, ChecklistItem.ativo == True, ChecklistItem.is_demo == True).count(),
+        "notas": db.query(Note).filter(Note.user_id == user_id, Note.ativo == True, Note.is_demo == True).count(),
+        "operacao_unidades": db.query(OperacaoUnidade).filter(OperacaoUnidade.user_id == user_id, OperacaoUnidade.ativo == True, OperacaoUnidade.is_demo == True).count(),
+        "operacao_plantoes": db.query(OperacaoPlantao).filter(OperacaoPlantao.user_id == user_id, OperacaoPlantao.ativo == True, OperacaoPlantao.is_demo == True).count(),
+    }
+
+
+def _total_demo_ativo(db: Session, user_id: int) -> int:
+    return sum(_contar_demo_ativos(db, user_id).values())
+
+
+def criar_dados_demo_primeiro_acesso(db: Session, user: User) -> bool:
+    if bool(user.demo_data_created):
+        return False
+
+    user_id = garantir_user_id(user.id, "dados de demonstração")
+    hoje = _agora_local().date()
+    hoje_iso = hoje.isoformat()
+    amanha_iso = (hoje + timedelta(days=1)).isoformat()
+    quinta_iso = _proxima_data_weekday(hoje, 3).isoformat()
+    sexta_iso = _proxima_data_weekday(hoje, 4).isoformat()
+
+    tarefas_demo = [
+        ("Conferir e-mails importantes", hoje_iso, "08:30", 30, 2),
+        ("Reunião de alinhamento", hoje_iso, "10:00", 60, 2),
+        ("Revisar indicadores da semana", hoje_iso, "14:00", 60, 2),
+        ("Organizar pendências do dia", hoje_iso, "16:30", 30, 3),
+        ("Revisão de resultados", amanha_iso, "09:30", 60, 2),
+        ("Apresentação mensal", quinta_iso, "15:00", 60, 1),
+        ("Planejamento da semana seguinte", sexta_iso, "11:00", 45, 2),
+    ]
+    for titulo, data_ref, hora, duracao, prioridade in tarefas_demo:
+        db.add(Tarefa(
+            user_id=user_id,
+            titulo=titulo,
+            descricao="Registro de demonstração para apresentar o funcionamento do Prioriza.",
+            origem="Profissional",
+            local="Demonstração",
+            data=data_ref,
+            hora_inicio=hora,
+            hora_fim=calcular_hora_fim(hora, duracao),
+            duracao_min=duracao,
+            prioridade=prioridade,
+            status="pendente",
+            tipo_evento="prioriza",
+            origem_evento="prioriza",
+            ativo=True,
+            is_demo=True,
+        ))
+
+    checklist_demo = [
+        ("Planejar as prioridades do dia", "Diária", "feito"),
+        ("Conferir a agenda da semana", "Semanal", "feito"),
+        ("Responder mensagens pendentes", "Diária", "pendente"),
+        ("Atualizar relatório mensal", "Mensal", "pendente"),
+        ("Organizar as atividades de amanhã", "Diária", "pendente"),
+    ]
+    for titulo, frequencia, status in checklist_demo:
+        db.add(ChecklistItem(
+            user_id=user_id,
+            titulo=titulo,
+            origem="Profissional",
+            frequencia=frequencia,
+            frequencia_interna=normalizar_frequencia_interna(frequencia),
+            status=status,
+            ativo=True,
+            ultimo_exec=datetime.now(UTC) if status == "feito" else None,
+            is_demo=True,
+        ))
+
+    notas_demo = [
+        ("Pendências da semana\n\nConfirmar a reunião de sexta-feira e revisar os documentos necessários.", "TRABALHO"),
+        ("Ideias\n\nCriar um modelo padrão para reuniões e acompanhamento de atividades.", "GERAL"),
+        ("Lembrete\n\nSolicitar o orçamento antes do fechamento do mês.", "GERAL"),
+    ]
+    for texto_nota, tipo in notas_demo:
+        db.add(Note(user_id=user_id, texto=texto_nota, tipo=tipo, status="pendente", ativo=True, is_demo=True))
+
+    competencia = f"{hoje.year}-{hoje.month:02d}"
+    unidade_central = OperacaoUnidade(
+        user_id=user_id,
+        nome="Unidade Central",
+        sigla="CENTRAL",
+        modalidades_tecnicos=json.dumps({"João da Silva": ["RM", "TC"]}, ensure_ascii=False),
+        ativo=True,
+        is_demo=True,
+    )
+    unidade_norte = OperacaoUnidade(
+        user_id=user_id,
+        nome="Unidade Norte",
+        sigla="NORTE",
+        modalidades_tecnicos=json.dumps({"Mariana Alves": ["RX"]}, ensure_ascii=False),
+        ativo=True,
+        is_demo=True,
+    )
+    db.add_all([unidade_central, unidade_norte])
+    db.flush()
+    db.add_all([
+        OperacaoCompetencia(user_id=user_id, unidade_id=unidade_central.id, competencia=competencia, status="Em andamento", is_demo=True),
+        OperacaoCompetencia(user_id=user_id, unidade_id=unidade_norte.id, competencia=competencia, status="Não iniciado", is_demo=True),
+        OperacaoPlantao(user_id=user_id, unidade_id=unidade_central.id, competencia=competencia, tecnico="João da Silva", data=hoje_iso, entrada="07:00", saida="19:00", ativo=True, is_demo=True),
+        OperacaoPlantao(user_id=user_id, unidade_id=unidade_norte.id, competencia=competencia, tecnico="Mariana Alves", data=amanha_iso, entrada="19:00", saida="07:00", ativo=True, is_demo=True),
+    ])
+
+    user.demo_data_created = True
+    user.demo_data_active = True
+    user.demo_welcome_seen = False
+    user.demo_removal_prompt_seen = False
+    user.onboarding_completed = False
+    db.commit()
+    db.refresh(user)
+    return True
+
+
+def remover_dados_demo_usuario(db: Session, user: User) -> dict[str, Any]:
+    user_id = garantir_user_id(user.id, "remoção de demonstração")
+    contagem = _contar_demo_ativos(db, user_id)
+    agora = datetime.now(UTC)
+
+    db.query(Tarefa).filter(Tarefa.user_id == user_id, Tarefa.is_demo == True).update({"ativo": False}, synchronize_session=False)
+    db.query(ChecklistItem).filter(ChecklistItem.user_id == user_id, ChecklistItem.is_demo == True).update({"ativo": False}, synchronize_session=False)
+    db.query(Note).filter(Note.user_id == user_id, Note.is_demo == True).update({"ativo": False}, synchronize_session=False)
+    db.query(OperacaoPlantao).filter(OperacaoPlantao.user_id == user_id, OperacaoPlantao.is_demo == True).update({"ativo": False, "atualizado_em": agora}, synchronize_session=False)
+    db.query(OperacaoMovimento).filter(OperacaoMovimento.user_id == user_id, OperacaoMovimento.is_demo == True).update({"ativo": False, "atualizado_em": agora}, synchronize_session=False)
+    db.query(OperacaoUnidade).filter(OperacaoUnidade.user_id == user_id, OperacaoUnidade.is_demo == True).update({"ativo": False, "atualizado_em": agora}, synchronize_session=False)
+    db.query(OperacaoCompetencia).filter(OperacaoCompetencia.user_id == user_id, OperacaoCompetencia.is_demo == True).delete(synchronize_session=False)
+
+    user.demo_data_active = False
+    user.demo_removal_prompt_seen = True
+    user.demo_welcome_seen = True
+    user.onboarding_completed = True
+    db.commit()
+    db.refresh(user)
+    return {"removidos": contagem, "total": sum(contagem.values())}
+
+
+def status_demo_usuario(db: Session, user: User) -> dict[str, Any]:
+    user_id = garantir_user_id(user.id, "status de demonstração")
+    contagem = _contar_demo_ativos(db, user_id)
+    ativo = bool(user.demo_data_active) and sum(contagem.values()) > 0
+    if bool(user.demo_data_active) != ativo:
+        user.demo_data_active = ativo
+        db.commit()
+        db.refresh(user)
+    return {
+        "demo_data_created": bool(user.demo_data_created),
+        "demo_data_active": ativo,
+        "demo_welcome_seen": bool(user.demo_welcome_seen),
+        "demo_removal_prompt_seen": bool(user.demo_removal_prompt_seen),
+        "onboarding_completed": bool(user.onboarding_completed),
+        "contagem": contagem,
+        "total": sum(contagem.values()),
+    }
 
 
 MARCOS_CATEGORIAS = {
@@ -2494,6 +2741,7 @@ async def auth_register(request: Request, db: Session = Depends(get_db)):
     db.add(usuario)
     db.commit()
     db.refresh(usuario)
+    criar_dados_demo_primeiro_acesso(db, usuario)
     return {"ok": True, "token": criar_token_acesso(usuario), "user": usuario.to_dict()}
 
 
@@ -2515,6 +2763,8 @@ async def auth_login(request: Request, db: Session = Depends(get_db)):
         usuario.is_admin = True
 
     registrar_acesso_usuario(db, usuario)
+    if not bool(usuario.demo_data_created):
+        criar_dados_demo_primeiro_acesso(db, usuario)
     db.commit()
     db.refresh(usuario)
 
@@ -2604,8 +2854,38 @@ async def auth_reset_password(request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/auth/me")
-def auth_me(current_user: User = Depends(get_current_user)):
+def auth_me(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not bool(current_user.demo_data_created):
+        criar_dados_demo_primeiro_acesso(db, current_user)
     return {"ok": True, "user": current_user.to_dict()}
+
+
+@app.get("/demo/status")
+def demo_status(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return {"ok": True, "demo": status_demo_usuario(db, current_user), "user": current_user.to_dict()}
+
+
+@app.post("/demo/welcome-seen")
+def demo_welcome_seen(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    current_user.demo_welcome_seen = True
+    current_user.onboarding_completed = True
+    db.commit()
+    db.refresh(current_user)
+    return {"ok": True, "demo": status_demo_usuario(db, current_user), "user": current_user.to_dict()}
+
+
+@app.post("/demo/removal-prompt-seen")
+def demo_removal_prompt_seen(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    current_user.demo_removal_prompt_seen = True
+    db.commit()
+    db.refresh(current_user)
+    return {"ok": True, "demo": status_demo_usuario(db, current_user), "user": current_user.to_dict()}
+
+
+@app.post("/demo/remove")
+def demo_remove(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    resultado = remover_dados_demo_usuario(db, current_user)
+    return {"ok": True, **resultado, "demo": status_demo_usuario(db, current_user), "user": current_user.to_dict()}
 
 
 @app.post("/auth/change-password")
