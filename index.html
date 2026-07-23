@@ -8717,32 +8717,9 @@
         padding: 0;
       }
 
-      #screen-hoje.screen.active {
-        display: grid;
-        grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
-        grid-template-areas:
-          "agora calendar"
-          "timeline next";
-        gap: 0 38px;
-        align-items: start;
-      }
-
-      #screen-hoje.screen.active > #card-agora { grid-area: agora; }
-      #screen-hoje.screen.active > #hoje-operational-timeline-card { grid-area: timeline; }
-      #screen-hoje.screen.active > #hoje-calendar-card { grid-area: calendar; }
-      #screen-hoje.screen.active > #hoje-proximas-card { grid-area: next; }
       #screen-hoje.screen.active > #hoje-agenda-card,
       #screen-hoje.screen.active > #hoje-checklist-card {
         display: none !important;
-      }
-
-      #screen-hoje.screen.active.hoje-adaptativo {
-        grid-template-columns: minmax(0, 900px) minmax(340px, 420px);
-        grid-template-areas:
-          "agora calendar"
-          "timeline next";
-        justify-content: space-between;
-        gap: 0 34px;
       }
 
       .app-shell[data-active-screen="screen-hoje"] #card-agora {
@@ -8852,20 +8829,6 @@
         line-height: 1.25;
       }
 
-      #card-agora {
-        grid-template-columns: minmax(0, 1fr) auto;
-        grid-template-areas:
-          "top status"
-          "title actions"
-          "meta actions";
-        gap: 6px 16px;
-        align-items: center;
-        padding: 2px 0 20px;
-        margin-bottom: 12px;
-        border-bottom: 1px solid rgba(148,163,184,0.22);
-        box-shadow: inset 0 -10px 18px -18px rgba(148,163,184,0.32);
-      }
-
       #card-agora .agora-topo {
         grid-area: top;
         margin: 0;
@@ -8942,22 +8905,6 @@
         background: rgba(var(--cor-tema-rgb), 0.08);
         border: 1px solid rgba(var(--cor-tema-rgb), 0.18);
         color: var(--cor-tema-escura);
-      }
-
-      #hoje-operational-timeline-card {
-        padding: 20px 20px 0 0;
-      }
-
-      #hoje-calendar-card {
-        display: block;
-        padding: 20px 22px 18px 26px;
-        margin-top: 8px;
-        border-left: 1px solid rgba(148,163,184,0.2);
-        border: 1px solid rgba(226,232,240,0.92);
-        border-left-color: rgba(148,163,184,0.22);
-        border-radius: 20px;
-        background: linear-gradient(180deg, rgba(248,250,252,0.98) 0%, rgba(241,245,249,0.96) 100%);
-        box-shadow: 0 10px 28px rgba(15,23,42,0.04);
       }
 
       .today-calendar-head {
@@ -9364,55 +9311,6 @@
         padding-bottom: 120px;
       }
 
-      /* DESKTOP HOJE SPLIT TIMELINE CALENDARIO */
-      #screen-hoje.screen.active {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 360px;
-        grid-template-areas:
-          "agora calendar"
-          "timeline next";
-        gap: 0 44px;
-        align-items: start;
-      }
-
-      #screen-hoje.screen.active.hoje-adaptativo {
-        grid-template-columns: minmax(0, 900px) minmax(340px, 420px);
-        justify-content: space-between;
-        gap: 0 34px;
-      }
-
-      #hoje-operational-timeline-card {
-        padding: 18px 24px 0 0;
-      }
-
-      #hoje-calendar-card {
-        position: relative;
-        display: block;
-        background: #f8fafc;
-        border: 1px solid rgba(148, 163, 184, 0.22);
-        border-radius: 18px;
-        padding: 22px 24px;
-        min-height: 0;
-        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
-        margin-top: 6px;
-      }
-
-      #hoje-calendar-card::before {
-        content: "";
-        position: absolute;
-        left: -22px;
-        top: 12px;
-        bottom: 12px;
-        width: 1px;
-        background: linear-gradient(
-          180deg,
-          rgba(148, 163, 184, 0) 0%,
-          rgba(148, 163, 184, 0.26) 12%,
-          rgba(148, 163, 184, 0.26) 88%,
-          rgba(148, 163, 184, 0) 100%
-        );
-      }
-
       /* SPRINT 04: refinamentos exclusivamente Desktop */
       .topbar-right { gap: 8px; }
       .mic-button {
@@ -9555,25 +9453,6 @@
       }
       .timeline-menu-item:hover { background: #f1f5f9; }
       .timeline-menu-item.danger { color: #b91c1c; }
-
-      #screen-hoje.screen.active {
-        grid-template-columns: minmax(0, 1fr) 288px;
-        gap: 0 36px;
-      }
-      #hoje-calendar-card {
-        min-height: 0;
-        padding: 16px;
-      }
-      #hoje-calendar-card::before { left: -18px; }
-      #hoje-calendar-card .today-calendar-head {
-        padding-bottom: 8px;
-        margin-bottom: 2px;
-      }
-      #hoje-calendar-card .desktop-mini-calendar { gap: 5px 4px; }
-      #hoje-calendar-card .desktop-mini-weekday,
-      #hoje-calendar-card .desktop-mini-day { min-height: 27px; }
-      #hoje-calendar-card .desktop-mini-day { font-size: 11px; }
-      #hoje-calendar-card .today-calendar-note { margin-top: 8px; font-size: 11px; }
 
       /* SPRINT 05: polimento visual e consistência Desktop */
       .app-shell {
@@ -11380,46 +11259,120 @@
       }
     }
 
-    /* Sprint: compactar o topo da Home (somente desktop). */
+    #hoje-side-column {
+      display: contents;
+    }
+
+    /* ══ HOME: ESTILOS FINAIS CENTRALIZADOS ══ */
     @media (min-width: 1100px) {
       .app-main-column {
         padding-top: 10px;
       }
 
-      #screen-hoje.screen.active,
-      #screen-hoje.screen.active.hoje-adaptativo {
+      #screen-hoje.screen.active {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 288px;
+        grid-template-areas:
+          "agora side"
+          "timeline side";
         grid-template-rows: auto auto;
+        column-gap: 36px;
         row-gap: 8px;
+        align-items: start;
+      }
+
+      #screen-hoje.screen.active.hoje-adaptativo {
+        grid-template-columns: minmax(0, 900px) minmax(340px, 420px);
+        justify-content: space-between;
+        column-gap: 34px;
       }
 
       #card-agora {
+        grid-area: agora;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+          "top status"
+          "title actions"
+          "meta actions";
+        gap: 6px 16px;
+        align-items: center;
         min-height: 0;
         height: fit-content;
-        padding-top: 0;
-        padding-bottom: 10px;
+        padding: 0 0 10px;
         margin-bottom: 0;
+        border-bottom: 1px solid rgba(148,163,184,0.22);
+        box-shadow: inset 0 -10px 18px -18px rgba(148,163,184,0.32);
         align-self: start;
       }
 
       #hoje-operational-timeline-card {
-        padding-top: 4px;
+        grid-area: timeline;
+        padding: 4px 24px 0 0;
       }
 
-      /*
-       * O calendário acompanha as duas linhas do grid. Assim, permanece alinhado
-       * ao "Agora", mas sua altura não aumenta a primeira linha nem empurra o
-       * título "Compromissos do dia" para baixo.
-       */
-      #screen-hoje.screen.active > #hoje-calendar-card {
-        grid-row: 1 / span 2;
+      #screen-hoje.screen.active > #hoje-side-column {
+        grid-area: side;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
         align-self: start;
+      }
+
+      #hoje-side-column > #hoje-calendar-card {
+        position: relative;
+        display: block;
+        align-self: start;
+        width: 100%;
+        min-height: 0;
+        padding: 16px;
         margin-top: 0;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 18px;
+        background: #f8fafc;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
       }
 
-      #screen-hoje.screen.active > #hoje-proximas-card {
-        grid-row: 2;
-        align-self: start;
-        margin-top: 300px;
+      #hoje-side-column > #hoje-calendar-card::before {
+        content: "";
+        position: absolute;
+        left: -18px;
+        top: 12px;
+        bottom: 12px;
+        width: 1px;
+        background: linear-gradient(
+          180deg,
+          rgba(148, 163, 184, 0) 0%,
+          rgba(148, 163, 184, 0.26) 12%,
+          rgba(148, 163, 184, 0.26) 88%,
+          rgba(148, 163, 184, 0) 100%
+        );
+      }
+
+      #hoje-side-column > #hoje-calendar-card .today-calendar-head {
+        padding-bottom: 8px;
+        margin-bottom: 2px;
+      }
+
+      #hoje-side-column > #hoje-calendar-card .desktop-mini-calendar {
+        gap: 5px 4px;
+      }
+
+      #hoje-side-column > #hoje-calendar-card .desktop-mini-weekday,
+      #hoje-side-column > #hoje-calendar-card .desktop-mini-day {
+        min-height: 27px;
+      }
+
+      #hoje-side-column > #hoje-calendar-card .desktop-mini-day {
+        font-size: 11px;
+      }
+
+      #hoje-side-column > #hoje-calendar-card .today-calendar-note {
+        margin-top: 8px;
+        font-size: 11px;
+      }
+
+      #hoje-side-column > #hoje-proximas-card {
+        width: 100%;
       }
     }
   </style>
@@ -11736,27 +11689,29 @@
             <div id="operational-timeline"><small>Carregando rotina do dia...</small></div>
           </div>
 
-          <div class="card" id="hoje-calendar-card" hidden>
-            <div class="today-calendar-head">
-              <span id="desktop-mini-calendar-title" class="desktop-sidebar-section-title">Mês atual</span>
-              <div class="desktop-mini-calendar-nav">
-                <button id="btn-desktop-mini-prev" class="desktop-mini-calendar-btn" type="button" aria-label="Mês anterior">
-                  <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                    <path d="M160 48L80 128l80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
-                <button id="btn-desktop-mini-next" class="desktop-mini-calendar-btn" type="button" aria-label="Próximo mês">
-                  <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-                    <path d="M96 48l80 80-80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
+          <div id="hoje-side-column">
+            <div class="card" id="hoje-calendar-card" hidden>
+              <div class="today-calendar-head">
+                <span id="desktop-mini-calendar-title" class="desktop-sidebar-section-title">Mês atual</span>
+                <div class="desktop-mini-calendar-nav">
+                  <button id="btn-desktop-mini-prev" class="desktop-mini-calendar-btn" type="button" aria-label="Mês anterior">
+                    <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                      <path d="M160 48L80 128l80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <button id="btn-desktop-mini-next" class="desktop-mini-calendar-btn" type="button" aria-label="Próximo mês">
+                    <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+                      <path d="M96 48l80 80-80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
+              <div id="desktop-mini-calendar" class="desktop-mini-calendar"><small>Carregando calendário...</small></div>
+              <div id="desktop-calendar-note" class="today-calendar-note">Selecione um dia para abrir a agenda completa.</div>
             </div>
-            <div id="desktop-mini-calendar" class="desktop-mini-calendar"><small>Carregando calendário...</small></div>
-            <div id="desktop-calendar-note" class="today-calendar-note">Selecione um dia para abrir a agenda completa.</div>
-          </div>
 
-          <div class="card hoje-adaptive-card" id="hoje-proximas-card" hidden></div>
+            <div class="card hoje-adaptive-card" id="hoje-proximas-card" hidden></div>
+          </div>
 
           <div class="card" id="hoje-agenda-card">
             <div class="card-header">
@@ -13554,6 +13509,18 @@
     <script>
     "use strict";
 
+    const PriorizaApp = window.Prioriza = window.Prioriza || {};
+    PriorizaApp.modulos = PriorizaApp.modulos || {};
+    PriorizaApp.registrarModulo = function(nome, api = {}) {
+      const modulo = PriorizaApp.modulos[nome] || { nome, api: {} };
+      Object.assign(modulo.api, api);
+      PriorizaApp.modulos[nome] = modulo;
+      return modulo;
+    };
+    ["autenticacao", "agenda", "checklist", "financas", "operacao", "notificacoes"].forEach((nome) => {
+      PriorizaApp.registrarModulo(nome);
+    });
+
     const API = "";
     const AUTH_TOKEN_KEY = "prioriza_auth_token";
     const TEMA_STORAGE_KEY = "prioriza_tema";
@@ -13835,8 +13802,11 @@
       const fonteAvatar = avatarUrl || avatarLocal;
       if (fonteAvatar) {
         el.classList.add("has-photo");
-        el.innerHTML = `<img src="${textoSeguro(fonteAvatar)}" alt="Foto de perfil de ${textoSeguro(nome || "usuário")}" loading="lazy" />`;
-        const img = el.querySelector("img");
+        const img = document.createElement("img");
+        img.src = fonteAvatar;
+        img.alt = `Foto de perfil de ${nome || "usuário"}`;
+        img.loading = "lazy";
+        el.replaceChildren(img);
         if (img) {
           img.addEventListener("error", () => {
             if (avatarUrl && avatarLocal && img.src !== avatarLocal) {
@@ -14236,6 +14206,10 @@
       const alvo = acao || "Este recurso";
       await modal.alerta(`${alvo} está em preparação para uma próxima versão do PRIORIZA.`, "Em breve");
     }
+
+    </script>
+    <script data-prioriza-module="financas">
+    "use strict";
 
     let financasLancamentosTemporarios = [];
     let financasUiVinculada = false;
@@ -14653,7 +14627,7 @@
         categoriaRow.className = "financas-projecao-category";
         const categoriaCell = document.createElement("div");
         categoriaCell.className = "financas-projecao-category-title";
-        categoriaCell.innerHTML = `${grupo.categoria}<span class="financas-projecao-category-total">${formatarMoedaFinancas(grupo.totais.reduce((soma, valor) => soma + Number(valor || 0), 0))}</span>`;
+        categoriaCell.innerHTML = `${textoSeguro(grupo.categoria)}<span class="financas-projecao-category-total">${formatarMoedaFinancas(grupo.totais.reduce((soma, valor) => soma + Number(valor || 0), 0))}</span>`;
         categoriaRow.appendChild(categoriaCell);
         grupo.totais.forEach((valor, index) => {
           const totalCell = document.createElement("div");
@@ -14691,7 +14665,7 @@
 
           const main = document.createElement("div");
           main.className = "financas-projecao-name-main";
-          main.innerHTML = `<div class="financas-projecao-name-title">${item.titulo || "Despesa"}</div>`;
+          main.innerHTML = `<div class="financas-projecao-name-title">${textoSeguro(item.titulo || "Despesa")}</div>`;
 
           nameCell.appendChild(toggle);
           nameCell.appendChild(main);
@@ -14719,19 +14693,19 @@
               <div class="financas-projecao-expand-inner">
                 <div class="financas-projecao-expand-item">
                   <span class="financas-projecao-expand-label">Vencimento</span>
-                  <span class="financas-projecao-expand-value">${item.due || "mês atual"}</span>
+                  <span class="financas-projecao-expand-value">${textoSeguro(item.due || "mês atual")}</span>
                 </div>
                 <div class="financas-projecao-expand-item">
                   <span class="financas-projecao-expand-label">Categoria</span>
-                  <span class="financas-projecao-expand-value">${grupo.categoria}</span>
+                  <span class="financas-projecao-expand-value">${textoSeguro(grupo.categoria)}</span>
                 </div>
                 <div class="financas-projecao-expand-item">
                   <span class="financas-projecao-expand-label">Status atual</span>
-                  <span class="financas-projecao-expand-value">${item.status?.label || "Pendente"}</span>
+                  <span class="financas-projecao-expand-value">${textoSeguro(item.status?.label || "Pendente")}</span>
                 </div>
                 <div class="financas-projecao-expand-item">
                   <span class="financas-projecao-expand-label">Observações</span>
-                  <span class="financas-projecao-expand-value">${item.observacao || "Sem observações."}</span>
+                  <span class="financas-projecao-expand-value">${textoSeguro(item.observacao || "Sem observações.")}</span>
                 </div>
               </div>
             `;
@@ -14817,10 +14791,10 @@
       row.className = "financas-kpi-detail-item";
       row.innerHTML = `
         <div class="financas-kpi-detail-main">
-          <div class="financas-kpi-detail-name">${titulo}</div>
-          <div class="financas-kpi-detail-meta">${meta}</div>
+          <div class="financas-kpi-detail-name">${textoSeguro(titulo)}</div>
+          <div class="financas-kpi-detail-meta">${textoSeguro(meta)}</div>
         </div>
-        <div class="financas-kpi-detail-value">${valor}</div>
+        <div class="financas-kpi-detail-value">${textoSeguro(valor)}</div>
       `;
       return row;
     }
@@ -14987,7 +14961,7 @@
               <div class="financas-category-top">
                 <div class="financas-category-title">
                   <span class="financas-category-dot" style="background:${paleta[index % paleta.length]}"></span>
-                  <span>${item.categoria}</span>
+                  <span>${textoSeguro(item.categoria)}</span>
                 </div>
                 <span class="financas-category-value">${formatarMoedaFinancas(item.valor)}</span>
               </div>
@@ -15021,7 +14995,7 @@
           if (maior && maior.id === item.id) row.style.borderLeft = "3px solid rgba(239, 68, 68, 0.5)";
           row.innerHTML = `
             <div class="financas-debt-main">
-              <div class="financas-debt-title">${item.nome || "Dívida"}</div>
+              <div class="financas-debt-title">${textoSeguro(item.nome || "Dívida")}</div>
               <div class="financas-debt-subtitle">${maior && maior.id === item.id ? "Maior dívida do mês" : "Compromisso recorrente"}</div>
             </div>
             <div class="financas-debt-money">${formatarMoedaFinancas(item.valor)}</div>
@@ -15087,8 +15061,8 @@
             </svg>
           </div>
           <div>
-            <div class="financas-insight-title">${item.titulo}</div>
-            <div class="financas-insight-text">${item.texto}</div>
+            <div class="financas-insight-title">${textoSeguro(item.titulo)}</div>
+            <div class="financas-insight-text">${textoSeguro(item.texto)}</div>
           </div>
         `;
         listaEl.appendChild(row);
@@ -15140,7 +15114,7 @@
             ${pontos.map((p) => `<circle cx="${p.x}" cy="${p.y}" r="4.8" fill="#ffffff" stroke="${p.saldo < 0 ? "#dc2626" : "#6366f1"}" stroke-width="2.2"></circle><text x="${p.x}" y="${p.y - 11}" text-anchor="middle" font-size="10.5" font-weight="700" fill="${p.saldo < 0 ? "#dc2626" : "#16a34a"}">${formatarMoedaFinancas(p.saldo).replace("R$", "R$ ").trim()}</text>`).join("")}
           </svg>
           <div class="financas-line-labels">
-            ${dados.map((item) => `<div class="financas-line-label">${item.label}</div>`).join("")}
+            ${dados.map((item) => `<div class="financas-line-label">${textoSeguro(item.label)}</div>`).join("")}
           </div>
         </div>
       `;
@@ -15158,8 +15132,8 @@
       const classeValor = normalizarTipoFinancasUI(item.tipo) === "Receita" ? "positive" : "negative";
       row.innerHTML = `
         <div class="financas-mobile-launch-main">
-          <div class="financas-mobile-launch-title">${titulo}</div>
-          <div class="financas-mobile-launch-meta">${metaPartes.filter(Boolean).join(" · ")}</div>
+          <div class="financas-mobile-launch-title">${textoSeguro(titulo)}</div>
+          <div class="financas-mobile-launch-meta">${textoSeguro(metaPartes.filter(Boolean).join(" · "))}</div>
         </div>
         <div class="financas-mobile-launch-value ${classeValor}">${formatarMoedaFinancas(item.valor || 0)}</div>
       `;
@@ -15843,7 +15817,7 @@
       if (!listaEl || !metaEl) return;
       metaEl.textContent = `${itens.length} ${labelPlural}`;
       if (!itens.length) {
-        listaEl.innerHTML = `<div class="financas-empty">${mensagemVazia}</div>`;
+        listaEl.innerHTML = `<div class="financas-empty">${textoSeguro(mensagemVazia)}</div>`;
         return;
       }
 
@@ -16175,7 +16149,7 @@
       metaEl.textContent = `${itensHoje.length} lançamento(s)`;
 
       if (mensagemErro) {
-        listaEl.innerHTML = `<div class="financas-empty">${mensagemErro}</div>`;
+        listaEl.innerHTML = `<div class="financas-empty">${textoSeguro(mensagemErro)}</div>`;
         return;
       }
 
@@ -16198,7 +16172,7 @@
       aplicarResumoFinancasMes(financasResumoMesSelecionado || {});
 
       if (mensagemErro) {
-        listaEl.innerHTML = `<div class="financas-empty">${mensagemErro}</div>`;
+        listaEl.innerHTML = `<div class="financas-empty">${textoSeguro(mensagemErro)}</div>`;
         metaResumoEl.textContent = "0 fonte(s)";
         totalEl.textContent = "R$ 0,00";
         copyEl.textContent = mensagemErro;
@@ -16319,7 +16293,7 @@
       atualizarBotoesVisaoDespesasFinancas();
 
       if (mensagemErro) {
-        listaEl.innerHTML = `<div class="financas-empty">${mensagemErro}</div>`;
+        listaEl.innerHTML = `<div class="financas-empty">${textoSeguro(mensagemErro)}</div>`;
         metaEl.textContent = "0 item(ns)";
         return;
       }
@@ -16343,7 +16317,7 @@
         const grupoEl = document.createElement("div");
         grupoEl.className = "financas-fixed-group";
         const totalGrupo = itens.reduce((soma, item) => soma + Number(item.valor || 0), 0);
-        grupoEl.innerHTML = `<div class="financas-fixed-group-title">${categoria}<span class="financas-fixed-group-total">${formatarMoedaFinancas(totalGrupo)}</span></div>`;
+        grupoEl.innerHTML = `<div class="financas-fixed-group-title">${textoSeguro(categoria)}<span class="financas-fixed-group-total">${formatarMoedaFinancas(totalGrupo)}</span></div>`;
 
         itens.forEach((item) => {
           const row = document.createElement("div");
@@ -17085,6 +17059,10 @@
       renderizarFontesRendaFinancas();
     }
 
+    </script>
+    <script data-prioriza-module="core">
+    "use strict";
+
     function formatarDataHoraAdmin(iso) {
       if (!iso) return "Nunca";
       const data = new Date(iso);
@@ -17396,11 +17374,36 @@
       }
     }
 
+    function obterUrlRecurso(recurso) {
+      if (typeof Request !== "undefined" && recurso instanceof Request) return recurso.url;
+      return String(recurso ?? "");
+    }
+
+    function urlPertenceApi(recurso) {
+      try {
+        const alvo = new URL(obterUrlRecurso(recurso), window.location.href);
+        const origemApi = new URL(API || "/", window.location.href);
+        return alvo.origin === origemApi.origin;
+      } catch {
+        return false;
+      }
+    }
+
     async function apiFetch(url, options = {}) {
-      const headersOriginais = options.headers || {};
-      const opts = { ...options, headers: authHeaders(headersOriginais) };
+      if (!urlPertenceApi(url)) {
+        return nativeFetch(url, options);
+      }
+
+      const headersDoRequest = typeof Request !== "undefined" && url instanceof Request ? url.headers : undefined;
+      const headers = new Headers(options.headers || headersDoRequest || {});
+      const token = getAuthToken();
+      if (token && !headers.has("Authorization")) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+
+      const opts = { ...options, headers };
       const resposta = await nativeFetch(url, opts);
-      const rota = String(url || "");
+      const rota = obterUrlRecurso(url);
       const ignorar401 = rota.includes("/auth/login") || rota.includes("/auth/register") || rota.includes("/auth/forgot-password") || rota.includes("/auth/reset-password");
       if (resposta.status === 401 && !ignorar401) {
         handleUnauthorized();
@@ -18027,7 +18030,7 @@
           const linha = document.createElement("div");
           linha.className = "desktop-status-day-row";
           const rotulo = document.createElement("span");
-          rotulo.innerHTML = `<span class="desktop-status-day-check">✓</span>${categoria.rotulo}`;
+          rotulo.innerHTML = `<span class="desktop-status-day-check">✓</span>${textoSeguro(categoria.rotulo)}`;
           const total = document.createElement("span");
           total.className = "desktop-status-day-count";
           total.textContent = String(categoria.total);
@@ -19212,7 +19215,29 @@
     function setLoading(btn, on, textOrig) { if(!btn) return; btn.disabled=on; btn.childNodes[btn.childNodes.length-1].textContent=" "+(on?"Salvando...":textOrig); }
 
     // ── XSS ──────────────────────────────────────────────────────
-    function textoSeguro(str) { const d=document.createElement("div"); d.textContent=str||""; return d.innerHTML; }
+    function textoSeguro(str) {
+      return String(str ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[char]);
+    }
+
+    function renderizarErroComRetry(container, mensagem, acao) {
+      if (!container) return;
+      const aviso = document.createElement("small");
+      aviso.style.color = "#ef4444";
+      aviso.append(document.createTextNode(`⚠️ ${String(mensagem ?? "Erro ao carregar.")} `));
+      const botao = document.createElement("button");
+      botao.type = "button";
+      botao.textContent = "Tentar novamente";
+      botao.style.cssText = "color:var(--cor-tema);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline";
+      if (typeof acao === "function") botao.addEventListener("click", acao);
+      aviso.appendChild(botao);
+      container.replaceChildren(aviso);
+    }
 
     // ── SWIPE ────────────────────────────────────────────────────
     function adicionarSwipe(div, onDireita, onEsquerda, opts = {}) {
@@ -19397,6 +19422,10 @@
       try { await fetch(API+"/tarefas_excluir?"+new URLSearchParams({tarefa_id:String(id)}),{method:"POST",headers:authHeaders()}); }
       catch(e){console.error(e);}
     }
+
+    </script>
+    <script data-prioriza-module="agenda">
+    "use strict";
 
     // ── GOOGLE AGENDA ────────────────────────────────────────────
     function obterFaixaMesAtual() {
@@ -19916,7 +19945,7 @@
         renderizarMiniCalendarioDesktop();
       } catch(e) {
         console.error("[PRIORIZA] carregarAgendaHoje:", e);
-        agendaDiv.innerHTML = `<small style="color:#ef4444">⚠️ Erro ao carregar agenda. <button onclick="carregarAgendaHoje()" style="color:var(--cor-tema);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline">Tentar novamente</button></small>`;
+        renderizarErroComRetry(agendaDiv, "Erro ao carregar agenda.", carregarAgendaHoje);
       }
     }
 
@@ -19970,6 +19999,10 @@
       } catch(e) { console.error(e); await modal.alerta("Erro de conexão.","Erro"); }
       finally { btn.disabled=false; }
     }
+
+    </script>
+    <script data-prioriza-module="checklist">
+    "use strict";
 
     // ── CHECKLIST: status ─────────────────────────────────────────
     async function atualizarStatusChecklist(id, novoStatus) {
@@ -20144,7 +20177,7 @@
         console.error("[PRIORIZA] carregarChecklistHoje:", e);
         checklistHojeCache = [];
         checklistTodosCache = [];
-        container.innerHTML="<small style='color:#ef4444'>⚠️ Erro ao carregar checklist. <button onclick='carregarChecklistHoje()' style='color:var(--cor-tema);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline'>Tentar novamente</button></small>";
+        renderizarErroComRetry(container, "Erro ao carregar checklist.", carregarChecklistHoje);
       }
     }
 
@@ -20376,7 +20409,7 @@
         renderChecklistLista(container, checklistGeralAbaAtiva, grupos[checklistGeralAbaAtiva] || []);
       } catch (e) {
         console.error("[PRIORIZA] carregarChecklistGeral:", e);
-        container.innerHTML = "<small style='color:#ef4444'>⚠️ Erro ao carregar checklist. <button onclick='carregarChecklistGeral()' style='color:var(--cor-tema);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline'>Tentar novamente</button></small>";
+        renderizarErroComRetry(container, "Erro ao carregar checklist.", carregarChecklistGeral);
       }
     }
 
@@ -20508,6 +20541,10 @@
       finally{btn.disabled=false;}
     }
 
+    </script>
+    <script data-prioriza-module="core">
+    "use strict";
+
     // ── ABA PESSOAL ───────────────────────────────────────────────
    async function carregarPessoalLista() {
   const hojeDiv = document.getElementById("pessoal-agenda-hoje");
@@ -20602,7 +20639,7 @@
   function renderBlocoAgenda(container, itens, vazioTexto) {
     if (!container) return;
     if (!itens.length) {
-      container.innerHTML = `<div class="pessoal-bloco-vazio">${vazioTexto}</div>`;
+      container.innerHTML = `<div class="pessoal-bloco-vazio">${textoSeguro(vazioTexto)}</div>`;
       return;
     }
 
@@ -21837,6 +21874,10 @@
       btn.addEventListener("click",()=>{ if(escutando) recognition.stop(); else recognition.start(); });
     }
 
+    </script>
+    <script data-prioriza-module="autenticacao">
+    "use strict";
+
     function bindAuthEvents() {
       document.getElementById("btn-auth-toggle")?.addEventListener("click", () => {
         if (authMode === "login") {
@@ -21991,6 +22032,10 @@
       clearAuthToken();
       window.location.reload();
     }
+
+    </script>
+    <script data-prioriza-module="operacao">
+    "use strict";
 
     // ── INIT ──────────────────────────────────────────────────────
     async function inicializarAppAutenticado() {
@@ -22298,7 +22343,7 @@
           operacaoState.carregado = true;
           renderizarUnidadesOperacao();
         } catch (erro) {
-          if (lista) lista.innerHTML = `<div class="operacao-empty">${erro.message || "Não foi possível carregar unidades."}</div>`;
+          if (lista) lista.innerHTML = `<div class="operacao-empty">${textoSeguro(erro.message || "Não foi possível carregar unidades.")}</div>`;
         }
       }
 
@@ -22671,7 +22716,7 @@
               <div><label for="operacao-correcao-observacao">Observação</label><input id="operacao-correcao-observacao" type="text" placeholder="Motivo da correção" /></div>
               <div class="operacao-submit-cell">
                 <button class="btn-secondary" type="button" data-operacao-fechar-correcao>Fechar</button>
-                ${movimentoCorrecaoSelecionado ? `<button class="btn-secondary" type="button" data-operacao-excluir-movimento="${movimentoCorrecaoSelecionado.movimento_id}">Excluir correção</button>` : ""}
+                ${movimentoCorrecaoSelecionado ? `<button class="btn-secondary" type="button" data-operacao-excluir-movimento="${escaparTextoOperacao(movimentoCorrecaoSelecionado.movimento_id)}">Excluir correção</button>` : ""}
                 ${movimentoCorrecaoSelecionado ? "" : `<button class="btn-secondary" type="button" data-operacao-excluir-mensal>Excluir este plantão</button>`}
                 <button class="btn-primary" type="button" data-operacao-salvar-correcao>Corrigir plantão</button>
               </div>
@@ -22942,7 +22987,7 @@
         operacaoState.movimentos.forEach((item) => {
           const row = document.createElement("div");
           row.className = "operacao-row";
-          row.innerHTML = `<span>${item.data}</span><strong></strong><span></span><small></small><div class="operacao-row-actions"><button class="btn-secondary" type="button" data-operacao-excluir-movimento="${item.id}">Excluir</button></div>`;
+          row.innerHTML = `<span>${textoSeguro(item.data)}</span><strong></strong><span></span><small></small><div class="operacao-row-actions"><button class="btn-secondary" type="button" data-operacao-excluir-movimento="${textoSeguro(item.id)}">Excluir</button></div>`;
           row.querySelector("strong").textContent = item.tipo;
           row.querySelector("span:nth-of-type(2)").textContent = primeiroNomeOperacao(item.tecnico_realizado || item.tecnico_previsto || "--");
           row.querySelector("small").textContent = item.observacao || `${item.entrada || "--"} - ${item.saida || "--"}`;
@@ -23613,6 +23658,14 @@
         }
       });
 
+      PriorizaApp.registrarModulo("operacao", {
+        carregarUnidades: carregarUnidadesOperacao,
+        abrirUnidade: abrirUnidadeOperacao,
+        voltarParaUnidades: voltarListaOperacao,
+        carregarUnidade: carregarUnidadeOperacao,
+        validarCompetencia: validarCompetenciaOperacao,
+      });
+
       // Carregamento inicial
       carregarAgendaHoje();
       renderizarAgoraCard();
@@ -23634,6 +23687,10 @@
       iniciarSistemaNotificacoes();
       atualizarStatusNotificacoesUI();
     }
+
+    </script>
+    <script data-prioriza-module="bootstrap">
+    "use strict";
 
     document.addEventListener("DOMContentLoaded", async () => {
       const temaSalvo = (() => {
@@ -23665,6 +23722,10 @@
       await garantirAppAutenticadoInicializado();
       await carregarStatusDemo({ mostrarBoasVindas: true });
     });
+
+    </script>
+    <script data-prioriza-module="notificacoes">
+    "use strict";
 
     // ═══════════════════════════════════════════════════════════════
     // SISTEMA DE NOTIFICAÇÕES
@@ -24309,6 +24370,41 @@
         throw e;
       }
     };
+
+    PriorizaApp.registrarModulo("autenticacao", {
+      mostrarTela: showAuthScreen,
+      vincularEventos: bindAuthEvents,
+      validarSessao: validarSessaoAtual,
+      sair: fazerLogout,
+    });
+
+    PriorizaApp.registrarModulo("agenda", {
+      carregarHoje: carregarAgendaHoje,
+      atualizarMesEDia: atualizarAgendaMesEDia,
+      abrirDiaNoDesktop: abrirAgendaDesktopNoDia,
+      carregarStatusGoogle: carregarStatusGoogleAgenda,
+    });
+
+    PriorizaApp.registrarModulo("checklist", {
+      carregarHoje: carregarChecklistHoje,
+      carregarGeral: carregarChecklistGeral,
+      atualizarStatus: atualizarStatusChecklist,
+      excluirItem: excluirChecklistItem,
+    });
+
+    PriorizaApp.registrarModulo("financas", {
+      vincularUI: vincularFinancasUI,
+      carregarPainel: carregarFinancasPainelCompleto,
+      abrirLancamento: abrirSheetFinancas,
+      renderizarMobile: renderizarMobileFinancas,
+    });
+
+    PriorizaApp.registrarModulo("notificacoes", {
+      iniciar: iniciarSistemaNotificacoes,
+      atualizarStatus: atualizarStatusNotificacoesUI,
+      ativar: ativarNotificacoesManual,
+      testar: testarNotificacaoManual,
+    });
 
     </script>
   </body>
