@@ -692,6 +692,87 @@
       .app-main-column { min-width: 0; width: 100%; }
       .desktop-sidebar,
       .desktop-rail { display: none; }
+      .agora-card {
+        padding: 12px 14px;
+        border: 1px solid rgba(var(--cor-tema-rgb), 0.12);
+        background: linear-gradient(180deg, #ffffff 0%, rgba(var(--cor-tema-rgb), 0.04) 100%);
+      }
+      .agora-topo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .agora-icone {
+        width: 16px;
+        height: 16px;
+        color: var(--cor-tema);
+        flex-shrink: 0;
+      }
+      .agora-titulo {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: var(--cor-tema-escura);
+      }
+      .agora-status {
+        margin: 0 0 4px 0;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--cor-tema-escura);
+      }
+      .agora-status.atrasado {
+        color: #b45309;
+      }
+      .agora-status.proximo {
+        color: #475569;
+      }
+      .agora-item-titulo {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.3;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .agora-horario {
+        margin-top: 4px;
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 600;
+      }
+      .agora-acoes {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .agora-btn {
+        border-radius: 999px;
+        border: 1px solid #dbe2eb;
+        background: #ffffff;
+        color: #334155;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 7px 12px;
+        cursor: pointer;
+        transition: all 0.18s ease;
+      }
+      .agora-btn:hover {
+        border-color: rgba(var(--cor-tema-rgb), 0.2);
+        background: #f8fafc;
+      }
+      .agora-btn.primario {
+        border-color: rgba(var(--cor-tema-rgb), 0.18);
+        background: var(--cor-tema-suave);
+        color: var(--cor-tema-escura);
+      }
+      .agora-btn.suave {
+        color: #6b7280;
+      }
+      .agora-card[hidden] {
+        display: none !important;
+      }
       .splash-screen {
         position: fixed;
         inset: 0;
@@ -6727,16 +6808,93 @@
 
         #screen-hoje.screen.active {
           grid-template-columns: minmax(0, 1.28fr) minmax(320px, 0.78fr);
-          grid-template-areas: "agenda checklist";
+          grid-template-areas:
+            "agora agora"
+            "agenda checklist";
           gap: 18px;
           align-items: start;
         }
 
+        #screen-hoje.screen.active > #card-agora { grid-area: agora; }
         #screen-hoje.screen.active > #hoje-agenda-card { grid-area: agenda; }
         #screen-hoje.screen.active > #hoje-checklist-card { grid-area: checklist; }
 
         .app-shell[data-active-screen="screen-hoje"] .desktop-rail .desktop-panel:nth-child(n+2) {
           display: none;
+        }
+
+        #card-agora {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 10px 20px;
+          align-items: center;
+          padding: 18px 22px;
+        }
+
+        #card-agora .agora-topo,
+        #card-agora .agora-status,
+        #card-agora .agora-item-titulo,
+        #card-agora .agora-horario {
+          grid-column: 1;
+        }
+
+        #card-agora .agora-topo {
+          margin: 0;
+          gap: 8px;
+        }
+
+        #card-agora .agora-icone {
+          width: 14px;
+          height: 14px;
+          opacity: 0.9;
+        }
+
+        #card-agora .agora-titulo {
+          font-size: 12px;
+          font-weight: 800;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: var(--cor-tema);
+        }
+
+        #card-agora .agora-status {
+          margin: 0;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: #64748b;
+        }
+
+        #card-agora .agora-item-titulo {
+          margin: 2px 0 0 0;
+          font-size: 30px;
+          line-height: 1.06;
+          letter-spacing: -0.04em;
+          max-width: 20ch;
+        }
+
+        #card-agora .agora-horario {
+          margin: 2px 0 0 0;
+          font-size: 14px;
+          color: #64748b;
+          font-weight: 600;
+        }
+
+        #card-agora .agora-acoes {
+          grid-column: 2;
+          grid-row: 1 / span 4;
+          align-self: center;
+          justify-content: flex-end;
+          margin: 0;
+          max-width: 360px;
+        }
+
+        #card-agora .agora-btn {
+          min-height: 36px;
+          padding: 0 14px;
+          font-size: 12px;
+          font-weight: 700;
         }
 
         #hoje-agenda-card,
@@ -7157,7 +7315,9 @@
 
         #screen-hoje.screen.active {
           grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.92fr);
-          grid-template-areas: "agenda checklist";
+          grid-template-areas:
+            "agora agora"
+            "agenda checklist";
           gap: 16px;
         }
 
@@ -7165,6 +7325,77 @@
           display: none;
         }
 
+        #card-agora {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          grid-template-areas:
+            "top status"
+            "title actions"
+            "meta actions";
+          gap: 6px 16px;
+          align-items: center;
+          padding: 14px 18px;
+          min-height: 0;
+        }
+
+        #card-agora .agora-topo {
+          grid-area: top;
+          gap: 8px;
+          margin: 0;
+        }
+
+        #card-agora .agora-icone {
+          width: 15px;
+          height: 15px;
+        }
+
+        #card-agora .agora-titulo {
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #64748b;
+        }
+
+        #card-agora .agora-status {
+          grid-area: status;
+          justify-self: end;
+          margin: 0;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #334155;
+        }
+
+        #card-agora .agora-item-titulo {
+          grid-area: title;
+          margin: 0;
+          font-size: 18px;
+          line-height: 1.2;
+          letter-spacing: -0.025em;
+          max-width: none;
+          color: #0f172a;
+        }
+
+        #card-agora .agora-horario {
+          grid-area: meta;
+          margin: 0;
+          font-size: 13px;
+          font-weight: 500;
+          color: #64748b;
+        }
+
+        #card-agora .agora-acoes {
+          grid-area: actions;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 8px;
+          margin: 0;
+        }
+
+        #card-agora .agora-btn,
         #hoje-agenda-card .desktop-status-btn,
         #hoje-checklist-card .desktop-status-btn {
           min-height: 30px;
@@ -7175,10 +7406,12 @@
           box-shadow: none;
         }
 
+        #card-agora .agora-btn,
         #hoje-agenda-card .desktop-status-btn {
           border: 1px solid rgba(148,163,184,0.18);
         }
 
+        #card-agora .agora-btn:not(.primary),
         #hoje-agenda-card .desktop-status-btn.andamento,
         #hoje-agenda-card .desktop-status-btn.reabrir,
         #hoje-checklist-card .desktop-status-btn.andamento,
@@ -7188,7 +7421,8 @@
         }
 
         #hoje-agenda-card .desktop-status-btn.concluir,
-        #hoje-checklist-card .desktop-status-btn.concluir {
+        #hoje-checklist-card .desktop-status-btn.concluir,
+        #card-agora .agora-btn.primary {
           background: rgba(34,197,94,0.1);
           border-color: rgba(34,197,94,0.24);
           color: #166534;
@@ -7391,7 +7625,8 @@
         }
 
         .desktop-rail,
-        .desktop-sidebar-card {
+        .desktop-sidebar-card,
+        .app-shell[data-active-screen="screen-hoje"] #card-agora {
           display: none;
         }
 
@@ -7956,14 +8191,18 @@
 
         #screen-hoje.screen.active {
           grid-template-columns: minmax(340px, 1.12fr) minmax(300px, 0.88fr);
-          grid-template-areas: "checklist agenda";
+          grid-template-areas:
+            "agora agora"
+            "checklist agenda";
           gap: 0;
           background: transparent;
         }
 
+        #screen-hoje.screen.active > #card-agora { grid-area: agora; }
         #screen-hoje.screen.active > #hoje-checklist-card { grid-area: checklist; }
         #screen-hoje.screen.active > #hoje-agenda-card { grid-area: agenda; }
 
+        #card-agora,
         #hoje-checklist-card,
         #hoje-agenda-card {
           background: transparent;
@@ -7971,6 +8210,67 @@
           box-shadow: none;
           border-radius: 0;
           padding: 0;
+        }
+
+        #card-agora {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 6px 14px;
+          align-items: center;
+          padding: 0 0 16px 0;
+          margin-bottom: 2px;
+          border-bottom: 1px solid rgba(226,232,240,0.9);
+        }
+
+        #card-agora .agora-topo {
+          margin: 0;
+        }
+
+        #card-agora .agora-titulo {
+          font-size: 11px;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #64748b;
+        }
+
+        #card-agora .agora-status {
+          justify-self: end;
+          font-size: 11px;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #334155;
+        }
+
+        #card-agora .agora-item-titulo {
+          font-size: 18px;
+          line-height: 1.2;
+          letter-spacing: -0.02em;
+          color: #0f172a;
+          margin: 0;
+        }
+
+        #card-agora .agora-horario {
+          font-size: 12px;
+          color: #64748b;
+          margin: 0;
+        }
+
+        #card-agora .agora-acoes {
+          justify-content: flex-end;
+          gap: 6px;
+          margin: 0;
+        }
+
+        .agora-btn {
+          min-height: 30px;
+          padding: 0 10px;
+          border-radius: 7px;
+          border: 1px solid rgba(203,213,225,0.7);
+          background: #ffffff;
+          color: #475569;
+          box-shadow: none;
+          font-size: 11px;
+          font-weight: 600;
         }
 
         #hoje-checklist-card {
@@ -8168,10 +8468,19 @@
           margin-bottom: 6px;
         }
 
-        .desktop-context-summary {
+        .desktop-context-summary,
+        .desktop-context-focus-meta {
           font-size: 12px;
           line-height: 1.5;
           color: #64748b;
+        }
+
+        .desktop-context-focus-title {
+          font-size: 14px;
+          font-weight: 650;
+          line-height: 1.35;
+          color: #0f172a;
+          margin-bottom: 4px;
         }
 
         .card,
@@ -8422,8 +8731,13 @@
         display: none !important;
       }
 
+      .app-shell[data-active-screen="screen-hoje"] #card-agora {
+        display: grid;
+      }
+
       #screen-hoje .card,
-      #hoje-operational-timeline-card {
+      #hoje-operational-timeline-card,
+      #card-agora {
         background: transparent;
         border: none;
         border-radius: 0;
@@ -8524,6 +8838,60 @@
         line-height: 1.25;
       }
 
+      #card-agora .agora-topo {
+        grid-area: top;
+        margin: 0;
+        gap: 8px;
+      }
+
+      #card-agora .agora-icone {
+        width: 15px;
+        height: 15px;
+        color: var(--cor-tema);
+      }
+
+      #card-agora .agora-titulo,
+      #card-agora .agora-status {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      #card-agora .agora-titulo { color: #64748b; }
+      #card-agora .agora-status {
+        grid-area: status;
+        justify-self: end;
+        color: #334155;
+      }
+
+      #card-agora .agora-item-titulo {
+        grid-area: title;
+        margin: 0;
+        font-size: 20px;
+        line-height: 1.18;
+        letter-spacing: -0.03em;
+        color: #0f172a;
+      }
+
+      #card-agora .agora-horario {
+        grid-area: meta;
+        margin: 0;
+        font-size: 13px;
+        font-weight: 500;
+        color: #64748b;
+      }
+
+      #card-agora .agora-acoes {
+        grid-area: actions;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        margin: 0;
+      }
+
+      #card-agora .agora-btn,
       .timeline-soft-btn,
       .timeline-ghost-btn {
         min-height: 30px;
@@ -8534,12 +8902,14 @@
         box-shadow: none;
       }
 
+      #card-agora .agora-btn:not(.primary),
       .timeline-ghost-btn {
         background: #ffffff;
         border: 1px solid rgba(148,163,184,0.22);
         color: #475569;
       }
 
+      #card-agora .agora-btn.primary,
       .timeline-soft-btn {
         background: rgba(var(--cor-tema-rgb), 0.08);
         border: 1px solid rgba(var(--cor-tema-rgb), 0.18);
@@ -8895,11 +9265,19 @@
         color: #0f172a;
       }
 
-      .desktop-context-summary {
+      .desktop-context-summary,
+      .desktop-context-focus-meta {
         margin-top: 6px;
         font-size: 12px;
         line-height: 1.5;
         color: #64748b;
+      }
+
+      .desktop-context-focus-title {
+        font-size: 14px;
+        font-weight: 650;
+        line-height: 1.35;
+        color: #0f172a;
       }
 
       .fab-add {
@@ -9195,7 +9573,7 @@
         color: #475569;
       }
 
-      :where(.pessoal-btn, .desktop-status-btn, .timeline-menu-item) {
+      :where(.pessoal-btn, .desktop-status-btn, .agora-btn, .timeline-menu-item) {
         min-height: 32px;
         border-radius: 7px;
         font-size: 12px;
@@ -9317,6 +9695,7 @@
         .settings-detail-header h2,
         .pessoal-panel h3,
         .timeline-title,
+        .agora-item-titulo,
         .pessoal-titulo,
         .nota-texto
       ) {
@@ -9516,6 +9895,12 @@
         font-weight: 600;
         letter-spacing: 0;
         text-transform: none;
+      }
+
+      #card-agora .agora-horario {
+        font-size: 15px;
+        font-weight: 650;
+        color: #334155;
       }
 
       .timeline-row.agenda .timeline-stamp {
@@ -10896,10 +11281,12 @@
       #screen-hoje.screen.active {
         display: grid;
         grid-template-columns: minmax(0, 1fr) 288px;
-        grid-template-areas: "timeline side";
-        grid-template-rows: auto;
+        grid-template-areas:
+          "agora side"
+          "timeline side";
+        grid-template-rows: auto auto;
         column-gap: 36px;
-        row-gap: 0;
+        row-gap: 8px;
         align-items: start;
       }
 
@@ -10909,9 +11296,27 @@
         column-gap: 34px;
       }
 
+      #card-agora {
+        grid-area: agora;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+          "top status"
+          "title actions"
+          "meta actions";
+        gap: 6px 16px;
+        align-items: center;
+        min-height: 0;
+        height: fit-content;
+        padding: 0 0 10px;
+        margin-bottom: 0;
+        border-bottom: 1px solid rgba(148,163,184,0.22);
+        box-shadow: inset 0 -10px 18px -18px rgba(148,163,184,0.32);
+        align-self: start;
+      }
+
       #hoje-operational-timeline-card {
         grid-area: timeline;
-        padding: 0 24px 0 0;
+        padding: 4px 24px 0 0;
       }
 
       #screen-hoje.screen.active > #hoje-side-column {
@@ -10977,296 +11382,6 @@
 
       #hoje-side-column > #hoje-proximas-card {
         width: 100%;
-      }
-    }
-
-    /* ── HOME EXECUTIVA: estrutura compartilhada entre desktop e mobile ── */
-    #screen-hoje.screen.active {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-areas: "timeline";
-      gap: 0;
-      align-items: start;
-      align-content: start;
-    }
-
-    #screen-hoje.screen.active > #hoje-agenda-card,
-    #screen-hoje.screen.active > #hoje-checklist-card {
-      display: none !important;
-    }
-
-    #hoje-operational-timeline-card {
-      grid-area: timeline;
-      display: block;
-      min-width: 0;
-      margin: 0;
-      padding: 0;
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-      box-shadow: none;
-    }
-
-    #operational-timeline {
-      display: grid;
-      gap: 24px;
-    }
-
-    .timeline-section {
-      display: grid;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .timeline-section-head {
-      display: flex;
-      align-items: center;
-      min-height: 32px;
-      margin: 0;
-      padding: 0 0 0 12px;
-      border-left: 4px solid var(--cor-tema);
-    }
-
-    .timeline-section-title {
-      margin: 0;
-      color: #0f172a;
-      font-size: 17px;
-      font-weight: 800;
-      line-height: 1.2;
-      letter-spacing: 0.045em;
-      text-transform: uppercase;
-    }
-
-    .timeline-section-list {
-      display: grid;
-      gap: 8px;
-      min-width: 0;
-    }
-
-    .timeline-row {
-      position: relative;
-      display: grid;
-      grid-template-columns: minmax(68px, auto) minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-      padding: 13px 14px;
-      overflow: visible;
-      border: 1px solid rgba(203, 213, 225, 0.68);
-      border-radius: 14px;
-      background: #ffffff;
-      box-shadow: 0 5px 16px rgba(15, 23, 42, 0.035);
-    }
-
-    .timeline-row::before {
-      content: "";
-      position: absolute;
-      top: 12px;
-      bottom: 12px;
-      left: 0;
-      width: 3px;
-      border-radius: 0 999px 999px 0;
-      background: var(--timeline-accent, var(--cor-tema));
-    }
-
-    .timeline-stamp {
-      min-width: 0;
-      color: #334155;
-      font-size: 12px;
-      font-weight: 750;
-      line-height: 1.25;
-    }
-
-    .timeline-body {
-      min-width: 0;
-    }
-
-    .timeline-row-head {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-      min-width: 0;
-    }
-
-    .timeline-kind {
-      flex: 0 0 auto;
-      color: #64748b;
-      font-size: 10px;
-      font-weight: 750;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-    }
-
-    .timeline-title {
-      min-width: 0;
-      color: #0f172a;
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 1.35;
-      overflow-wrap: anywhere;
-    }
-
-    .timeline-meta {
-      margin-top: 3px;
-      color: #64748b;
-      font-size: 12px;
-      line-height: 1.35;
-    }
-
-    .timeline-actions {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 6px;
-    }
-
-    .home-empty-state {
-      display: grid;
-      grid-template-columns: 42px minmax(0, 1fr);
-      align-items: center;
-      gap: 13px;
-      min-height: 88px;
-      padding: 16px 18px;
-      border: 1px solid rgba(203, 213, 225, 0.7);
-      border-radius: 15px;
-      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-      box-shadow: 0 5px 18px rgba(15, 23, 42, 0.035);
-    }
-
-    .home-empty-icon {
-      display: grid;
-      place-items: center;
-      width: 42px;
-      height: 42px;
-      color: var(--cor-tema);
-      border: 1px solid rgba(var(--cor-tema-rgb), 0.14);
-      border-radius: 13px;
-      background: rgba(var(--cor-tema-rgb), 0.07);
-    }
-
-    .home-empty-icon svg {
-      width: 22px;
-      height: 22px;
-    }
-
-    .home-empty-copy {
-      display: grid;
-      gap: 3px;
-      min-width: 0;
-    }
-
-    .home-empty-copy strong {
-      color: #1e293b;
-      font-size: 14px;
-      font-weight: 750;
-      line-height: 1.35;
-    }
-
-    .home-empty-copy span {
-      color: #64748b;
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
-    @media (max-width: 1099px) {
-      #screen-hoje.screen.active {
-        padding-top: 4px;
-      }
-
-      #screen-hoje.screen.active > #hoje-side-column {
-        display: none !important;
-      }
-
-      #operational-timeline {
-        gap: 20px;
-      }
-
-      .timeline-row {
-        grid-template-columns: minmax(58px, auto) minmax(0, 1fr) auto;
-        gap: 9px;
-        padding: 12px 11px;
-      }
-    }
-
-    @media (max-width: 620px) {
-      #screen-hoje.screen.active {
-        padding: 6px 12px 84px;
-      }
-
-      .timeline-section {
-        gap: 9px;
-      }
-
-      .timeline-section-title {
-        font-size: 15px;
-        letter-spacing: 0.035em;
-      }
-
-      .timeline-row {
-        grid-template-columns: 1fr auto;
-        gap: 5px 8px;
-        padding: 12px;
-      }
-
-      .timeline-stamp {
-        grid-column: 1;
-        grid-row: 1;
-        font-size: 11px;
-      }
-
-      .timeline-body {
-        grid-column: 1;
-        grid-row: 2;
-      }
-
-      .timeline-actions {
-        grid-column: 2;
-        grid-row: 1 / span 2;
-      }
-
-      .timeline-row-head {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 2px;
-      }
-
-      .home-empty-state {
-        grid-template-columns: 38px minmax(0, 1fr);
-        min-height: 84px;
-        gap: 11px;
-        padding: 14px;
-      }
-
-      .home-empty-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 12px;
-      }
-
-      .home-empty-copy strong {
-        font-size: 13px;
-      }
-
-      .home-empty-copy span {
-        font-size: 11.5px;
-      }
-    }
-
-    @media (min-width: 1100px) {
-      #screen-hoje.screen.active,
-      #screen-hoje.screen.active.hoje-adaptativo {
-        grid-template-columns: minmax(0, 1fr) 288px;
-        grid-template-areas: "timeline side";
-        column-gap: 36px;
-      }
-
-      #screen-hoje.screen.active > #hoje-side-column {
-        grid-area: side;
-        display: flex;
-      }
-
-      #hoje-operational-timeline-card {
-        padding-right: 24px;
       }
     }
   </style>
@@ -11565,6 +11680,20 @@
 
         <!-- ══ ABA HOJE ══ -->
         <div class="screen active" id="screen-hoje">
+          <div class="card agora-card" id="card-agora" hidden>
+            <div class="agora-topo">
+              <svg class="agora-icone" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              <h2 class="agora-titulo">Agora</h2>
+            </div>
+            <div class="agora-status" id="agora-status"></div>
+            <div class="agora-item-titulo" id="agora-item-titulo"></div>
+            <div class="agora-horario" id="agora-horario"></div>
+            <div class="agora-acoes" id="agora-acoes"></div>
+          </div>
+
           <div class="card" id="hoje-operational-timeline-card" hidden>
             <div id="operational-timeline"><small>Carregando rotina do dia...</small></div>
           </div>
@@ -13283,6 +13412,11 @@
               <div class="desktop-context-kicker">Hoje</div>
               <div class="desktop-context-date" data-current-date>--/-- · --:--h</div>
               <div class="desktop-context-summary" data-resumo-espelho>Carregando resumo...</div>
+            </div>
+            <div class="desktop-context-block">
+              <div class="desktop-context-kicker">Agora</div>
+              <div id="desktop-focus-title" class="desktop-context-focus-title">Sem tarefa crítica agora.</div>
+              <div id="desktop-focus-meta" class="desktop-context-focus-meta">Abra a Agenda para acompanhar o dia completo.</div>
             </div>
           </div>
         </aside>
@@ -18086,12 +18220,72 @@
       };
     }
 
-    function destacarTarefaAgenda(tarefaId) {
+    function obterEstadoAgora(tarefas) {
+      const agoraMin = new Date().getHours() * 60 + new Date().getMinutes();
+      const hoje = (Array.isArray(tarefas) ? tarefas : [])
+        .filter((t) => t.ativo !== false && !ehStatusFeito(t.status) && !ehStatusCancelada(t.status) && dataEhHoje(t.data || ""))
+        .map(normalizarTarefaAgenda)
+        .sort((a, b) => (a.inicio_min ?? 9999) - (b.inicio_min ?? 9999));
+
+      const emAndamento = hoje.find((t) => t.inicio_min !== null && t.fim_min !== null && t.inicio_min <= agoraMin && agoraMin <= t.fim_min);
+      if (emAndamento) return { tipo: "em_andamento", tarefa: emAndamento };
+
+      const atrasada = hoje.find((t) => t.inicio_min !== null && t.inicio_min < agoraMin);
+      if (atrasada) return { tipo: "atrasada", tarefa: atrasada };
+
+      const proxima = hoje.find((t) => t.inicio_min !== null && t.inicio_min > agoraMin);
+      if (proxima) return { tipo: "proxima", tarefa: proxima, faltamMin: proxima.inicio_min - agoraMin };
+
+      return null;
+    }
+
+    async function reagendarTarefaAgenda(tarefa) {
+      const novaHora = await modal.perguntar("Novo horário (HH:MM):", "Reagendar compromisso", tarefa?.hora_inicio || "08:00");
+      if (novaHora === null || !String(novaHora).trim()) return false;
+      try {
+        const params = new URLSearchParams({
+          titulo: tarefa?.titulo || "",
+          hora_inicio: String(novaHora).trim(),
+          descricao: tarefa?.descricao || "",
+        });
+        const res = await fetch(API + "/tarefas/" + tarefa.id + "?" + params.toString(), {
+          method: "PUT",
+          headers: authHeaders(),
+        });
+        if (!res.ok) {
+          await modal.alerta("Não foi possível reagendar o compromisso.", "Erro");
+          return false;
+        }
+        await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true });
+        return true;
+      } catch (e) {
+        console.error(e);
+        await modal.alerta("Erro de conexão.", "Erro");
+        return false;
+      }
+    }
+
+    function destacarTarefaAgora(tarefaId) {
       const alvo = document.querySelector(`.agenda-item[data-task-id="${String(tarefaId)}"]`);
       if (!alvo) return;
       alvo.scrollIntoView({ behavior: "smooth", block: "center" });
       alvo.classList.add("destacada");
       setTimeout(() => alvo.classList.remove("destacada"), 1800);
+    }
+
+    async function prepararProximoCompromisso(tarefa) {
+      if (!tarefa) return;
+      calendarioDiaSelecionadoISO = normalizarDataParaISO(tarefa.data || "") || dataHojeISO();
+      const dataAlvo = new Date(`${calendarioDiaSelecionadoISO}T00:00:00`);
+      if (!Number.isNaN(dataAlvo.getTime())) {
+        calendarioMesAtual = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), 1);
+      }
+      if (typeof window.__abrirTelaApp === "function") {
+        window.__abrirTelaApp("screen-agenda", { manterPosicao: true });
+      }
+      await atualizarAgendaMesEDia();
+      rolarParaAgendaDiaSelecionado();
+      window.setTimeout(() => destacarTarefaAgora(tarefa.id), 260);
     }
 
     async function abrirAgendaDesktopNoDia(dataIso, tarefaId = null) {
@@ -18105,7 +18299,114 @@
       }
       await atualizarAgendaMesEDia();
       rolarParaAgendaDiaSelecionado();
-      if (tarefaId) window.setTimeout(() => destacarTarefaAgenda(tarefaId), 260);
+      if (tarefaId) window.setTimeout(() => destacarTarefaAgora(tarefaId), 260);
+    }
+
+    function criarBotaoAgora(texto, classe, onClick) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `agora-btn ${classe || ""}`.trim();
+      btn.textContent = texto;
+      btn.addEventListener("click", onClick);
+      return btn;
+    }
+
+    function atualizarContextoDesktopAgora(estado) {
+      const tituloEl = document.getElementById("desktop-focus-title");
+      const metaEl = document.getElementById("desktop-focus-meta");
+      if (!tituloEl || !metaEl) return;
+      if (!estado?.tarefa) {
+        tituloEl.textContent = "Sem tarefa crítica agora.";
+        metaEl.textContent = "Abra a Agenda para acompanhar o dia completo.";
+        return;
+      }
+      const tarefa = estado.tarefa;
+      const contexto = obterRotuloContextoTarefa(tarefa);
+      const contextoValido = contexto && contexto.toUpperCase() !== "PROFISSIONAL" ? contexto : "";
+      if (estado.tipo === "em_andamento") {
+        tituloEl.textContent = tarefa.titulo || "Compromisso em andamento";
+        metaEl.textContent = contextoValido
+          ? `Em andamento · ${tarefa.hora_inicio || "--:--"} · ${contextoValido}`
+          : `Em andamento · ${tarefa.hora_inicio || "--:--"}`;
+        return;
+      }
+      if (estado.tipo === "atrasada") {
+        tituloEl.textContent = tarefa.titulo || "Compromisso atrasado";
+        metaEl.textContent = contextoValido
+          ? `Atrasado · ${tarefa.hora_inicio || "--:--"} · ${contextoValido}`
+          : `Atrasado · ${tarefa.hora_inicio || "--:--"}`;
+        return;
+      }
+      tituloEl.textContent = tarefa.titulo || "Próximo compromisso";
+      metaEl.textContent = contextoValido
+        ? `Próximo em ${estado.faltamMin} min · ${contextoValido}`
+        : `Próximo em ${estado.faltamMin} min`;
+    }
+
+    function renderizarAgoraCard() {
+      const card = document.getElementById("card-agora");
+      const statusEl = document.getElementById("agora-status");
+      const tituloEl = document.getElementById("agora-item-titulo");
+      const horarioEl = document.getElementById("agora-horario");
+      const acoesEl = document.getElementById("agora-acoes");
+      if (!card || !statusEl || !tituloEl || !horarioEl || !acoesEl) return;
+
+      const estado = obterEstadoAgora(tarefasAgendaCache);
+      if (!estado?.tarefa) {
+        card.hidden = true;
+        atualizarContextoDesktopAgora(null);
+        return;
+      }
+
+      const tarefa = estado.tarefa;
+      card.hidden = false;
+      acoesEl.innerHTML = "";
+      statusEl.className = "agora-status";
+      atualizarContextoDesktopAgora(estado);
+      tituloEl.textContent = tarefa.titulo || "Compromisso sem título";
+      const horaFim = tarefa.hora_fim || (tarefa.fim_min !== null ? minutosParaHora(tarefa.fim_min) : "");
+      const horarioBase = horaFim ? `${tarefa.hora_inicio || "--:--"} às ${horaFim}` : (tarefa.hora_inicio || "--:--");
+      const contextoAgora = obterRotuloContextoTarefa(tarefa);
+      const contextoAgoraValido = contextoAgora && contextoAgora.toUpperCase() !== "PROFISSIONAL" ? contextoAgora : "";
+      horarioEl.textContent = contextoAgoraValido ? `${horarioBase} · ${contextoAgoraValido}` : horarioBase;
+
+      if (estado.tipo === "em_andamento") {
+        statusEl.textContent = "Em andamento";
+        acoesEl.appendChild(criarBotaoAgora("Iniciar", "primario", async () => {
+          await atualizarStatusTarefa(tarefa.id, "em_andamento");
+          await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, pessoal: true, resumo: true });
+        }));
+        acoesEl.appendChild(criarBotaoAgora("Concluir", "primario", async () => {
+          await atualizarStatusTarefa(tarefa.id, "feito");
+          await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, pessoal: true, resumo: true });
+        }));
+        acoesEl.appendChild(criarBotaoAgora("Cancelar", "suave", async () => {
+          await cancelarTarefaAgenda(tarefa);
+        }));
+        return;
+      }
+
+      if (estado.tipo === "atrasada") {
+        statusEl.textContent = "Atrasado";
+        statusEl.classList.add("atrasado");
+        acoesEl.appendChild(criarBotaoAgora("Iniciar", "primario", async () => {
+          await atualizarStatusTarefa(tarefa.id, "em_andamento");
+          await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, pessoal: true, resumo: true });
+        }));
+        acoesEl.appendChild(criarBotaoAgora("Reagendar", "", async () => {
+          await reagendarTarefaAgenda(tarefa);
+        }));
+        acoesEl.appendChild(criarBotaoAgora("Cancelar", "suave", async () => {
+          await cancelarTarefaAgenda(tarefa);
+        }));
+        return;
+      }
+
+      statusEl.textContent = `Próximo em ${estado.faltamMin} min`;
+      statusEl.classList.add("proximo");
+      acoesEl.appendChild(criarBotaoAgora(emLayoutDesktop() ? "Ver compromisso" : "Preparar", "", () => {
+        prepararProximoCompromisso(tarefa);
+      }));
     }
 
     function renderizarMiniCalendarioDesktop() {
@@ -18306,6 +18607,11 @@
       renderizarProximasAtividadesHoje();
     }
 
+    function esconderLayoutAdaptativoHoje() {
+      document.getElementById("screen-hoje")?.classList.remove("hoje-adaptativo");
+      document.getElementById("hoje-proximas-card")?.setAttribute("hidden", "");
+    }
+
     function obterMetaTimelineChecklist(item) {
       return obterRotuloOrigemChecklist(item);
     }
@@ -18467,16 +18773,27 @@
       const linkAgenda = document.getElementById("btn-ver-agenda-completa-home");
       if (!card || !container) return;
 
-      card.hidden = false;
+      const desktop = emLayoutDesktop();
+      card.hidden = !desktop;
       if (linkAgenda) linkAgenda.style.display = "none";
+      if (!desktop) {
+        esconderLayoutAdaptativoHoje();
+        return;
+      }
 
       const itens = obterDadosTimelineOperacional();
       container.innerHTML = "";
 
+      if (itens.length === 0) {
+        container.innerHTML = `<div class="timeline-empty">Nenhuma pendência crítica no momento. Abra a Agenda para planejar o restante do dia.</div>`;
+        renderizarLayoutAdaptativoHoje(itens);
+        return;
+      }
+
       const agendaItens = itens.filter((item) => item._tipo === "agenda");
       const checklistItens = itens.filter((item) => item._tipo === "checklist");
 
-      const criarSecaoTimeline = (titulo) => {
+      const criarSecaoTimeline = (titulo, subtitulo = "") => {
         const section = document.createElement("section");
         section.className = "timeline-section";
         const head = document.createElement("div");
@@ -18485,6 +18802,12 @@
         title.className = "timeline-section-title";
         title.textContent = titulo;
         head.appendChild(title);
+        if (subtitulo) {
+          const sub = document.createElement("div");
+          sub.className = "timeline-section-subtitle";
+          sub.textContent = subtitulo;
+          head.appendChild(sub);
+        }
         const list = document.createElement("div");
         list.className = "timeline-section-list";
         section.appendChild(head);
@@ -18495,38 +18818,6 @@
 
       const agendaList = criarSecaoTimeline("Compromissos do dia");
       const checklistList = criarSecaoTimeline("Rotinas operacionais");
-
-      const criarEstadoVazio = ({ tipo, titulo, descricao }) => {
-        const vazio = document.createElement("div");
-        vazio.className = `home-empty-state home-empty-state--${tipo}`;
-        vazio.innerHTML = `
-          <div class="home-empty-icon" aria-hidden="true">
-            ${tipo === "agenda"
-              ? '<svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15.5" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M8 3.5V7M16 3.5V7M3.5 9.5H20.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>'
-              : '<svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" stroke-width="1.7"/><path d="M8 12.2L10.7 15L16.5 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'}
-          </div>
-          <div class="home-empty-copy">
-            <strong>${textoSeguro(titulo)}</strong>
-            <span>${textoSeguro(descricao)}</span>
-          </div>
-        `;
-        return vazio;
-      };
-
-      if (!agendaItens.length) {
-        agendaList.appendChild(criarEstadoVazio({
-          tipo: "agenda",
-          titulo: "Nenhum compromisso agendado para hoje.",
-          descricao: "Aproveite para focar nas suas rotinas operacionais ou organizar sua agenda.",
-        }));
-      }
-      if (!checklistItens.length) {
-        checklistList.appendChild(criarEstadoVazio({
-          tipo: "rotinas",
-          titulo: "Nenhuma rotina pendente.",
-          descricao: "Todas as suas rotinas foram concluídas.",
-        }));
-      }
 
       itens.forEach((item) => {
         const status = item._tipo === "checklist"
@@ -18606,6 +18897,7 @@
             const idx = tarefasAgendaCache.findIndex((entry) => entry.id === item.id);
             if (idx !== -1) tarefasAgendaCache[idx].status = novoStatus;
             await atualizarResumoBar();
+            renderizarAgoraCard();
             renderizarTimelineOperacionalDesktop();
             preencherAgendaDiaSelecionado();
             montarCalendarioMes();
@@ -18644,6 +18936,7 @@
               const idx = tarefasAgendaCache.findIndex((entry) => entry.id === item.id);
               if (idx !== -1) tarefasAgendaCache[idx].titulo = novoTitulo.trim();
               renderizarTimelineOperacionalDesktop();
+              renderizarAgoraCard();
               await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, resumo: true });
             } catch (e) {
               console.error(e);
@@ -18663,6 +18956,7 @@
             if (!await modal.confirmar(`Excluir "${item.titulo}"?`, "Excluir compromisso", "vermelho")) return;
             await excluirTarefa(item.id);
             await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, resumo: true });
+            renderizarAgoraCard();
             renderizarTimelineOperacionalDesktop();
           });
           actions.appendChild(excluir);
@@ -19510,6 +19804,7 @@
                 }
                 t.status = novo;
                 await recalcularResumoBar();
+                renderizarAgoraCard();
                 sincronizarTarefaHojeEmSegundoPlano(t);
               });
               if (!emLayoutDesktop()) item.appendChild(bolinha);
@@ -19584,6 +19879,7 @@
                 }
                 t.status = novoStatus;
                 await recalcularResumoBar();
+                renderizarAgoraCard();
                 grupoAcoes?.__setDisabled?.(false);
                 grupoAcoes?.__sync?.(novoStatus);
                 sincronizarTarefaHojeEmSegundoPlano(t);
@@ -19653,6 +19949,7 @@
             agendaDiv.appendChild(item);
           });
         }
+        renderizarAgoraCard();
         renderizarTimelineOperacionalDesktop();
         renderizarMiniCalendarioDesktop();
       } catch(e) {
@@ -19674,6 +19971,7 @@
     async function atualizarResumoBar() {
       // Usa cache para tarefas + servidor para checklist
       await recalcularResumoBar();
+      renderizarAgoraCard();
     }
 
     // ── NOVA TAREFA RÁPIDA ────────────────────────────────────────
@@ -19882,6 +20180,7 @@
           );
           container.appendChild(div);
         });
+        renderizarAgoraCard();
         renderizarTimelineOperacionalDesktop();
       } catch(e) {
         console.error("[PRIORIZA] carregarChecklistHoje:", e);
@@ -23378,6 +23677,7 @@
 
       // Carregamento inicial
       carregarAgendaHoje();
+      renderizarAgoraCard();
       atualizarAgendaMesEDia();
       carregarStatusGoogleAgenda();
       if (new URLSearchParams(window.location.search).get("google") === "conectado") {
