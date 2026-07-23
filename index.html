@@ -687,7 +687,7 @@
       .resumo-bar { box-shadow: 0 4px 10px rgba(15,23,42,0.05); }
 
       /* ── CONTENT ── */
-      .content { flex: 1; padding: 12px 10px 60px 10px; }
+      .content { flex: 1; padding: 12px 10px 88px 10px; }
       .app-workspace { flex: 1; display: block; width: 100%; padding: var(--layout-header-offset) 0 0; }
       .app-main-column { min-width: 0; width: 100%; }
       .desktop-sidebar,
@@ -1470,8 +1470,11 @@
 
       /* ── BOTTOM NAV ── */
       .bottom-nav-wrapper {
-        position: sticky;
+        position: fixed;
         bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: var(--header-width);
         background: #0f172a;
         z-index: 20;
         padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
