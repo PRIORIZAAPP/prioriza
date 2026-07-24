@@ -1727,12 +1727,13 @@
       }
       @media (max-width: 640px) {
         .checklist-form-wrap {
-          align-items: flex-end;
-          padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px));
+          align-items: center;
+          padding: 16px 10px calc(16px + env(safe-area-inset-bottom, 0px));
         }
         .checklist-form-panel {
           width: min(100%, 520px);
           max-height: min(88dvh, 720px);
+          border-radius: 22px;
           padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
         }
       }
@@ -20436,6 +20437,9 @@
       btn.setAttribute("aria-label", abrir ? "Fechar formulário de rotina" : "Nova rotina");
       btn.title = abrir ? "Fechar formulário de rotina" : "Nova rotina";
       btnText.textContent = abrir ? "Fechar formulário de rotina" : "Nova rotina";
+      if (!abrir) {
+        wrap.querySelector(".form-more-options")?.removeAttribute("open");
+      }
       if (abrir) {
         atualizarCategoriaChecklistUI();
         setTimeout(() => document.getElementById("chk-titulo")?.focus(), 50);
@@ -20465,6 +20469,9 @@
       btn.setAttribute("aria-label", abrir ? "Fechar formulário de compromisso" : "Novo compromisso");
       btn.title = abrir ? "Fechar formulário de compromisso" : "Novo compromisso";
       btnText.textContent = abrir ? "Fechar formulário de compromisso" : "Novo compromisso";
+      if (!abrir) {
+        wrap.querySelector(".form-more-options")?.removeAttribute("open");
+      }
       if (abrir) {
         atualizarCategoriaAgendaUI();
         atualizarOpcoesDiaInteiroAgenda();
