@@ -4610,6 +4610,9 @@
         overflow: visible;
         z-index: 2;
       }
+      .checklist-item.has-action-menu.menu-open {
+        z-index: 100;
+      }
       .checklist-item.has-action-menu .timeline-action-menu {
         flex-shrink: 0;
         margin-left: 2px;
@@ -18205,6 +18208,7 @@
         if (menu === excecao) return;
         menu.hidden = true;
         menu.parentElement?.querySelector(".timeline-menu-trigger")?.setAttribute("aria-expanded", "false");
+        menu.closest(".checklist-item")?.classList.remove("menu-open");
       });
     }
 
@@ -18231,6 +18235,7 @@
           ev.stopPropagation();
           menu.hidden = true;
           trigger.setAttribute("aria-expanded", "false");
+          menu.closest(".checklist-item")?.classList.remove("menu-open");
           await acao();
         });
         menu.appendChild(botao);
@@ -18242,6 +18247,7 @@
         fecharMenusAcoesDesktop(abrir ? menu : null);
         menu.hidden = !abrir;
         trigger.setAttribute("aria-expanded", abrir ? "true" : "false");
+        menu.closest(".checklist-item")?.classList.toggle("menu-open", abrir);
       });
       wrap.append(trigger, menu);
       return wrap;
