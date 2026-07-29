@@ -11047,6 +11047,23 @@
         opacity: 1 !important;
       }
 
+      :where(
+        #btn-salvar-compromisso,
+        #btn-salvar-marco,
+        #btn-salvar-rotina,
+        #btn-operacao-salvar-tecnico,
+        #btn-financas-salvar,
+        #btn-financas-salvar-fonte-renda,
+        #btn-financas-salvar-conta-fixa,
+        #btn-financas-salvar-confirm-sheet,
+        #btn-salvar-nova-senha,
+        #btn-salvar-nota,
+        button[type="submit"].btn-primary
+      ):not(:disabled):is(:hover, :focus, :focus-visible, :active) {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff;
+      }
+
   </style>
   </head>
   <body>
