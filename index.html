@@ -18283,7 +18283,6 @@
             const idx = tarefasAgendaCache.findIndex((entry) => entry.id === item.id);
             if (idx !== -1) tarefasAgendaCache[idx].status = novoStatus;
             await atualizarResumoBar();
-            renderizarAgoraCard();
             renderizarTimelineOperacionalDesktop();
             preencherAgendaDiaSelecionado();
             montarCalendarioMes();
@@ -18322,7 +18321,6 @@
               const idx = tarefasAgendaCache.findIndex((entry) => entry.id === item.id);
               if (idx !== -1) tarefasAgendaCache[idx].titulo = novoTitulo.trim();
               renderizarTimelineOperacionalDesktop();
-              renderizarAgoraCard();
               await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, resumo: true });
             } catch (e) {
               console.error(e);
@@ -18342,7 +18340,6 @@
             if (!await modal.confirmar(`Excluir "${item.titulo}"?`, "Excluir compromisso", "vermelho")) return;
             await excluirTarefa(item.id);
             await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, resumo: true });
-            renderizarAgoraCard();
             renderizarTimelineOperacionalDesktop();
           });
           actions.appendChild(excluir);
@@ -19190,7 +19187,6 @@
                 }
                 t.status = novo;
                 await recalcularResumoBar();
-                renderizarAgoraCard();
                 sincronizarTarefaHojeEmSegundoPlano(t);
               });
               if (!emLayoutDesktop()) item.appendChild(bolinha);
@@ -19265,7 +19261,6 @@
                 }
                 t.status = novoStatus;
                 await recalcularResumoBar();
-                renderizarAgoraCard();
                 grupoAcoes?.__setDisabled?.(false);
                 grupoAcoes?.__sync?.(novoStatus);
                 sincronizarTarefaHojeEmSegundoPlano(t);
@@ -19335,7 +19330,6 @@
             agendaDiv.appendChild(item);
           });
         }
-        renderizarAgoraCard();
         renderizarTimelineOperacionalDesktop();
         renderizarMiniCalendarioDesktop();
       } catch(e) {
@@ -19357,7 +19351,6 @@
     async function atualizarResumoBar() {
       // Usa cache para tarefas + servidor para checklist
       await recalcularResumoBar();
-      renderizarAgoraCard();
     }
 
     // ── NOVA TAREFA RÁPIDA ────────────────────────────────────────
@@ -19566,7 +19559,6 @@
           );
           container.appendChild(div);
         });
-        renderizarAgoraCard();
         renderizarTimelineOperacionalDesktop();
       } catch(e) {
         console.error("[PRIORIZA] carregarChecklistHoje:", e);
@@ -23069,7 +23061,6 @@
 
       // Carregamento inicial
       carregarAgendaHoje();
-      renderizarAgoraCard();
       atualizarAgendaMesEDia();
       carregarStatusGoogleAgenda();
       if (new URLSearchParams(window.location.search).get("google") === "conectado") {
