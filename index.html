@@ -10894,12 +10894,10 @@
       #screen-hoje.screen.active {
         display: grid;
         grid-template-columns: minmax(0, 1fr) 288px;
-        grid-template-areas:
-          "agora side"
-          "timeline side";
-        grid-template-rows: auto auto;
+        grid-template-areas: "timeline side";
+        grid-template-rows: auto;
         column-gap: 36px;
-        row-gap: 8px;
+        row-gap: 0;
         align-items: start;
       }
 
@@ -10911,7 +10909,7 @@
 
       #hoje-operational-timeline-card {
         grid-area: timeline;
-        padding: 4px 24px 0 0;
+        padding: 0 24px 0 0;
       }
 
       #screen-hoje.screen.active > #hoje-side-column {
