@@ -17943,7 +17943,11 @@
         .filter((item) => item.data_iso && item.data_iso > hoje);
 
       const rotinas = checklistTodosCache
-        .filter((item) => item?.ativo !== false && normalizarStatusChecklist(item.status || "pendente") !== "feito")
+        .filter((item) =>
+          item?.ativo !== false
+          && normalizarStatusChecklist(item.status || "pendente") !== "feito"
+          && !rotinaFoiForcadaHoje(item.id)
+        )
         .map((item) => ({
           ...item,
           _tipo: "checklist",
@@ -18054,6 +18058,33 @@
       }
     }
 
+    function chaveRotinasForcadasHoje() {
+      return `prioriza_rotinas_forcadas_${authUser?.id || "local"}_${dataHojeISO()}`;
+    }
+
+    function obterRotinasForcadasHoje() {
+      try {
+        const dados = JSON.parse(localStorage.getItem(chaveRotinasForcadasHoje()) || "[]");
+        return new Set(Array.isArray(dados) ? dados.map(String) : []);
+      } catch {
+        return new Set();
+      }
+    }
+
+    function rotinaFoiForcadaHoje(itemId) {
+      return obterRotinasForcadasHoje().has(String(itemId));
+    }
+
+    function forcarRotinaParaHoje(itemId) {
+      const forcadas = obterRotinasForcadasHoje();
+      forcadas.add(String(itemId));
+      try {
+        localStorage.setItem(chaveRotinasForcadasHoje(), JSON.stringify([...forcadas]));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
     async function editarRotinaChecklist(item) {
       const titulo = await modal.perguntar(`Título atual: ${item.titulo || ""}`, "Editar rotina", item.titulo || "");
       if (titulo === null) return false;
@@ -18135,7 +18166,7 @@
       }
     }
 
-    async function salvarDataRetornoChecklist(item, dataIso, { voltarHoje = false } = {}) {
+    async function salvarDataRetornoChecklist(item, dataIso) {
       const dataNormalizada = normalizarDataParaISO(dataIso || "");
       const partesData = dataNormalizada.match(/^(\d{4})-(\d{2})-(\d{2})$/);
       const dataValidada = partesData ? new Date(`${dataNormalizada}T00:00:00`) : null;
@@ -18162,11 +18193,6 @@
           headers: authHeaders(),
         });
         if (!res.ok) throw new Error("Não foi possível alterar a data de retorno.");
-
-        if (voltarHoje && normalizarStatusChecklist(item?.status || "pendente") !== "pendente") {
-          const statusAtualizado = await atualizarStatusChecklist(item.id, "pendente");
-          if (!statusAtualizado) throw new Error("A data foi alterada, mas não foi possível reabrir a rotina.");
-        }
 
         await recarregarBlocosComRolagem({
           checklistHoje: true,
@@ -18200,7 +18226,21 @@
         "azul"
       );
       if (!confirmar) return false;
-      return salvarDataRetornoChecklist(item, dataHojeISO(), { voltarHoje: true });
+      if (normalizarStatusChecklist(item?.status || "pendente") !== "pendente") {
+        const statusAtualizado = await atualizarStatusChecklist(item.id, "pendente");
+        if (!statusAtualizado) {
+          await modal.alerta("Não foi possível reabrir a rotina.", "Erro");
+          return false;
+        }
+      }
+      forcarRotinaParaHoje(item.id);
+      await recarregarBlocosComRolagem({
+        checklistHoje: true,
+        checklistGeral: true,
+        pessoal: true,
+        resumo: true,
+      });
+      return true;
     }
 
     function fecharMenusAcoesDesktop(excecao = null) {
@@ -19587,6 +19627,7 @@
         }
 
         const visiveis = itens.filter(i => {
+          if (rotinaFoiForcadaHoje(i.id)) return true;
           if (i.pode_mostrar_hoje===false) return false;
           if (isWeekend && (i.frequencia_interna||"").toUpperCase()==="DIARIA") return false;
           return true;
