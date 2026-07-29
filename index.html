@@ -18076,40 +18076,60 @@
     }
 
     function ehRotinaRecorrenteNaoDiaria(item) {
-      const frequencia = String(item?.frequencia || item?.frequencia_interna || "")
-        .trim()
-        .toLocaleLowerCase("pt-BR")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-      return Boolean(frequencia) && !["diaria", "diario", "unico", "unica"].includes(frequencia);
+      try {
+        const frequencia = String(item?.frequencia || item?.frequencia_interna || "")
+          .trim()
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
+        return Boolean(frequencia) && !["diaria", "diario", "unico", "unica"].includes(frequencia);
+      } catch (e) {
+        console.warn("[PRIORIZA] Frequência inválida no checklist:", e);
+        return false;
+      }
     }
 
     function obterDataRetornoChecklist(item) {
-      const informada = normalizarDataParaISO(
-        item?.proxima_execucao || item?.data_proxima || item?.proxima_data || ""
-      );
-      if (informada) return informada;
+      try {
+        const valorInformado = String(
+          item?.proxima_execucao || item?.data_proxima || item?.proxima_data || ""
+        ).trim();
+        const dataNoTexto = valorInformado.match(/\d{4}-\d{2}-\d{2}/)?.[0]
+          || valorInformado.match(/\d{2}\/\d{2}\/\d{4}/)?.[0]
+          || "";
+        const informada = dataNoTexto ? normalizarDataParaISO(dataNoTexto) : "";
+        if (informada) return informada;
 
-      const dias = Number(item?.dias_para_proxima);
-      if (!Number.isFinite(dias)) return "";
-      const data = new Date(`${dataHojeISO()}T00:00:00`);
-      data.setDate(data.getDate() + dias);
-      const ano = data.getFullYear();
-      const mes = String(data.getMonth() + 1).padStart(2, "0");
-      const dia = String(data.getDate()).padStart(2, "0");
-      return `${ano}-${mes}-${dia}`;
+        const dias = Number(item?.dias_para_proxima);
+        if (!Number.isFinite(dias)) return "";
+        const data = new Date(`${dataHojeISO()}T00:00:00`);
+        data.setDate(data.getDate() + dias);
+        const ano = data.getFullYear();
+        const mes = String(data.getMonth() + 1).padStart(2, "0");
+        const dia = String(data.getDate()).padStart(2, "0");
+        return `${ano}-${mes}-${dia}`;
+      } catch (e) {
+        console.warn("[PRIORIZA] Não foi possível obter a data de retorno:", e);
+        return "";
+      }
     }
 
     function formatarRetornoChecklist(item) {
-      if (!ehRotinaRecorrenteNaoDiaria(item)) return "";
-      const dataIso = obterDataRetornoChecklist(item);
-      if (!dataIso) return "";
-      if (dataIso === dataHojeISO()) return "Retorna hoje";
-      const data = new Date(`${dataIso}T00:00:00`);
-      if (Number.isNaN(data.getTime())) return "";
-      const dataTexto = data.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-      const diaSemana = capitalizarPrimeira(data.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", ""));
-      return `Retorna em ${dataTexto} · ${diaSemana}`;
+      try {
+        if (!ehRotinaRecorrenteNaoDiaria(item)) return "";
+        const dataIso = obterDataRetornoChecklist(item);
+        if (!dataIso) return "";
+        if (dataIso === dataHojeISO()) return "Retorna hoje";
+        const data = new Date(`${dataIso}T00:00:00`);
+        if (Number.isNaN(data.getTime())) return "";
+        const dataTexto = data.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+        const semanaTexto = String(data.toLocaleDateString("pt-BR", { weekday: "short" }) || "").replace(".", "").trim();
+        const diaSemana = semanaTexto ? semanaTexto.charAt(0).toUpperCase() + semanaTexto.slice(1) : "";
+        return diaSemana ? `Retorna em ${dataTexto} · ${diaSemana}` : `Retorna em ${dataTexto}`;
+      } catch (e) {
+        console.warn("[PRIORIZA] Não foi possível formatar a data de retorno:", e);
+        return "";
+      }
     }
 
     async function salvarDataRetornoChecklist(item, dataIso, { voltarHoje = false } = {}) {
