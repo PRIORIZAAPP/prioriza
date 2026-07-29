@@ -4619,6 +4619,11 @@
         bottom: auto;
         z-index: 80;
       }
+      .checklist-item.has-action-menu .timeline-menu-trigger {
+        border-radius: 999px;
+        background: transparent;
+        color: #64748b;
+      }
       .checklist-item.pessoal { background: transparent; }
       .check-status {
         width: 22px; height: 22px; border-radius: 999px; border: 1.75px solid #cbd5e1;
@@ -4632,6 +4637,20 @@
       .check-info { flex: 1; font-size: 13px; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
       .check-titulo { font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; line-height: 1.25; }
       .check-sub { font-size: 12px; color: #64748b; margin-top: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+      .check-next-date {
+        display: inline-flex;
+        align-items: center;
+        min-height: 20px;
+        padding: 0 7px;
+        border: 1px solid rgba(var(--cor-tema-rgb), 0.16);
+        border-radius: 999px;
+        background: rgba(var(--cor-tema-rgb), 0.06);
+        color: var(--cor-tema-escura);
+        font-size: 11px;
+        font-weight: 650;
+        line-height: 1;
+        white-space: nowrap;
+      }
       .checklist-item.feito .check-titulo {
         color: #6b7280;
         text-decoration: line-through;
@@ -18056,6 +18075,111 @@
       }
     }
 
+    function ehRotinaRecorrenteNaoDiaria(item) {
+      const frequencia = String(item?.frequencia || item?.frequencia_interna || "")
+        .trim()
+        .toLocaleLowerCase("pt-BR")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+      return Boolean(frequencia) && !["diaria", "diario", "unico", "unica"].includes(frequencia);
+    }
+
+    function obterDataRetornoChecklist(item) {
+      const informada = normalizarDataParaISO(
+        item?.proxima_execucao || item?.data_proxima || item?.proxima_data || ""
+      );
+      if (informada) return informada;
+
+      const dias = Number(item?.dias_para_proxima);
+      if (!Number.isFinite(dias)) return "";
+      const data = new Date(`${dataHojeISO()}T00:00:00`);
+      data.setDate(data.getDate() + dias);
+      const ano = data.getFullYear();
+      const mes = String(data.getMonth() + 1).padStart(2, "0");
+      const dia = String(data.getDate()).padStart(2, "0");
+      return `${ano}-${mes}-${dia}`;
+    }
+
+    function formatarRetornoChecklist(item) {
+      if (!ehRotinaRecorrenteNaoDiaria(item)) return "";
+      const dataIso = obterDataRetornoChecklist(item);
+      if (!dataIso) return "";
+      if (dataIso === dataHojeISO()) return "Retorna hoje";
+      const data = new Date(`${dataIso}T00:00:00`);
+      if (Number.isNaN(data.getTime())) return "";
+      const dataTexto = data.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+      const diaSemana = capitalizarPrimeira(data.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", ""));
+      return `Retorna em ${dataTexto} · ${diaSemana}`;
+    }
+
+    async function salvarDataRetornoChecklist(item, dataIso, { voltarHoje = false } = {}) {
+      const dataNormalizada = normalizarDataParaISO(dataIso || "");
+      const partesData = dataNormalizada.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      const dataValidada = partesData ? new Date(`${dataNormalizada}T00:00:00`) : null;
+      const dataConfere = dataValidada
+        && !Number.isNaN(dataValidada.getTime())
+        && dataValidada.getFullYear() === Number(partesData[1])
+        && dataValidada.getMonth() + 1 === Number(partesData[2])
+        && dataValidada.getDate() === Number(partesData[3]);
+      if (!dataConfere) {
+        await modal.alerta("Informe uma data válida no formato DD/MM/AAAA ou AAAA-MM-DD.", "Data inválida");
+        return false;
+      }
+
+      const params = new URLSearchParams({
+        titulo: item?.titulo || "",
+        origem: item?.origem || "",
+        frequencia: item?.frequencia || item?.frequencia_interna || "Semanal",
+        proxima_execucao: dataNormalizada,
+      });
+
+      try {
+        const res = await fetch(API + `/checklist/${item.id}?` + params.toString(), {
+          method: "PUT",
+          headers: authHeaders(),
+        });
+        if (!res.ok) throw new Error("Não foi possível alterar a data de retorno.");
+
+        if (voltarHoje && normalizarStatusChecklist(item?.status || "pendente") !== "pendente") {
+          const statusAtualizado = await atualizarStatusChecklist(item.id, "pendente");
+          if (!statusAtualizado) throw new Error("A data foi alterada, mas não foi possível reabrir a rotina.");
+        }
+
+        await recarregarBlocosComRolagem({
+          checklistHoje: true,
+          checklistGeral: true,
+          pessoal: true,
+          resumo: true,
+        });
+        return true;
+      } catch (e) {
+        console.error(e);
+        await modal.alerta(e?.message || "Não foi possível alterar a data de retorno.", "Erro");
+        return false;
+      }
+    }
+
+    async function alterarDataRetornoChecklist(item) {
+      const atual = obterDataRetornoChecklist(item) || dataHojeISO();
+      const resposta = await modal.perguntar(
+        "Nova data de retorno (DD/MM/AAAA ou AAAA-MM-DD):",
+        "Alterar data de retorno",
+        atual
+      );
+      if (resposta === null) return false;
+      return salvarDataRetornoChecklist(item, resposta);
+    }
+
+    async function voltarRotinaChecklistParaHoje(item) {
+      const confirmar = await modal.confirmar(
+        `Trazer “${item.titulo || "esta rotina"}” de volta para a aba Hoje?`,
+        "Voltar para hoje",
+        "azul"
+      );
+      if (!confirmar) return false;
+      return salvarDataRetornoChecklist(item, dataHojeISO(), { voltarHoje: true });
+    }
+
     function fecharMenusAcoesDesktop(excecao = null) {
       document.querySelectorAll(".timeline-menu-popover").forEach((menu) => {
         if (menu === excecao) return;
@@ -19625,30 +19749,46 @@
       const metaTexto = document.createElement("span");
       metaTexto.textContent = metaPartes.join(" • ");
       sub.appendChild(metaTexto);
+      const retornoTexto = formatarRetornoChecklist(item);
+      if (retornoTexto) {
+        const retornoEl = document.createElement("span");
+        retornoEl.className = "check-next-date";
+        retornoEl.textContent = retornoTexto;
+        sub.appendChild(retornoEl);
+      }
 
       info.appendChild(tituloEl);
       info.appendChild(sub);
-
-      const btnDel = document.createElement("button");
-      btnDel.className = "checklist-item-action delete";
-      btnDel.type = "button";
-      btnDel.title = "Excluir rotina";
-      btnDel.setAttribute("aria-label", `Excluir ${item.titulo}`);
-      btnDel.innerHTML = `
-        <svg width="15" height="15" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
-          <path d="M96 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-          <path d="M160 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-          <path d="M40 72h176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
-          <path d="M72 72l8-24h96l8 24" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M56 72l8 128a8 8 0 0 0 8 8h112a8 8 0 0 0 8-8l8-128" stroke="currentColor" stroke-width="20" stroke-linejoin="round"/>
-        </svg>
-      `;
 
       const actions = document.createElement("div");
       actions.className = "checklist-item-actions";
       const badgeEl = criarBadgeChecklistElemento(badge);
       if (badgeEl) actions.appendChild(badgeEl);
-      actions.appendChild(btnDel);
+
+      const itensMenu = [
+        { texto: "Editar", acao: () => editarRotinaChecklist(item) },
+      ];
+      if (ehRotinaRecorrenteNaoDiaria(item)) {
+        itensMenu.push(
+          { texto: "Alterar data", acao: () => alterarDataRetornoChecklist(item) },
+          { texto: "Voltar para hoje", acao: () => voltarRotinaChecklistParaHoje(item) }
+        );
+      }
+      itensMenu.push({
+        texto: "Excluir",
+        danger: true,
+        acao: async () => {
+          if (!await modal.confirmar(`Remover definitivamente “${item.titulo}”?`, "Excluir rotina", "vermelho")) return;
+          await excluirChecklistItem(item.id);
+          await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
+        },
+      });
+      actions.appendChild(criarMenuAcoesDesktop({
+        titulo: "Ações da rotina",
+        ariaLabel: `Ações de ${item.titulo}`,
+        itens: itensMenu,
+      }));
+      div.classList.add("has-action-menu");
 
       div.appendChild(bolinha);
       div.appendChild(info);
@@ -19659,15 +19799,6 @@
         const novo = proximoStatus(atual);
         await atualizarStatusChecklist(item.id, novo);
         await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
-      });
-
-      btnDel.addEventListener("click", async () => {
-        if (!await modal.confirmar(`Remover "${item.titulo}"?`, "Excluir rotina", "vermelho")) return;
-        mostrarFlashFull("danger");
-        setTimeout(async () => {
-          await excluirChecklistItem(item.id);
-          await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true });
-        }, FLASH_DURATION_MS);
       });
 
       adicionarSwipe(
