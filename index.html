@@ -10999,6 +10999,26 @@
         width: 100%;
       }
     }
+      /* Legibilidade dos botões de salvamento quando indisponíveis.
+         Regra final para neutralizar estilos específicos de telas e do mobile. */
+      :where(
+        #btn-salvar-compromisso,
+        #btn-salvar-marco,
+        #btn-salvar-rotina,
+        #btn-operacao-salvar-tecnico,
+        #btn-financas-salvar,
+        #btn-financas-salvar-fonte-renda,
+        #btn-financas-salvar-conta-fixa,
+        #btn-financas-salvar-confirm-sheet,
+        #btn-salvar-nova-senha,
+        #btn-salvar-nota,
+        button[type="submit"].btn-primary
+      ):disabled {
+        color: var(--cor-tema-escura, #173b70) !important;
+        -webkit-text-fill-color: var(--cor-tema-escura, #173b70);
+        opacity: 1 !important;
+      }
+
   </style>
   </head>
   <body>
