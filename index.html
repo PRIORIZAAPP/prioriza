@@ -11122,6 +11122,170 @@
         -webkit-text-fill-color: #ffffff;
       }
 
+      /* Operação: apresentação institucional temporária.
+         A interface funcional permanece preservada em #operacao-legacy-interface. */
+      #operacao-legacy-interface[hidden] {
+        display: none !important;
+      }
+
+      #screen-operacao .operacao-coming-soon-stage {
+        min-height: calc(100vh - var(--layout-header-offset, 124px) - 32px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      #screen-operacao .operacao-coming-soon-card {
+        width: min(100%, 760px);
+        margin: 0;
+        padding: clamp(28px, 5vw, 52px);
+        border: 1px solid rgba(203, 213, 225, 0.76);
+        border-radius: 20px;
+        background:
+          radial-gradient(circle at 100% 0%, rgba(var(--cor-tema-rgb), 0.08), transparent 34%),
+          #ffffff;
+        box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+        text-align: center;
+      }
+
+      #screen-operacao .operacao-coming-soon-icon {
+        width: 58px;
+        height: 58px;
+        margin: 0 auto 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(var(--cor-tema-rgb), 0.18);
+        border-radius: 17px;
+        background: rgba(var(--cor-tema-rgb), 0.09);
+        color: var(--cor-tema-escura);
+        box-shadow: 0 10px 24px rgba(var(--cor-tema-rgb), 0.1);
+      }
+
+      #screen-operacao .operacao-coming-soon-kicker {
+        margin: 0 0 7px;
+        color: var(--cor-tema-escura);
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      #screen-operacao .operacao-coming-soon-card h2 {
+        margin: 0;
+        color: #172033;
+        font-size: clamp(28px, 4vw, 38px);
+        line-height: 1.1;
+        letter-spacing: -0.035em;
+      }
+
+      #screen-operacao .operacao-coming-soon-lead {
+        max-width: 590px;
+        margin: 14px auto 0;
+        color: #334155;
+        font-size: clamp(16px, 2vw, 18px);
+        font-weight: 650;
+        line-height: 1.5;
+      }
+
+      #screen-operacao .operacao-coming-soon-description {
+        max-width: 620px;
+        margin: 10px auto 0;
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      #screen-operacao .operacao-coming-soon-resources {
+        max-width: 620px;
+        margin: 30px auto 0;
+        padding: 22px;
+        border: 1px solid rgba(226, 232, 240, 0.92);
+        border-radius: 14px;
+        background: rgba(248, 250, 252, 0.76);
+        text-align: left;
+      }
+
+      #screen-operacao .operacao-coming-soon-resources h3 {
+        margin: 0 0 14px;
+        color: #334155;
+        font-size: 12px;
+        font-weight: 750;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      #screen-operacao .operacao-coming-soon-resources ul {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 22px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      #screen-operacao .operacao-coming-soon-resources li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.35;
+      }
+
+      #screen-operacao .operacao-resource-check {
+        width: 21px;
+        height: 21px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 21px;
+        border-radius: 999px;
+        background: rgba(var(--cor-tema-rgb), 0.11);
+        color: var(--cor-tema-escura);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      #screen-operacao .operacao-coming-soon-note {
+        margin: 24px 0 0;
+        color: #94a3b8;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 640px) {
+        #screen-operacao .operacao-coming-soon-stage {
+          min-height: calc(100vh - var(--layout-header-offset, 124px) - 76px);
+          padding: 14px 10px 22px;
+          align-items: flex-start;
+        }
+
+        #screen-operacao .operacao-coming-soon-card {
+          padding: 28px 18px 24px;
+          border-radius: 16px;
+        }
+
+        #screen-operacao .operacao-coming-soon-icon {
+          width: 52px;
+          height: 52px;
+          border-radius: 15px;
+        }
+
+        #screen-operacao .operacao-coming-soon-resources {
+          margin-top: 24px;
+          padding: 18px;
+        }
+
+        #screen-operacao .operacao-coming-soon-resources ul {
+          grid-template-columns: 1fr;
+          gap: 11px;
+        }
+      }
+
   </style>
   </head>
   <body>
@@ -11889,7 +12053,38 @@
 
         <!-- ══ ABA OPERAÇÃO ══ -->
         <div class="screen" id="screen-operacao">
-          <div class="card operacao-shell">
+          <div class="operacao-coming-soon-stage">
+            <article class="card operacao-coming-soon-card" aria-labelledby="operacao-coming-soon-title">
+              <div class="operacao-coming-soon-icon" aria-hidden="true">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="16" height="16" x="4" y="4" rx="2" />
+                  <path d="M9 9h6v6H9z" />
+                  <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3" />
+                </svg>
+              </div>
+              <p class="operacao-coming-soon-kicker">Nova experiência em desenvolvimento</p>
+              <h2 id="operacao-coming-soon-title">Operação</h2>
+              <p class="operacao-coming-soon-lead">Estamos preparando uma nova experiência para o gerenciamento operacional.</p>
+              <p class="operacao-coming-soon-description">Este módulo está sendo totalmente redesenhado para oferecer uma gestão mais rápida, intuitiva e completa das equipes, escalas e unidades.</p>
+
+              <div class="operacao-coming-soon-resources">
+                <h3>Recursos que estarão disponíveis</h3>
+                <ul>
+                  <li><span class="operacao-resource-check" aria-hidden="true">✓</span><span>Gestão de escalas</span></li>
+                  <li><span class="operacao-resource-check" aria-hidden="true">✓</span><span>Cadastro de equipes</span></li>
+                  <li><span class="operacao-resource-check" aria-hidden="true">✓</span><span>Trocas de plantão</span></li>
+                  <li><span class="operacao-resource-check" aria-hidden="true">✓</span><span>Controle de horas trabalhadas</span></li>
+                  <li><span class="operacao-resource-check" aria-hidden="true">✓</span><span>Cobertura das unidades</span></li>
+                  <li><span class="operacao-resource-check" aria-hidden="true">✓</span><span>Indicadores operacionais</span></li>
+                  <li><span class="operacao-resource-check" aria-hidden="true">✓</span><span>Relatórios gerenciais</span></li>
+                </ul>
+              </div>
+
+              <p class="operacao-coming-soon-note">Em breve este módulo estará disponível em uma atualização do Prioriza.</p>
+            </article>
+          </div>
+
+          <div id="operacao-legacy-interface" class="card operacao-shell" hidden aria-hidden="true">
             <div class="operacao-list-view" id="operacao-list-view">
               <div class="operacao-header">
                 <div>
