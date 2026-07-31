@@ -10889,11 +10889,65 @@
 
     @media (max-width: 640px) {
       .checklist-item {
-        gap: 8px;
+        display: grid;
+        grid-template-columns: 22px minmax(0, 1fr);
+        align-items: start;
+        gap: 8px 10px;
+        cursor: pointer;
+      }
+
+      .checklist-item .check-status {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      .checklist-item .check-info {
+        grid-column: 2;
+        grid-row: 1;
+        width: 100%;
+      }
+
+      .checklist-item .check-titulo {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        overflow-wrap: anywhere;
       }
 
       .checklist-item .checklist-item-actions {
+        grid-column: 2;
+        grid-row: 2;
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        align-items: center;
+        width: 100%;
+        margin-left: 0;
         gap: 6px;
+      }
+
+      .checklist-item .check-next-date {
+        grid-column: 1;
+        justify-self: start;
+        min-height: 18px;
+        width: max-content;
+        max-width: 100%;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        font-size: 11px;
+        color: var(--cor-tema-escura, #173b70);
+      }
+
+      .checklist-item .check-next-date-full { display: none; }
+      .checklist-item .check-next-date-mobile { display: inline; }
+
+      .checklist-item .checklist-item-actions .check-badge {
+        grid-column: 3;
+        justify-self: end;
+      }
+
+      .checklist-item .checklist-item-actions .timeline-action-menu {
+        grid-column: 4;
       }
 
       .check-badge {
@@ -10901,6 +10955,10 @@
         padding: 0 7px;
         font-size: 9px;
       }
+    }
+
+    @media (min-width: 641px) {
+      .check-next-date-mobile { display: none; }
     }
 
     #hoje-side-column {
@@ -18231,6 +18289,99 @@
       }
     }
 
+    function formatarRetornoChecklistMobile(item) {
+      if (!ehRotinaRecorrenteNaoDiaria(item)) return "";
+      const dataIso = obterDataRetornoChecklist(item);
+      if (!dataIso) return "";
+      if (dataIso === dataHojeISO()) return "↻ Hoje";
+      const data = new Date(`${dataIso}T00:00:00`);
+      if (Number.isNaN(data.getTime())) return "";
+      const partes = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" })
+        .formatToParts(data);
+      const dia = partes.find((parte) => parte.type === "day")?.value || "";
+      const mesOriginal = partes.find((parte) => parte.type === "month")?.value || "";
+      const mes = mesOriginal.replace(".", "").replace(/^./, (letra) => letra.toUpperCase());
+      return dia && mes ? `↻ ${dia} ${mes}` : "";
+    }
+
+    function obterPrimeiroValorChecklist(item, chaves = []) {
+      for (const chave of chaves) {
+        const valor = item?.[chave];
+        if (valor !== undefined && valor !== null && String(valor).trim()) return valor;
+      }
+      return "";
+    }
+
+    function formatarDataDetalheChecklist(valor, incluirHora = false) {
+      if (!valor) return "Não informado";
+      const texto = String(valor).trim();
+      const iso = normalizarDataParaISO(texto);
+      if (!iso) return texto;
+      const data = new Date(`${iso}T00:00:00`);
+      if (Number.isNaN(data.getTime())) return texto;
+      const dataTexto = data.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
+      if (!incluirHora) return dataTexto;
+      const hora = texto.match(/(?:T|\s)(\d{2}:\d{2})/)?.[1] || "";
+      return hora ? `${dataTexto} às ${hora}` : dataTexto;
+    }
+
+    function formatarProximaRecorrenciaDetalhe(item) {
+      const dataIso = obterDataRetornoChecklist(item);
+      if (!dataIso) return "Não informada";
+      const data = new Date(`${dataIso}T00:00:00`);
+      if (Number.isNaN(data.getTime())) return "Não informada";
+      const semana = data.toLocaleDateString("pt-BR", { weekday: "long" });
+      const semanaFormatada = semana.replace(/^./, (letra) => letra.toUpperCase());
+      const dataCompleta = data.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
+      const valorOriginal = String(
+        item?.proxima_execucao || item?.data_proxima || item?.proxima_data || ""
+      );
+      const hora = valorOriginal.match(/(?:T|\s)(\d{2}:\d{2})/)?.[1]
+        || obterPrimeiroValorChecklist(item, ["hora", "horario", "hora_execucao"]);
+      return [semanaFormatada, dataCompleta, hora ? `às ${String(hora).slice(0, 5)}` : ""]
+        .filter(Boolean)
+        .join("\n");
+    }
+
+    async function abrirDetalhesChecklistMobile(item) {
+      if (!window.matchMedia("(max-width: 640px)").matches) return;
+      const status = normalizarStatusChecklist(item?.status || "pendente");
+      const statusTexto = {
+        pendente: "Pendente",
+        em_andamento: "Em andamento",
+        feito: "Concluído",
+      }[status] || String(item?.status || "Não informado");
+      const origem = obterPrimeiroValorChecklist(item, ["unidade", "origem", "local"])
+        || "Não informada";
+      const categoria = obterPrimeiroValorChecklist(item, ["categoria"])
+        || (String(item?.origem || "").toUpperCase() === "PESSOAL" ? "Pessoal" : "Profissional");
+      const criacao = obterPrimeiroValorChecklist(item, ["created_at", "criado_em", "data_criacao", "createdAt"]);
+      const ultimaConclusao = obterPrimeiroValorChecklist(item, [
+        "ultimo_exec", "ultima_conclusao", "concluido_em", "completed_at", "ultima_execucao"
+      ]);
+      const linhas = [
+        `Nome da tarefa\n${item?.titulo || "Sem título"}`,
+        `Unidade/Origem\n${origem}`,
+        `Categoria\n${categoria}`,
+        `Frequência\n${item?.frequencia || item?.frequencia_interna || "Não informada"}`,
+        `Status\n${statusTexto}`,
+        `Data de criação\n${formatarDataDetalheChecklist(criacao, true)}`,
+        `Última conclusão\n${formatarDataDetalheChecklist(ultimaConclusao, true)}`,
+      ];
+      if (ehRotinaRecorrenteNaoDiaria(item)) {
+        linhas.push(`Próxima recorrência\n${formatarProximaRecorrenciaDetalhe(item)}`);
+      }
+      await modal.alerta(linhas.join("\n\n"), "Detalhes do checklist", "Fechar");
+    }
+
     async function salvarDataRetornoChecklist(item, dataIso) {
       const dataNormalizada = normalizarDataParaISO(dataIso || "");
       const partesData = dataNormalizada.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -19882,11 +20033,14 @@
       metaTexto.textContent = metaPartes.join(" • ");
       sub.appendChild(metaTexto);
       const retornoTexto = formatarRetornoChecklist(item);
+      const retornoMobileTexto = formatarRetornoChecklistMobile(item);
       let retornoEl = null;
       if (retornoTexto) {
         retornoEl = document.createElement("span");
         retornoEl.className = "check-next-date";
-        retornoEl.textContent = retornoTexto;
+        retornoEl.innerHTML = `<span class="check-next-date-full"></span><span class="check-next-date-mobile"></span>`;
+        retornoEl.querySelector(".check-next-date-full").textContent = retornoTexto;
+        retornoEl.querySelector(".check-next-date-mobile").textContent = retornoMobileTexto;
       }
 
       info.appendChild(tituloEl);
@@ -19927,11 +20081,18 @@
       div.appendChild(info);
       div.appendChild(actions);
 
-      bolinha.addEventListener("click", async () => {
+      bolinha.addEventListener("click", async (evento) => {
+        evento.stopPropagation();
         const atual = bolinha.dataset.status || "pendente";
         const novo = proximoStatus(atual);
         await atualizarStatusChecklist(item.id, novo);
         await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
+      });
+
+      div.addEventListener("click", async (evento) => {
+        if (!window.matchMedia("(max-width: 640px)").matches) return;
+        if (evento.target.closest("button, input, select, textarea, a, .check-status")) return;
+        await abrirDetalhesChecklistMobile(item);
       });
 
       adicionarSwipe(
