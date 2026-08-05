@@ -4967,8 +4967,33 @@
       .nota-info { flex: 1; font-size: 13px; min-width: 0; }
       .nota-texto { color: #111827; }
       .nota-data  { font-size: 11px; color: #6b7280; margin-top: 2px; }
+      .nota-item.has-action-menu { overflow: visible; z-index: 2; }
+      .nota-item.has-action-menu.menu-open { z-index: 100; }
+      .nota-item .timeline-action-menu { flex: 0 0 auto; margin-left: auto; }
+      .nota-item .timeline-menu-trigger { width: 40px; height: 40px; }
+      .nota-item .timeline-menu-popover { top: calc(100% + 4px); right: 0; bottom: auto; z-index: 120; }
+      #screen-notas.screen.active,
+      #screen-notas .notas-list-card,
+      #screen-notas #lista-notas { overflow: visible; }
       .nota-status-feito { text-decoration: line-through; color: #6b7280; }
       .notas-new-button { display: none; }
+
+      @media (max-width: 640px) {
+        .nota-item { align-items: flex-start; }
+        .nota-info { padding-top: 2px; }
+        .nota-texto {
+          white-space: normal;
+          overflow: visible;
+          text-overflow: clip;
+          overflow-wrap: anywhere;
+          line-height: 1.4;
+        }
+        .nota-item .timeline-action-menu { margin-top: -8px; margin-right: -8px; }
+        .nota-item .timeline-menu-popover {
+          width: min(180px, calc(100vw - 32px));
+          max-width: calc(100vw - 32px);
+        }
+      }
 
       /* ── CALENDÁRIO ── */
       .agenda-calendar-card {
@@ -9036,7 +9061,7 @@
         border: 1px solid rgba(203, 213, 225, 0.62);
         border-radius: 10px;
         background: #ffffff;
-        overflow: hidden;
+        overflow: visible;
       }
       #screen-notas > .card {
         margin: 0;
@@ -13308,7 +13333,10 @@
                   </select>
                 </div>
               </div>
-              <div class="btn-row"><button type="submit" id="btn-salvar-nota" class="btn-primary">Salvar anotação</button></div>
+              <div class="btn-row">
+                <button type="button" id="btn-cancelar-edicao-nota" class="btn-secondary" hidden>Cancelar</button>
+                <button type="submit" id="btn-salvar-nota" class="btn-primary">Salvar anotação</button>
+              </div>
             </form>
           </div>
 
@@ -18659,7 +18687,7 @@
         if (menu === excecao) return;
         menu.hidden = true;
         menu.parentElement?.querySelector(".timeline-menu-trigger")?.setAttribute("aria-expanded", "false");
-        menu.closest(".checklist-item")?.classList.remove("menu-open");
+        menu.closest(".checklist-item, .nota-item")?.classList.remove("menu-open");
       });
     }
 
@@ -18686,8 +18714,14 @@
           ev.stopPropagation();
           menu.hidden = true;
           trigger.setAttribute("aria-expanded", "false");
-          menu.closest(".checklist-item")?.classList.remove("menu-open");
-          await acao();
+          menu.closest(".checklist-item, .nota-item")?.classList.remove("menu-open");
+          if (botao.disabled) return;
+          botao.disabled = true;
+          try {
+            await acao();
+          } finally {
+            botao.disabled = false;
+          }
         });
         menu.appendChild(botao);
       });
@@ -18698,7 +18732,7 @@
         fecharMenusAcoesDesktop(abrir ? menu : null);
         menu.hidden = !abrir;
         trigger.setAttribute("aria-expanded", abrir ? "true" : "false");
-        menu.closest(".checklist-item")?.classList.toggle("menu-open", abrir);
+        menu.closest(".checklist-item, .nota-item")?.classList.toggle("menu-open", abrir);
       });
       wrap.append(trigger, menu);
       return wrap;
@@ -21720,18 +21754,22 @@
     }
 
     // ── NOTAS ─────────────────────────────────────────────────────
+    let notaEmEdicao = null;
+    const notasEmProcessamento = new Set();
+
     function ajustarCategoriasNotasUI() {
       const select = document.getElementById("nota-tipo");
       if (!select) return;
       const desktop = emLayoutDesktop();
       const geral = select.querySelector('option[value="GERAL"]');
       const trabalho = select.querySelector('option[value="TRABALHO"]');
+      const editandoNotaGeral = String(notaEmEdicao?.tipo || "").toUpperCase() === "GERAL";
       if (geral) {
-        geral.hidden = desktop;
-        geral.disabled = desktop;
+        geral.hidden = desktop && !editandoNotaGeral;
+        geral.disabled = desktop && !editandoNotaGeral;
       }
       if (trabalho) trabalho.textContent = desktop ? "Trabalho" : "Profissional";
-      if (desktop && select.value === "GERAL") select.value = "TRABALHO";
+      if (desktop && select.value === "GERAL" && !editandoNotaGeral) select.value = "TRABALHO";
     }
 
     function toggleFormNotaDesktop(forceOpen = null) {
@@ -21753,7 +21791,111 @@
     async function salvarNota(texto,data,tipo) {
       const body=new URLSearchParams({texto,data:data||"",tipo:tipo||"GERAL"});
       const res=await fetch(API+"/notes",{method:"POST",headers:authHeaders({"Content-Type":"application/x-www-form-urlencoded"}),body});
+      if (!res.ok) throw new Error("Não foi possível salvar a nota.");
       return res.json();
+    }
+
+    function limparFormularioNota({ fecharDesktop = true } = {}) {
+      notaEmEdicao = null;
+      const textoEl = document.getElementById("nota-texto");
+      const dataEl = document.getElementById("nota-data");
+      const tipoEl = document.getElementById("nota-tipo");
+      const salvarEl = document.getElementById("btn-salvar-nota");
+      const cancelarEl = document.getElementById("btn-cancelar-edicao-nota");
+      if (textoEl) textoEl.value = "";
+      if (dataEl) dataEl.value = "";
+      if (tipoEl) tipoEl.value = emLayoutDesktop() ? "TRABALHO" : "GERAL";
+      if (salvarEl) salvarEl.textContent = "Salvar anotação";
+      if (cancelarEl) cancelarEl.hidden = true;
+      ajustarCategoriasNotasUI();
+      if (fecharDesktop) toggleFormNotaDesktop(false);
+    }
+
+    function abrirEdicaoNota(nota) {
+      if (!nota?.id || !usuarioPodeGerenciarNota(nota) || notasEmProcessamento.has(String(nota.id))) return;
+      notaEmEdicao = { ...nota };
+      ajustarCategoriasNotasUI();
+      const textoEl = document.getElementById("nota-texto");
+      const dataEl = document.getElementById("nota-data");
+      const tipoEl = document.getElementById("nota-tipo");
+      const salvarEl = document.getElementById("btn-salvar-nota");
+      const cancelarEl = document.getElementById("btn-cancelar-edicao-nota");
+      if (textoEl) textoEl.value = nota.texto || "";
+      if (dataEl) dataEl.value = normalizarDataParaISO(nota.data || "");
+      if (tipoEl) tipoEl.value = nota.tipo || (emLayoutDesktop() ? "TRABALHO" : "GERAL");
+      if (salvarEl) salvarEl.textContent = "Salvar alterações";
+      if (cancelarEl) cancelarEl.hidden = false;
+      if (emLayoutDesktop()) toggleFormNotaDesktop(true);
+      document.getElementById("form-nota")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.setTimeout(() => textoEl?.focus(), 80);
+    }
+
+    async function atualizarNotaExistente(nota, texto, data, tipo) {
+      const noteId = String(nota?.id || "");
+      if (!noteId || !usuarioPodeGerenciarNota(nota)) throw new Error("Você não tem permissão para editar esta nota.");
+      const dados = new URLSearchParams({
+        note_id: noteId,
+        texto,
+        data: data || "",
+        tipo: tipo || nota?.tipo || "GERAL",
+        status: nota?.status || "pendente",
+      });
+      const opcoes = {
+        method: "PUT",
+        headers: authHeaders({ "Content-Type": "application/x-www-form-urlencoded" }),
+        body: dados,
+      };
+      let resposta = await fetch(API + `/notes/${encodeURIComponent(noteId)}`, opcoes);
+      if ([404, 405].includes(resposta.status)) {
+        resposta = await fetch(API + "/notes_update?" + dados.toString(), {
+          method: "POST",
+          headers: authHeaders(),
+        });
+      }
+      if (!resposta.ok) {
+        let mensagem = "Não foi possível atualizar a nota.";
+        try {
+          const erro = await resposta.json();
+          mensagem = erro?.detail || erro?.message || mensagem;
+        } catch {}
+        throw new Error(mensagem);
+      }
+      return resposta.json().catch(() => ({}));
+    }
+
+    async function excluirNotaComConfirmacao(nota) {
+      const noteId = String(nota?.id || "");
+      if (!noteId || !usuarioPodeGerenciarNota(nota) || notasEmProcessamento.has(noteId)) return;
+      const confirmou = await modal.confirmar(
+        "Esta ação não poderá ser desfeita.",
+        "Excluir nota?",
+        "vermelho",
+        "Excluir nota",
+        "Cancelar"
+      );
+      if (!confirmou) return;
+      notasEmProcessamento.add(noteId);
+      try {
+        const resposta = await fetch(API + "/notes_delete?" + new URLSearchParams({ note_id: noteId }), {
+          method: "POST",
+          headers: authHeaders(),
+        });
+        if (!resposta.ok) throw new Error("Não foi possível excluir a nota.");
+        await carregarNotas();
+        await atualizarResumoBar();
+        await modal.alerta("Nota excluída com sucesso.", "Sucesso");
+      } catch (erro) {
+        await modal.alerta(erro?.message || "Não foi possível excluir a nota.", "Erro");
+      } finally {
+        notasEmProcessamento.delete(noteId);
+      }
+    }
+
+    function usuarioPodeGerenciarNota(nota) {
+      const proprietario = nota?.user_id ?? nota?.usuario_id ?? nota?.owner_id ?? "";
+      const usuarioAtual = authUser?.id ?? "";
+      if (!proprietario || !usuarioAtual) return true;
+      return String(proprietario) === String(usuarioAtual);
     }
 
     async function carregarNotas() {
@@ -21805,7 +21947,22 @@
             await atualizarResumoBar();
           });
 
-          info.appendChild(textoEl); info.appendChild(dataEl); div.appendChild(dot); div.appendChild(info);
+          info.appendChild(textoEl);
+          info.appendChild(dataEl);
+          div.appendChild(dot);
+          div.appendChild(info);
+          if (usuarioPodeGerenciarNota(nota)) {
+            const menuAcoes = criarMenuAcoesDesktop({
+              titulo: "Ações da nota",
+              ariaLabel: `Ações da nota: ${nota.texto || "sem título"}`,
+              itens: [
+                { texto: "Editar", acao: () => abrirEdicaoNota(nota) },
+                { texto: "Excluir", danger: true, acao: () => excluirNotaComConfirmacao(nota) },
+              ],
+            });
+            div.classList.add("has-action-menu");
+            div.appendChild(menuAcoes);
+          }
           adicionarSwipe(div,
             ()=>{ mostrarFlashFull("success"); setTimeout(async()=>{ await atualizarStatusNota(nota.id, "feito"); await carregarNotas(); await atualizarResumoBar(); },FLASH_DURATION_MS); },
             ()=>{
@@ -23384,7 +23541,14 @@
       document.querySelectorAll("[data-theme-option]").forEach((botao) => {
         botao.addEventListener("click", () => aplicarTema(botao.dataset.themeOption));
       });
-      document.getElementById("btn-toggle-form-nota")?.addEventListener("click", () => toggleFormNotaDesktop());
+      document.getElementById("btn-toggle-form-nota")?.addEventListener("click", () => {
+        if (notaEmEdicao) {
+          limparFormularioNota();
+          return;
+        }
+        toggleFormNotaDesktop();
+      });
+      document.getElementById("btn-cancelar-edicao-nota")?.addEventListener("click", () => limparFormularioNota());
       vincularOperacaoUI();
       document.addEventListener("click", () => fecharMenusAcoesDesktop());
       ajustarCategoriasNotasUI();
@@ -23565,17 +23729,29 @@
         const data =document.getElementById("nota-data").value;
         const tipo =document.getElementById("nota-tipo").value;
         if(!texto) return;
-        const btn=document.getElementById("btn-salvar-nota"); btn.disabled=true;
+        const btn=document.getElementById("btn-salvar-nota");
+        if (btn.disabled) return;
+        const notaEditada = notaEmEdicao ? { ...notaEmEdicao } : null;
+        btn.disabled=true;
+        btn.textContent="Salvando...";
         try {
-          await salvarNota(texto,data,tipo);
-          document.getElementById("nota-texto").value="";
-          document.getElementById("nota-data").value="";
-          document.getElementById("nota-tipo").value=emLayoutDesktop()?"TRABALHO":"GERAL";
+          if (notaEditada) {
+            await atualizarNotaExistente(notaEditada, texto, data, tipo);
+          } else {
+            await salvarNota(texto,data,tipo);
+          }
+          limparFormularioNota();
           await carregarNotas();
           await atualizarResumoBar();
-          toggleFormNotaDesktop(false);
+          if (notaEditada) await modal.alerta("Nota atualizada com sucesso.", "Sucesso");
+        } catch (erro) {
+          console.error("[PRIORIZA] Falha ao salvar nota:", erro);
+          await modal.alerta(erro?.message || "Não foi possível salvar a nota.", "Erro");
         }
-        finally{btn.disabled=false;}
+        finally{
+          btn.disabled=false;
+          btn.textContent=notaEmEdicao?"Salvar alterações":"Salvar anotação";
+        }
       });
 
       renderLocaisSugeridos("agenda-locais-sugeridos","agenda-local");
