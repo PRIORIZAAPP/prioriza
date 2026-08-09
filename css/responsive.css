@@ -498,6 +498,58 @@
         }
       }
 
+/* Correção Notas: regra global, fora dos blocos legados de desktop. */
+#screen-notas .nota-dot,
+#screen-notas .nota-dot.pessoal:not(.feito) {
+  position: relative !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  flex: 0 0 24px !important;
+  padding: 0 !important;
+  border: 2px solid var(--cor-tema) !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+#screen-notas .nota-dot::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 3px;
+  width: 7px;
+  height: 12px;
+  border: solid transparent;
+  border-width: 0 3px 3px 0;
+  opacity: 0;
+  transform: rotate(45deg) scale(.65);
+}
+
+#screen-notas .nota-dot.feito,
+#screen-notas .nota-dot.pessoal.feito {
+  border-color: var(--cor-tema) !important;
+  background: var(--cor-tema) !important;
+}
+
+#screen-notas .nota-dot.feito::after {
+  border-color: #fff;
+  border-width: 0 3px 3px 0;
+  opacity: 1;
+  transform: rotate(45deg) scale(1);
+}
+
+@media (max-width: 767px) {
+  #screen-notas .nota-item .timeline-menu-trigger {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+  }
+}
+
       #financas-legacy-interface[hidden],
       #operacao-legacy-interface[hidden] {
         display: none !important;
