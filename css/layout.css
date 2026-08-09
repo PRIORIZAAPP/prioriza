@@ -1,0 +1,108 @@
+      /* ── CONTENT ── */
+      .content { flex: 1; padding: 12px 10px 88px 10px; }
+      .app-workspace { flex: 1; display: block; width: 100%; padding: var(--layout-header-offset) 0 0; }
+      .app-main-column { min-width: 0; width: 100%; }
+      .desktop-sidebar,
+      .desktop-rail { display: none; }
+      .splash-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background:
+          linear-gradient(
+            100deg,
+            #ffffff 0%,
+            #fbfcfe 18%,
+            #eef3fa 36%,
+            color-mix(in srgb, var(--cor-tema-clara) 68%, white 32%) 60%,
+            color-mix(in srgb, var(--cor-tema) 18%, white 82%) 100%
+          );
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 200ms ease, visibility 0ms linear 200ms;
+      }
+      .splash-screen.is-visible {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 200ms ease;
+      }
+      .splash-screen.is-hiding {
+        opacity: 0;
+      }
+      .splash-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        text-align: center;
+      }
+      .splash-logo {
+        width: min(240px, 62vw);
+        height: auto;
+        display: block;
+        animation: splashFadeIn 320ms ease both;
+      }
+      .splash-slogan {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.4;
+        font-weight: 600;
+        color: #475569;
+        letter-spacing: 0.01em;
+        opacity: 0;
+        transform: translateY(8px);
+        filter: blur(4px);
+      }
+      .splash-screen.is-visible .splash-slogan {
+        animation: splashSloganIn 200ms ease 120ms forwards;
+      }
+      @keyframes splashFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes splashSloganIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+          filter: blur(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+          filter: blur(0);
+        }
+      }
+      .agenda-item.destacada {
+        border-radius: 12px;
+        background: rgba(var(--cor-tema-rgb), 0.08);
+        box-shadow: inset 0 0 0 1px rgba(var(--cor-tema-rgb), 0.14);
+        transition: background 0.25s ease, box-shadow 0.25s ease;
+      }
+
+      @media (max-width: 1099px) {
+        body { padding: 0; }
+        .app-shell {
+          border: none;
+          border-radius: 0;
+          box-shadow: none;
+        }
+        .app-main-column {
+          display: block;
+        }
+        .desktop-sidebar,
+        .desktop-rail {
+          display: none;
+        }
+      }
+

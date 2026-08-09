@@ -1,0 +1,175 @@
+      /* ── APP SHELL ── */
+      .app-shell {
+        max-width: 480px;
+        margin: 0 auto;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: #e5e7eb;
+        position: relative;
+        animation: appFadeIn 0.5s ease-out;
+      }
+
+@keyframes appFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+      /* ── TOPBAR ── */
+      .topbar {
+        position: fixed;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: var(--header-width);
+        z-index: 20;
+        background:
+          linear-gradient(
+            100deg,
+            #fbfcfe 0%,
+            #ffffff 12%,
+            #eef3fa 22%,
+            var(--cor-tema-clara) 34%,
+            color-mix(in srgb, var(--cor-tema) 72%, white 28%) 56%,
+            var(--cor-tema) 78%,
+            var(--cor-tema-escura) 100%
+          );
+        padding: 14px 18px 10px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        overflow: hidden;
+        isolation: isolate;
+        border-bottom: 1px solid #d7deea;
+        box-shadow: 0 10px 22px rgba(15,23,42,0.14);
+      }
+      .topbar-main { display: flex; flex-direction: column; gap: 4px; }
+      .topbar-brand-row {
+        display: inline-flex;
+        align-items: center;
+        padding: 0;
+        background: transparent;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .prioriza-logo {
+        height: 56px;
+        width: auto;
+        display: block;
+        transition: opacity 180ms ease;
+      }
+      .topbar-date-line {
+        margin-top: 4px;
+        font-size: 13px;
+        color: var(--cor-topbar-texto);
+        font-weight: 600;
+        opacity: 0.96;
+        text-shadow: none;
+      }
+      .demo-mode-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 24px;
+        padding: 0 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(180, 83, 9, 0.22);
+        background: #fffbeb;
+        color: #92400e;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .demo-mode-badge[hidden] {
+        display: none !important;
+      }
+      .demo-mode-badge svg {
+        width: 13px;
+        height: 13px;
+        flex-shrink: 0;
+      }
+      .topbar-right { display: flex; flex-direction: row; align-items: center; gap: 8px; }
+      .mic-button {
+        border-radius: 999px;
+        border: 1px solid rgba(15,23,42,0.10);
+        background: rgba(15,23,42,0.88);
+        color: #f9fafb;
+        width: 42px; height: 42px; padding: 0;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(15,23,42,0.12);
+      }
+      .mic-button.listening { background: rgba(34,197,94,0.22); border-color: #22c55e; }
+      .mic-svg { width: 20px; height: 20px; color: #ffffff; }
+      .mic-button.listening .mic-svg { color: #22c55e; }
+      .mic-button-label { display: none; }
+      .topbar-settings-btn {
+        border-radius: 999px;
+        border: 1px solid rgba(15,23,42,0.10);
+        background: rgba(255,255,255,0.88);
+        color: #243247;
+        width: 42px;
+        height: 42px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(15,23,42,0.08);
+      }
+      .topbar-settings-btn svg {
+        width: 20px;
+        height: 20px;
+      }
+      @media (max-width: 1099px) {
+        .topbar-settings-btn {
+          display: none;
+        }
+      }
+      .audio-tip {
+        font-size: 10px;
+        color: var(--cor-topbar-suave);
+        max-width: 200px;
+        line-height: 1.3;
+        text-align: left;
+        opacity: 0.98;
+        display: none;
+      }
+
+      /* ── RESUMO BAR ── */
+      .resumo-bar {
+        position: fixed;
+        top: var(--topbar-offset);
+        left: 50%;
+        transform: translateX(-50%);
+        width: var(--header-width);
+        z-index: 19;
+        background: linear-gradient(
+          180deg,
+          #f5f7fb 0%,
+          #eef3fb 100%
+        );
+        color: var(--cor-resumo-texto);
+        padding: 6px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        overflow: hidden;
+        border-bottom: 1px solid #dde5ef;
+        box-shadow: 0 4px 10px rgba(15,23,42,0.05);
+      }
+      .resumo-bar svg { flex-shrink: 0; }
+      .resumo-bar #resumo-text {
+        min-width: 0;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+      }
+

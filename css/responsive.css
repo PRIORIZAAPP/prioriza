@@ -1,0 +1,543 @@
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+
+      .auth-screen,
+      .auth-card,
+      .auth-panel,
+      .auth-transition-copy,
+      .auth-transition-slogan,
+      .splash-screen,
+      .splash-logo,
+      .splash-slogan,
+      .onboarding-overlay,
+      .onboarding-card,
+      .screen {
+        transform: none !important;
+        filter: none !important;
+      }
+    }
+
+    .checklist-item .check-info {
+      min-width: 0;
+    }
+
+    .checklist-item .checklist-item-actions {
+      margin-left: auto;
+      opacity: 1;
+    }
+
+    .checklist-item .checklist-item-actions .check-badge {
+      flex-shrink: 0;
+    }
+
+    #hoje-checklist-card .checklist-item .checklist-item-actions {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    #hoje-checklist-card .checklist-item .timeline-action-menu {
+      margin-left: 0;
+    }
+
+    @media (max-width: 640px) {
+      .checklist-item {
+        display: grid;
+        grid-template-columns: 22px minmax(0, 1fr);
+        align-items: start;
+        gap: 8px 10px;
+        cursor: pointer;
+      }
+
+      .checklist-item .check-status {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      .checklist-item .check-info {
+        grid-column: 2;
+        grid-row: 1;
+        width: 100%;
+      }
+
+      .checklist-item .check-titulo {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        overflow-wrap: anywhere;
+      }
+
+      .checklist-item .checklist-item-actions {
+        grid-column: 2;
+        grid-row: 2;
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        align-items: center;
+        width: 100%;
+        margin-left: 0;
+        gap: 6px;
+      }
+
+      .checklist-item .check-next-date {
+        grid-column: 1;
+        justify-self: start;
+        min-height: 18px;
+        width: max-content;
+        max-width: 100%;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        font-size: 11px;
+        color: var(--cor-tema-escura, #173b70);
+      }
+
+      .checklist-item .check-next-date-full { display: none; }
+      .checklist-item .check-next-date-mobile { display: inline; }
+
+      .checklist-item .checklist-item-actions .check-badge {
+        grid-column: 3;
+        justify-self: end;
+      }
+
+      .checklist-item .checklist-item-actions .timeline-action-menu {
+        grid-column: 4;
+      }
+
+      .check-badge {
+        min-height: 18px;
+        padding: 0 7px;
+        font-size: 9px;
+      }
+
+      .agenda-status-btn,
+      .pessoal-btn,
+      .agenda-icon-btn,
+      .marco-operacional-actions .agenda-icon-btn {
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+        min-height: 40px;
+      }
+
+      .agenda-status-btn svg,
+      .pessoal-btn svg,
+      .agenda-icon-btn svg,
+      .marco-operacional-actions .agenda-icon-btn svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    @media (min-width: 641px) {
+      .check-next-date-mobile { display: none; }
+    }
+
+    #hoje-side-column {
+      display: contents;
+    }
+
+    /* ══ HOME: ESTILOS FINAIS CENTRALIZADOS ══ */
+    @media (min-width: 1100px) {
+      .app-main-column {
+        padding-top: 10px;
+      }
+
+      #screen-hoje.screen.active {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 288px;
+        grid-template-areas: "timeline side";
+        grid-template-rows: auto;
+        column-gap: 36px;
+        row-gap: 0;
+        align-items: start;
+      }
+
+      #screen-hoje.screen.active.hoje-adaptativo {
+        grid-template-columns: minmax(0, 900px) minmax(340px, 420px);
+        justify-content: space-between;
+        column-gap: 34px;
+      }
+
+      #hoje-operational-timeline-card {
+        grid-area: timeline;
+        padding: 0 24px 0 0;
+      }
+
+      #screen-hoje.screen.active > #hoje-side-column {
+        grid-area: side;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        align-self: start;
+      }
+
+      #hoje-side-column > #hoje-calendar-card {
+        position: relative;
+        display: block;
+        align-self: start;
+        width: 100%;
+        min-height: 0;
+        padding: 16px;
+        margin-top: 0;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 18px;
+        background: #f8fafc;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+      }
+
+      #hoje-side-column > #hoje-calendar-card::before {
+        content: "";
+        position: absolute;
+        left: -18px;
+        top: 12px;
+        bottom: 12px;
+        width: 1px;
+        background: linear-gradient(
+          180deg,
+          rgba(148, 163, 184, 0) 0%,
+          rgba(148, 163, 184, 0.26) 12%,
+          rgba(148, 163, 184, 0.26) 88%,
+          rgba(148, 163, 184, 0) 100%
+        );
+      }
+
+      #hoje-side-column > #hoje-calendar-card .today-calendar-head {
+        padding-bottom: 8px;
+        margin-bottom: 2px;
+      }
+
+      #hoje-side-column > #hoje-calendar-card .desktop-mini-calendar {
+        gap: 5px 4px;
+      }
+
+      #hoje-side-column > #hoje-calendar-card .desktop-mini-weekday,
+      #hoje-side-column > #hoje-calendar-card .desktop-mini-day {
+        min-height: 27px;
+      }
+
+      #hoje-side-column > #hoje-calendar-card .desktop-mini-day {
+        font-size: 11px;
+      }
+
+      #hoje-side-column > #hoje-calendar-card .today-calendar-note {
+        margin-top: 8px;
+        font-size: 11px;
+      }
+
+      #hoje-side-column > #hoje-proximas-card {
+        width: 100%;
+      }
+    }
+      /* Legibilidade dos botões de salvamento em todos os estados.
+         Regra final para neutralizar estilos específicos de telas e do mobile. */
+      :where(
+        #btn-salvar-compromisso,
+        #btn-salvar-marco,
+        #btn-salvar-rotina,
+        #btn-operacao-salvar-tecnico,
+        #btn-financas-salvar,
+        #btn-financas-salvar-fonte-renda,
+        #btn-financas-salvar-conta-fixa,
+        #btn-financas-salvar-confirm-sheet,
+        #btn-salvar-nova-senha,
+        #btn-salvar-nota,
+        button[type="submit"].btn-primary
+      ),
+      :where(
+        #btn-salvar-compromisso,
+        #btn-salvar-marco,
+        #btn-salvar-rotina,
+        #btn-operacao-salvar-tecnico,
+        #btn-financas-salvar,
+        #btn-financas-salvar-fonte-renda,
+        #btn-financas-salvar-conta-fixa,
+        #btn-financas-salvar-confirm-sheet,
+        #btn-salvar-nova-senha,
+        #btn-salvar-nota,
+        button[type="submit"].btn-primary
+      ):is(:hover, :focus, :focus-visible, :active, :disabled) {
+        color: var(--cor-tema-escura, #173b70) !important;
+        -webkit-text-fill-color: var(--cor-tema-escura, #173b70);
+      }
+
+      :where(
+        #btn-salvar-compromisso,
+        #btn-salvar-marco,
+        #btn-salvar-rotina,
+        #btn-operacao-salvar-tecnico,
+        #btn-financas-salvar,
+        #btn-financas-salvar-fonte-renda,
+        #btn-financas-salvar-conta-fixa,
+        #btn-financas-salvar-confirm-sheet,
+        #btn-salvar-nova-senha,
+        #btn-salvar-nota,
+        button[type="submit"].btn-primary
+      ):disabled {
+        opacity: 1 !important;
+      }
+
+      :where(
+        #btn-salvar-compromisso,
+        #btn-salvar-marco,
+        #btn-salvar-rotina,
+        #btn-operacao-salvar-tecnico,
+        #btn-financas-salvar,
+        #btn-financas-salvar-fonte-renda,
+        #btn-financas-salvar-conta-fixa,
+        #btn-financas-salvar-confirm-sheet,
+        #btn-salvar-nova-senha,
+        #btn-salvar-nota,
+        button[type="submit"].btn-primary
+      ):not(:disabled):is(:hover, :focus, :focus-visible, :active) {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff;
+      }
+
+      /* Operação: apresentação institucional temporária.
+         A interface funcional permanece preservada em #operacao-legacy-interface. */
+      #operacao-legacy-interface[hidden] {
+        display: none !important;
+      }
+
+      #screen-operacao .operacao-coming-soon-stage {
+        min-height: calc(100vh - var(--layout-header-offset, 124px) - 32px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      #screen-operacao .operacao-coming-soon-card {
+        width: min(100%, 760px);
+        margin: 0;
+        padding: clamp(28px, 5vw, 52px);
+        border: 1px solid rgba(203, 213, 225, 0.76);
+        border-radius: 20px;
+        background:
+          radial-gradient(circle at 100% 0%, rgba(var(--cor-tema-rgb), 0.08), transparent 34%),
+          #ffffff;
+        box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+        text-align: center;
+      }
+
+      #screen-operacao .operacao-coming-soon-icon {
+        width: 58px;
+        height: 58px;
+        margin: 0 auto 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(var(--cor-tema-rgb), 0.18);
+        border-radius: 17px;
+        background: rgba(var(--cor-tema-rgb), 0.09);
+        color: var(--cor-tema-escura);
+        box-shadow: 0 10px 24px rgba(var(--cor-tema-rgb), 0.1);
+      }
+
+      #screen-operacao .operacao-coming-soon-kicker {
+        margin: 0 0 7px;
+        color: var(--cor-tema-escura);
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      #screen-operacao .operacao-coming-soon-card h2 {
+        margin: 0;
+        color: #172033;
+        font-size: clamp(28px, 4vw, 38px);
+        line-height: 1.1;
+        letter-spacing: -0.035em;
+      }
+
+      #screen-operacao .operacao-coming-soon-lead {
+        max-width: 590px;
+        margin: 14px auto 0;
+        color: #334155;
+        font-size: clamp(16px, 2vw, 18px);
+        font-weight: 650;
+        line-height: 1.5;
+      }
+
+      #screen-operacao .operacao-coming-soon-description {
+        max-width: 620px;
+        margin: 10px auto 0;
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      #screen-operacao .operacao-coming-soon-resources {
+        max-width: 620px;
+        margin: 30px auto 0;
+        padding: 22px;
+        border: 1px solid rgba(226, 232, 240, 0.92);
+        border-radius: 14px;
+        background: rgba(248, 250, 252, 0.76);
+        text-align: left;
+      }
+
+      #screen-operacao .operacao-coming-soon-resources h3 {
+        margin: 0 0 14px;
+        color: #334155;
+        font-size: 12px;
+        font-weight: 750;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      #screen-operacao .operacao-coming-soon-resources ul {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 22px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      #screen-operacao .operacao-coming-soon-resources li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.35;
+      }
+
+      #screen-operacao .operacao-resource-check {
+        width: 21px;
+        height: 21px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 21px;
+        border-radius: 999px;
+        background: rgba(var(--cor-tema-rgb), 0.11);
+        color: var(--cor-tema-escura);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      #screen-operacao .operacao-coming-soon-note {
+        margin: 24px 0 0;
+        color: #94a3b8;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 640px) {
+        #screen-operacao .operacao-coming-soon-stage {
+          min-height: calc(100vh - var(--layout-header-offset, 124px) - 76px);
+          padding: 14px 10px 22px;
+          align-items: flex-start;
+        }
+
+        #screen-operacao .operacao-coming-soon-card {
+          padding: 28px 18px 24px;
+          border-radius: 16px;
+        }
+
+        #screen-operacao .operacao-coming-soon-icon {
+          width: 52px;
+          height: 52px;
+          border-radius: 15px;
+        }
+
+        #screen-operacao .operacao-coming-soon-resources {
+          margin-top: 24px;
+          padding: 18px;
+        }
+
+        #screen-operacao .operacao-coming-soon-resources ul {
+          grid-template-columns: 1fr;
+          gap: 11px;
+        }
+      }
+
+      #financas-legacy-interface[hidden],
+      #operacao-legacy-interface[hidden] {
+        display: none !important;
+      }
+
+      .module-evolution-stage {
+        min-height: calc(100vh - var(--layout-header-offset, 124px) - 32px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-5);
+      }
+
+      .module-evolution-card {
+        width: min(100%, 680px);
+        margin: 0;
+        padding: clamp(30px, 5vw, 52px);
+        border: var(--border-soft);
+        border-radius: var(--radius-xl);
+        background: #ffffff;
+        box-shadow: var(--shadow-card);
+        text-align: center;
+      }
+
+      .module-evolution-card .module-evolution-icon,
+      .module-evolution-card .operacao-coming-soon-icon {
+        width: 58px;
+        height: 58px;
+        margin: 0 auto var(--space-4);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(var(--cor-tema-rgb), 0.18);
+        border-radius: var(--radius-lg);
+        background: rgba(var(--cor-tema-rgb), 0.09);
+        color: var(--cor-tema-escura);
+      }
+
+      .module-evolution-kicker,
+      .module-evolution-card .operacao-coming-soon-kicker {
+        margin: 0 0 var(--space-2);
+        color: var(--cor-tema-escura);
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .module-evolution-card h2 {
+        margin: 0;
+        color: #172033;
+        font-size: clamp(25px, 4vw, 34px);
+        line-height: 1.15;
+        letter-spacing: -0.03em;
+      }
+
+      .module-evolution-card > p:last-child {
+        max-width: 560px;
+        margin: var(--space-4) auto 0;
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      @media (max-width: 640px) {
+        .module-evolution-stage {
+          min-height: calc(100vh - var(--layout-header-offset, 124px) - 76px);
+          padding: 14px 10px 22px;
+          align-items: flex-start;
+        }
+
+        .module-evolution-card {
+          padding: 30px 20px;
+          border-radius: var(--radius-lg);
+        }
+      }
