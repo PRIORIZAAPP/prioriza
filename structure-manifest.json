@@ -10,6 +10,7 @@
     "javascript":  [
                        "js/core/debug.js",
                        "js/core/runtime.js",
+                       "js/core/experience.js",
                        "js/screens/finance.js",
                        "js/core/admin.js",
                        "js/screens/agenda.js",

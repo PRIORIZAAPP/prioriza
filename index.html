@@ -225,15 +225,17 @@
       </div>
 
       <!-- RESUMO BAR -->
-      <div class="resumo-bar">
+      <div class="resumo-bar" role="button" tabindex="0" aria-expanded="false" aria-label="Resumo do dia. Pressione para expandir ou recolher.">
         <!-- icon: chart-bar duotone -->
         <svg width="16" height="16" viewBox="0 0 256 256" fill="none" class="resumo-icon" color="currentColor">
           <rect x="24" y="128" width="56" height="88" rx="4" fill="currentColor" opacity="0.25"/>
           <rect x="100" y="80" width="56" height="136" rx="4" fill="currentColor" opacity="0.5"/>
           <rect x="176" y="40" width="56" height="176" rx="4" fill="currentColor"/>
         </svg>
-        <span id="resumo-text">Carregando...</span>
+        <span id="resumo-text" class="resumo-text">Carregando...</span>
       </div>
+
+      <div id="connection-status" class="connection-status" role="status" aria-live="polite" hidden></div>
 
       <div class="app-workspace">
         <aside class="desktop-sidebar" aria-label="Navegação desktop">
@@ -2186,6 +2188,7 @@
     <script data-prioriza-module="core" src="./js/screens/workspace.js"></script>
     <script data-prioriza-module="autenticacao" src="./js/core/auth.js"></script>
     <script data-prioriza-module="operacao" src="./js/screens/operation.js"></script>
+    <script data-prioriza-module="experiencia" src="./js/core/experience.js"></script>
     <script data-prioriza-module="bootstrap" src="./js/app.js"></script>
     <script data-prioriza-module="notificacoes" src="./js/integrations/notifications.js"></script>
   </body>
