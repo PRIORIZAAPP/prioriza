@@ -1097,6 +1097,7 @@
       }
 
       function vincularOperacaoUI() {
+        if (document.getElementById("operacao-legacy-interface")?.hidden) return;
         document.getElementById("btn-operacao-nova-unidade")?.addEventListener("click", () => {
           alternarFormularioUnidadeOperacao(false);
           alternarFormularioUnidadeOperacao(true);

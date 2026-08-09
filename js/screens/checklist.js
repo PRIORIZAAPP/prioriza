@@ -28,7 +28,7 @@
     // ── CHECKLIST HOJE ────────────────────────────────────────────
     async function carregarChecklistHoje() {
       const container = document.getElementById("checklist-dia");
-      container.innerHTML = "<small>Carregando checklist...</small>";
+      PriorizaUX.renderizarLoading(container, "Carregando rotinas de hoje...");
       const isWeekend = [0,6].includes(new Date().getDay());
 
       try {
@@ -366,10 +366,10 @@
       container.innerHTML = "";
 
       if (!itens.length) {
-        const vazio = document.createElement("div");
-        vazio.className = "checklist-list-empty";
-        vazio.textContent = mensagensVazias[statusKey] || "Nenhum item nesta lista.";
-        container.appendChild(vazio);
+        PriorizaUX.renderizarEstado(container, {
+          titulo: mensagensVazias[statusKey] || "Nenhum item nesta lista.",
+          descricao: statusKey === "pendente" ? "Você está em dia com suas rotinas." : "Os itens aparecerão aqui quando houver movimentação."
+        });
         return;
       }
 
@@ -381,7 +381,7 @@
     // ── CHECKLIST GERAL ───────────────────────────────────────────
     async function carregarChecklistGeral() {
       const container = document.getElementById("checklist-geral-lista");
-      container.innerHTML = "<small>Carregando...</small>";
+      PriorizaUX.renderizarLoading(container, "Carregando checklist...");
       const filtroFreq = document.getElementById("filtro-frequencia").value;
       const filtroOrigem = document.getElementById("filtro-origem").value;
 
@@ -396,7 +396,10 @@
         if (filtroOrigem) itens = itens.filter(i => (i.origem || "").toUpperCase().includes(filtroOrigem.toUpperCase()));
 
         if (itens.length === 0) {
-          container.innerHTML = "<small>Nenhum item encontrado.</small>";
+          PriorizaUX.renderizarEstado(container, {
+            titulo: "Nenhuma rotina encontrada.",
+            descricao: "Revise os filtros ou crie uma nova rotina."
+          });
           return;
         }
 

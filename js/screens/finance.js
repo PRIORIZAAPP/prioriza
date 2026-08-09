@@ -2627,6 +2627,7 @@
     }
 
     function vincularFinancasUI() {
+      if (document.getElementById("financas-legacy-interface")?.hidden) return;
       if (financasUiVinculada) return;
       financasUiVinculada = true;
       atualizarLogoFinanceiroFinancas();
