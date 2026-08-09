@@ -1345,6 +1345,7 @@
           dot.type = "button";
           dot.className = "nota-dot" + (notaPessoal ? " pessoal" : "") + (notaFeita ? " feito" : "");
           dot.title = notaFeita ? "Marcar como pendente" : "Marcar como feita";
+          dot.setAttribute("aria-pressed", notaFeita ? "true" : "false");
           dot.setAttribute("aria-label", `${notaFeita ? "Concluída" : "Pendente"} · ${notaPessoal ? "Pessoal" : "Trabalho"}`);
 
           const info=document.createElement("div"); info.className="nota-info";
