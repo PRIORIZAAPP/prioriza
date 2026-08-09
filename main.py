@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 import requests
 import threading
@@ -5268,4 +5268,430 @@ async def importar_backup(request: Request, db: Session = Depends(get_db), curre
             hora_fim = (t.get("hora_fim") or "").strip()
             all_day_val = bool(t.get("all_day"))
             blocked_val = bool(t.get("blocked"))
-            duracao_val = int(t.get([Truncated]
+            duracao_val = int(t.get("duracao_min") or (1440 if all_day_val else 60))
+            if all_day_val:
+                duracao_val = 1440
+            if hora_inicio and not hora_fim:
+                hora_fim = calcular_hora_fim(hora_inicio, duracao_val)
+            nova = Tarefa(
+                user_id=user_id,
+                titulo=titulo,
+                descricao=(t.get("descricao") or "").strip(),
+                origem=(t.get("origem") or "").strip(),
+                local=(t.get("local") or "").strip(),
+                data=data_str,
+                hora_inicio=hora_inicio,
+                hora_fim=hora_fim,
+                duracao_min=duracao_val,
+                prioridade=int(t.get("prioridade") or 2),
+                status=normalizar_status(t.get("status") or "pendente"),
+                tipo_evento=t.get("tipo_evento") or "prioriza",
+                origem_evento=t.get("origem_evento") or "prioriza",
+                google_event_id=t.get("google_event_id"),
+                google_html_link=t.get("google_html_link") or t.get("link"),
+                sincronizado_google=bool(t.get("sincronizado_google")),
+                all_day=all_day_val,
+                blocked=blocked_val,
+                ativo=True,
+            )
+            db.add(nova)
+            importadas["tarefas"] += 1
+        except Exception as e:
+            importadas["erros"].append(f"Tarefa '{t.get('titulo', '?')}': {e}")
+
+    for c in checklist_raw:
+        try:
+            titulo = (c.get("titulo") or "").strip()
+            if not titulo:
+                continue
+            novo = ChecklistItem(
+                user_id=user_id,
+                titulo=titulo,
+                origem=(c.get("origem") or "").strip(),
+                frequencia=c.get("frequencia") or "Semanal",
+                frequencia_interna=c.get("frequencia_interna") or normalizar_frequencia_interna(c.get("frequencia") or "Semanal"),
+                status=normalizar_status(c.get("status") or "pendente"),
+                ativo=True,
+            )
+            db.add(novo)
+            importadas["checklist"] += 1
+        except Exception as e:
+            importadas["erros"].append(f"Checklist '{c.get('titulo', '?')}': {e}")
+
+    for n in notas_raw:
+        try:
+            texto = (n.get("texto") or "").strip()
+            if not texto:
+                continue
+            nova_nota = Note(
+                user_id=user_id,
+                texto=texto,
+                data=n.get("data") or "",
+                tipo=n.get("tipo") or "GERAL",
+                status=n.get("status") or "pendente",
+                ativo=True,
+            )
+            db.add(nova_nota)
+            importadas["notas"] += 1
+        except Exception as e:
+            importadas["erros"].append(f"Nota '{(n.get('texto') or '?')[:30]}': {e}")
+
+    for m in marcos_raw:
+        try:
+            titulo = (m.get("titulo") or "").strip()
+            data_marco = (m.get("data") or "").strip()
+            if not titulo or not validar_data_iso(data_marco):
+                continue
+            novo_marco = MarcoOperacional(
+                user_id=user_id,
+                titulo=titulo,
+                data=data_marco,
+                categoria=normalizar_categoria_marco(m.get("categoria") or "Outro"),
+                severidade=normalizar_severidade_marco(m.get("severidade") or "Baixa"),
+                descricao=(m.get("descricao") or "").strip(),
+                ativo=True,
+            )
+            db.add(novo_marco)
+            importadas["marcos_operacionais"] += 1
+        except Exception as e:
+            importadas["erros"].append(f"Marco '{m.get('titulo', '?')}': {e}")
+
+    db.commit()
+    return {
+        "ok": True,
+        "importadas": importadas,
+        "mensagem": f"Restauração concluída: {importadas['tarefas']} tarefas, {importadas['checklist']} rotinas, {importadas['notas']} notas e {importadas['marcos_operacionais']} marcos importados.",
+    }
+
+
+# ============================================================
+# PUSH NOTIFICATIONS
+# ============================================================
+
+VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY", "")
+VAPID_PUBLIC_KEY = os.environ.get(
+    "VAPID_PUBLIC_KEY",
+    "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBkYIRPqbb5ZfElDa1Ew",
+)
+VAPID_CLAIMS = {"sub": "mailto:contato@prioriza.onrender.com"}
+
+
+def _enviar_push(sub: PushSubscription, titulo: str, corpo: str, url: str = "/app"):
+    try:
+        from pywebpush import webpush
+
+        dados = json.dumps({
+            "titulo": titulo,
+            "corpo": corpo,
+            "url": url,
+            "icone": "/icon-180x180.png",
+        })
+        webpush(
+            subscription_info={
+                "endpoint": sub.endpoint,
+                "keys": {"p256dh": sub.p256dh, "auth": sub.auth},
+            },
+            data=dados,
+            vapid_private_key=VAPID_PRIVATE_KEY,
+            vapid_claims=VAPID_CLAIMS,
+        )
+    except Exception as e:
+        print(f"[PUSH] Erro ao enviar para {sub.endpoint[:40]}...: {e}")
+
+
+def _enviar_push_todos(titulo: str, corpo: str, url: str = "/app", user_id: Optional[int] = None):
+    if not VAPID_PRIVATE_KEY:
+        return
+    db = SessionLocal()
+    try:
+        query = db.query(PushSubscription).filter(PushSubscription.ativo == True)
+        if user_id is not None:
+            query = query.filter(PushSubscription.user_id == user_id)
+        subs = query.all()
+        for sub in subs:
+            _enviar_push(sub, titulo, corpo, url)
+    finally:
+        db.close()
+
+
+@app.post("/push/subscribe")
+async def push_subscribe(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    user_id = garantir_user_id(current_user.id, "push")
+    try:
+        dados = await request.json()
+        endpoint = dados.get("endpoint", "")
+        keys = dados.get("keys", {})
+        p256dh = keys.get("p256dh", "")
+        auth = keys.get("auth", "")
+
+        if not endpoint or not p256dh or not auth:
+            raise HTTPException(status_code=400, detail="Dados de inscrição inválidos.")
+
+        sub = db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint, PushSubscription.user_id == user_id).first()
+        if sub:
+            sub.p256dh = p256dh
+            sub.auth = auth
+            sub.ativo = True
+        else:
+            sub_existente = db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint).first()
+            if sub_existente and sub_existente.user_id not in (None, user_id):
+                sub_existente.user_id = user_id
+                sub_existente.p256dh = p256dh
+                sub_existente.auth = auth
+                sub_existente.ativo = True
+                sub = sub_existente
+            else:
+                sub = PushSubscription(user_id=user_id, endpoint=endpoint, p256dh=p256dh, auth=auth, ativo=True)
+                db.add(sub)
+
+        db.commit()
+        db.refresh(sub)
+        return {"ok": True, "id": sub.id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao salvar inscrição: {str(e)}")
+
+
+@app.delete("/push/subscribe")
+async def push_unsubscribe(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    try:
+        dados = await request.json()
+        endpoint = dados.get("endpoint", "")
+        sub = db.query(PushSubscription).filter(PushSubscription.endpoint == endpoint, PushSubscription.user_id == current_user.id).first()
+        if sub:
+            sub.ativo = False
+            db.commit()
+        return {"ok": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/push/status")
+async def push_status(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    try:
+        total = db.query(PushSubscription).filter(PushSubscription.user_id == current_user.id, PushSubscription.ativo == True).count()
+    except Exception as e:
+        return {
+            "vapid_configurado": bool(VAPID_PRIVATE_KEY),
+            "assinantes": -1,
+            "erro_tabela": str(e),
+            "solucao": "Redeploy ou migração necessária",
+        }
+    return {
+        "vapid_configurado": bool(VAPID_PRIVATE_KEY),
+        "assinantes": total,
+        "public_key": VAPID_PUBLIC_KEY,
+    }
+
+
+@app.get("/push/teste")
+async def push_teste(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not VAPID_PRIVATE_KEY:
+        raise HTTPException(status_code=503, detail="VAPID_PRIVATE_KEY não configurada no servidor.")
+    subs = db.query(PushSubscription).filter(PushSubscription.user_id == current_user.id, PushSubscription.ativo == True).all()
+    if not subs:
+        raise HTTPException(status_code=404, detail="Nenhum dispositivo inscrito. Abra o app primeiro.")
+    for sub in subs:
+        _enviar_push(sub, "Teste PRIORIZA", "Push funcionando com app fechado.", "/app")
+    return {"ok": True, "enviado_para": len(subs)}
+
+
+@app.get("/push/limpar")
+async def push_limpar(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    count = db.query(PushSubscription).filter(PushSubscription.user_id == current_user.id).count()
+    db.query(PushSubscription).filter(PushSubscription.user_id == current_user.id).delete()
+    db.commit()
+    return {
+        "ok": True,
+        "removidas": count,
+        "mensagem": "Todas as inscrições foram removidas. Recarregue o app para criar nova inscrição.",
+    }
+
+
+FERIADOS_BR = [
+    (1, 1, "Ano Novo"),
+    (21, 4, "Tiradentes"),
+    (1, 5, "Dia do Trabalho"),
+    (7, 9, "Independência"),
+    (12, 10, "N.S. Aparecida"),
+    (2, 11, "Finados"),
+    (15, 11, "Proclamação da República"),
+    (20, 11, "Consciência Negra"),
+    (25, 12, "Natal"),
+]
+
+
+def _feriado_hoje_ou_amanha():
+    hoje = date.today()
+    amanha = hoje + timedelta(days=1)
+    for d, m, nome in FERIADOS_BR:
+        if hoje.day == d and hoje.month == m:
+            return ("hoje", nome)
+        if amanha.day == d and amanha.month == m:
+            return ("amanha", nome)
+    return None
+
+
+_push_thread_started = False
+
+
+def _loop_notificacoes_push():
+    import time as time_module
+
+    while True:
+        try:
+            agora = datetime.now()
+            hora = agora.hour
+            minuto = agora.minute
+            dia_semana = agora.weekday()
+            db = SessionLocal()
+            try:
+                hoje_iso = date.today().isoformat()
+                amanha_iso = (date.today() + timedelta(days=1)).isoformat()
+                usuarios = db.query(User).filter(User.ativo == True).all()
+                minutos_agora = hora * 60 + minuto
+
+                for usuario in usuarios:
+                    tarefas_hoje = (
+                        db.query(Tarefa)
+                        .filter(Tarefa.ativo == True, Tarefa.user_id == usuario.id, Tarefa.data == hoje_iso)
+                        .order_by(Tarefa.hora_inicio)
+                        .all()
+                    )
+                    tarefas_amanha = db.query(Tarefa).filter(
+                        Tarefa.ativo == True,
+                        Tarefa.user_id == usuario.id,
+                        Tarefa.data == amanha_iso,
+                    ).all()
+                    checklist = db.query(ChecklistItem).filter(
+                        ChecklistItem.ativo == True,
+                        ChecklistItem.user_id == usuario.id,
+                    ).all()
+                    chk_hoje = [i for i in checklist if calcular_pode_mostrar_hoje(i)]
+
+                    for t in tarefas_hoje:
+                        if not t.hora_inicio or not status_nao_concluido(t.status):
+                            continue
+                        try:
+                            diff = hora_para_minutos(t.hora_inicio) - minutos_agora
+                            origem = f" · {t.origem}" if t.origem else ""
+                            if diff == 60:
+                                _enviar_push_todos("Em 1 hora", f"{t.titulo}{origem} às {t.hora_inicio}", user_id=usuario.id)
+                            elif diff == 15:
+                                _enviar_push_todos("Em 15 minutos", f"{t.titulo}{origem} começa às {t.hora_inicio}", user_id=usuario.id)
+                            elif diff == 5:
+                                _enviar_push_todos("Em 5 minutos", f"{t.titulo}{origem} começa às {t.hora_inicio}", user_id=usuario.id)
+                            elif diff == 0:
+                                _enviar_push_todos("Agora", f"{t.titulo}{origem} está começando", user_id=usuario.id)
+                        except Exception:
+                            pass
+
+                    if hora == 6 and minuto == 0:
+                        total = len([t for t in tarefas_hoje if normalizar_status(t.status) != "cancelada"])
+                        chk_total = len(chk_hoje)
+                        alta_prio = [t for t in tarefas_hoje if t.prioridade == 1 and status_nao_concluido(t.status)]
+                        if total == 0 and chk_total == 0:
+                            _enviar_push_todos("Bom dia", "Agenda livre hoje. Aproveite o dia.", user_id=usuario.id)
+                        elif alta_prio:
+                            _enviar_push_todos(
+                                "Bom dia",
+                                f"{len(alta_prio)} tarefa(s) de alta prioridade hoje. Primeira: {alta_prio[0].titulo}",
+                                user_id=usuario.id,
+                            )
+                        else:
+                            _enviar_push_todos(
+                                "Bom dia",
+                                f"Hoje: {total} compromisso(s) e {chk_total} rotina(s) no checklist.",
+                                user_id=usuario.id,
+                            )
+
+                    if hora == 9 and minuto == 0:
+                        alta = [t for t in tarefas_hoje if t.prioridade == 1 and status_nao_concluido(t.status)]
+                        if alta:
+                            _enviar_push_todos("Tarefa prioritária", f"{len(alta)} tarefa(s) de alta prioridade hoje.", user_id=usuario.id)
+
+                    if hora == 11 and minuto == 0:
+                        pendentes = [i for i in chk_hoje if i.status == "pendente"]
+                        feitos = [i for i in chk_hoje if i.status == "feito"]
+                        if pendentes and not feitos:
+                            _enviar_push_todos(
+                                "Checklist do dia",
+                                f"Você ainda não iniciou nenhuma rotina. {len(pendentes)} pendente(s).",
+                                user_id=usuario.id,
+                            )
+                        elif pendentes:
+                            _enviar_push_todos(
+                                "Checklist em andamento",
+                                f"{len(feitos)} feita(s), faltam {len(pendentes)}.",
+                                user_id=usuario.id,
+                            )
+
+                    if hora == 20 and minuto == 0:
+                        feitas = len([t for t in tarefas_hoje if normalizar_status(t.status) == "feito"])
+                        total = len([t for t in tarefas_hoje if normalizar_status(t.status) != "cancelada"])
+                        amanha_count = len(tarefas_amanha)
+                        if total == 0:
+                            _enviar_push_todos("Encerrando o dia", "Nenhum compromisso hoje. Descanse bem.", user_id=usuario.id)
+                        elif feitas == total:
+                            _enviar_push_todos("Parabéns", f"Todas as {total} tarefa(s) concluídas hoje.", user_id=usuario.id)
+                        else:
+                            extra = f" Amanhã: {amanha_count} compromisso(s)." if amanha_count else ""
+                            _enviar_push_todos("Fim do dia", f"{feitas}/{total} tarefas concluídas.{extra}", user_id=usuario.id)
+
+                    if dia_semana == 0 and hora == 8 and minuto == 0:
+                        semana_total = db.query(Tarefa).filter(
+                            Tarefa.ativo == True,
+                            Tarefa.user_id == usuario.id,
+                            Tarefa.data >= hoje_iso,
+                            Tarefa.data <= (date.today() + timedelta(days=4)).isoformat(),
+                        ).count()
+                        _enviar_push_todos("Semana começando", f"Você tem {semana_total} compromisso(s) essa semana.", user_id=usuario.id)
+
+                    if dia_semana == 4 and hora == 17 and minuto == 0:
+                        pendentes_sexta = [t for t in tarefas_hoje if status_nao_concluido(t.status)]
+                        if not pendentes_sexta:
+                            _enviar_push_todos("Sexta-feira", "Você zerou todas as tarefas. Bom descanso.", user_id=usuario.id)
+                        else:
+                            _enviar_push_todos("Sexta-feira", f"Faltam {len(pendentes_sexta)} tarefa(s) para fechar a semana.", user_id=usuario.id)
+
+                    if hora == 7 and minuto == 0:
+                        feriado = _feriado_hoje_ou_amanha()
+                        if feriado:
+                            quando, nome = feriado
+                            tarefas_feriado = tarefas_hoje if quando == "hoje" else tarefas_amanha
+                            n = len(tarefas_feriado)
+                            if quando == "hoje":
+                                msg = f"Você tem {n} tarefa(s) mesmo assim." if n else "Aproveite o dia de folga."
+                                _enviar_push_todos(f"Hoje é feriado — {nome}", msg, user_id=usuario.id)
+                            else:
+                                msg = f"Você tem {n} tarefa(s) no dia do feriado. Considere adiantar." if n else "Amanhã é folga."
+                                _enviar_push_todos(f"Feriado amanhã — {nome}", msg, user_id=usuario.id)
+            finally:
+                db.close()
+        except Exception as e:
+            print(f"[PUSH LOOP] Erro: {e}")
+
+        time_module.sleep(60)
+
+
+@app.on_event("startup")
+def iniciar_thread_push():
+    global _push_thread_started
+    if _push_thread_started:
+        return
+    _push_thread_started = True
+    thread = threading.Thread(target=_loop_notificacoes_push, daemon=True)
+    thread.start()
+    print("[PUSH] Thread de notificações iniciada.")
+
+
+# ============================================================
+# RODAR LOCALMENTE
+# ============================================================
+
+if __name__ == "__main__":
+    import uvicorn
+
+    port = int(os.environ.get("PORT", 5000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
