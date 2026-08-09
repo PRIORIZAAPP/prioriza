@@ -456,18 +456,19 @@
         });
 
         if (!resposta.ok) {
-          const erro = await resposta.text();
-          console.error("[NOTIF] ❌ Erro do servidor ao inscrever:", resposta.status, erro);
-          throw new Error(`Servidor retornou ${resposta.status}: ${erro}`);
+          PriorizaUtils.debugError("[NOTIF] Falha ao registrar push", { status: resposta.status });
+          throw new Error("Nao foi possivel ativar as notificacoes agora.");
         }
 
-        const resultado = await resposta.json();
-        console.log("[NOTIF] ✅ Push registrado com sucesso!", resultado);
+        await resposta.json();
+        PriorizaUtils.debugLog("[NOTIF] Push registrado com sucesso.");
       } catch(e) {
-        console.error("[NOTIF] ❌ Erro ao registrar push:", e);
+        PriorizaUtils.debugError("[NOTIF] Erro ao registrar push", { name: e?.name, message: e?.message });
         // Mostra alerta visual para debug
-        if (window.location.search.includes("debug")) {
-          alert("Erro push: " + e.message);
+        const debugAtivo = PriorizaUtils.isDevelopment()
+          && new URLSearchParams(window.location.search).get("debug") === "1";
+        if (debugAtivo) {
+          alert("Nao foi possivel ativar as notificacoes agora.");
         }
       }
     }
