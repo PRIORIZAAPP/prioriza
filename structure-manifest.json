@@ -1,0 +1,24 @@
+{
+    "css":  [
+                "tokens.css",
+                "base.css",
+                "layout.css",
+                "components.css",
+                "screens.css",
+                "responsive.css"
+            ],
+    "javascript":  [
+                       "js/core/debug.js",
+                       "js/core/runtime.js",
+                       "js/screens/finance.js",
+                       "js/core/admin.js",
+                       "js/screens/agenda.js",
+                       "js/screens/checklist.js",
+                       "js/screens/workspace.js",
+                       "js/core/auth.js",
+                       "js/screens/operation.js",
+                       "js/app.js",
+                       "js/integrations/notifications.js"
+                   ],
+    "compatibility":  "Scripts remain classic and ordered to preserve shared global lexical bindings."
+}
