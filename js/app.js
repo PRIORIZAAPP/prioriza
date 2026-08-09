@@ -1,6 +1,8 @@
     "use strict";
 
     document.addEventListener("DOMContentLoaded", async () => {
+      PriorizaUtils.bindGlobalErrorHandling();
+      PriorizaUtils.registerServiceWorker();
       inicializarExperienciaSprint042();
       const temaSalvo = (() => {
         try {
