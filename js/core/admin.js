@@ -2269,13 +2269,7 @@
 
     // ── XSS ──────────────────────────────────────────────────────
     function textoSeguro(str) {
-      return String(str ?? "").replace(/[&<>"']/g, (char) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;",
-      })[char]);
+      return PriorizaUtils.escapeHTML(str);
     }
 
     function renderizarErroComRetry(container, mensagem, acao) {

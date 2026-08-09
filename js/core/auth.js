@@ -18,6 +18,8 @@
 
       document.getElementById("auth-form-login")?.addEventListener("submit", async (ev) => {
         ev.preventDefault();
+        const liberarEnvio = PriorizaUtils.acquireFormSubmission(ev.currentTarget);
+        if (!liberarEnvio) return;
         definirErroAuth("");
         const email = document.getElementById("auth-login-email")?.value.trim() || "";
         const senha = document.getElementById("auth-login-senha")?.value || "";
@@ -34,11 +36,15 @@
           await entrarNoAppComTransicao();
         } catch (e) {
           definirErroAuth(e.message || "Não foi possível entrar.");
+        } finally {
+          liberarEnvio();
         }
       });
 
       document.getElementById("auth-form-forgot")?.addEventListener("submit", async (ev) => {
         ev.preventDefault();
+        const liberarEnvio = PriorizaUtils.acquireFormSubmission(ev.currentTarget);
+        if (!liberarEnvio) return;
         definirErroAuth("");
         const email = document.getElementById("auth-forgot-email")?.value.trim() || "";
         try {
@@ -52,6 +58,8 @@
           definirErroAuth(data?.message || "Se este e-mail estiver cadastrado, enviaremos as instruções de recuperação.", "sucesso");
         } catch (e) {
           definirErroAuth(e.message || "Não foi possível iniciar a recuperação.");
+        } finally {
+          liberarEnvio();
         }
       });
 
@@ -70,6 +78,8 @@
           definirErroAuth("As senhas não coincidem.");
           return;
         }
+        const liberarEnvio = PriorizaUtils.acquireFormSubmission(ev.currentTarget);
+        if (!liberarEnvio) return;
         try {
           const res = await nativeFetch(API + "/auth/register", {
             method: "POST",
@@ -83,6 +93,8 @@
           await entrarNoAppComTransicao();
         } catch (e) {
           definirErroAuth(e.message || "Não foi possível criar a conta.");
+        } finally {
+          liberarEnvio();
         }
       });
 
@@ -103,6 +115,8 @@
           definirErroAuth("As senhas não coincidem.");
           return;
         }
+        const liberarEnvio = PriorizaUtils.acquireFormSubmission(ev.currentTarget);
+        if (!liberarEnvio) return;
         try {
           const res = await nativeFetch(API + "/auth/reset-password", {
             method: "POST",
@@ -119,6 +133,8 @@
           if (campoEmail) campoEmail.focus();
         } catch (e) {
           definirErroAuth(e.message || "Não foi possível redefinir a senha.");
+        } finally {
+          liberarEnvio();
         }
       });
     }
@@ -140,16 +156,21 @@
     }
 
     async function fazerLogout() {
+      PriorizaUtils.cancelAllReads();
       try {
         await nativeFetch(API + "/auth/logout", { method: "POST", headers: authHeaders() });
       } catch (e) {
-        console.warn("[PRIORIZA] Logout simbólico falhou:", e);
+        PriorizaUtils.debugWarn("[PRIORIZA] Logout remoto indisponivel", { name: e?.name });
       }
       toggleFormChecklist(false);
       toggleFormAgenda(false);
       toggleFormMarcoOperacional(false);
       fecharModalExclusaoConta();
       document.body.classList.remove("modal-aberto");
+      removerAvatarPerfilLocal(authUser);
+      ["prioriza_notif_dia", "prioriza_notif_semana", "prioriza_notif_alertas"].forEach((key) => {
+        try { localStorage.removeItem(key); } catch {}
+      });
       authUser = null;
       clearAuthToken();
       window.location.reload();
