@@ -5,6 +5,69 @@
         box-shadow: 0 2px 6px rgba(15,23,42,0.12);
         border: 1px solid #e5e7eb;
       }
+
+/* Sprint 042: estados e controles compartilhados */
+.empty-state {
+  width: 100%;
+  min-height: 148px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 28px 20px;
+  border: 1px dashed #cbd5e1;
+  border-radius: var(--radius-lg);
+  background: #f8fafc;
+  color: #64748b;
+  text-align: center;
+}
+
+.empty-state__icon { color: var(--cor-tema); }
+.empty-state__title, .empty-state-title { margin: 0; color: #1e293b; font-size: 15px; font-weight: 750; }
+.empty-state__text, .empty-state-description { max-width: 460px; margin: 0; font-size: 13px; line-height: 1.5; }
+.empty-state--error { border-color: #fecaca; background: #fffafa; }
+.empty-state--error .empty-state__icon { color: #dc2626; }
+.empty-state__action {
+  min-height: var(--touch-target-min);
+  padding: 8px 14px;
+  border: 1px solid rgba(var(--cor-tema-rgb), .24);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--cor-tema-escura);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.loading-state { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 104px; color: #64748b; }
+.loading-state__spinner, .loading-spinner { width: 20px; height: 20px; border: 2px solid #dbeafe; border-top-color: var(--cor-tema); border-radius: 50%; animation: prioriza-spin .75s linear infinite; }
+@keyframes prioriza-spin { to { transform: rotate(360deg); } }
+
+.connection-status {
+  position: fixed;
+  top: calc(var(--layout-header-offset, 124px) + 8px);
+  left: 50%;
+  z-index: 1200;
+  max-width: calc(100vw - 32px);
+  padding: 10px 16px;
+  border: 1px solid #fed7aa;
+  border-radius: 999px;
+  background: #fff7ed;
+  box-shadow: var(--shadow-card);
+  color: #9a3412;
+  font-size: 13px;
+  font-weight: 650;
+  text-align: center;
+  transform: translateX(-50%);
+}
+.connection-status.is-online, .connection-status--online { border-color: #bbf7d0; background: #f0fdf4; color: #166534; }
+
+button, [role="button"], .btn, .nav-btn, .bottom-nav-item { touch-action: manipulation; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}
       .card-header { display: flex; align-items: center; margin-bottom: 8px; gap: 8px; }
       .card-header svg { flex-shrink: 0; }
       .card-header h2 { margin: 0; font-size: 16px; font-weight: 600; color: #111827; }

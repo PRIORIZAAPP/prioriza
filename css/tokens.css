@@ -23,6 +23,8 @@
         --space-3: 12px;
         --space-4: 16px;
         --space-5: 24px;
+        --space-6: 32px;
+        --touch-target-min: 42px;
         --border-soft: 1px solid rgba(226, 232, 240, 0.92);
         --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.06);
       }

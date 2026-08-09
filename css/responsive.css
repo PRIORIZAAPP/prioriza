@@ -5,6 +5,40 @@
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
       }
+    }
+
+/* Sprint 042 — faixa intermediaria/tablet */
+@media (min-width: 768px) and (max-width: 1099px) {
+  .app-shell { grid-template-columns: 1fr !important; }
+  .sidebar, .desktop-sidebar, .desktop-rail { display: none !important; }
+  .main-content, main { width: 100%; min-width: 0; }
+  .screen.active { width: min(100%, 760px); margin-inline: auto; padding-inline: 20px; }
+  .bottom-nav { display: grid !important; }
+  .bottom-nav-item { min-height: 52px; }
+  .modal-card, .modal-content { width: min(calc(100vw - 48px), 680px); max-height: calc(100dvh - 48px); }
+  .form-grid, .agenda-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .module-evolution-card { width: min(100%, 680px); }
+}
+
+/* Sprint 042 — experiencia compacta no celular */
+@media (max-width: 767px) {
+  :root { --mobile-bottom-safe: env(safe-area-inset-bottom, 0px); }
+  .topbar, .resumo-bar { transition: min-height .18s ease, padding .18s ease, opacity .18s ease; }
+  body.header-compact .topbar { min-height: 48px; padding-top: 4px; padding-bottom: 4px; }
+  body.header-compact .topbar .logo img,
+  body.header-compact .topbar .brand img { max-height: 30px; }
+  body.header-compact .resumo-bar { min-height: 40px; padding-top: 6px; padding-bottom: 6px; }
+  body.header-compact .resumo-bar .resumo-text { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+  .resumo-bar { cursor: pointer; }
+  .resumo-bar[aria-expanded="true"] .resumo-text { display: block; overflow: visible; }
+  .connection-status { top: calc(var(--layout-header-offset, 108px) + 6px); width: calc(100vw - 24px); border-radius: 12px; }
+  button, [role="button"], .btn, .nav-btn, .bottom-nav-item, .menu-trigger { min-width: 42px; min-height: 42px; }
+  .modal-card, .modal-content { max-height: calc(100dvh - 16px); overflow: auto; overscroll-behavior: contain; }
+  .modal-actions, .sheet-actions { position: sticky; bottom: 0; z-index: 2; padding-bottom: calc(10px + var(--mobile-bottom-safe)); background: inherit; }
+  input, textarea, select { max-width: 100%; }
+  textarea { overflow-wrap: anywhere; }
+  .empty-state { min-height: 132px; padding: 22px 16px; }
+}
 
       .auth-screen,
       .auth-card,
@@ -20,7 +54,6 @@
         transform: none !important;
         filter: none !important;
       }
-    }
 
     .checklist-item .check-info {
       min-width: 0;
