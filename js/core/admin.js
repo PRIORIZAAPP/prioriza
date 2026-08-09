@@ -2280,13 +2280,17 @@
 
     function renderizarErroComRetry(container, mensagem, acao) {
       if (!container) return;
-      const aviso = document.createElement("small");
-      aviso.style.color = "#ef4444";
-      aviso.append(document.createTextNode(`⚠️ ${String(mensagem ?? "Erro ao carregar.")} `));
+      const aviso = document.createElement("div");
+      aviso.className = "empty-state empty-state--error";
+      aviso.setAttribute("role", "alert");
+      const titulo = document.createElement("p");
+      titulo.className = "empty-state__title";
+      titulo.textContent = String(mensagem ?? "Não foi possível carregar.");
+      aviso.appendChild(titulo);
       const botao = document.createElement("button");
       botao.type = "button";
       botao.textContent = "Tentar novamente";
-      botao.style.cssText = "color:var(--cor-tema);background:none;border:none;cursor:pointer;font-size:12px;text-decoration:underline";
+      botao.className = "empty-state__action";
       if (typeof acao === "function") botao.addEventListener("click", acao);
       aviso.appendChild(botao);
       container.replaceChildren(aviso);
