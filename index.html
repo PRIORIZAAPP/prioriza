@@ -24,7 +24,10 @@
     
     <!-- Console mobile para debug (ativa com ?debug na URL) -->
     <script>
-      if (window.location.search.includes('debug')) {
+      const debugPermitido =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+      if (debugPermitido && window.location.search.includes('debug')) {
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/eruda';
         document.head.appendChild(script);
@@ -48,6 +51,17 @@
         --resumo-offset: 40px;
         --layout-header-offset: 124px;
         --header-width: min(100vw, 480px);
+        --radius-sm: 10px;
+        --radius-md: 14px;
+        --radius-lg: 18px;
+        --radius-xl: 24px;
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 16px;
+        --space-5: 24px;
+        --border-soft: 1px solid rgba(226, 232, 240, 0.92);
+        --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.06);
       }
 
     body {
@@ -534,10 +548,8 @@
         flex-direction: column;
         background: #e5e7eb;
         position: relative;
+        animation: appFadeIn 0.5s ease-out;
       }
-      .app-shell {
-  animation: appFadeIn 0.5s ease-out;
-}
 
 @keyframes appFadeIn {
   from {
@@ -693,6 +705,7 @@
         gap: 8px;
         overflow: hidden;
         border-bottom: 1px solid #dde5ef;
+        box-shadow: 0 4px 10px rgba(15,23,42,0.05);
       }
       .resumo-bar svg { flex-shrink: 0; }
       .resumo-bar #resumo-text {
@@ -700,7 +713,6 @@
         line-height: 1.25;
         overflow-wrap: anywhere;
       }
-      .resumo-bar { box-shadow: 0 4px 10px rgba(15,23,42,0.05); }
 
       /* ── CONTENT ── */
       .content { flex: 1; padding: 12px 10px 88px 10px; }
@@ -797,19 +809,12 @@
       @media (max-width: 1099px) {
         body { padding: 0; }
         .app-shell {
-          max-width: 480px;
-          min-height: 100vh;
           border: none;
           border-radius: 0;
           box-shadow: none;
         }
-        .app-workspace {
-          display: block;
-          padding: var(--layout-header-offset) 0 0;
-        }
         .app-main-column {
           display: block;
-          width: 100%;
         }
         .desktop-sidebar,
         .desktop-rail {
@@ -9318,8 +9323,8 @@
         background-color: #f1f5f9;
       }
 
-      :where(button, a, input, select, textarea, [role="button"]):focus-visible {
-        outline: 2px solid rgba(var(--cor-tema-rgb), 0.34);
+      :where(button, a, input, select, textarea, [role="button"], [tabindex]):focus-visible {
+        outline: 3px solid rgba(var(--cor-tema-rgb), 0.28);
         outline-offset: 2px;
       }
 
@@ -10877,12 +10882,27 @@
       }
     }
 
-    @media (min-width: 1100px) and (prefers-reduced-motion: reduce) {
+    @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         scroll-behavior: auto !important;
         transition-duration: 0.01ms !important;
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
+      }
+
+      .auth-screen,
+      .auth-card,
+      .auth-panel,
+      .auth-transition-copy,
+      .auth-transition-slogan,
+      .splash-screen,
+      .splash-logo,
+      .splash-slogan,
+      .onboarding-overlay,
+      .onboarding-card,
+      .screen {
+        transform: none !important;
+        filter: none !important;
       }
     }
 
@@ -10979,6 +10999,24 @@
         min-height: 18px;
         padding: 0 7px;
         font-size: 9px;
+      }
+
+      .agenda-status-btn,
+      .pessoal-btn,
+      .agenda-icon-btn,
+      .marco-operacional-actions .agenda-icon-btn {
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+        min-height: 40px;
+      }
+
+      .agenda-status-btn svg,
+      .pessoal-btn svg,
+      .agenda-icon-btn svg,
+      .marco-operacional-actions .agenda-icon-btn svg {
+        width: 18px;
+        height: 18px;
       }
     }
 
@@ -11311,6 +11349,83 @@
         }
       }
 
+      #financas-legacy-interface[hidden],
+      #operacao-legacy-interface[hidden] {
+        display: none !important;
+      }
+
+      .module-evolution-stage {
+        min-height: calc(100vh - var(--layout-header-offset, 124px) - 32px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-5);
+      }
+
+      .module-evolution-card {
+        width: min(100%, 680px);
+        margin: 0;
+        padding: clamp(30px, 5vw, 52px);
+        border: var(--border-soft);
+        border-radius: var(--radius-xl);
+        background: #ffffff;
+        box-shadow: var(--shadow-card);
+        text-align: center;
+      }
+
+      .module-evolution-card .module-evolution-icon,
+      .module-evolution-card .operacao-coming-soon-icon {
+        width: 58px;
+        height: 58px;
+        margin: 0 auto var(--space-4);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(var(--cor-tema-rgb), 0.18);
+        border-radius: var(--radius-lg);
+        background: rgba(var(--cor-tema-rgb), 0.09);
+        color: var(--cor-tema-escura);
+      }
+
+      .module-evolution-kicker,
+      .module-evolution-card .operacao-coming-soon-kicker {
+        margin: 0 0 var(--space-2);
+        color: var(--cor-tema-escura);
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .module-evolution-card h2 {
+        margin: 0;
+        color: #172033;
+        font-size: clamp(25px, 4vw, 34px);
+        line-height: 1.15;
+        letter-spacing: -0.03em;
+      }
+
+      .module-evolution-card > p:last-child {
+        max-width: 560px;
+        margin: var(--space-4) auto 0;
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      @media (max-width: 640px) {
+        .module-evolution-stage {
+          min-height: calc(100vh - var(--layout-header-offset, 124px) - 76px);
+          padding: 14px 10px 22px;
+          align-items: flex-start;
+        }
+
+        .module-evolution-card {
+          padding: 30px 20px;
+          border-radius: var(--radius-lg);
+        }
+      }
+
   </style>
   </head>
   <body>
@@ -11322,8 +11437,8 @@
         <div id="modal-mensagem" class="modal-mensagem"></div>
         <input id="modal-input"  class="modal-campo" type="text" style="display:none" />
         <div class="modal-btns">
-          <button id="modal-btn-cancel" class="modal-btn-cancel" style="display:none">Cancelar</button>
-          <button id="modal-btn-ok"     class="modal-btn-ok">OK</button>
+          <button id="modal-btn-cancel" class="modal-btn-cancel" type="button" style="display:none">Cancelar</button>
+          <button id="modal-btn-ok" class="modal-btn-ok" type="button">OK</button>
         </div>
       </div>
     </div>
@@ -11487,7 +11602,7 @@
             </svg>
             <span>Modo demonstração</span>
           </div>
-          <button id="btn-mic-universal" class="mic-button" title="Comando de voz">
+          <button id="btn-mic-universal" class="mic-button" type="button" title="Comando de voz">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mic-svg">
               <path d="M12 1a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
@@ -11497,7 +11612,7 @@
             </svg>
             <span class="mic-button-label">Adicionar por voz</span>
           </button>
-          <button id="btn-topbar-ajustes" class="topbar-settings-btn" title="Ajustes" aria-label="Ajustes">
+          <button id="btn-topbar-ajustes" class="topbar-settings-btn" type="button" title="Ajustes" aria-label="Ajustes">
             <svg viewBox="0 0 24 24" fill="currentColor" color="currentColor" aria-hidden="true">
               <path d="M19.14,12.94a7.43,7.43,0,0,0,.05-1,7.43,7.43,0,0,0-.05-1l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.28,7.28,0,0,0-1.73-1l-.38-2.65A.5.5,0,0,0,13.67,2H10.33a.5.5,0,0,0-.5.42L9.45,5.07a7.28,7.28,0,0,0-1.73,1l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L4.86,10a7.43,7.43,0,0,0-.05,1,7.43,7.43,0,0,0,.05,1L2.75,13.65a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.28,7.28,0,0,0,1.73,1l.38,2.65a.5.5,0,0,0,.5.42h3.34a.5.5,0,0,0,.5-.42l.38-2.65a7.28,7.28,0,0,0,1.73-1l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64ZM12,15.5A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/>
             </svg>
@@ -11619,12 +11734,12 @@
               <div class="today-calendar-head">
                 <span id="desktop-mini-calendar-title" class="desktop-sidebar-section-title">Mês atual</span>
                 <div class="desktop-mini-calendar-nav">
-                  <button id="btn-desktop-mini-prev" class="desktop-mini-calendar-btn" type="button" aria-label="Mês anterior">
+                  <button id="btn-desktop-mini-prev" class="desktop-mini-calendar-btn" type="button" aria-label="Mês anterior" title="Mês anterior">
                     <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
                       <path d="M160 48L80 128l80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                   </button>
-                  <button id="btn-desktop-mini-next" class="desktop-mini-calendar-btn" type="button" aria-label="Próximo mês">
+                  <button id="btn-desktop-mini-next" class="desktop-mini-calendar-btn" type="button" aria-label="Próximo mês" title="Próximo mês">
                     <svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
                       <path d="M96 48l80 80-80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
@@ -11877,7 +11992,7 @@
             <div id="calendar-container" class="calendar-wrapper">
               <div class="calendar-header">
                 <div class="calendar-nav">
-                  <button id="btn-cal-prev" class="calendar-nav-btn" aria-label="Mês anterior">
+                  <button id="btn-cal-prev" class="calendar-nav-btn" type="button" aria-label="Mês anterior" title="Mês anterior">
                     <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
                       <path d="M160 48L80 128l80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
@@ -11885,7 +12000,7 @@
                 </div>
                 <div class="calendar-header-title" id="calendar-title">Mês Ano</div>
                 <div class="calendar-nav">
-                  <button id="btn-cal-next" class="calendar-nav-btn" aria-label="Próximo mês">
+                  <button id="btn-cal-next" class="calendar-nav-btn" type="button" aria-label="Próximo mês" title="Próximo mês">
                     <svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
                       <path d="M96 48l80 80-80 80" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
@@ -12078,8 +12193,8 @@
 
         <!-- ══ ABA OPERAÇÃO ══ -->
         <div class="screen" id="screen-operacao">
-          <div class="operacao-coming-soon-stage">
-            <article class="card operacao-coming-soon-card" aria-labelledby="operacao-coming-soon-title">
+          <div class="operacao-coming-soon-stage module-evolution-stage">
+            <article class="card operacao-coming-soon-card module-evolution-card" aria-labelledby="operacao-coming-soon-title">
               <div class="operacao-coming-soon-icon" aria-hidden="true">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                   <rect width="16" height="16" x="4" y="4" rx="2" />
@@ -12087,25 +12202,9 @@
                   <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3" />
                 </svg>
               </div>
-              <p class="operacao-coming-soon-kicker">Nova experiência em desenvolvimento</p>
-              <h2 id="operacao-coming-soon-title">Operação</h2>
-              <p class="operacao-coming-soon-lead">Estamos preparando uma nova experiência para o gerenciamento operacional.</p>
-              <p class="operacao-coming-soon-description">Este módulo está sendo totalmente redesenhado para oferecer uma gestão mais rápida, intuitiva e completa das equipes, escalas e unidades.</p>
-
-              <div class="operacao-coming-soon-resources">
-                <h3>Recursos que estarão disponíveis</h3>
-                <ul>
-                  <li><span class="operacao-resource-check" aria-hidden="true">✓</span><span>Gestão de escalas</span></li>
-                  <li><span class="operacao-resource-check" aria-hidden="true">✓</span><span>Cadastro de equipes</span></li>
-                  <li><span class="operacao-resource-check" aria-hidden="true">✓</span><span>Trocas de plantão</span></li>
-                  <li><span class="operacao-resource-check" aria-hidden="true">✓</span><span>Controle de horas trabalhadas</span></li>
-                  <li><span class="operacao-resource-check" aria-hidden="true">✓</span><span>Cobertura das unidades</span></li>
-                  <li><span class="operacao-resource-check" aria-hidden="true">✓</span><span>Indicadores operacionais</span></li>
-                  <li><span class="operacao-resource-check" aria-hidden="true">✓</span><span>Relatórios gerenciais</span></li>
-                </ul>
-              </div>
-
-              <p class="operacao-coming-soon-note">Em breve este módulo estará disponível em uma atualização do Prioriza.</p>
+              <p class="operacao-coming-soon-kicker">Operação</p>
+              <h2 id="operacao-coming-soon-title">Esta área está em evolução</h2>
+              <p class="operacao-coming-soon-description">Estamos preparando novos recursos para tornar esta área mais completa e útil no dia a dia. Em breve, ela estará disponível por aqui.</p>
             </article>
           </div>
 
@@ -12308,7 +12407,23 @@
 
         <!-- ══ ABA FINANÇAS ══ -->
         <div class="screen" id="screen-financas">
-          <div class="card">
+          <div class="module-evolution-stage">
+            <article class="card module-evolution-card" aria-labelledby="financas-evolution-title">
+              <div class="module-evolution-icon" aria-hidden="true">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18" />
+                  <path d="M7 12h2" />
+                  <path d="M7 16h5" />
+                  <rect width="18" height="14" x="3" y="5" rx="2" />
+                </svg>
+              </div>
+              <p class="module-evolution-kicker">Finanças</p>
+              <h2 id="financas-evolution-title">Esta área está em evolução</h2>
+              <p>Estamos preparando novos recursos para tornar esta área mais completa e útil no dia a dia. Em breve, ela estará disponível por aqui.</p>
+            </article>
+          </div>
+
+          <div id="financas-legacy-interface" class="card" hidden aria-hidden="true">
             <div class="financas-shell">
               <div class="financas-mobile-view">
                 <div class="financas-mobile-top">
@@ -12372,7 +12487,7 @@
 
               <div class="financas-desktop-view">
               <div class="financas-hero">
-                <button id="btn-financas-voltar-prioriza" class="btn-secondary financas-back-btn" type="button" data-target-jump="screen-hoje">
+                <button id="btn-financas-voltar-prioriza" class="btn-secondary financas-back-btn" type="button" data-target-jump="screen-hoje" aria-label="Voltar para o início" title="Voltar para o início">
                   <img id="financas-logo-prioriza" class="financas-logo-img" alt="PRIORIZA" />
                 </button>
                 <div class="financas-hero-copy">
@@ -14562,6 +14677,8 @@
           const toggle = document.createElement("button");
           toggle.className = "financas-projecao-toggle";
           toggle.type = "button";
+          toggle.title = `Expandir ${grupo.categoria}`;
+          toggle.setAttribute("aria-label", `Expandir ${grupo.categoria}`);
           toggle.innerHTML = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="m9 18 6-6-6-6"></path>
@@ -15686,6 +15803,7 @@
       btnEditar.className = "financas-item-action-btn";
       btnEditar.type = "button";
       btnEditar.title = "Editar lançamento";
+      btnEditar.setAttribute("aria-label", "Editar lançamento");
       btnEditar.innerHTML = `
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M12 20h9"/>
@@ -15698,6 +15816,7 @@
       btnExcluir.className = "financas-item-action-btn delete";
       btnExcluir.type = "button";
       btnExcluir.title = "Excluir lançamento";
+      btnExcluir.setAttribute("aria-label", "Excluir lançamento");
       btnExcluir.innerHTML = `
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M3 6h18"/>
@@ -17220,7 +17339,6 @@
         carregarChecklistGeral(),
         carregarPessoalLista(),
         carregarNotas(),
-        (typeof carregarUnidadesOperacao === "function" ? carregarUnidadesOperacao() : Promise.resolve()),
       ]);
       await atualizarResumoBar();
       atualizarSeloDemo();
@@ -19208,6 +19326,7 @@
       texto.style.flex = "1";
 
       const btnDesfazer = document.createElement("button");
+      btnDesfazer.type = "button";
       btnDesfazer.textContent = "Desfazer";
       btnDesfazer.style.cssText = "background:var(--cor-tema);color:#fff;border:none;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap";
 
@@ -19803,10 +19922,12 @@
               item.appendChild(marcador);
             } else if (!emLayoutDesktop() || (t.tipo_evento || "") !== "google") {
               const statusAtual = t.status || "pendente";
-              const bolinha = document.createElement("div");
+              const bolinha = document.createElement("button");
+              bolinha.type = "button";
               bolinha.className = `agenda-status-btn ${statusAtual}`;
               bolinha.dataset.status = statusAtual;
               bolinha.title = "Toque para mudar status";
+              bolinha.setAttribute("aria-label", `Alterar status de ${t.titulo || "compromisso"}`);
               bolinha.innerHTML = iconStatusInline(statusAtual);
               bolinha.addEventListener("click", async () => {
                 const atual = bolinha.dataset.status || "pendente";
@@ -19910,10 +20031,12 @@
               }
 
               const btnCancelar = document.createElement("button");
+              btnCancelar.type = "button";
               btnCancelar.className = "agenda-icon-btn";
               btnCancelar.style.background = "#f3f4f6";
               btnCancelar.style.color = "#6b7280";
               btnCancelar.title = "Cancelar compromisso";
+              btnCancelar.setAttribute("aria-label", "Cancelar compromisso");
               btnCancelar.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M80 80l96 96M176 80l-96 96" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
               btnCancelar.addEventListener("click", async () => {
                 await cancelarTarefaAgenda(t);
@@ -19922,10 +20045,12 @@
 
               // Botão editar para tarefas locais na aba Hoje
               const btnEdit = document.createElement("button");
+              btnEdit.type = "button";
               btnEdit.className = "agenda-icon-btn";
               btnEdit.style.background = "#dbeafe";
               btnEdit.style.color = "#1d4ed8";
               btnEdit.title = "Editar compromisso";
+              btnEdit.setAttribute("aria-label", "Editar compromisso");
               btnEdit.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M180 32l44 44L72 228H28v-44L180 32z" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 60l44 44" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
               btnEdit.addEventListener("click", async () => {
                 const novoTitulo = await modal.perguntar("Título:", "Editar compromisso", t.titulo);
@@ -21708,27 +21833,33 @@
             }));
           } else {
             const btnCancelCal = document.createElement("button");
+            btnCancelCal.type = "button";
             btnCancelCal.className = "agenda-icon-btn";
             btnCancelCal.style.background = "#f3f4f6";
             btnCancelCal.style.color = "#6b7280";
             btnCancelCal.title = "Cancelar compromisso";
+            btnCancelCal.setAttribute("aria-label", "Cancelar compromisso");
             btnCancelCal.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M80 80l96 96M176 80l-96 96" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
             btnCancelCal.addEventListener("click", cancelarCompromisso);
             item.appendChild(btnCancelCal);
 
             // Botão editar na aba Agenda (calendário)
             const btnEditCal = document.createElement("button");
+            btnEditCal.type = "button";
             btnEditCal.className = "agenda-icon-btn";
             btnEditCal.style.background = "#dbeafe";
             btnEditCal.style.color = "#1d4ed8";
             btnEditCal.title = "Editar compromisso";
+            btnEditCal.setAttribute("aria-label", "Editar compromisso");
             btnEditCal.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M180 32l44 44L72 228H28v-44L180 32z" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 60l44 44" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
             btnEditCal.addEventListener("click", editarCompromisso);
             item.appendChild(btnEditCal);
 
             const btnDel=document.createElement("button");
+            btnDel.type="button";
             btnDel.className="agenda-icon-btn";
             btnDel.title="Excluir compromisso";
+            btnDel.setAttribute("aria-label", "Excluir compromisso");
             btnDel.innerHTML=`<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M96 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M160 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M40 72h176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M72 72l8-24h96l8 24" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M56 72l8 128a8 8 0 0 0 8 8h112a8 8 0 0 0 8-8l8-128" stroke="currentColor" stroke-width="20" stroke-linejoin="round"/></svg>`;
             btnDel.addEventListener("click", excluirCompromisso);
             item.appendChild(btnDel);
@@ -23418,16 +23549,6 @@
         if (id === "screen-agenda") {
           setTimeout(atualizarAgendaMesEDia, 20);
         }
-        if (id === "screen-operacao") {
-          setTimeout(carregarUnidadesOperacao, 20);
-        }
-        if (id === "screen-financas") {
-          atualizarLogoFinanceiroFinancas();
-          atualizarPlanilhaFinanceiraFinancas();
-          setTimeout(() => {
-            carregarFinancasPainelCompleto();
-          }, 40);
-        }
       }
       window.__abrirTelaApp = abrirTela;
       navItems.forEach(item=>{
@@ -23866,7 +23987,6 @@
       carregarPessoalLista();
       carregarNotas();
       vincularFinancasUI();
-      await carregarFinancasPainelCompleto();
       initUniversalMic();
 
       // ── NOTIFICAÇÕES ─────────────────────────────────────────────
