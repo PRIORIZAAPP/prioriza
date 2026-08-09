@@ -1,6 +1,7 @@
     "use strict";
 
     document.addEventListener("DOMContentLoaded", async () => {
+      inicializarExperienciaSprint042();
       const temaSalvo = (() => {
         try {
           return localStorage.getItem(TEMA_STORAGE_KEY) || "azul";
