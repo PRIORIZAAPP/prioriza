@@ -32,7 +32,8 @@
       const isWeekend = [0,6].includes(new Date().getDay());
 
       try {
-        const res = await fetch(API+"/checklist",{headers:authHeaders()});
+        const res = await PriorizaUtils.fetchLatest("checklist-hoje", API+"/checklist",{headers:authHeaders()});
+        if (!res) return;
         if (!res.ok) throw new Error("Servidor retornou " + res.status);
         let itens = (await res.json());
         itens = (Array.isArray(itens)?itens:[]).filter(i=>i.ativo!==false);
@@ -61,6 +62,7 @@
         }
         container.innerHTML="";
 
+        const fragmentoHoje = document.createDocumentFragment();
         visiveis.forEach(item => {
           const status = item.status||"pendente";
           const origem = (item.origem||"").toUpperCase();
@@ -166,10 +168,12 @@
             ()=>{ mostrarFlashFull("warning"); setTimeout(async()=>{ definirEstadoVisualChecklistHoje(div, bolinha, "em_andamento"); const ok = await atualizarStatusChecklist(item.id,"em_andamento"); if (!ok) { definirEstadoVisualChecklistHoje(div, bolinha, item.status || "pendente"); return; } item.status = "em_andamento"; await atualizarResumoBar(); sincronizarChecklistHojeEmSegundoPlano(); },FLASH_DURATION_MS); },
             { previewRightClass: "swipe-preview-right", previewLeftClass: "swipe-preview-left" }
           );
-          container.appendChild(div);
+          fragmentoHoje.appendChild(div);
         });
+        container.appendChild(fragmentoHoje);
         renderizarTimelineOperacionalDesktop();
       } catch(e) {
+        if (e?.name === "AbortError") return;
         console.error("[PRIORIZA] carregarChecklistHoje:", e);
         checklistHojeCache = [];
         checklistTodosCache = [];
@@ -373,9 +377,9 @@
         return;
       }
 
-      itens.forEach((item) => {
-        container.appendChild(criarElementoChecklistItem(item));
-      });
+      const fragmento = document.createDocumentFragment();
+      itens.forEach((item) => fragmento.appendChild(criarElementoChecklistItem(item)));
+      container.appendChild(fragmento);
     }
 
     // ── CHECKLIST GERAL ───────────────────────────────────────────
@@ -386,7 +390,8 @@
       const filtroOrigem = document.getElementById("filtro-origem").value;
 
       try {
-        const res = await fetch(API + "/checklist", { headers: authHeaders() });
+        const res = await PriorizaUtils.fetchLatest("checklist-geral", API + "/checklist", { headers: authHeaders() });
+        if (!res) return;
         if (!res.ok) throw new Error("Servidor retornou " + res.status);
         let itens = (await res.json());
         itens = (Array.isArray(itens) ? itens : []).filter(i => i.ativo !== false);
@@ -425,6 +430,7 @@
         atualizarTabsChecklist(grupos);
         renderChecklistLista(container, checklistGeralAbaAtiva, grupos[checklistGeralAbaAtiva] || []);
       } catch (e) {
+        if (e?.name === "AbortError") return;
         console.error("[PRIORIZA] carregarChecklistGeral:", e);
         renderizarErroComRetry(container, "Erro ao carregar checklist.", carregarChecklistGeral);
       }

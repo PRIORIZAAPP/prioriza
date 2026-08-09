@@ -1317,7 +1317,8 @@
     async function carregarNotas() {
       const container=document.getElementById("lista-notas"); container.innerHTML="<small>Carregando notas...</small>";
       try {
-        const res=await fetch(API+"/notes",{headers:authHeaders()});
+        const res=await PriorizaUtils.fetchLatest("notas-lista", API+"/notes",{headers:authHeaders()});
+        if (!res) return;
         let itens=(await res.json()); itens=(Array.isArray(itens)?itens:[]).filter(n=>n.ativo!==false);
         if(itens.length===0){container.innerHTML=`<small>${emLayoutDesktop()?"Nenhuma nota encontrada.":"Nenhuma anotação salva."}</small>`;return;}
         itens.sort((a,b)=>(a.created_at||"").localeCompare(b.created_at||""));
@@ -1330,6 +1331,7 @@
           });
         }
 
+        const fragmentoNotas = document.createDocumentFragment();
         itens.forEach(nota=>{
           const statusNota = String(nota.status || "").toLowerCase();
           const notaFeita = statusNota === "feito";
@@ -1392,9 +1394,14 @@
             },
             { previewRightClass: "swipe-preview-right", previewLeftClass: "swipe-preview-left-danger" }
           );
-          container.appendChild(div);
+          fragmentoNotas.appendChild(div);
         });
-      } catch(e){console.error(e); container.innerHTML="<small>Erro ao carregar notas.</small>";}
+        container.appendChild(fragmentoNotas);
+      } catch(e){
+        if (e?.name === "AbortError") return;
+        PriorizaUtils.debugError("[Notas] carregar lista", e?.name);
+        container.innerHTML="<small>Erro ao carregar notas.</small>";
+      }
     }
 
     // ── VOZ ───────────────────────────────────────────────────────

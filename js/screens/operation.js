@@ -88,13 +88,7 @@
       }
 
       function escaparTextoOperacao(valor) {
-        return String(valor ?? "").replace(/[&<>"']/g, (char) => ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          "\"": "&quot;",
-          "'": "&#39;"
-        }[char]));
+        return PriorizaUtils.escapeHTML(valor);
       }
 
       function minutosPlantaoOperacao(entrada, saida) {

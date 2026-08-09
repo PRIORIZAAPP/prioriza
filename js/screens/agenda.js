@@ -168,7 +168,8 @@
       const syncAjuda = document.getElementById("agenda-google-sync-ajuda");
 
       try {
-        const res = await fetch(API + "/google/status", { headers: authHeaders() });
+        const res = await PriorizaUtils.fetchLatest("agenda-google-status", API + "/google/status", { headers: authHeaders() });
+        if (!res) return googleAgendaStatus;
         const data = await res.json();
         googleAgendaStatus = {
           configurado: !!data?.configurado,
@@ -176,7 +177,8 @@
           redirect_uri: data?.redirect_uri || "",
         };
       } catch (e) {
-        console.error(e);
+        if (e?.name === "AbortError") return googleAgendaStatus;
+        PriorizaUtils.debugError("[Agenda] status Google", e?.name);
         googleAgendaStatus = { configurado: false, conectado: false };
       }
 
@@ -214,12 +216,14 @@
       const { date_from, date_to } = obterFaixaMesAtual();
       try {
         const params = new URLSearchParams({ date_from, date_to, max_results: "100" });
-        const res = await fetch(API + "/google/calendar/events?" + params.toString(), { headers: authHeaders() });
+        const res = await PriorizaUtils.fetchLatest("agenda-google-mes", API + "/google/calendar/events?" + params.toString(), { headers: authHeaders() });
+        if (!res) return googleAgendaCache;
         if (!res.ok) throw new Error("HTTP " + res.status);
         const eventos = await res.json();
         googleAgendaCache = Array.isArray(eventos) ? eventos.map(normalizarEventoGoogle) : [];
       } catch (e) {
-        console.error(e);
+        if (e?.name === "AbortError") return googleAgendaCache;
+        PriorizaUtils.debugError("[Agenda] eventos Google", e?.name);
         googleAgendaCache = [];
       }
       return googleAgendaCache;
@@ -274,7 +278,8 @@
       agendaDiv.innerHTML = "<small>Carregando agenda...</small>";
 
       try {
-        const res = await fetch(API+"/tarefas",{headers:authHeaders()});
+        const res = await PriorizaUtils.fetchLatest("agenda-hoje", API+"/tarefas",{headers:authHeaders()});
+        if (!res) return;
         if (!res.ok) throw new Error("Servidor retornou " + res.status);
         tarefasAgendaCache = await res.json();
         if (!Array.isArray(tarefasAgendaCache)) tarefasAgendaCache = [];
