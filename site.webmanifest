@@ -1,20 +1,11 @@
 {
   "name": "PRIORIZA",
   "short_name": "PRIORIZA",
+  "description": "Organize compromissos, rotinas e prioridades em um unico lugar.",
+  "lang": "pt-BR",
   "start_url": "/app",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
-  "icons": [
-    {
-      "src": "/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
+  "background_color": "#f4f7fb",
+  "theme_color": "#2563eb"
 }

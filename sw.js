@@ -1,110 +1,64 @@
-// ============================================================
-// PRIORIZA — Service Worker (PWA + Web Push)
-// ============================================================
+"use strict";
 
-const CACHE_NAME = "prioriza-v2";
-const OFFLINE_URL = "/app";
-
-const FILES_TO_CACHE = [
+const CACHE_NAME = "prioriza-public-v43";
+const PUBLIC_ASSETS = [
   "/app",
-  "/favicon.ico",
-  "/icon-16x16.png",
-  "/icon-32x32.png",
-  "/icon-180x180.png",
-  "/icon-192x192.png",
-  "/icon-512x512.png",
-  "/site.webmanifest"
+  "/site.webmanifest",
+  "/css/tokens.css",
+  "/css/base.css",
+  "/css/layout.css",
+  "/css/components.css",
+  "/css/screens.css",
+  "/css/responsive.css?v=20260809-notas2",
+  "/js/core/debug.js",
+  "/js/core/utils.js"
 ];
 
-// ── Instalação: pré-cache ──
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
-  );
+const PRIVATE_PREFIXES = [
+  "/auth", "/tarefas", "/checklist", "/notes", "/admin", "/google",
+  "/operacao", "/financas", "/marcos", "/backup", "/push", "/debug"
+];
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PUBLIC_ASSETS)));
   self.skipWaiting();
 });
 
-// ── Ativação: limpa caches antigos ──
-self.addEventListener("activate", event => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-      )
-    )
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((key) => key.startsWith("prioriza-") && key !== CACHE_NAME).map((key) => caches.delete(key))))
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// ── Fetch: usa rede e cai para cache se offline ──
-self.addEventListener("fetch", event => {
-  if (event.request.mode === "navigate") {
+function isPrivate(url) {
+  return PRIVATE_PREFIXES.some((prefix) => url.pathname === prefix || url.pathname.startsWith(prefix + "/"));
+}
+
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
+  if (request.method !== "GET") return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin || isPrivate(url)) return;
+
+  if (request.mode === "navigate") {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match(OFFLINE_URL))
+      fetch(request)
+        .then((response) => {
+          if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put("/app", response.clone()));
+          return response;
+        })
+        .catch(() => caches.match("/app"))
     );
     return;
   }
 
+  if (!PUBLIC_ASSETS.some((asset) => asset === url.pathname || asset === url.pathname + url.search)) return;
   event.respondWith(
-    caches.match(event.request).then(response => response || fetch(event.request))
-  );
-});
-
-// ── Push: recebe e exibe notificação ──
-self.addEventListener("push", event => {
-  let data = {
-    titulo: "PRIORIZA",
-    corpo: "Você tem tarefas pendentes!",
-    url: "/app"
-  };
-
-  try {
-    if (event.data) {
-      const parsed = JSON.parse(event.data.text());
-      data.titulo = parsed.titulo || parsed.title || data.titulo;
-      data.corpo   = parsed.corpo  || parsed.body  || data.corpo;
-      data.url     = parsed.url    || data.url;
-      data.icone   = parsed.icone  || parsed.icon  || "/icon-192x192.png";
-    }
-  } catch (e) {
-    console.log("Push com payload invalido.");
-  }
-
-  const options = {
-    body: data.corpo,
-    icon: data.icone || "/icon-192x192.png",
-    badge: "/icon-192x192.png",
-    vibrate: [100, 50, 100],
-    data: { url: data.url || "/app" },
-    actions: [
-      { action: "open",    title: "Abrir app" },
-      { action: "dismiss", title: "Dispensar" }
-    ]
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(data.titulo, options)
-  );
-});
-
-// ── Clique na notificação ──
-self.addEventListener("notificationclick", event => {
-  event.notification.close();
-
-  if (event.action === "dismiss") return;
-
-  const targetUrl = (event.notification.data && event.notification.data.url) || "/app";
-
-  event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then(clientList => {
-      for (const client of clientList) {
-        if (client.url.includes(targetUrl) && "focus" in client) {
-          return client.focus();
-        }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow(targetUrl);
-      }
-    })
+    caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+      if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
+      return response;
+    }))
   );
 });

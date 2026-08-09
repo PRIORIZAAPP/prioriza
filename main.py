@@ -57,7 +57,7 @@ if not DATABASE_URL:
     DATABASE_URL = f"sqlite:///{sqlite_path}"
     print(f"[DB] DATABASE_URL não definida. Usando SQLite local: {sqlite_path}")
 else:
-    print(f"[DB] DATABASE_URL encontrada: {DATABASE_URL[:60]}")
+    print("[DB] Banco de dados externo configurado.")
 
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
@@ -101,6 +101,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def adicionar_cabecalhos_seguranca(request: Request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault(
+        "Permissions-Policy",
+        "camera=(), geolocation=(), microphone=(self)",
+    )
+    if request.headers.get("x-forwarded-proto", request.url.scheme) == "https":
+        response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    return response
 
 # ============================================================
 # MODELOS
@@ -2699,16 +2713,15 @@ def health():
 
 @app.get("/debug")
 def debug_info(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Acesso restrito.")
     info = {
         "database_url_tipo": "postgresql" if DATABASE_URL.startswith("postgresql") else "sqlite",
-        "database_url_prefixo": DATABASE_URL[:50] + "..." if len(DATABASE_URL) > 50 else DATABASE_URL,
-        "base_dir": str(BASE_DIR),
         "env_vars": {
             "DATABASE_URL": "✅ definida" if os.environ.get("DATABASE_URL") else "❌ NÃO definida (usando SQLite local)",
             "VAPID_PRIVATE_KEY": "✅ definida" if os.environ.get("VAPID_PRIVATE_KEY") else "❌ não definida",
             "GOOGLE_CLIENT_ID": "✅ definida" if os.environ.get("GOOGLE_CLIENT_ID") else "❌ não definida",
             "GOOGLE_CLIENT_SECRET": "✅ definida" if os.environ.get("GOOGLE_CLIENT_SECRET") else "❌ não definida",
-            "GOOGLE_REDIRECT_URI": GOOGLE_REDIRECT_URI,
         },
         "tabelas": {},
         "erro": None,
@@ -2721,9 +2734,9 @@ def debug_info(db: Session = Depends(get_db), current_user: User = Depends(get_c
         info["tabelas"]["push_subscriptions"] = db.query(PushSubscription).filter(PushSubscription.user_id == current_user.id).count()
         info["tabelas"]["google_calendar_tokens"] = db.query(GoogleCalendarToken).filter(GoogleCalendarToken.user_id == current_user.id).count()
         info["banco_ok"] = True
-    except Exception as e:
+    except Exception:
         info["banco_ok"] = False
-        info["erro"] = str(e)
+        info["erro"] = "Falha ao consultar os indicadores de diagnóstico."
     return info
 
 
