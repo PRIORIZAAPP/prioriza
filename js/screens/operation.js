@@ -11,6 +11,10 @@
       })();
 
       await aplicarTema(temaSalvo);
+      if (window.PriorizaAreas) {
+        try { await window.PriorizaAreas.carregar(); }
+        catch (error) { console.error("[PRIORIZA] Áreas indisponíveis:", error); }
+      }
 
       atualizarRelogio();
       setInterval(atualizarRelogio, 60000);
