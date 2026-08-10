@@ -388,7 +388,7 @@
             conteudo.className = "agenda-conteudo";
             const tituloEl = document.createElement("div");
             tituloEl.className = "agenda-titulo";
-            tituloEl.textContent = t.titulo;
+            tituloEl.innerHTML = `${textoSeguro(t.titulo)}${t?.recorrente ? iconeRecorrenciaHTML() : ""}`;
             conteudo.appendChild(tituloEl);
             if (!emLayoutDesktop()) {
               conteudo.insertAdjacentHTML("beforeend", criarTagHTML(t));
@@ -487,6 +487,7 @@
               btnEdit.setAttribute("aria-label", "Editar compromisso");
               btnEdit.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M180 32l44 44L72 228H28v-44L180 32z" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 60l44 44" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
               btnEdit.addEventListener("click", async () => {
+                const scope = t?.recorrente ? await modal.escolherRecorrencia("este compromisso") : "single";
                 const novoTitulo = await modal.perguntar("Título:", "Editar compromisso", t.titulo);
                 if (!novoTitulo?.trim()) return;
                 const novaHora = await modal.perguntar("Hora de início (HH:MM):", "Hora", t.hora_inicio || "08:00");
@@ -494,7 +495,7 @@
                 const novaDescricao = await modal.perguntar("Observação (opcional):", "Observação", t.descricao || "");
                 if (novaDescricao === null) return;
                 try {
-                  const params = new URLSearchParams({ titulo: novoTitulo.trim(), hora_inicio: novaHora || "", descricao: novaDescricao || "" });
+                  const params = new URLSearchParams({ titulo: novoTitulo.trim(), hora_inicio: novaHora || "", descricao: novaDescricao || "", scope });
                   const res = await fetch(API+"/tarefas/"+t.id+"?"+params, { method:"PUT", headers:authHeaders() });
                   if (!res.ok) { await modal.alerta("Erro ao editar.","Erro"); return; }
                   await carregarAgendaHoje();
@@ -502,6 +503,13 @@
                 } catch(e) { console.error(e); await modal.alerta("Erro de conexão.","Erro"); }
               });
               (acoesDesktop || item).appendChild(btnEdit);
+              if (t?.recorrente) {
+                (acoesDesktop || item).appendChild(criarMenuAcoesDesktop({
+                  titulo: "Ações da recorrência",
+                  ariaLabel: `Ações da recorrência de ${t.titulo}`,
+                  itens: [{ texto: "Finalizar recorrência", danger: true, acao: () => finalizarRecorrencia(t, "agenda") }],
+                }));
+              }
             }
 
             if (acoesDesktop && acoesDesktop.childElementCount) {
@@ -565,6 +573,7 @@
       try {
         const params = new URLSearchParams({ titulo, descricao: descricao||"", origem:origem||"", data:dataHojeISO(), hora_inicio:hora||"08:00", duracao_min:"60", prioridade });
         const res = await fetch(API+"/tarefas?"+params,{method:"POST",headers:authHeaders()});
+        if (respostaDemoCancelada(res)) return;
         if (!res.ok) { await modal.alerta("Erro ao salvar tarefa.","Erro"); return; }
         const origemTrim=(origem||"").trim();
         if (origemTrim && !getLocaisSalvos().includes(origemTrim)) {

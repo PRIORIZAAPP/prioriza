@@ -1455,6 +1455,7 @@
             blocked: blocked ? "true" : "false",
             sincronizar_google: syncGoogle ? "true" : "false"
           }),{method:"POST",headers:authHeaders()});
+          if (respostaDemoCancelada(res)) return;
           if(!res.ok){await modal.alerta("Não foi possível salvar o compromisso.","Erro");return;}
           const tarefaCriada = await res.json();
           const quantidadeCriada = Array.isArray(tarefaCriada?.tarefas)
@@ -1529,6 +1530,7 @@
           await atualizarResumoBar();
           if (notaEditada) await modal.alerta("Nota atualizada com sucesso.", "Sucesso");
         } catch (erro) {
+          if (erro?.name === "PriorizaDemoCancelError") return;
           console.error("[PRIORIZA] Falha ao salvar nota:", erro);
           await modal.alerta(erro?.message || "Não foi possível salvar a nota.", "Erro");
         }

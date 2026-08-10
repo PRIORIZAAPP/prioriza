@@ -119,7 +119,7 @@
 
       const titulo = document.createElement("div");
       titulo.className = "pessoal-titulo" + (!desktop && (ehStatusFeito(t.status) || ehStatusCancelada(t.status)) ? " pessoal-status-feito" : "");
-      titulo.textContent = t.titulo;
+      titulo.innerHTML = `${textoSeguro(t.titulo)}${t?.recorrente ? iconeRecorrenciaHTML() : ""}`;
 
       conteudo.appendChild(titulo);
 
@@ -157,6 +157,7 @@
         titulo: "Editar",
         texto: "✎",
         onClick: async () => {
+          const scope = t?.recorrente ? await modal.escolherRecorrencia("este compromisso") : "single";
           const novoTitulo = await modal.perguntar("Editar título do compromisso:", "Editar compromisso", t.titulo || "");
           if (novoTitulo === null || !novoTitulo.trim()) return;
 
@@ -168,11 +169,11 @@
               data: normalizarDataParaISO(t.data || ""),
               hora_inicio: t.hora_inicio || "00:00",
               duracao_min: String(t.duracao_min || 60),
-              prioridade: String(t.prioridade || 2)
+              prioridade: String(t.prioridade || 2),
+              scope,
             });
-
-            const res = await fetch(API + "/tarefas_editar?" + params.toString(), {
-              method: "POST",
+            const res = await fetch(API + `/tarefas/${t.id}?` + params.toString(), {
+              method: "PUT",
               headers: authHeaders()
             });
 
@@ -887,6 +888,7 @@
       };
 
       const editarCompromisso = async () => {
+        const scope = t?.recorrente ? await modal.escolherRecorrencia("este compromisso") : "single";
         const novoTitulo = await modal.perguntar("Título:","Editar compromisso", t.titulo);
         if (!novoTitulo?.trim()) return;
         const novaHora = await modal.perguntar("Hora de início (HH:MM):","Hora", t.hora_inicio||"08:00");
@@ -894,7 +896,7 @@
         const novaDescricao = await modal.perguntar("Observação (opcional):","Observação", t.descricao||"");
         if (novaDescricao === null) return;
         try {
-          const params = new URLSearchParams({ titulo: novoTitulo.trim(), hora_inicio: novaHora||"", descricao: novaDescricao||"" });
+          const params = new URLSearchParams({ titulo: novoTitulo.trim(), hora_inicio: novaHora||"", descricao: novaDescricao||"", scope });
           const res = await fetch(API+"/tarefas/"+t.id+"?"+params,{method:"PUT",headers:authHeaders()});
           if (!res.ok) { await modal.alerta("Erro ao editar.","Erro"); return; }
           await atualizarAgendaMesEDia();
@@ -917,6 +919,7 @@
         itens: [
           { texto: "Editar", acao: editarCompromisso },
           { texto: "Cancelar", acao: cancelarCompromisso },
+          ...(t?.recorrente ? [{ texto: "Finalizar recorrência", acao: () => finalizarRecorrencia(t, "agenda"), danger: true }] : []),
           { texto: "Excluir", acao: excluirCompromisso, danger: true }
         ]
       });
@@ -934,7 +937,7 @@
       conteudo.className = "agenda-conteudo";
       const titulo = document.createElement("div");
       titulo.className = "agenda-titulo";
-      titulo.textContent = t.titulo;
+      titulo.innerHTML = `${textoSeguro(t.titulo)}${t?.recorrente ? iconeRecorrenciaHTML() : ""}`;
       conteudo.appendChild(titulo);
       conteudo.insertAdjacentHTML("beforeend", criarTagHTML(t));
 
@@ -1082,6 +1085,7 @@
           };
 
           const editarCompromisso = async () => {
+            const scope = t?.recorrente ? await modal.escolherRecorrencia("este compromisso") : "single";
             const novoTitulo = await modal.perguntar("Título:","Editar compromisso", t.titulo);
             if (!novoTitulo?.trim()) return;
             const novaHora = await modal.perguntar("Hora de início (HH:MM):","Hora", t.hora_inicio||"08:00");
@@ -1089,7 +1093,7 @@
             const novaDescricao = await modal.perguntar("Observação (opcional):","Observação", t.descricao||"");
             if (novaDescricao === null) return;
             try {
-              const params = new URLSearchParams({ titulo: novoTitulo.trim(), hora_inicio: novaHora||"", descricao: novaDescricao||"" });
+              const params = new URLSearchParams({ titulo: novoTitulo.trim(), hora_inicio: novaHora||"", descricao: novaDescricao||"", scope });
               const res = await fetch(API+"/tarefas/"+t.id+"?"+params,{method:"PUT",headers:authHeaders()});
               if (!res.ok) { await modal.alerta("Erro ao editar.","Erro"); return; }
               await atualizarAgendaMesEDia();
@@ -1113,6 +1117,7 @@
               itens: [
                 { texto: "Editar", acao: editarCompromisso },
                 { texto: "Cancelar", acao: cancelarCompromisso },
+                ...(t?.recorrente ? [{ texto: "Finalizar recorrência", acao: () => finalizarRecorrencia(t, "agenda"), danger: true }] : []),
                 { texto: "Excluir", acao: excluirCompromisso, danger: true }
               ]
             }));
@@ -1207,6 +1212,11 @@
     async function salvarNota(texto,data,tipo) {
       const body=new URLSearchParams({texto,data:data||"",tipo:tipo||"GERAL"});
       const res=await fetch(API+"/notes",{method:"POST",headers:authHeaders({"Content-Type":"application/x-www-form-urlencoded"}),body});
+      if (respostaDemoCancelada(res)) {
+        const erro = new Error("Ação cancelada.");
+        erro.name = "PriorizaDemoCancelError";
+        throw erro;
+      }
       if (!res.ok) throw new Error("Não foi possível salvar a nota.");
       return res.json();
     }
@@ -1433,6 +1443,7 @@
         const conteudo=text.replace(/^(agendar\s+compromisso|agendar|novo\s+compromisso)\s*/i,"").replace(/depois de amanhã/gi,"").replace(/amanhã/gi,"").replace(/hoje/gi,"").replace(/às\s+\d{1,2}(:\d{2})?/gi,"").replace(/\d{1,2}\s*(h|horas)/gi,"").trim()||text;
         if(!await modal.confirmar(`Criar COMPROMISSO?\n\nÁrea: ${origem||"(vazio)"}\nData:  ${formatarDataCurtaBR(data)}\nHora:  ${hora}\n\n"${conteudo}"`,"Novo Compromisso","verde")) return;
         const res=await fetch(API+"/tarefas?"+new URLSearchParams({titulo:conteudo,origem,data,hora_inicio:hora,duracao_min:"60",prioridade:"2"}),{method:"POST",headers:authHeaders()});
+        if (respostaDemoCancelada(res)) return;
         if(!res.ok){await modal.alerta("Erro ao salvar.","Erro");return;}
         await carregarAgendaHoje(); await atualizarAgendaMesEDia(); if(origem==="PESSOAL") await carregarPessoalLista();
         await modal.alerta("Compromisso salvo.","Sucesso"); return;
@@ -1444,6 +1455,7 @@
         const origem=lower.includes("pessoal")?"PESSOAL":"";
         if(!await modal.confirmar(`Adicionar ao CHECKLIST?\n\nÁrea: ${origem||"(vazio)"}\nFreq.: ${freq}\n\n"${conteudo}"`,"Nova Rotina","verde")) return;
         const res=await fetch(API+"/checklist_criar?"+new URLSearchParams({titulo:conteudo,origem,frequencia:freq}),{method:"POST",headers:authHeaders()});
+        if (respostaDemoCancelada(res)) return;
         if(!res.ok){await modal.alerta("Erro ao salvar.","Erro");return;}
         await carregarChecklistHoje(); await carregarChecklistGeral(); if(origem==="PESSOAL") await carregarPessoalLista();
         await modal.alerta("Tarefa adicionada! ✅","Sucesso"); return;

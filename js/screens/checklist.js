@@ -78,7 +78,7 @@
           if (status==="feito") div.classList.add("feito");
 
           const info = document.createElement("div"); info.className="check-info";
-          const tituloEl = document.createElement("div"); tituloEl.className="check-titulo"; tituloEl.textContent=item.titulo;
+          const tituloEl = document.createElement("div"); tituloEl.className="check-titulo"; tituloEl.innerHTML=`${textoSeguro(item.titulo)}${item?.recorrente ? iconeRecorrenciaHTML() : ""}`;
           const sub = document.createElement("div"); sub.className="check-sub"; sub.textContent=`${item.frequencia} · ${obterRotuloOrigemChecklist(item)}`;
           info.appendChild(tituloEl); info.appendChild(sub);
           div.appendChild(bolinha); div.appendChild(info);
@@ -121,23 +121,8 @@
             sincronizarChecklistHojeEmSegundoPlano();
           });
 
-          if (emLayoutDesktop()) {
-            const btnRemover = document.createElement("button");
-            btnRemover.type = "button";
-            btnRemover.className = "hoje-checklist-remove";
-            btnRemover.title = "Excluir rotina";
-            btnRemover.setAttribute("aria-label", `Excluir ${item.titulo}`);
-            btnRemover.textContent = "×";
-            btnRemover.addEventListener("click", async (ev) => {
-              ev.stopPropagation();
-              if (!await modal.confirmar(`Remover "${item.titulo}"?`, "Excluir rotina", "vermelho")) return;
-              await excluirChecklistItem(item.id);
-              await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
-            });
-            actions.appendChild(btnRemover);
-          } else {
-            div.classList.add("has-action-menu");
-            actions.appendChild(criarMenuAcoesDesktop({
+          div.classList.add("has-action-menu");
+          actions.appendChild(criarMenuAcoesDesktop({
               titulo: "Ações da rotina",
               ariaLabel: `Ações de ${item.titulo}`,
               itens: [
@@ -149,6 +134,7 @@
                     await recarregarBlocosComRolagem({ checklistHoje: true, resumo: true });
                   }
                 },
+                ...(item?.recorrente ? [{ texto: "Finalizar recorrência", danger: true, acao: () => finalizarRecorrencia(item, "checklist") }] : []),
                 {
                   texto: "Excluir",
                   danger: true,
@@ -159,8 +145,7 @@
                   }
                 }
               ]
-            }));
-          }
+          }));
           if (actions.childElementCount) div.appendChild(actions);
 
           adicionarSwipe(div,
@@ -231,7 +216,7 @@
 
       const tituloEl = document.createElement("div");
       tituloEl.className = "check-titulo";
-      tituloEl.textContent = item.titulo;
+      tituloEl.innerHTML = `${textoSeguro(item.titulo)}${item?.recorrente ? iconeRecorrenciaHTML() : ""}`;
 
       const sub = document.createElement("div");
       sub.className = "check-sub";
@@ -268,6 +253,13 @@
           { texto: "Alterar data", acao: () => alterarDataRetornoChecklist(item) },
           { texto: "Voltar para hoje", acao: () => voltarRotinaChecklistParaHoje(item) }
         );
+      }
+      if (item?.recorrente) {
+        itensMenu.push({
+          texto: "Finalizar recorrência",
+          danger: true,
+          acao: () => finalizarRecorrencia(item, "checklist"),
+        });
       }
       itensMenu.push({
         texto: "Excluir",
@@ -536,6 +528,7 @@
       const btn=document.getElementById("btn-salvar-rotina"); btn.disabled=true;
       try {
         const res=await fetch(API+"/checklist_criar?"+new URLSearchParams({titulo,origem,frequencia:freq}),{method:"POST",headers:authHeaders()});
+        if (respostaDemoCancelada(res)) return;
         if (!res.ok){await modal.alerta("Erro ao salvar rotina.","Erro");return;}
         if (categoria !== "PESSOAL" && contexto && !getLocaisSalvos().includes(contexto)) {
           if (await modal.confirmar(`Salvar "${contexto}" como local frequente?`,"Local frequente","verde")) {
@@ -558,6 +551,7 @@
       const btn=document.getElementById("botao-nova-rotina-hoje"); btn.disabled=true;
       try {
         const res=await fetch(API+"/checklist_criar?"+new URLSearchParams({titulo,origem:origem||"",frequencia:freq}),{method:"POST",headers:authHeaders()});
+        if (respostaDemoCancelada(res)) return;
         if (!res.ok){await modal.alerta("Erro ao salvar rotina.","Erro");return;}
         const origemTrim=(origem||"").trim();
         if (origemTrim && !getLocaisSalvos().includes(origemTrim)) {
