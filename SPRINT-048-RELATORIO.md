@@ -9,10 +9,11 @@
 - Ações exibidas são contextuais: `Finalizar recorrência` aparece apenas em itens recorrentes.
 - O card usa posicionamento flutuante em relação à janela, abre acima quando não existe espaço abaixo e não altera dimensões ou posição dos itens da lista.
 - O menu mantém o mesmo comportamento em desktop, tablet e mobile.
+- Correção pós-publicação: o card passou a ser montado diretamente no `body`, eliminando interferência de `overflow`, `transform` e contexto de empilhamento dos itens em desktop e mobile.
 
 ## Validação
 
 - Sintaxe Python e JavaScript verificada.
 - Busca estrutural confirmou a remoção dos componentes de ação antigos das telas cobertas.
-- Cache do service worker atualizado para `prioriza-public-v48`.
-- Build identificado como `acoes-contextuais-v1`.
+- Cache do service worker atualizado para `prioriza-public-v49`.
+- Build identificado como `acoes-contextuais-v2`.
