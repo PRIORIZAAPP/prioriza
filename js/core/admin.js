@@ -164,10 +164,37 @@
 
     let demoStatusAtual = null;
     let demoPromptEmAndamento = false;
+    let demoOnboardingConversao = false;
+
+    async function dialogoDemo({ titulo, texto, principal, secundario }) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement("div");
+        overlay.className = "modal-overlay aberto";
+        overlay.innerHTML = `<div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="demo-dialog-title">
+          <h3 id="demo-dialog-title" class="modal-titulo">${textoSeguro(titulo)}</h3>
+          <p class="modal-mensagem">${textoSeguro(texto)}</p>
+          <div class="modal-btns">
+            <button class="modal-btn-cancel" type="button" data-demo-choice="secondary">${textoSeguro(secundario)}</button>
+            <button class="modal-btn-ok" type="button" data-demo-choice="primary">${textoSeguro(principal)}</button>
+          </div></div>`;
+        document.body.appendChild(overlay);
+        document.body.classList.add("modal-aberto");
+        overlay.querySelectorAll("[data-demo-choice]").forEach((botao) => botao.addEventListener("click", () => {
+          const escolha = botao.dataset.demoChoice;
+          overlay.remove();
+          document.body.classList.remove("modal-aberto");
+          resolve(escolha === "primary");
+        }));
+        overlay.querySelector("[data-demo-choice=primary]")?.focus();
+      });
+    }
 
     function atualizarSeloDemo() {
       const ativo = !!demoStatusAtual?.demo_data_active;
       document.getElementById("demo-mode-badge")?.toggleAttribute("hidden", !ativo);
+      document.getElementById("demo-exploration-banner")?.toggleAttribute("hidden", !ativo);
+      document.getElementById("demo-home-explanation")?.toggleAttribute("hidden", !ativo);
+      document.getElementById("demo-profile-state")?.toggleAttribute("hidden", !ativo);
       atualizarAjustesDemo();
     }
 
@@ -178,10 +205,10 @@
       const status = document.getElementById("demo-settings-status");
       if (!titulo || !texto || !botao) return;
       const ativo = !!demoStatusAtual?.demo_data_active;
-      titulo.textContent = ativo ? "Dados de demonstração ativos" : "Dados de demonstração removidos";
+      titulo.textContent = ativo ? "Explore o PRIORIZA" : "Primeiros passos concluídos";
       texto.textContent = ativo
-        ? "Você ainda possui tarefas, compromissos e anotações de exemplo no Prioriza."
-        : "Os dados de demonstração não estão ativos nesta conta.";
+        ? "Você está explorando exemplos. Quando quiser, comece a organizar sua própria rotina."
+        : "Sua conta já utiliza dados reais.";
       botao.hidden = !ativo;
       if (status && !ativo) status.textContent = "";
     }
@@ -205,11 +232,12 @@
 
     async function talvezMostrarBoasVindasDemo() {
       if (!demoStatusAtual?.demo_data_active || demoStatusAtual.demo_welcome_seen) return;
-      await modal.alerta(
-        "Para facilitar seus primeiros passos, preparamos algumas tarefas, compromissos e anotações de demonstração.\n\nEssas informações são apenas exemplos e poderão ser removidas automaticamente quando você começar a cadastrar seus próprios dados.",
-        "Bem-vindo ao Prioriza",
-        "Explorar o Prioriza"
-      );
+      const organizar = await dialogoDemo({
+        titulo: "Bem-vindo ao PRIORIZA",
+        texto: "Você pode conhecer o PRIORIZA usando uma demonstração com dados fictícios ou começar agora organizando sua própria rotina.",
+        principal: "Organizar minha rotina",
+        secundario: "Explorar demonstração"
+      });
       try {
         const res = await nativeFetch(API + "/demo/welcome-seen", { method: "POST", headers: authHeaders() });
         const data = await res.json().catch(() => ({}));
@@ -219,24 +247,59 @@
         console.warn("[PRIORIZA] Não foi possível marcar boas-vindas da demo:", e);
       }
       atualizarSeloDemo();
+      if (organizar) iniciarOrganizacaoMinhaRotina();
     }
 
-    function rotaCriacaoRealDemo(url, options = {}) {
+    function iniciarOrganizacaoMinhaRotina() {
+      if (!demoStatusAtual?.demo_data_active) return;
+      demoOnboardingConversao = true;
+      abrirOnboarding({ forcar: true });
+    }
+
+    async function concluirOrganizacaoMinhaRotina() {
+      const comecar = await dialogoDemo({
+        titulo: "Vamos começar?",
+        texto: "Os exemplos serão removidos para dar lugar à sua própria organização.\n\nEssa ação não poderá ser desfeita.",
+        principal: "Começar",
+        secundario: "Voltar"
+      });
+      if (!comecar) return;
+      const removido = await removerDadosDemo();
+      if (!removido) return;
+      await modal.alerta("Agora o PRIORIZA está preparado para acompanhar a sua rotina.", "Tudo pronto!", "Começar");
+    }
+
+    function rotaMutacaoRealDemo(url, options = {}) {
       const metodo = String(options?.method || "GET").toUpperCase();
-      if (metodo !== "POST") return false;
+      if (!["POST", "PUT", "PATCH", "DELETE"].includes(metodo)) return false;
       let pathname = "";
       try {
         pathname = new URL(String(url || ""), window.location.origin).pathname;
       } catch {
         pathname = String(url || "").split("?")[0];
       }
-      if (pathname === "/tarefas") return true;
-      if (pathname === "/checklist_criar") return true;
-      if (pathname === "/notes") return true;
+      if (/^\/tarefas(\/|$)/.test(pathname) || pathname === "/tarefas_excluir") return true;
+      if (/^\/checklist/.test(pathname)) return true;
+      if (/^\/notes(\/|$)/.test(pathname)) return true;
       if (pathname === "/marcos-operacionais") return true;
       if (pathname === "/operacao/unidades") return true;
       if (/^\/operacao\/unidades\/\d+\/escala(\/recorrente)?$/.test(pathname)) return true;
       if (/^\/operacao\/unidades\/\d+\/movimentos$/.test(pathname)) return true;
+      return false;
+    }
+
+    async function avisarEdicaoDuranteDemo() {
+      if (demoPromptEmAndamento) return false;
+      demoPromptEmAndamento = true;
+      try {
+        const organizar = await dialogoDemo({
+          titulo: "Pronto para começar?",
+          texto: "Você está utilizando uma demonstração.\n\nPara criar seus próprios compromissos, rotinas e notas, organize sua rotina.",
+          principal: "Organizar minha rotina",
+          secundario: "Cancelar"
+        });
+        if (organizar) iniciarOrganizacaoMinhaRotina();
+      } finally { demoPromptEmAndamento = false; }
       return false;
     }
 
@@ -255,7 +318,7 @@
 
     async function removerDadosDemo({ origem = "manual" } = {}) {
       const statusEl = document.getElementById("demo-settings-status");
-      if (statusEl && origem === "ajustes") statusEl.textContent = "Removendo dados de demonstração...";
+      if (statusEl && origem === "ajustes") statusEl.textContent = "Preparando sua rotina...";
       try {
         const res = await nativeFetch(API + "/demo/remove", { method: "POST", headers: authHeaders() });
         const data = await res.json().catch(() => ({}));
@@ -263,39 +326,12 @@
         demoStatusAtual = data?.demo || null;
         if (data?.user) authUser = { ...(authUser || {}), ...data.user };
         await recarregarTelasAposDemo();
-        if (statusEl && origem === "ajustes") statusEl.textContent = "Dados de demonstração removidos.";
+        if (statusEl && origem === "ajustes") statusEl.textContent = "Sua rotina está pronta.";
         return true;
       } catch (e) {
         if (statusEl && origem === "ajustes") statusEl.textContent = e.message || "Não foi possível remover os dados.";
-        else await modal.alerta(e.message || "Não foi possível remover os dados de demonstração.", "Modo demonstração");
+        else await modal.alerta(e.message || "Não foi possível preparar sua rotina agora.", "Não foi possível começar");
         return false;
-      }
-    }
-
-    async function avaliarPromptRemocaoDemoAposCriacaoReal() {
-      if (demoPromptEmAndamento) return;
-      demoPromptEmAndamento = true;
-      try {
-        const status = await carregarStatusDemo();
-        if (!status?.demo_data_active || status.demo_removal_prompt_seen) return;
-        const remover = await modal.confirmar(
-          "Você começou a utilizar o Prioriza com informações reais.\n\nDeseja remover agora as tarefas, compromissos e anotações de demonstração?",
-          "Remover dados de demonstração?",
-          "vermelho",
-          "Remover demonstração",
-          "Manter por enquanto"
-        );
-        if (remover) {
-          await removerDadosDemo();
-        } else {
-          const res = await nativeFetch(API + "/demo/removal-prompt-seen", { method: "POST", headers: authHeaders() });
-          const data = await res.json().catch(() => ({}));
-          if (data?.demo) demoStatusAtual = data.demo;
-          if (data?.user) authUser = { ...(authUser || {}), ...data.user };
-          atualizarSeloDemo();
-        }
-      } finally {
-        demoPromptEmAndamento = false;
       }
     }
 
@@ -338,14 +374,17 @@
       }
 
       const opts = { ...options, headers };
+      if (demoStatusAtual?.demo_data_active && rotaMutacaoRealDemo(url, opts)) {
+        await avisarEdicaoDuranteDemo();
+        return new Response(JSON.stringify({ detail: "A demonstração não salva alterações." }), {
+          status: 409, headers: { "Content-Type": "application/json" }
+        });
+      }
       const resposta = await nativeFetch(url, opts);
       const rota = obterUrlRecurso(url);
       const ignorar401 = rota.includes("/auth/login") || rota.includes("/auth/register") || rota.includes("/auth/forgot-password") || rota.includes("/auth/reset-password");
       if (resposta.status === 401 && !ignorar401) {
         handleUnauthorized();
-      }
-      if (resposta.ok && rotaCriacaoRealDemo(url, opts)) {
-        window.setTimeout(() => avaliarPromptRemocaoDemoAposCriacaoReal(), 250);
       }
       return resposta;
     }
@@ -618,16 +657,19 @@
       }
     }
 
-    function fecharOnboarding({ salvar = true } = {}) {
+    function fecharOnboarding({ salvar = true, concluido = false } = {}) {
       const overlay = document.getElementById("onboarding-overlay");
       if (!overlay) return;
       onboardingAberto = false;
       onboardingModoRevisao = false;
+      const concluirDemo = concluido && demoOnboardingConversao;
+      demoOnboardingConversao = false;
       if (salvar) marcarOnboardingComoVisto();
       overlay.classList.remove("is-visible");
       overlay.setAttribute("aria-hidden", "true");
       window.setTimeout(() => {
         overlay.hidden = true;
+        if (concluirDemo) concluirOrganizacaoMinhaRotina();
       }, 180);
     }
 
@@ -649,7 +691,7 @@
 
     function avancarOnboarding() {
       if (onboardingIndexAtual >= ONBOARDING_STEPS.length - 1) {
-        fecharOnboarding({ salvar: true });
+        fecharOnboarding({ salvar: true, concluido: true });
         return;
       }
       onboardingIndexAtual += 1;
@@ -679,16 +721,13 @@
       document.getElementById("btn-rever-introducao")?.addEventListener("click", () => abrirOnboarding({ forcar: true }));
       document.getElementById("btn-ver-tutorial-primeiros-passos")?.addEventListener("click", () => abrirOnboarding({ forcar: true }));
       document.getElementById("btn-rever-introducao-ajuda")?.addEventListener("click", () => abrirOnboarding({ forcar: true }));
-      document.getElementById("btn-remover-demo-ajustes")?.addEventListener("click", async () => {
-        const ok = await modal.confirmar(
-          "Remover somente as tarefas, compromissos, notas e dados operacionais de demonstração desta conta?",
-          "Remover dados de demonstração",
-          "vermelho",
-          "Remover dados",
-          "Cancelar"
-        );
-        if (!ok) return;
-        await removerDadosDemo({ origem: "ajustes" });
+      document.getElementById("btn-remover-demo-ajustes")?.addEventListener("click", iniciarOrganizacaoMinhaRotina);
+      document.getElementById("btn-demo-organizar-banner")?.addEventListener("click", iniciarOrganizacaoMinhaRotina);
+      document.getElementById("btn-demo-continuar")?.addEventListener("click", () => {
+        document.getElementById("demo-exploration-banner")?.classList.add("is-collapsed");
+      });
+      document.getElementById("btn-demo-banner-expand")?.addEventListener("click", () => {
+        document.getElementById("demo-exploration-banner")?.classList.remove("is-collapsed");
       });
     }
 
@@ -698,7 +737,7 @@
       const splash = document.getElementById("splash-screen");
       const atraso = splash?.classList.contains("is-visible") ? 2100 : 320;
       window.setTimeout(() => {
-        if (!onboardingJaVisto()) abrirOnboarding();
+        if (!onboardingJaVisto() && !demoStatusAtual?.demo_data_active) abrirOnboarding();
       }, atraso);
     }
 
