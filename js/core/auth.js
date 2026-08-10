@@ -157,6 +157,7 @@
 
     async function fazerLogout() {
       PriorizaUtils.cancelAllReads();
+      document.dispatchEvent(new CustomEvent("prioriza:logout"));
       try {
         await nativeFetch(API + "/auth/logout", { method: "POST", headers: authHeaders() });
       } catch (e) {
