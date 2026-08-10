@@ -2830,7 +2830,7 @@ def icone(filename: str):
 def health():
     return {
         "status": "ok",
-        "build": "areas-personalizaveis-v1",
+        "build": "primeira-experiencia-v1",
         "checklist_hora_liberacao": CHECKLIST_HORA_LIBERACAO
     }
 
@@ -3047,7 +3047,6 @@ def demo_status(db: Session = Depends(get_db), current_user: User = Depends(get_
 @app.post("/demo/welcome-seen")
 def demo_welcome_seen(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     current_user.demo_welcome_seen = True
-    current_user.onboarding_completed = True
     db.commit()
     db.refresh(current_user)
     return {"ok": True, "demo": status_demo_usuario(db, current_user), "user": current_user.to_dict()}

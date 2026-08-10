@@ -203,7 +203,7 @@
               <path d="M12 4.5 19 8.5v7L12 19.5 5 15.5v-7l7-4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
               <path d="M12 12 19 8.5M12 12 5 8.5M12 12v7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span>Modo demonstração</span>
+            <span>Explorando</span>
           </div>
           <button id="btn-mic-universal" class="mic-button" type="button" title="Comando de voz">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -329,6 +329,26 @@
 
         <!-- ══ ABA HOJE ══ -->
         <div class="screen active" id="screen-hoje">
+
+          <section id="demo-exploration-banner" class="demo-exploration-banner" hidden aria-label="Explorando o Prioriza">
+            <button id="btn-demo-banner-expand" class="demo-banner-collapsed" type="button" hidden aria-label="Expandir aviso da demonstração">
+              <span class="demo-banner-dot"></span> Explorando uma demonstração
+            </button>
+            <div class="demo-banner-content">
+              <div class="demo-banner-copy">
+                <strong>Explore o PRIORIZA</strong>
+                <span>Você está visualizando dados fictícios.</span>
+              </div>
+              <div class="demo-banner-actions">
+                <button id="btn-demo-organizar-banner" class="btn-primary" type="button">Organizar minha rotina</button>
+                <button id="btn-demo-continuar" class="btn-outline" type="button">Continuar explorando</button>
+              </div>
+            </div>
+          </section>
+
+          <p id="demo-home-explanation" class="demo-home-explanation" hidden>
+            Tudo o que você vê aqui é um exemplo para mostrar como o PRIORIZA funciona. Quando você organizar sua rotina, esses dados serão substituídos pelos seus.
+          </p>
 
           <div class="card" id="hoje-operational-timeline-card" hidden>
             <div id="operational-timeline"><small>Carregando rotina do dia...</small></div>
@@ -1596,6 +1616,7 @@
                 <div class="settings-profile-copy">
                   <strong data-auth-user-name>Sessão ativa</strong>
                   <span data-auth-user-email></span>
+                  <small id="demo-profile-state" hidden>Explorando o PRIORIZA</small>
                 </div>
                 <span class="settings-chevron" aria-hidden="true">›</span>
               </button>
@@ -1897,12 +1918,12 @@
                 <div class="settings-detail-card">
                   <div class="settings-detail-list">
                     <div class="settings-detail-item">
-                      <strong id="demo-settings-title">Dados de demonstração</strong>
-                      <span id="demo-settings-copy">Verificando status dos dados de demonstração.</span>
+                      <strong id="demo-settings-title">Explore o PRIORIZA</strong>
+                      <span id="demo-settings-copy">Verificando sua primeira experiência.</span>
                     </div>
                   </div>
                   <div class="settings-actions settings-placeholder-grid" style="margin-top:12px;">
-                    <button class="settings-placeholder-btn" type="button" id="btn-remover-demo-ajustes">Remover dados de demonstração</button>
+                    <button class="settings-placeholder-btn demo-primary-cta" type="button" id="btn-remover-demo-ajustes">Organizar minha rotina</button>
                   </div>
                   <div id="demo-settings-status" class="settings-note"></div>
                 </div>
