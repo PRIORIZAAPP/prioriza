@@ -9781,3 +9781,33 @@
       }
     }
 
+
+/* Sprint 045 — Áreas personalizáveis */
+.field-help { display:block; margin-top:6px; color:var(--text-secondary, #64748b); font-size:12px; line-height:1.4; }
+.settings-link-text small { display:block; margin-top:2px; color:var(--text-secondary, #64748b); font-size:12px; font-weight:400; }
+.areas-settings-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:16px; }
+.areas-settings-heading h3 { margin:0; color:var(--text-primary, #0f172a); font-size:20px; }
+.areas-settings-heading p { margin:5px 0 0; color:var(--text-secondary, #64748b); }
+.areas-lista { display:grid; gap:8px; }
+.area-row { display:grid; grid-template-columns:14px minmax(120px, 1fr) auto; align-items:center; gap:12px; min-height:60px; padding:10px 12px; border:1px solid var(--border-color, #dbe4f0); border-radius:14px; background:var(--card-bg, #fff); }
+.area-row.is-archived { opacity:.7; background:#f8fafc; }
+.area-dot { width:11px; height:11px; border-radius:50%; box-shadow:0 0 0 2px #fff, 0 0 0 3px #cbd5e1; }
+.area-copy { min-width:0; }
+.area-copy strong, .area-copy small { display:block; }
+.area-copy strong { overflow-wrap:anywhere; color:var(--text-primary, #0f172a); }
+.area-copy small { margin-top:3px; color:var(--text-secondary, #64748b); }
+.area-actions { display:flex; align-items:center; justify-content:flex-end; gap:5px; flex-wrap:wrap; }
+.areas-action { min-height:34px; padding:6px 9px; border:1px solid #d8e1ee; border-radius:9px; background:#fff; color:#334155; font:inherit; font-size:12px; font-weight:700; cursor:pointer; }
+.areas-action:hover, .areas-action:focus-visible { background:var(--cor-tema, #2563eb); border-color:var(--cor-tema, #2563eb); color:#fff; }
+.areas-action:disabled { opacity:.35; cursor:not-allowed; }
+.areas-empty { padding:28px 18px; border:1px dashed #cbd5e1; border-radius:16px; text-align:center; color:#64748b; }
+.areas-empty strong { display:block; margin-bottom:6px; color:#0f172a; font-size:17px; }
+.areas-empty p { max-width:480px; margin:0 auto 16px; line-height:1.5; }
+
+@media (max-width: 600px) {
+  .areas-settings-heading { align-items:stretch; flex-direction:column; }
+  .areas-settings-heading .btn-primary { width:100%; }
+  .area-row { grid-template-columns:14px minmax(0, 1fr); }
+  .area-actions { grid-column:1 / -1; justify-content:stretch; }
+  .areas-action { flex:1 1 42%; min-height:40px; }
+}
