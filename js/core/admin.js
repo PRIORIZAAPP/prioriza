@@ -1823,8 +1823,9 @@
       document.querySelectorAll(".timeline-menu-popover").forEach((menu) => {
         if (menu === excecao) return;
         menu.hidden = true;
-        menu.parentElement?.querySelector(".timeline-menu-trigger")?.setAttribute("aria-expanded", "false");
-        menu.closest(".checklist-item, .nota-item")?.classList.remove("menu-open");
+        menu.__trigger?.setAttribute("aria-expanded", "false");
+        menu.__owner?.closest(".checklist-item, .nota-item")?.classList.remove("menu-open");
+        if (menu.__owner && !menu.__owner.isConnected) menu.remove();
       });
     }
 
@@ -1841,6 +1842,8 @@
       const menu = document.createElement("div");
       menu.className = "timeline-menu-popover contextual-actions-card";
       menu.hidden = true;
+      menu.__trigger = trigger;
+      menu.__owner = wrap;
 
       itens.forEach(({ texto, acao, danger = false }) => {
         const botao = document.createElement("button");
@@ -1851,7 +1854,7 @@
           ev.stopPropagation();
           menu.hidden = true;
           trigger.setAttribute("aria-expanded", "false");
-          menu.closest(".checklist-item, .nota-item")?.classList.remove("menu-open");
+          wrap.closest(".checklist-item, .nota-item")?.classList.remove("menu-open");
           if (botao.disabled) return;
           botao.disabled = true;
           try {
@@ -1869,7 +1872,7 @@
         fecharMenusAcoesDesktop(abrir ? menu : null);
         menu.hidden = !abrir;
         trigger.setAttribute("aria-expanded", abrir ? "true" : "false");
-        menu.closest(".checklist-item, .nota-item")?.classList.toggle("menu-open", abrir);
+        wrap.closest(".checklist-item, .nota-item")?.classList.toggle("menu-open", abrir);
         if (abrir) {
           const ancora = trigger.getBoundingClientRect();
           const largura = Math.max(176, menu.offsetWidth || 0);
@@ -1884,7 +1887,8 @@
           menu.style.top = `${topo}px`;
         }
       });
-      wrap.append(trigger, menu);
+      wrap.appendChild(trigger);
+      document.body.appendChild(menu);
       return wrap;
     }
 
