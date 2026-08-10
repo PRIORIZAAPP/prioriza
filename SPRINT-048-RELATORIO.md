@@ -10,10 +10,11 @@
 - O card usa posicionamento flutuante em relação à janela, abre acima quando não existe espaço abaixo e não altera dimensões ou posição dos itens da lista.
 - O menu mantém o mesmo comportamento em desktop, tablet e mobile.
 - Correção pós-publicação: o card passou a ser montado diretamente no `body`, eliminando interferência de `overflow`, `transform` e contexto de empilhamento dos itens em desktop e mobile.
+- Correção responsiva final: as propriedades críticas de posição e empilhamento também são aplicadas pelo componente, impedindo que CSS mobile legado converta o card em conteúdo estático.
 
 ## Validação
 
 - Sintaxe Python e JavaScript verificada.
 - Busca estrutural confirmou a remoção dos componentes de ação antigos das telas cobertas.
-- Cache do service worker atualizado para `prioriza-public-v49`.
-- Build identificado como `acoes-contextuais-v2`.
+- Cache do service worker atualizado para `prioriza-public-v50`.
+- Build identificado como `acoes-contextuais-v3`.
