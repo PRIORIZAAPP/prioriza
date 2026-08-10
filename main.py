@@ -9,6 +9,7 @@ import hmac
 import html
 import re
 import secrets
+import calendar
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
@@ -139,6 +140,11 @@ class User(Base):
     demo_welcome_seen = Column(Boolean, default=False, nullable=False)
     demo_removal_prompt_seen = Column(Boolean, default=False, nullable=False)
     onboarding_completed = Column(Boolean, default=False, nullable=False)
+    onboarding_scenario = Column(String(80), nullable=True)
+    demo_agenda_active = Column(Boolean, default=False, nullable=False)
+    demo_checklist_active = Column(Boolean, default=False, nullable=False)
+    demo_notes_active = Column(Boolean, default=False, nullable=False)
+    demo_notice_seen = Column(Boolean, default=False, nullable=False)
 
     def to_dict(self):
         avatar_url = self.avatar_url
@@ -160,6 +166,11 @@ class User(Base):
             "demo_welcome_seen": bool(self.demo_welcome_seen),
             "demo_removal_prompt_seen": bool(self.demo_removal_prompt_seen),
             "onboarding_completed": bool(self.onboarding_completed),
+            "onboarding_scenario": self.onboarding_scenario,
+            "demo_agenda_active": bool(self.demo_agenda_active),
+            "demo_checklist_active": bool(self.demo_checklist_active),
+            "demo_notes_active": bool(self.demo_notes_active),
+            "demo_notice_seen": bool(self.demo_notice_seen),
         }
 
 
@@ -217,6 +228,10 @@ class Tarefa(Base):
     blocked = Column(Boolean, default=False)
     ativo = Column(Boolean, default=True)
     is_demo = Column(Boolean, default=False, nullable=False)
+    recurrence_type = Column(String, default="NENHUMA", nullable=False)
+    recurrence_until = Column(String, default="")
+    recurrence_started_at = Column(DateTime, nullable=True, index=True)
+    recurrence_ended_at = Column(DateTime, nullable=True)
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC))
 
     def to_dict(self):
@@ -244,6 +259,11 @@ class Tarefa(Base):
             "blocked": bool(self.blocked),
             "ativo": self.ativo,
             "is_demo": bool(self.is_demo),
+            "recurrence_type": self.recurrence_type or "NENHUMA",
+            "recurrence_until": self.recurrence_until or "",
+            "recurrence_started_at": self.recurrence_started_at.isoformat() if self.recurrence_started_at else None,
+            "recurrence_ended_at": self.recurrence_ended_at.isoformat() if self.recurrence_ended_at else None,
+            "recorrente": (self.recurrence_type or "NENHUMA").upper() != "NENHUMA",
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
         }
 
@@ -295,6 +315,7 @@ class ChecklistItem(Base):
     ativo = Column(Boolean, default=True)
     ultimo_exec = Column(DateTime, nullable=True)
     is_demo = Column(Boolean, default=False, nullable=False)
+    recurrence_ended_at = Column(DateTime, nullable=True)
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC))
 
     def to_dict(self, incluir_pode_hoje: bool = False):
@@ -316,6 +337,8 @@ class ChecklistItem(Base):
             "status_exibicao": status_exibicao,
             "ativo": self.ativo,
             "is_demo": bool(self.is_demo),
+            "recurrence_ended_at": self.recurrence_ended_at.isoformat() if self.recurrence_ended_at else None,
+            "recorrente": frequencia_corrigida != "UNICO",
             "ultimo_exec": self.ultimo_exec.isoformat() if self.ultimo_exec else None,
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
         }
@@ -1280,9 +1303,13 @@ def _sql_tipo_coluna(nome_coluna: str) -> str:
         "demo_welcome_seen",
         "demo_removal_prompt_seen",
         "onboarding_completed",
+        "demo_agenda_active",
+        "demo_checklist_active",
+        "demo_notes_active",
+        "demo_notice_seen",
     ):
         return "BOOLEAN"
-    if nome_coluna in ("criado_em", "ultimo_acesso", "ultima_sync_google", "avatar_updated_at"):
+    if nome_coluna in ("criado_em", "ultimo_acesso", "ultima_sync_google", "avatar_updated_at", "recurrence_started_at", "recurrence_ended_at"):
         return "TIMESTAMP" if not IS_SQLITE else "DATETIME"
     if nome_coluna in ("descricao", "local", "hora_fim", "tipo_evento", "origem_evento", "google_event_id"):
         return "VARCHAR"
@@ -1306,6 +1333,10 @@ def _sql_default_coluna(nome_coluna: str) -> str:
         "demo_welcome_seen",
         "demo_removal_prompt_seen",
         "onboarding_completed",
+        "demo_agenda_active",
+        "demo_checklist_active",
+        "demo_notes_active",
+        "demo_notice_seen",
     ):
         return " DEFAULT false" if not IS_SQLITE else " DEFAULT 0"
     if nome_coluna in ("descricao", "local", "hora_fim"):
@@ -1359,13 +1390,20 @@ def rodar_migracoes_automaticas():
         "demo_welcome_seen",
         "demo_removal_prompt_seen",
         "onboarding_completed",
+        "onboarding_scenario",
+        "demo_agenda_active",
+        "demo_checklist_active",
+        "demo_notes_active",
+        "demo_notice_seen",
     )
     criou_coluna_demo_usuario = False
 
     for coluna in ("ultimo_acesso", "total_acessos", "is_admin", "avatar_url", "avatar_updated_at"):
         garantir_coluna_tabela("users", coluna)
     for coluna in colunas_demo_usuario:
-        criou_coluna_demo_usuario = garantir_coluna_tabela("users", coluna) or criou_coluna_demo_usuario
+        criou = garantir_coluna_tabela("users", coluna)
+        if coluna == "demo_data_created" and criou:
+            criou_coluna_demo_usuario = True
 
     for coluna in ("user_id", "token_hash", "expires_at", "used_at", "created_at"):
         garantir_coluna_tabela("password_reset_tokens", coluna)
@@ -1385,7 +1423,8 @@ def rodar_migracoes_automaticas():
         )
         print("[MIGRAÇÃO] Usuários existentes marcados sem dados de demonstração automática.")
     for coluna in colunas_demo_usuario:
-        preencher_nulos_coluna("users", coluna, "false" if not IS_SQLITE else "0")
+        if coluna != "onboarding_scenario":
+            preencher_nulos_coluna("users", coluna, "false" if not IS_SQLITE else "0")
 
     colunas_tarefas = [
         "user_id",
@@ -1401,6 +1440,10 @@ def rodar_migracoes_automaticas():
         "all_day",
         "blocked",
         "is_demo",
+        "recurrence_type",
+        "recurrence_until",
+        "recurrence_started_at",
+        "recurrence_ended_at",
     ]
     for coluna in colunas_tarefas:
         garantir_coluna_tabela("tarefas", coluna)
@@ -1409,6 +1452,7 @@ def rodar_migracoes_automaticas():
         garantir_coluna_tabela(tabela, "user_id")
     for tabela in ("checklist", "notes"):
         garantir_coluna_tabela(tabela, "is_demo")
+    garantir_coluna_tabela("checklist", "recurrence_ended_at")
 
     try:
         PushSubscription.__table__.create(bind=engine, checkfirst=True)
@@ -1509,6 +1553,127 @@ def _contar_demo_ativos(db: Session, user_id: int) -> dict[str, int]:
 
 def _total_demo_ativo(db: Session, user_id: int) -> int:
     return sum(_contar_demo_ativos(db, user_id).values())
+
+
+DEMO_SCENARIOS_PATH = BASE_DIR / "demo_scenarios.json"
+DEMO_SCENARIO_COLORS = ("#2563eb", "#0f766e", "#7c3aed", "#c2410c", "#be123c")
+DEMO_DAY_OFFSETS = {"Seg": 0, "Ter": 1, "Qua": 2, "Qui": 3, "Sex": 4, "Sáb": 5, "Sab": 5, "Dom": 6}
+
+
+def carregar_cenarios_demo() -> list[dict[str, Any]]:
+    try:
+        dados = json.loads(DEMO_SCENARIOS_PATH.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Cenários de demonstração indisponíveis: {exc}")
+    if not isinstance(dados, list) or len(dados) != 11:
+        raise HTTPException(status_code=500, detail="Arquivo oficial de cenários inválido.")
+    return dados
+
+
+def buscar_cenario_demo(cenario_id: str) -> dict[str, Any]:
+    for cenario in carregar_cenarios_demo():
+        if cenario.get("id") == cenario_id:
+            return cenario
+    raise HTTPException(status_code=400, detail="Selecione uma área válida.")
+
+
+def _desativar_demo_modulo(db: Session, user_id: int, modulo: str):
+    if modulo == "agenda":
+        db.query(Tarefa).filter(Tarefa.user_id == user_id, Tarefa.is_demo == True).update({"ativo": False}, synchronize_session=False)
+    elif modulo == "checklist":
+        db.query(ChecklistItem).filter(ChecklistItem.user_id == user_id, ChecklistItem.is_demo == True).update({"ativo": False}, synchronize_session=False)
+    elif modulo == "notes":
+        db.query(Note).filter(Note.user_id == user_id, Note.is_demo == True).update({"ativo": False}, synchronize_session=False)
+
+
+def converter_modulo_demo_sem_commit(db: Session, user: User, modulo: str):
+    user_id = garantir_user_id(user.id, "conversão da demonstração")
+    if modulo == "agenda" and bool(user.demo_agenda_active):
+        _desativar_demo_modulo(db, user_id, modulo)
+        user.demo_agenda_active = False
+    elif modulo == "checklist" and bool(user.demo_checklist_active):
+        _desativar_demo_modulo(db, user_id, modulo)
+        user.demo_checklist_active = False
+    elif modulo == "notes" and bool(user.demo_notes_active):
+        _desativar_demo_modulo(db, user_id, modulo)
+        user.demo_notes_active = False
+    user.demo_data_active = bool(user.demo_agenda_active or user.demo_checklist_active or user.demo_notes_active)
+
+
+def importar_cenario_demo(db: Session, user: User, cenario_id: str) -> dict[str, Any]:
+    cenario = buscar_cenario_demo(cenario_id)
+    user_id = garantir_user_id(user.id, "importação do cenário")
+    hoje = _agora_local().date()
+    segunda = hoje - timedelta(days=hoje.weekday())
+
+    _desativar_demo_modulo(db, user_id, "agenda")
+    _desativar_demo_modulo(db, user_id, "checklist")
+    _desativar_demo_modulo(db, user_id, "notes")
+
+    existentes = {a.normalized_name: a for a in db.query(UserArea).filter(UserArea.user_id == user_id).all()}
+    proxima_posicao = len(existentes) + 1
+    for indice, nome in enumerate(cenario["areas"]):
+        normalizado = normalizar_nome_area(nome)
+        existente = existentes.get(normalizado)
+        if existente:
+            existente.active = True
+            continue
+        db.add(UserArea(
+            user_id=user_id,
+            name=nome,
+            normalized_name=normalizado,
+            color=DEMO_SCENARIO_COLORS[indice % len(DEMO_SCENARIO_COLORS)],
+            position=proxima_posicao,
+            active=True,
+        ))
+        proxima_posicao += 1
+
+    for compromisso in cenario["agenda"]:
+        hora = compromisso["time"]
+        data_ref = segunda + timedelta(days=DEMO_DAY_OFFSETS.get(compromisso["day"], 0))
+        db.add(Tarefa(
+            user_id=user_id,
+            titulo=compromisso["title"],
+            origem=compromisso["area"],
+            data=data_ref.isoformat(),
+            hora_inicio=hora,
+            hora_fim=calcular_hora_fim(hora, 60),
+            duracao_min=60,
+            prioridade=2,
+            status="pendente",
+            tipo_evento="prioriza",
+            origem_evento="prioriza",
+            ativo=True,
+            is_demo=True,
+        ))
+
+    origem_padrao = cenario["areas"][0] if cenario["areas"] else "Geral"
+    for titulo in cenario["checklist"]:
+        db.add(ChecklistItem(
+            user_id=user_id,
+            titulo=titulo,
+            origem=origem_padrao,
+            frequencia="Única",
+            frequencia_interna="UNICO",
+            status="pendente",
+            ativo=True,
+            is_demo=True,
+        ))
+    for texto_nota in cenario["notes"]:
+        db.add(Note(user_id=user_id, texto=texto_nota, tipo="GERAL", status="pendente", ativo=True, is_demo=True))
+
+    user.onboarding_scenario = cenario_id
+    user.onboarding_completed = True
+    user.demo_data_created = True
+    user.demo_data_active = True
+    user.demo_agenda_active = True
+    user.demo_checklist_active = True
+    user.demo_notes_active = True
+    user.demo_notice_seen = False
+    user.demo_welcome_seen = True
+    db.commit()
+    db.refresh(user)
+    return cenario
 
 
 def criar_dados_demo_primeiro_acesso(db: Session, user: User) -> bool:
@@ -1628,6 +1793,9 @@ def remover_dados_demo_usuario(db: Session, user: User) -> dict[str, Any]:
     db.query(OperacaoCompetencia).filter(OperacaoCompetencia.user_id == user_id, OperacaoCompetencia.is_demo == True).delete(synchronize_session=False)
 
     user.demo_data_active = False
+    user.demo_agenda_active = False
+    user.demo_checklist_active = False
+    user.demo_notes_active = False
     user.demo_removal_prompt_seen = True
     user.demo_welcome_seen = True
     user.onboarding_completed = True
@@ -1670,7 +1838,11 @@ def excluir_conta_usuario(db: Session, user: User) -> dict[str, int]:
 def status_demo_usuario(db: Session, user: User) -> dict[str, Any]:
     user_id = garantir_user_id(user.id, "status de demonstração")
     contagem = _contar_demo_ativos(db, user_id)
-    ativo = bool(user.demo_data_active) and sum(contagem.values()) > 0
+    agenda_ativa = bool(user.demo_agenda_active) and contagem["tarefas"] > 0
+    checklist_ativo = bool(user.demo_checklist_active) and contagem["checklist"] > 0
+    notas_ativas = bool(user.demo_notes_active) and contagem["notas"] > 0
+    legado_ativo = bool(user.demo_data_active) and not bool(user.onboarding_scenario) and sum(contagem.values()) > 0
+    ativo = agenda_ativa or checklist_ativo or notas_ativas or legado_ativo
     if bool(user.demo_data_active) != ativo:
         user.demo_data_active = ativo
         db.commit()
@@ -1681,6 +1853,14 @@ def status_demo_usuario(db: Session, user: User) -> dict[str, Any]:
         "demo_welcome_seen": bool(user.demo_welcome_seen),
         "demo_removal_prompt_seen": bool(user.demo_removal_prompt_seen),
         "onboarding_completed": bool(user.onboarding_completed),
+        "onboarding_scenario": user.onboarding_scenario,
+        "needs_onboarding": (not bool(user.onboarding_completed)) or legado_ativo,
+        "demo_notice_seen": bool(user.demo_notice_seen),
+        "modules": {
+            "agenda": agenda_ativa,
+            "checklist": checklist_ativo,
+            "notes": notas_ativas,
+        },
         "contagem": contagem,
         "total": sum(contagem.values()),
     }
@@ -2325,6 +2505,18 @@ def _intervalo_dias(freq_interna: str) -> int:
     }.get((freq_interna or "SEMANAL").upper(), 7)
 
 
+def _proxima_data_recorrencia(data_atual: date, frequencia: str) -> date:
+    freq = (frequencia or "SEMANAL").upper()
+    meses = {"MENSAL": 1, "BIMESTRAL": 2, "TRIMESTRAL": 3, "SEMESTRAL": 6, "ANUAL": 12}.get(freq)
+    if not meses:
+        return data_atual + timedelta(days=_intervalo_dias(freq))
+    indice_mes = (data_atual.year * 12 + data_atual.month - 1) + meses
+    ano, mes_zero = divmod(indice_mes, 12)
+    mes = mes_zero + 1
+    dia = min(data_atual.day, calendar.monthrange(ano, mes)[1])
+    return date(ano, mes, dia)
+
+
 def _eh_domingo(data_ref: date) -> bool:
     return data_ref.weekday() == 6
 
@@ -2456,7 +2648,7 @@ def sincronizar_frequencia_checklist_existente(db: Session, user_id: Optional[in
 
 
 def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
-    if not item.ativo:
+    if not item.ativo or item.recurrence_ended_at:
         return False
 
     hoje = _data_operacional_atual()
@@ -2479,6 +2671,8 @@ def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
 
 
 def calcular_proxima_execucao(item: ChecklistItem) -> Optional[str]:
+    if item.recurrence_ended_at:
+        return None
     proxima_data = _data_base_proxima_execucao(item)
     if proxima_data is None:
         return None
@@ -2830,7 +3024,7 @@ def icone(filename: str):
 def health():
     return {
         "status": "ok",
-        "build": "primeira-experiencia-v1",
+        "build": "recorrencias-inteligentes-v1",
         "checklist_hora_liberacao": CHECKLIST_HORA_LIBERACAO
     }
 
@@ -2917,10 +3111,8 @@ async def auth_register(request: Request, db: Session = Depends(get_db)):
     usuario = User(nome=nome, email=email, senha_hash=hash_senha(senha), ativo=True)
     db.add(usuario)
     db.flush()
-    criar_areas_padrao(db, usuario.id)
     db.commit()
     db.refresh(usuario)
-    criar_dados_demo_primeiro_acesso(db, usuario)
     return {"ok": True, "token": criar_token_acesso(usuario), "user": usuario.to_dict()}
 
 
@@ -2942,8 +3134,6 @@ async def auth_login(request: Request, db: Session = Depends(get_db)):
         usuario.is_admin = True
 
     registrar_acesso_usuario(db, usuario)
-    if not bool(usuario.demo_data_created):
-        criar_dados_demo_primeiro_acesso(db, usuario)
     db.commit()
     db.refresh(usuario)
 
@@ -3034,13 +3224,42 @@ async def auth_reset_password(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/auth/me")
 def auth_me(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    if not bool(current_user.demo_data_created):
-        criar_dados_demo_primeiro_acesso(db, current_user)
     return {"ok": True, "user": current_user.to_dict()}
 
 
 @app.get("/demo/status")
 def demo_status(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return {"ok": True, "demo": status_demo_usuario(db, current_user), "user": current_user.to_dict()}
+
+
+@app.get("/demo/scenarios")
+def demo_scenarios(current_user: User = Depends(get_current_user)):
+    return [{"id": item["id"], "name": item["name"]} for item in carregar_cenarios_demo()]
+
+
+@app.post("/demo/import")
+async def demo_import(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+    cenario_id = str(payload.get("scenario_id") or "").strip()
+    if bool(current_user.onboarding_completed) and current_user.onboarding_scenario:
+        raise HTTPException(status_code=409, detail="A experiência inicial já foi preparada.")
+    cenario = importar_cenario_demo(db, current_user, cenario_id)
+    return {
+        "ok": True,
+        "scenario": {"id": cenario["id"], "name": cenario["name"]},
+        "demo": status_demo_usuario(db, current_user),
+        "user": current_user.to_dict(),
+    }
+
+
+@app.post("/demo/notice-seen")
+def demo_notice_seen(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    current_user.demo_notice_seen = True
+    db.commit()
+    db.refresh(current_user)
     return {"ok": True, "demo": status_demo_usuario(db, current_user), "user": current_user.to_dict()}
 
 
@@ -4945,6 +5164,7 @@ def agenda_inteligencia(data_ref: str = Query(None, description="Data de referê
 async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     user_id = garantir_user_id(current_user.id, "tarefa")
     q = request.query_params
+    converter_demo = str(q.get("convert_demo") or "").lower() in {"1", "true", "agenda"}
 
     titulo = q.get("titulo")
     descricao = q.get("descricao")
@@ -4965,6 +5185,8 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
     google_html_link = q.get("google_html_link") or q.get("link")
     sincronizado_google = q.get("sincronizado_google")
     ultima_sync_google = q.get("ultima_sync_google")
+    repetir = q.get("repetir")
+    repetir_ate = q.get("repetir_ate")
 
     if not titulo:
         try:
@@ -4988,6 +5210,8 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
             google_html_link = form.get("google_html_link") or form.get("link")
             sincronizado_google = form.get("sincronizado_google")
             ultima_sync_google = form.get("ultima_sync_google")
+            repetir = form.get("repetir")
+            repetir_ate = form.get("repetir_ate")
         except Exception:
             pass
 
@@ -5062,26 +5286,38 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
         tarefa_google = criar_ou_atualizar_tarefa_importada_google(db, user_id, payload_google)
         return tarefa_google.to_dict()
 
-    tarefa = Tarefa(
-        user_id=user_id,
-        titulo=titulo.strip(),
-        descricao=(descricao or "").strip(),
-        origem=(origem or "").strip(),
-        local=(local or "").strip(),
-        data=data_str.strip(),
-        hora_inicio="" if eh_all_day else hora_inicio,
-        hora_fim="" if eh_all_day else hora_fim,
-        duracao_min=duracao_val,
-        prioridade=prioridade_val,
-        status=normalizar_status(status or "pendente"),
-        tipo_evento="prioriza",
-        origem_evento="prioriza",
-        sincronizado_google=False,
-        all_day=eh_all_day,
-        blocked=eh_blocked,
-        ativo=True,
-    )
-    db.add(tarefa)
+    recorrencia = normalizar_frequencia_interna(repetir or "Único") if str(repetir or "").upper() != "NENHUMA" else "NENHUMA"
+    data_final = (repetir_ate or "").strip()
+    if recorrencia != "NENHUMA" and (not data_final or not validar_data_iso(data_final)):
+        raise HTTPException(status_code=400, detail="Informe uma data final válida para a recorrência.")
+    inicio_serie = datetime.now(UTC) if recorrencia != "NENHUMA" else None
+
+    def nova_ocorrencia(data_ocorrencia: str) -> Tarefa:
+        return Tarefa(
+            user_id=user_id, titulo=titulo.strip(), descricao=(descricao or "").strip(),
+            origem=(origem or "").strip(), local=(local or "").strip(), data=data_ocorrencia,
+            hora_inicio="" if eh_all_day else hora_inicio, hora_fim="" if eh_all_day else hora_fim,
+            duracao_min=duracao_val, prioridade=prioridade_val,
+            status=normalizar_status(status or "pendente"), tipo_evento="prioriza",
+            origem_evento="prioriza", sincronizado_google=False, all_day=eh_all_day,
+            blocked=eh_blocked, ativo=True, recurrence_type=recorrencia,
+            recurrence_until=data_final, recurrence_started_at=inicio_serie,
+        )
+
+    datas_ocorrencias = [date.fromisoformat(data_str.strip())]
+    if recorrencia != "NENHUMA":
+        limite = date.fromisoformat(data_final)
+        while datas_ocorrencias[-1] < limite and len(datas_ocorrencias) < 1000:
+            proxima = _proxima_data_recorrencia(datas_ocorrencias[-1], recorrencia)
+            if proxima > limite:
+                break
+            datas_ocorrencias.append(proxima)
+    tarefas_criadas = [nova_ocorrencia(valor.isoformat()) for valor in datas_ocorrencias]
+    db.add_all(tarefas_criadas)
+    tarefa = tarefas_criadas[0]
+    db.flush()
+    if converter_demo:
+        converter_modulo_demo_sem_commit(db, current_user, "agenda")
     db.commit()
     db.refresh(tarefa)
 
@@ -5091,6 +5327,8 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
         except Exception as e:
             print(f"[GOOGLE] Falha ao sincronizar tarefa recém-criada: {e}")
 
+    if len(tarefas_criadas) > 1:
+        return {"quantidade": len(tarefas_criadas), "tarefas": [item.to_dict() for item in tarefas_criadas]}
     return tarefa.to_dict()
 
 
@@ -5122,6 +5360,43 @@ async def editar_tarefa(tarefa_id: int, request: Request, db: Session = Depends(
     sincronizar_google = pegar("sincronizar_google")
     all_day = pegar("all_day")
     blocked = pegar("blocked")
+    escopo = (pegar("scope") or "single").strip().lower()
+    alvos = [tarefa]
+    if escopo == "series" and tarefa.recurrence_started_at:
+        alvos = db.query(Tarefa).filter(
+            Tarefa.user_id == current_user.id,
+            Tarefa.ativo == True,
+            Tarefa.recurrence_started_at == tarefa.recurrence_started_at,
+            Tarefa.data >= tarefa.data,
+        ).all()
+
+    def aplicar_campos(alvo: Tarefa):
+        if titulo is not None:
+            alvo.titulo = titulo.strip()
+        if descricao is not None:
+            alvo.descricao = descricao.strip()
+        if origem is not None:
+            alvo.origem = origem.strip()
+        if local is not None:
+            alvo.local = local.strip()
+        if hora_inicio is not None:
+            alvo.hora_inicio = hora_inicio.strip()
+        if hora_fim is not None:
+            alvo.hora_fim = hora_fim.strip()
+        if duracao_min is not None and str(duracao_min).strip():
+            try: alvo.duracao_min = int(duracao_min)
+            except ValueError: pass
+        if prioridade is not None and str(prioridade).strip():
+            try:
+                valor = int(prioridade)
+                alvo.prioridade = valor if valor in (1, 2, 3) else 2
+            except ValueError: pass
+        if status is not None:
+            alvo.status = normalizar_status(status)
+
+    if escopo == "series":
+        for alvo in alvos:
+            aplicar_campos(alvo)
 
     if titulo is not None:
         tarefa.titulo = titulo.strip()
@@ -5190,6 +5465,29 @@ async def editar_tarefa(tarefa_id: int, request: Request, db: Session = Depends(
             print(f"[GOOGLE] Falha ao sincronizar edição da tarefa {tarefa.id}: {e}")
 
     return tarefa.to_dict()
+
+
+@app.post("/tarefas/{tarefa_id}/finalizar-recorrencia")
+def finalizar_recorrencia_tarefa(tarefa_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    tarefa = db.query(Tarefa).filter(Tarefa.id == tarefa_id, Tarefa.user_id == current_user.id, Tarefa.ativo == True).first()
+    if not tarefa:
+        raise HTTPException(status_code=404, detail="Compromisso não encontrado.")
+    if not tarefa.recurrence_started_at or (tarefa.recurrence_type or "NENHUMA") == "NENHUMA":
+        raise HTTPException(status_code=400, detail="Este compromisso não pertence a uma recorrência.")
+    agora = datetime.now(UTC)
+    hoje = date.today().isoformat()
+    serie = db.query(Tarefa).filter(
+        Tarefa.user_id == current_user.id,
+        Tarefa.recurrence_started_at == tarefa.recurrence_started_at,
+    ).all()
+    removidas = 0
+    for ocorrencia in serie:
+        ocorrencia.recurrence_ended_at = agora
+        if ocorrencia.data > hoje and normalizar_status(ocorrencia.status) != "feito":
+            ocorrencia.ativo = False
+            removidas += 1
+    db.commit()
+    return {"ok": True, "ocorrencias_futuras_removidas": removidas}
 
 
 @app.post("/tarefas_editar")
@@ -5262,6 +5560,7 @@ def criar_checklist_item(
     titulo: str = Query(...),
     origem: str = Query(""),
     frequencia: str = Query("Semanal"),
+    convert_demo: bool = Query(False),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -5278,6 +5577,9 @@ def criar_checklist_item(
         ultimo_exec=None,
     )
     db.add(item)
+    db.flush()
+    if convert_demo:
+        converter_modulo_demo_sem_commit(db, current_user, "checklist")
     db.commit()
     db.refresh(item)
     return item.to_dict(incluir_pode_hoje=True)
@@ -5289,6 +5591,8 @@ def editar_checklist_item(
     titulo: str = Query(None),
     origem: str = Query(None),
     frequencia: str = Query(None),
+    scope: str = Query("single"),
+    proxima_execucao: str = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -5303,7 +5607,27 @@ def editar_checklist_item(
     if frequencia is not None:
         item.frequencia = frequencia.strip()
         item.frequencia_interna = normalizar_frequencia_interna(item.frequencia)
+        item.recurrence_ended_at = None
+    if proxima_execucao is not None:
+        if not validar_data_iso(proxima_execucao):
+            raise HTTPException(status_code=400, detail="Data de retorno inválida.")
+        intervalo = _intervalo_dias(frequencia_interna_efetiva(item.frequencia, item.frequencia_interna))
+        base = date.fromisoformat(proxima_execucao) - timedelta(days=intervalo)
+        item.ultimo_exec = datetime.combine(base, datetime.min.time(), tzinfo=UTC)
 
+    db.commit()
+    db.refresh(item)
+    return item.to_dict(incluir_pode_hoje=True)
+
+
+@app.post("/checklist/{item_id}/finalizar-recorrencia")
+def finalizar_recorrencia_checklist(item_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    item = db.query(ChecklistItem).filter(ChecklistItem.id == item_id, ChecklistItem.user_id == current_user.id, ChecklistItem.ativo == True).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Rotina não encontrada.")
+    if frequencia_interna_efetiva(item.frequencia, item.frequencia_interna) == "UNICO":
+        raise HTTPException(status_code=400, detail="Esta rotina não é recorrente.")
+    item.recurrence_ended_at = datetime.now(UTC)
     db.commit()
     db.refresh(item)
     return item.to_dict(incluir_pode_hoje=True)
@@ -5372,6 +5696,7 @@ def criar_nota(
     texto: str = Form(...),
     data: str = Form(""),
     tipo: str = Form("GERAL"),
+    convert_demo: bool = Query(False),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -5389,6 +5714,9 @@ def criar_nota(
         ativo=True,
     )
     db.add(nota)
+    db.flush()
+    if convert_demo:
+        converter_modulo_demo_sem_commit(db, current_user, "notes")
     db.commit()
     db.refresh(nota)
     return nota.to_dict()
