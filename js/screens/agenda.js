@@ -551,7 +551,7 @@
       if (!titulo?.trim()) return;
       const hora   = await modal.perguntar("Hora de início (HH:MM):","Hora","08:00");
       if (hora === null) return;
-      const origem = await modal.perguntar("Local / contexto (opcional):","Local");
+      const origem = await modal.perguntar("Área ou contexto (opcional):","Área");
       if (origem === null) return;
       const prioStr = await modal.perguntar("Prioridade (1=Alta · 2=Média · 3=Baixa):","Prioridade","2");
       if (prioStr === null) return;
@@ -568,7 +568,7 @@
         if (!res.ok) { await modal.alerta("Erro ao salvar tarefa.","Erro"); return; }
         const origemTrim=(origem||"").trim();
         if (origemTrim && !getLocaisSalvos().includes(origemTrim)) {
-          if (await modal.confirmar(`Salvar "${origemTrim}" como local frequente?`,"Local frequente","verde")) {
+          if (await modal.confirmar(`Salvar "${origemTrim}" como área frequente?`,"Área frequente","verde")) {
             adicionarLocalSalvo(origemTrim);
             renderLocaisSugeridos("agenda-locais-sugeridos","agenda-local");
             renderLocaisSugeridos("chk-locais-sugeridos","chk-local");

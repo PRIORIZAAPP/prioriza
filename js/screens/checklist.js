@@ -553,7 +553,7 @@
     // ── NOVA ROTINA RÁPIDA ────────────────────────────────────────
     async function novaRotinaHoje() {
       const titulo = await modal.perguntar("Título da rotina:","Nova rotina"); if(!titulo?.trim()) return;
-      const origem = await modal.perguntar("Local / contexto:","Local"); if(origem===null) return;
+      const origem = await modal.perguntar("Área ou contexto:","Área"); if(origem===null) return;
       const freq   = await modal.perguntar("Frequência (Diária, Semanal, Mensal…):","Frequência","Semanal"); if(!freq) return;
       const btn=document.getElementById("botao-nova-rotina-hoje"); btn.disabled=true;
       try {
@@ -561,7 +561,7 @@
         if (!res.ok){await modal.alerta("Erro ao salvar rotina.","Erro");return;}
         const origemTrim=(origem||"").trim();
         if (origemTrim && !getLocaisSalvos().includes(origemTrim)) {
-          if (await modal.confirmar(`Salvar "${origemTrim}" como local frequente?`,"Local frequente","verde")) {
+          if (await modal.confirmar(`Salvar "${origemTrim}" como área frequente?`,"Área frequente","verde")) {
             adicionarLocalSalvo(origemTrim); renderLocaisSugeridos("agenda-locais-sugeridos","agenda-local"); renderLocaisSugeridos("chk-locais-sugeridos","chk-local");
           }
         }

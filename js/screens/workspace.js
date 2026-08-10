@@ -493,7 +493,7 @@
       atualizarBloqueioRolagemFundo();
       if (!abrir) return;
       const editando = !!marco?.id;
-      document.getElementById("marco-form-title").textContent = editando ? "Editar Marco Operacional" : "Novo Marco Operacional";
+      document.getElementById("marco-form-title").textContent = editando ? "Editar marco importante" : "Novo marco importante";
       document.getElementById("marco-id").value = editando ? String(marco.id) : "";
       document.getElementById("marco-titulo").value = marco?.titulo || "";
       document.getElementById("marco-data").value = marco?.data || calendarioDiaSelecionadoISO || dataHojeISO();
@@ -511,7 +511,7 @@
       const conteudo = document.createElement("div");
       const kicker = document.createElement("div");
       kicker.className = "marco-operacional-kicker";
-      kicker.textContent = `Marco Operacional · ${marco.severidade} · ${marco.categoria}`;
+      kicker.textContent = `Marco importante · ${marco.severidade} · ${marco.categoria}`;
       const titulo = document.createElement("div");
       titulo.className = "marco-operacional-title";
       titulo.textContent = marco.titulo;
@@ -534,8 +534,8 @@
       const editar = document.createElement("button");
       editar.type = "button";
       editar.className = "agenda-icon-btn";
-      editar.title = "Editar Marco Operacional";
-      editar.setAttribute("aria-label", "Editar Marco Operacional");
+      editar.title = "Editar marco importante";
+      editar.setAttribute("aria-label", "Editar marco importante");
       editar.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M180 32l44 44L72 228H28v-44L180 32z" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 60l44 44" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
       editar.addEventListener("click", (ev) => {
         ev.stopPropagation();
@@ -544,8 +544,8 @@
       const excluir = document.createElement("button");
       excluir.type = "button";
       excluir.className = "agenda-icon-btn";
-      excluir.title = "Excluir Marco Operacional";
-      excluir.setAttribute("aria-label", "Excluir Marco Operacional");
+      excluir.title = "Excluir marco importante";
+      excluir.setAttribute("aria-label", "Excluir marco importante");
       excluir.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M40 72h176M96 104v72M160 104v72M64 72l8 136h112l8-136M88 72l8-32h64l8 32" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       excluir.addEventListener("click", async (ev) => {
         ev.stopPropagation();
@@ -598,7 +598,7 @@
         descricao: document.getElementById("marco-descricao")?.value.trim() || "",
       };
       if (!payload.titulo || !payload.data) {
-        await modal.alerta("Preencha Título e Data.", "Marco Operacional");
+        await modal.alerta("Preencha Título e Data.", "Marco importante");
         return;
       }
       const btn = document.getElementById("btn-salvar-marco");
@@ -612,9 +612,9 @@
         const dados = await res.json().catch(() => ({}));
         if (!res.ok) {
           if (res.status === 404) {
-            throw new Error("Rota de Marcos Operacionais não encontrada. Reinicie o backend do PRIORIZA usando o main.py atualizado.");
+            throw new Error("Recurso de marcos importantes não encontrado. Reinicie o backend do PRIORIZA usando o main.py atualizado.");
           }
-          throw new Error(dados?.detail || "Não foi possível salvar o Marco Operacional.");
+          throw new Error(dados?.detail || "Não foi possível salvar o marco importante.");
         }
         calendarioDiaSelecionadoISO = payload.data;
         const [ano, mes] = payload.data.split("-").map(Number);
@@ -625,19 +625,19 @@
         preencherAgendaDiaSelecionado();
         await atualizarResumoBar();
       } catch (e) {
-        await modal.alerta(e.message || "Não foi possível salvar o Marco Operacional.", "Erro");
+        await modal.alerta(e.message || "Não foi possível salvar o marco importante.", "Erro");
       } finally {
         if (btn) btn.disabled = false;
       }
     }
 
     async function excluirMarcoOperacional(marco) {
-      const ok = await modal.confirmar(`Excluir o Marco Operacional “${marco.titulo}”?`, "Excluir Marco", "vermelho");
+      const ok = await modal.confirmar(`Excluir o marco importante “${marco.titulo}”?`, "Excluir marco", "vermelho");
       if (!ok) return;
       try {
         const res = await fetch(API + `/marcos-operacionais/${marco.id}`, { method: "DELETE", headers: authHeaders() });
         const dados = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(dados?.detail || "Não foi possível excluir o Marco Operacional.");
+        if (!res.ok) throw new Error(dados?.detail || "Não foi possível excluir o marco importante.");
         await carregarMarcosOperacionaisMes();
         montarCalendarioMes();
         preencherAgendaDiaSelecionado();
@@ -645,7 +645,7 @@
         const termo = document.getElementById("busca-marcos-texto")?.value.trim();
         if (termo) await buscarMarcosOperacionais(termo);
       } catch (e) {
-        await modal.alerta(e.message || "Não foi possível excluir o Marco Operacional.", "Erro");
+        await modal.alerta(e.message || "Não foi possível excluir o marco importante.", "Erro");
       }
     }
 
@@ -677,7 +677,7 @@
         container.appendChild(titulo);
         if (!dados.length) {
           const vazio = document.createElement("small");
-          vazio.textContent = "Nenhum Marco Operacional corresponde à busca.";
+          vazio.textContent = "Nenhum marco importante corresponde à busca.";
           container.appendChild(vazio);
           return;
         }
@@ -1431,7 +1431,7 @@
         else { m=lower.match(/(\d{1,2})\s*(?:h|horas)/); if(m) hora=`${String(Math.min(parseInt(m[1]),23)).padStart(2,"0")}:00`; }
         const origem=lower.includes("pessoal")?"PESSOAL":"";
         const conteudo=text.replace(/^(agendar\s+compromisso|agendar|novo\s+compromisso)\s*/i,"").replace(/depois de amanhã/gi,"").replace(/amanhã/gi,"").replace(/hoje/gi,"").replace(/às\s+\d{1,2}(:\d{2})?/gi,"").replace(/\d{1,2}\s*(h|horas)/gi,"").trim()||text;
-        if(!await modal.confirmar(`Criar COMPROMISSO?\n\nLocal: ${origem||"(vazio)"}\nData:  ${formatarDataCurtaBR(data)}\nHora:  ${hora}\n\n"${conteudo}"`,"Novo Compromisso","verde")) return;
+        if(!await modal.confirmar(`Criar COMPROMISSO?\n\nÁrea: ${origem||"(vazio)"}\nData:  ${formatarDataCurtaBR(data)}\nHora:  ${hora}\n\n"${conteudo}"`,"Novo Compromisso","verde")) return;
         const res=await fetch(API+"/tarefas?"+new URLSearchParams({titulo:conteudo,origem,data,hora_inicio:hora,duracao_min:"60",prioridade:"2"}),{method:"POST",headers:authHeaders()});
         if(!res.ok){await modal.alerta("Erro ao salvar.","Erro");return;}
         await carregarAgendaHoje(); await atualizarAgendaMesEDia(); if(origem==="PESSOAL") await carregarPessoalLista();
@@ -1442,7 +1442,7 @@
         let freq="Semanal";
         ["diária","semanal","mensal","bimestral","trimestral","semestral","anual"].forEach(f=>{ if(lower.includes(f)) freq=f.charAt(0).toUpperCase()+f.slice(1); });
         const origem=lower.includes("pessoal")?"PESSOAL":"";
-        if(!await modal.confirmar(`Adicionar ao CHECKLIST?\n\nLocal: ${origem||"(vazio)"}\nFreq.: ${freq}\n\n"${conteudo}"`,"Nova Rotina","verde")) return;
+        if(!await modal.confirmar(`Adicionar ao CHECKLIST?\n\nÁrea: ${origem||"(vazio)"}\nFreq.: ${freq}\n\n"${conteudo}"`,"Nova Rotina","verde")) return;
         const res=await fetch(API+"/checklist_criar?"+new URLSearchParams({titulo:conteudo,origem,frequencia:freq}),{method:"POST",headers:authHeaders()});
         if(!res.ok){await modal.alerta("Erro ao salvar.","Erro");return;}
         await carregarChecklistHoje(); await carregarChecklistGeral(); if(origem==="PESSOAL") await carregarPessoalLista();
