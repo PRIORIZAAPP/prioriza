@@ -913,12 +913,11 @@
         );
       };
 
-      return criarMenuAcoesDesktop({
+      return criarMenuAcoesContextuais({
         titulo: "Ações do compromisso",
         ariaLabel: `Ações de ${t.titulo}`,
         itens: [
           { texto: "Editar", acao: editarCompromisso },
-          { texto: "Cancelar", acao: cancelarCompromisso },
           ...(t?.recorrente ? [{ texto: "Finalizar recorrência", acao: () => finalizarRecorrencia(t, "agenda"), danger: true }] : []),
           { texto: "Excluir", acao: excluirCompromisso, danger: true }
         ]
@@ -1110,50 +1109,15 @@
             );
           };
 
-          if (emLayoutDesktop()) {
-            item.appendChild(criarMenuAcoesDesktop({
-              titulo: "Ações do compromisso",
-              ariaLabel: `Ações de ${t.titulo}`,
-              itens: [
-                { texto: "Editar", acao: editarCompromisso },
-                { texto: "Cancelar", acao: cancelarCompromisso },
-                ...(t?.recorrente ? [{ texto: "Finalizar recorrência", acao: () => finalizarRecorrencia(t, "agenda"), danger: true }] : []),
-                { texto: "Excluir", acao: excluirCompromisso, danger: true }
-              ]
-            }));
-          } else {
-            const btnCancelCal = document.createElement("button");
-            btnCancelCal.type = "button";
-            btnCancelCal.className = "agenda-icon-btn";
-            btnCancelCal.style.background = "#f3f4f6";
-            btnCancelCal.style.color = "#6b7280";
-            btnCancelCal.title = "Cancelar compromisso";
-            btnCancelCal.setAttribute("aria-label", "Cancelar compromisso");
-            btnCancelCal.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M80 80l96 96M176 80l-96 96" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
-            btnCancelCal.addEventListener("click", cancelarCompromisso);
-            item.appendChild(btnCancelCal);
-
-            // Botão editar na aba Agenda (calendário)
-            const btnEditCal = document.createElement("button");
-            btnEditCal.type = "button";
-            btnEditCal.className = "agenda-icon-btn";
-            btnEditCal.style.background = "#dbeafe";
-            btnEditCal.style.color = "#1d4ed8";
-            btnEditCal.title = "Editar compromisso";
-            btnEditCal.setAttribute("aria-label", "Editar compromisso");
-            btnEditCal.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M180 32l44 44L72 228H28v-44L180 32z" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 60l44 44" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
-            btnEditCal.addEventListener("click", editarCompromisso);
-            item.appendChild(btnEditCal);
-
-            const btnDel=document.createElement("button");
-            btnDel.type="button";
-            btnDel.className="agenda-icon-btn";
-            btnDel.title="Excluir compromisso";
-            btnDel.setAttribute("aria-label", "Excluir compromisso");
-            btnDel.innerHTML=`<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M96 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M160 96v88" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M40 72h176" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M72 72l8-24h96l8 24" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M56 72l8 128a8 8 0 0 0 8 8h112a8 8 0 0 0 8-8l8-128" stroke="currentColor" stroke-width="20" stroke-linejoin="round"/></svg>`;
-            btnDel.addEventListener("click", excluirCompromisso);
-            item.appendChild(btnDel);
-          }
+          item.appendChild(criarMenuAcoesContextuais({
+            titulo: "Ações do compromisso",
+            ariaLabel: `Ações de ${t.titulo}`,
+            itens: [
+              { texto: "Editar", acao: editarCompromisso },
+              ...(t?.recorrente ? [{ texto: "Finalizar recorrência", acao: () => finalizarRecorrencia(t, "agenda"), danger: true }] : []),
+              { texto: "Excluir", acao: excluirCompromisso, danger: true }
+            ]
+          }));
         }
 
         lista.appendChild(item);
@@ -1381,7 +1345,7 @@
           div.appendChild(dot);
           div.appendChild(info);
           if (usuarioPodeGerenciarNota(nota)) {
-            const menuAcoes = criarMenuAcoesDesktop({
+            const menuAcoes = criarMenuAcoesContextuais({
               titulo: "Ações da nota",
               ariaLabel: `Ações da nota: ${nota.texto || "sem título"}`,
               itens: [

@@ -464,29 +464,7 @@
                 (acoesDesktop || item).appendChild(grupoAcoes);
               }
 
-              const btnCancelar = document.createElement("button");
-              btnCancelar.type = "button";
-              btnCancelar.className = "agenda-icon-btn";
-              btnCancelar.style.background = "#f3f4f6";
-              btnCancelar.style.color = "#6b7280";
-              btnCancelar.title = "Cancelar compromisso";
-              btnCancelar.setAttribute("aria-label", "Cancelar compromisso");
-              btnCancelar.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M80 80l96 96M176 80l-96 96" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
-              btnCancelar.addEventListener("click", async () => {
-                await cancelarTarefaAgenda(t);
-              });
-              (acoesDesktop || item).appendChild(btnCancelar);
-
-              // Botão editar para tarefas locais na aba Hoje
-              const btnEdit = document.createElement("button");
-              btnEdit.type = "button";
-              btnEdit.className = "agenda-icon-btn";
-              btnEdit.style.background = "#dbeafe";
-              btnEdit.style.color = "#1d4ed8";
-              btnEdit.title = "Editar compromisso";
-              btnEdit.setAttribute("aria-label", "Editar compromisso");
-              btnEdit.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M180 32l44 44L72 228H28v-44L180 32z" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 60l44 44" stroke="currentColor" stroke-width="20" stroke-linecap="round"/></svg>`;
-              btnEdit.addEventListener("click", async () => {
+              const editarCompromissoHoje = async () => {
                 const scope = t?.recorrente ? await modal.escolherRecorrencia("este compromisso") : "single";
                 const novoTitulo = await modal.perguntar("Título:", "Editar compromisso", t.titulo);
                 if (!novoTitulo?.trim()) return;
@@ -501,15 +479,19 @@
                   await carregarAgendaHoje();
                   await atualizarAgendaMesEDia();
                 } catch(e) { console.error(e); await modal.alerta("Erro de conexão.","Erro"); }
-              });
-              (acoesDesktop || item).appendChild(btnEdit);
-              if (t?.recorrente) {
-                (acoesDesktop || item).appendChild(criarMenuAcoesDesktop({
-                  titulo: "Ações da recorrência",
-                  ariaLabel: `Ações da recorrência de ${t.titulo}`,
-                  itens: [{ texto: "Finalizar recorrência", danger: true, acao: () => finalizarRecorrencia(t, "agenda") }],
-                }));
-              }
+              };
+              const itensMenuHoje = [{ texto: "Editar", acao: editarCompromissoHoje }];
+              if (t?.recorrente) itensMenuHoje.push({ texto: "Finalizar recorrência", danger: true, acao: () => finalizarRecorrencia(t, "agenda") });
+              itensMenuHoje.push({ texto: "Excluir", danger: true, acao: async () => {
+                if (!await modal.confirmar(`Excluir "${t.titulo}"?`, "Excluir compromisso", "vermelho")) return;
+                await excluirTarefa(t.id);
+                await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, resumo: true });
+              }});
+              (acoesDesktop || item).appendChild(criarMenuAcoesContextuais({
+                titulo: "Ações do compromisso",
+                ariaLabel: `Ações de ${t.titulo}`,
+                itens: itensMenuHoje,
+              }));
             }
 
             if (acoesDesktop && acoesDesktop.childElementCount) {

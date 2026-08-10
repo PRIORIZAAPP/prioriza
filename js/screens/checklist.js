@@ -122,7 +122,7 @@
           });
 
           div.classList.add("has-action-menu");
-          actions.appendChild(criarMenuAcoesDesktop({
+          actions.appendChild(criarMenuAcoesContextuais({
               titulo: "Ações da rotina",
               ariaLabel: `Ações de ${item.titulo}`,
               itens: [
@@ -270,7 +270,7 @@
           await recarregarBlocosComRolagem({ checklistGeral: true, checklistHoje: true, resumo: true });
         },
       });
-      actions.appendChild(criarMenuAcoesDesktop({
+      actions.appendChild(criarMenuAcoesContextuais({
         titulo: "Ações da rotina",
         ariaLabel: `Ações de ${item.titulo}`,
         itens: itensMenu,
