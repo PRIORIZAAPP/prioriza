@@ -148,10 +148,10 @@
         else title.textContent = "Entrar no PRIORIZA";
       }
       if (subtitle) {
-        if (isRegister) subtitle.textContent = "Comece a organizar sua rotina com mais clareza.";
+        if (isRegister) subtitle.textContent = "Crie sua conta e organize sua rotina do seu jeito.";
         else if (isForgot) subtitle.textContent = "Receba um link seguro para redefinir sua senha.";
         else if (isReset) subtitle.textContent = "Crie uma nova senha para voltar ao seu fluxo.";
-        else subtitle.textContent = "Acesse sua rotina e continue de onde parou.";
+        else subtitle.textContent = "Organize compromissos, rotinas e informações importantes em um só lugar.";
       }
       definirErroAuth("");
     }
@@ -936,7 +936,7 @@
         },
         {
           chave: "marcos",
-          rotulo: "Marco Operacional",
+          rotulo: "Marco importante",
           total: marcos.filter((marco) => marco?.ativo !== false && dataLocalDeRegistro(marco?.criado_em) === hoje).length,
         },
         {
@@ -1461,7 +1461,7 @@
     async function editarRotinaChecklist(item) {
       const titulo = await modal.perguntar(`Título atual: ${item.titulo || ""}`, "Editar rotina", item.titulo || "");
       if (titulo === null) return false;
-      const origem = await modal.perguntar(`Origem atual: ${obterRotuloOrigemChecklist(item)}`, "Editar origem", item.origem || "");
+      const origem = await modal.perguntar(`Área atual: ${obterRotuloOrigemChecklist(item)}`, "Editar área", item.origem || "");
       if (origem === null) return false;
       const frequencia = await modal.perguntar(`Recorrência atual: ${item.frequencia || "Semanal"}`, "Editar recorrência", item.frequencia || "Semanal");
       if (frequencia === null) return false;
@@ -1619,7 +1619,7 @@
       ]);
       const linhas = [
         `Nome da tarefa\n${item?.titulo || "Sem título"}`,
-        `Unidade/Origem\n${origem}`,
+        `Área\n${origem}`,
         `Categoria\n${categoria}`,
         `Frequência\n${item?.frequencia || item?.frequencia_interna || "Não informada"}`,
         `Status\n${statusTexto}`,
@@ -1863,7 +1863,7 @@
       };
 
       const agendaList = criarSecaoTimeline("Compromissos do dia");
-      const checklistList = criarSecaoTimeline("Rotinas operacionais");
+      const checklistList = criarSecaoTimeline("Rotinas");
 
       itens.forEach((item) => {
         const status = item._tipo === "checklist"
@@ -2122,9 +2122,9 @@
       const pessoal = (categoria.value || "PROFISSIONAL") === "PESSOAL";
       const label = localWrap.querySelector("label");
       if (label) {
-        label.textContent = pessoal ? "Referência (opcional)" : "Local / contexto (opcional)";
+        label.textContent = pessoal ? "Referência (opcional)" : "Área (opcional)";
       }
-      localInput.placeholder = pessoal ? "Ex: Casa, Faculdade, Academia" : "Ex: HGG, Escritório, Home office";
+      localInput.placeholder = pessoal ? "Ex.: Casa, Faculdade, Academia" : "Ex.: Trabalho, Cliente, Estudos";
     }
 
     function atualizarCategoriaChecklistUI() {
