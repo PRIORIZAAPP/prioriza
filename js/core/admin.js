@@ -163,10 +163,8 @@
     }
 
     let demoStatusAtual = null;
-    let demoPromptEmAndamento = false;
-    let demoOnboardingConversao = false;
 
-    async function dialogoDemo({ titulo, texto, principal, secundario }) {
+    async function dialogoDemo({ titulo, texto, principal, secundario = "" }) {
       return new Promise((resolve) => {
         const overlay = document.createElement("div");
         overlay.className = "modal-overlay aberto";
@@ -174,7 +172,7 @@
           <h3 id="demo-dialog-title" class="modal-titulo">${textoSeguro(titulo)}</h3>
           <p class="modal-mensagem">${textoSeguro(texto)}</p>
           <div class="modal-btns">
-            <button class="modal-btn-cancel" type="button" data-demo-choice="secondary">${textoSeguro(secundario)}</button>
+            ${secundario ? `<button class="modal-btn-cancel" type="button" data-demo-choice="secondary">${textoSeguro(secundario)}</button>` : ""}
             <button class="modal-btn-ok" type="button" data-demo-choice="primary">${textoSeguro(principal)}</button>
           </div></div>`;
         document.body.appendChild(overlay);
@@ -195,21 +193,32 @@
       document.getElementById("demo-exploration-banner")?.toggleAttribute("hidden", !ativo);
       document.getElementById("demo-home-explanation")?.toggleAttribute("hidden", !ativo);
       document.getElementById("demo-profile-state")?.toggleAttribute("hidden", !ativo);
+      const modulos = demoStatusAtual?.modules || {};
+      [["screen-agenda", modulos.agenda], ["screen-checklist", modulos.checklist], ["screen-notas", modulos.notes]].forEach(([id, visivel]) => {
+        const tela = document.getElementById(id);
+        if (!tela) return;
+        let selo = tela.querySelector(":scope > .module-demo-badge");
+        if (visivel && !selo) {
+          selo = document.createElement("span");
+          selo.className = "module-demo-badge";
+          selo.textContent = "DEMO";
+          tela.prepend(selo);
+        }
+        selo?.toggleAttribute("hidden", !visivel);
+      });
       atualizarAjustesDemo();
     }
 
     function atualizarAjustesDemo() {
       const titulo = document.getElementById("demo-settings-title");
       const texto = document.getElementById("demo-settings-copy");
-      const botao = document.getElementById("btn-remover-demo-ajustes");
       const status = document.getElementById("demo-settings-status");
-      if (!titulo || !texto || !botao) return;
+      if (!titulo || !texto) return;
       const ativo = !!demoStatusAtual?.demo_data_active;
-      titulo.textContent = ativo ? "Explore o PRIORIZA" : "Primeiros passos concluídos";
+      titulo.textContent = ativo ? "Experiência preparada" : "Primeiros passos concluídos";
       texto.textContent = ativo
-        ? "Você está explorando exemplos. Quando quiser, comece a organizar sua própria rotina."
+        ? "Os exemplos serão substituídos automaticamente em cada módulo quando você começar a usá-lo."
         : "Sua conta já utiliza dados reais.";
-      botao.hidden = !ativo;
       if (status && !ativo) status.textContent = "";
     }
 
@@ -231,80 +240,126 @@
     }
 
     async function talvezMostrarBoasVindasDemo() {
-      if (!demoStatusAtual?.demo_data_active || demoStatusAtual.demo_welcome_seen) return;
-      const organizar = await dialogoDemo({
+      if (!demoStatusAtual?.needs_onboarding) {
+        await talvezMostrarAvisoAmbienteDemo();
+        return;
+      }
+      await dialogoDemo({
         titulo: "Bem-vindo ao PRIORIZA",
-        texto: "Você pode conhecer o PRIORIZA usando uma demonstração com dados fictícios ou começar agora organizando sua própria rotina.",
-        principal: "Organizar minha rotina",
-        secundario: "Explorar demonstração"
+        texto: "Bem-vindo ao PRIORIZA.\n\nOrganize trabalho, estudos e vida pessoal em um único lugar.",
+        principal: "Começar"
       });
+      let scenarioId = "";
       try {
-        const res = await nativeFetch(API + "/demo/welcome-seen", { method: "POST", headers: authHeaders() });
+        scenarioId = await escolherCenarioInicial();
+        if (!scenarioId) return;
+        const res = await nativeFetch(API + "/demo/import", {
+          method: "POST",
+          headers: authHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify({ scenario_id: scenarioId })
+        });
         const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.detail || "Não foi possível preparar sua experiência.");
         if (data?.demo) demoStatusAtual = data.demo;
         if (data?.user) authUser = { ...(authUser || {}), ...data.user };
       } catch (e) {
-        console.warn("[PRIORIZA] Não foi possível marcar boas-vindas da demo:", e);
+        await modal.alerta(e.message || "Não foi possível preparar sua experiência.", "Tente novamente");
+        return;
       }
+      await recarregarTelasAposDemo();
       atualizarSeloDemo();
-      if (organizar) iniciarOrganizacaoMinhaRotina();
+      await talvezMostrarAvisoAmbienteDemo();
     }
 
-    function iniciarOrganizacaoMinhaRotina() {
-      if (!demoStatusAtual?.demo_data_active) return;
-      demoOnboardingConversao = true;
-      abrirOnboarding({ forcar: true });
-    }
-
-    async function concluirOrganizacaoMinhaRotina() {
-      const comecar = await dialogoDemo({
-        titulo: "Vamos começar?",
-        texto: "Os exemplos serão removidos para dar lugar à sua própria organização.\n\nEssa ação não poderá ser desfeita.",
-        principal: "Começar",
-        secundario: "Voltar"
-      });
-      if (!comecar) return;
-      const removido = await removerDadosDemo();
-      if (!removido) return;
-      await modal.alerta("Agora o PRIORIZA está preparado para acompanhar a sua rotina.", "Tudo pronto!", "Começar");
-    }
-
-    function rotaMutacaoRealDemo(url, options = {}) {
-      const metodo = String(options?.method || "GET").toUpperCase();
-      if (!["POST", "PUT", "PATCH", "DELETE"].includes(metodo)) return false;
-      let pathname = "";
-      try {
-        pathname = new URL(String(url || ""), window.location.origin).pathname;
-      } catch {
-        pathname = String(url || "").split("?")[0];
-      }
-      if (/^\/tarefas(\/|$)/.test(pathname) || pathname === "/tarefas_excluir") return true;
-      if (/^\/checklist/.test(pathname)) return true;
-      if (/^\/notes(\/|$)/.test(pathname)) return true;
-      if (pathname === "/marcos-operacionais") return true;
-      if (pathname === "/operacao/unidades") return true;
-      if (/^\/operacao\/unidades\/\d+\/escala(\/recorrente)?$/.test(pathname)) return true;
-      if (/^\/operacao\/unidades\/\d+\/movimentos$/.test(pathname)) return true;
-      return false;
-    }
-
-    async function avisarEdicaoDuranteDemo() {
-      if (demoPromptEmAndamento) return false;
-      demoPromptEmAndamento = true;
-      try {
-        const organizar = await dialogoDemo({
-          titulo: "Pronto para começar?",
-          texto: "Você está utilizando uma demonstração.\n\nPara criar seus próprios compromissos, rotinas e notas, organize sua rotina.",
-          principal: "Organizar minha rotina",
-          secundario: "Cancelar"
+    async function escolherCenarioInicial() {
+      const res = await nativeFetch(API + "/demo/scenarios", { headers: authHeaders() });
+      const cenarios = await res.json().catch(() => []);
+      if (!res.ok || !Array.isArray(cenarios)) throw new Error("Não foi possível carregar as áreas disponíveis.");
+      const icones = ["🏥", "💼", "👥", "📊", "⚖️", "💻", "🏢", "🎨", "🎓", "📚", "🏠"];
+      return new Promise((resolve) => {
+        const overlay = document.createElement("div");
+        overlay.className = "modal-overlay aberto onboarding-area-overlay";
+        overlay.innerHTML = `<div class="modal-box onboarding-area-box" role="dialog" aria-modal="true">
+          <h3 class="modal-titulo">Qual área mais se aproxima da sua rotina?</h3>
+          <p class="modal-mensagem">Escolha a área que melhor representa seu dia a dia.</p>
+          <div class="onboarding-area-grid">${cenarios.map((item, index) => `<button type="button" class="onboarding-area-option" data-scenario-id="${textoSeguro(item.id)}"><span>${icones[index] || "•"}</span>${textoSeguro(item.name)}</button>`).join("")}</div>
+          <div class="modal-btns"><button class="modal-btn-ok" type="button" data-scenario-continue disabled>Continuar</button></div>
+        </div>`;
+        document.body.appendChild(overlay);
+        document.body.classList.add("modal-aberto");
+        let selecionado = "";
+        overlay.querySelectorAll("[data-scenario-id]").forEach((botao) => botao.addEventListener("click", () => {
+          selecionado = botao.dataset.scenarioId;
+          overlay.querySelectorAll("[data-scenario-id]").forEach((item) => item.classList.toggle("is-selected", item === botao));
+          overlay.querySelector("[data-scenario-continue]").disabled = false;
+        }));
+        overlay.querySelector("[data-scenario-continue]").addEventListener("click", () => {
+          overlay.remove();
+          document.body.classList.remove("modal-aberto");
+          resolve(selecionado);
         });
-        if (organizar) iniciarOrganizacaoMinhaRotina();
-      } finally { demoPromptEmAndamento = false; }
-      return false;
+      });
+    }
+
+    async function talvezMostrarAvisoAmbienteDemo() {
+      if (!demoStatusAtual?.demo_data_active || demoStatusAtual.demo_notice_seen) return;
+      await dialogoDemo({
+        titulo: "Ambiente de Demonstração",
+        texto: "Os dados exibidos são exemplos para mostrar como o PRIORIZA funciona.\n\nÀ medida que você começar a utilizar o aplicativo, esses exemplos serão substituídos automaticamente pelos seus próprios dados.\n\nVocê não precisará apagar nada manualmente.",
+        principal: "Entendi"
+      });
+      const res = await nativeFetch(API + "/demo/notice-seen", { method: "POST", headers: authHeaders() });
+      const data = await res.json().catch(() => ({}));
+      if (data?.demo) demoStatusAtual = data.demo;
+      if (data?.user) authUser = { ...(authUser || {}), ...data.user };
+      atualizarSeloDemo();
+    }
+
+    function moduloCriacaoDemo(url, options = {}) {
+      const metodo = String(options?.method || "GET").toUpperCase();
+      if (metodo !== "POST") return "";
+      let pathname = "";
+      try { pathname = new URL(String(url || ""), window.location.origin).pathname; }
+      catch { pathname = String(url || "").split("?")[0]; }
+      if (pathname === "/tarefas" && demoStatusAtual?.modules?.agenda) return "agenda";
+      if (pathname === "/checklist_criar" && demoStatusAtual?.modules?.checklist) return "checklist";
+      if (pathname === "/notes" && demoStatusAtual?.modules?.notes) return "notes";
+      return "";
+    }
+
+    async function confirmarConversaoModulo(modulo) {
+      const mensagens = {
+        agenda: {
+          titulo: "Sua Agenda será personalizada",
+          texto: "Você criou seu primeiro compromisso.\n\nOs compromissos de demonstração serão removidos automaticamente.\n\nSeus Checklists e Notas permanecerão disponíveis."
+        },
+        checklist: {
+          titulo: "Seu Checklist será personalizado",
+          texto: "As rotinas de demonstração serão removidas.\n\nAs Notas permanecerão disponíveis."
+        },
+        notes: {
+          titulo: "Suas Notas serão personalizadas",
+          texto: "As notas de demonstração serão removidas."
+        }
+      };
+      const mensagem = mensagens[modulo];
+      if (!mensagem) return false;
+      return dialogoDemo({ ...mensagem, principal: "Continuar", secundario: "Cancelar" });
+    }
+
+    function adicionarConversaoDemoNaUrl(url, modulo) {
+      const alvo = new URL(String(url || ""), window.location.href);
+      alvo.searchParams.set("convert_demo", modulo);
+      return alvo.toString();
+    }
+
+    function respostaDemoCancelada(resposta) {
+      return resposta?.headers?.get("X-Prioriza-Demo-Cancelled") === "1";
     }
 
     async function recarregarTelasAposDemo() {
       await Promise.allSettled([
+        window.PriorizaAreas?.carregar?.(true),
         carregarAgendaHoje(),
         atualizarAgendaMesEDia(),
         carregarChecklistHoje(),
@@ -314,25 +369,6 @@
       ]);
       await atualizarResumoBar();
       atualizarSeloDemo();
-    }
-
-    async function removerDadosDemo({ origem = "manual" } = {}) {
-      const statusEl = document.getElementById("demo-settings-status");
-      if (statusEl && origem === "ajustes") statusEl.textContent = "Preparando sua rotina...";
-      try {
-        const res = await nativeFetch(API + "/demo/remove", { method: "POST", headers: authHeaders() });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data?.detail || "Não foi possível remover os dados de demonstração.");
-        demoStatusAtual = data?.demo || null;
-        if (data?.user) authUser = { ...(authUser || {}), ...data.user };
-        await recarregarTelasAposDemo();
-        if (statusEl && origem === "ajustes") statusEl.textContent = "Sua rotina está pronta.";
-        return true;
-      } catch (e) {
-        if (statusEl && origem === "ajustes") statusEl.textContent = e.message || "Não foi possível remover os dados.";
-        else await modal.alerta(e.message || "Não foi possível preparar sua rotina agora.", "Não foi possível começar");
-        return false;
-      }
     }
 
     function limparUrlResetSenha() {
@@ -374,17 +410,27 @@
       }
 
       const opts = { ...options, headers };
-      if (demoStatusAtual?.demo_data_active && rotaMutacaoRealDemo(url, opts)) {
-        await avisarEdicaoDuranteDemo();
-        return new Response(JSON.stringify({ detail: "A demonstração não salva alterações." }), {
-          status: 409, headers: { "Content-Type": "application/json" }
-        });
+      const moduloConversao = moduloCriacaoDemo(url, opts);
+      if (moduloConversao) {
+        const continuar = await confirmarConversaoModulo(moduloConversao);
+        if (!continuar) {
+          return new Response(JSON.stringify({ detail: "Ação cancelada." }), {
+            status: 409, headers: { "Content-Type": "application/json", "X-Prioriza-Demo-Cancelled": "1" }
+          });
+        }
+        url = adicionarConversaoDemoNaUrl(url, moduloConversao);
       }
       const resposta = await nativeFetch(url, opts);
       const rota = obterUrlRecurso(url);
       const ignorar401 = rota.includes("/auth/login") || rota.includes("/auth/register") || rota.includes("/auth/forgot-password") || rota.includes("/auth/reset-password");
       if (resposta.status === 401 && !ignorar401) {
         handleUnauthorized();
+      }
+      if (resposta.ok && moduloConversao) {
+        window.setTimeout(async () => {
+          await carregarStatusDemo();
+          await recarregarTelasAposDemo();
+        }, 100);
       }
       return resposta;
     }
@@ -657,19 +703,16 @@
       }
     }
 
-    function fecharOnboarding({ salvar = true, concluido = false } = {}) {
+    function fecharOnboarding({ salvar = true } = {}) {
       const overlay = document.getElementById("onboarding-overlay");
       if (!overlay) return;
       onboardingAberto = false;
       onboardingModoRevisao = false;
-      const concluirDemo = concluido && demoOnboardingConversao;
-      demoOnboardingConversao = false;
       if (salvar) marcarOnboardingComoVisto();
       overlay.classList.remove("is-visible");
       overlay.setAttribute("aria-hidden", "true");
       window.setTimeout(() => {
         overlay.hidden = true;
-        if (concluirDemo) concluirOrganizacaoMinhaRotina();
       }, 180);
     }
 
@@ -691,7 +734,7 @@
 
     function avancarOnboarding() {
       if (onboardingIndexAtual >= ONBOARDING_STEPS.length - 1) {
-        fecharOnboarding({ salvar: true, concluido: true });
+        fecharOnboarding({ salvar: true });
         return;
       }
       onboardingIndexAtual += 1;
@@ -721,14 +764,6 @@
       document.getElementById("btn-rever-introducao")?.addEventListener("click", () => abrirOnboarding({ forcar: true }));
       document.getElementById("btn-ver-tutorial-primeiros-passos")?.addEventListener("click", () => abrirOnboarding({ forcar: true }));
       document.getElementById("btn-rever-introducao-ajuda")?.addEventListener("click", () => abrirOnboarding({ forcar: true }));
-      document.getElementById("btn-remover-demo-ajustes")?.addEventListener("click", iniciarOrganizacaoMinhaRotina);
-      document.getElementById("btn-demo-organizar-banner")?.addEventListener("click", iniciarOrganizacaoMinhaRotina);
-      document.getElementById("btn-demo-continuar")?.addEventListener("click", () => {
-        document.getElementById("demo-exploration-banner")?.classList.add("is-collapsed");
-      });
-      document.getElementById("btn-demo-banner-expand")?.addEventListener("click", () => {
-        document.getElementById("demo-exploration-banner")?.classList.remove("is-collapsed");
-      });
     }
 
     function agendarOnboardingPrimeiroAcesso() {
@@ -737,7 +772,7 @@
       const splash = document.getElementById("splash-screen");
       const atraso = splash?.classList.contains("is-visible") ? 2100 : 320;
       window.setTimeout(() => {
-        if (!onboardingJaVisto() && !demoStatusAtual?.demo_data_active) abrirOnboarding();
+        if (!onboardingJaVisto() && !demoStatusAtual?.needs_onboarding && !demoStatusAtual?.demo_data_active) abrirOnboarding();
       }, atraso);
     }
 
@@ -903,6 +938,16 @@
         },
         async perguntar(mensagem, titulo = "", placeholder = "") {
           const r = await _abrir({ titulo, mensagem, tipo: "prompt", placeholder }); return r.ok ? r.valor : null;
+        },
+        async escolherRecorrencia(rotuloItem = "este item") {
+          const toda = await _abrir({
+            titulo: "Aplicar alteração em",
+            mensagem: `Escolha como alterar ${rotuloItem}.`,
+            tipo: "confirmar",
+            okText: "Toda a recorrência",
+            cancelText: "Apenas este",
+          });
+          return toda.ok ? "series" : "single";
         },
       };
     })();
@@ -1498,6 +1543,7 @@
     }
 
     async function editarRotinaChecklist(item) {
+      const scope = item?.recorrente ? await modal.escolherRecorrencia("esta rotina") : "single";
       const titulo = await modal.perguntar(`Título atual: ${item.titulo || ""}`, "Editar rotina", item.titulo || "");
       if (titulo === null) return false;
       const origem = await modal.perguntar(`Área atual: ${obterRotuloOrigemChecklist(item)}`, "Editar área", item.origem || "");
@@ -1508,6 +1554,7 @@
         titulo: titulo.trim() || item.titulo || "",
         origem: origem.trim() || item.origem || "",
         frequencia: frequencia.trim() || item.frequencia || "Semanal",
+        scope,
       });
       try {
         const res = await fetch(API + `/checklist/${item.id}?` + params.toString(), { method: "PUT", headers: authHeaders() });
@@ -1519,6 +1566,30 @@
         await modal.alerta(e.message || "Não foi possível editar a rotina.", "Erro");
         return false;
       }
+    }
+
+    function iconeRecorrenciaHTML() {
+      return `<span class="recurrence-indicator" title="Item recorrente" aria-label="Item recorrente">↻</span>`;
+    }
+
+    async function finalizarRecorrencia(item, tipo) {
+      const ehAgenda = tipo === "agenda";
+      const mensagem = ehAgenda
+        ? "Os compromissos futuros serão removidos.\n\nTodo o histórico permanecerá disponível."
+        : "As próximas ocorrências desta rotina serão removidas.\n\nO histórico permanecerá disponível.";
+      const confirmou = await modal.confirmar(mensagem, "Finalizar recorrência?", "vermelho", "Finalizar", "Cancelar");
+      if (!confirmou) return false;
+      const rota = ehAgenda
+        ? `/tarefas/${item.id}/finalizar-recorrencia`
+        : `/checklist/${item.id}/finalizar-recorrencia`;
+      const res = await fetch(API + rota, { method: "POST", headers: authHeaders() });
+      if (!res.ok) {
+        const erro = await res.json().catch(() => ({}));
+        await modal.alerta(erro.detail || "Não foi possível finalizar a recorrência.", "Erro");
+        return false;
+      }
+      await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, checklistHoje: true, checklistGeral: true, pessoal: true, resumo: true });
+      return true;
     }
 
     function ehRotinaRecorrenteNaoDiaria(item) {
@@ -1817,6 +1888,7 @@
               renderizarTimelineOperacionalDesktop();
             }
           },
+          ...(item?.recorrente ? [{ texto: "Finalizar recorrência", danger: true, acao: () => finalizarRecorrencia(item, "checklist") }] : []),
           {
             texto: "Excluir",
             danger: true,
@@ -1940,7 +2012,7 @@
 
         const title = document.createElement("div");
         title.className = "timeline-title";
-        title.textContent = item.titulo || "Item sem título";
+        title.innerHTML = `${textoSeguro(item.titulo || "Item sem título")}${item?.recorrente ? iconeRecorrenciaHTML() : ""}`;
 
         const meta = document.createElement("div");
         meta.className = "timeline-meta";
@@ -1996,6 +2068,7 @@
           btnEditar.setAttribute("aria-label", `Editar ${item.titulo}`);
           btnEditar.addEventListener("click", async (ev) => {
             ev.stopPropagation();
+            const scope = item?.recorrente ? await modal.escolherRecorrencia("este compromisso") : "single";
             const novoTitulo = await modal.perguntar("Editar título do compromisso:", "Editar compromisso", item.titulo || "");
             if (novoTitulo === null || !novoTitulo.trim()) return;
             try {
@@ -2006,10 +2079,11 @@
                 data: normalizarDataParaISO(item.data || ""),
                 hora_inicio: item.hora_inicio || "00:00",
                 duracao_min: String(item.duracao_min || 60),
-                prioridade: String(item.prioridade || 2)
+                prioridade: String(item.prioridade || 2),
+                scope,
               });
-              const res = await fetch(API + "/tarefas_editar?" + params.toString(), {
-                method: "POST",
+              const res = await fetch(API + `/tarefas/${item.id}?` + params.toString(), {
+                method: "PUT",
                 headers: authHeaders()
               });
               if (!res.ok) {
@@ -2027,6 +2101,15 @@
             }
           });
           actions.appendChild(btnEditar);
+
+          if (item?.recorrente) {
+            const menuRecorrencia = criarMenuAcoesDesktop({
+              titulo: "Ações da recorrência",
+              ariaLabel: `Ações da recorrência de ${item.titulo}`,
+              itens: [{ texto: "Finalizar recorrência", danger: true, acao: () => finalizarRecorrencia(item, "agenda") }],
+            });
+            actions.appendChild(menuRecorrencia);
+          }
 
           const excluir = document.createElement("button");
           excluir.type = "button";
