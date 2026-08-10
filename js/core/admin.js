@@ -1828,7 +1828,7 @@
       });
     }
 
-    function criarMenuAcoesDesktop({ titulo, ariaLabel, itens = [] }) {
+    function criarMenuAcoesContextuais({ titulo, ariaLabel, itens = [] }) {
       const wrap = document.createElement("div");
       wrap.className = "timeline-action-menu";
       const trigger = document.createElement("button");
@@ -1839,7 +1839,7 @@
       trigger.setAttribute("aria-expanded", "false");
       trigger.innerHTML = `<svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><circle cx="56" cy="128" r="14"/><circle cx="128" cy="128" r="14"/><circle cx="200" cy="128" r="14"/></svg>`;
       const menu = document.createElement("div");
-      menu.className = "timeline-menu-popover";
+      menu.className = "timeline-menu-popover contextual-actions-card";
       menu.hidden = true;
 
       itens.forEach(({ texto, acao, danger = false }) => {
@@ -1870,13 +1870,26 @@
         menu.hidden = !abrir;
         trigger.setAttribute("aria-expanded", abrir ? "true" : "false");
         menu.closest(".checklist-item, .nota-item")?.classList.toggle("menu-open", abrir);
+        if (abrir) {
+          const ancora = trigger.getBoundingClientRect();
+          const largura = Math.max(176, menu.offsetWidth || 0);
+          const altura = menu.offsetHeight || 0;
+          const margem = 8;
+          const esquerda = Math.min(window.innerWidth - largura - margem, Math.max(margem, ancora.right - largura));
+          const abaixo = ancora.bottom + 6;
+          const topo = abaixo + altura <= window.innerHeight - margem
+            ? abaixo
+            : Math.max(margem, ancora.top - altura - 6);
+          menu.style.left = `${esquerda}px`;
+          menu.style.top = `${topo}px`;
+        }
       });
       wrap.append(trigger, menu);
       return wrap;
     }
 
     function criarMenuRotinaDesktop(item) {
-      return criarMenuAcoesDesktop({
+      return criarMenuAcoesContextuais({
         titulo: "Ações da rotina",
         ariaLabel: `Ações de ${item.titulo}`,
         itens: [
@@ -2060,14 +2073,7 @@
           });
           actions.appendChild(toggle);
 
-          const btnEditar = document.createElement("button");
-          btnEditar.type = "button";
-          btnEditar.className = "timeline-icon-btn";
-          btnEditar.textContent = "✎";
-          btnEditar.title = "Editar compromisso";
-          btnEditar.setAttribute("aria-label", `Editar ${item.titulo}`);
-          btnEditar.addEventListener("click", async (ev) => {
-            ev.stopPropagation();
+          const editarCompromissoTimeline = async () => {
             const scope = item?.recorrente ? await modal.escolherRecorrencia("este compromisso") : "single";
             const novoTitulo = await modal.perguntar("Editar título do compromisso:", "Editar compromisso", item.titulo || "");
             if (novoTitulo === null || !novoTitulo.trim()) return;
@@ -2099,32 +2105,20 @@
               console.error(e);
               await modal.alerta("Erro ao editar compromisso.", "Erro");
             }
-          });
-          actions.appendChild(btnEditar);
-
-          if (item?.recorrente) {
-            const menuRecorrencia = criarMenuAcoesDesktop({
-              titulo: "Ações da recorrência",
-              ariaLabel: `Ações da recorrência de ${item.titulo}`,
-              itens: [{ texto: "Finalizar recorrência", danger: true, acao: () => finalizarRecorrencia(item, "agenda") }],
-            });
-            actions.appendChild(menuRecorrencia);
-          }
-
-          const excluir = document.createElement("button");
-          excluir.type = "button";
-          excluir.className = "timeline-icon-btn";
-          excluir.textContent = "×";
-          excluir.title = "Excluir compromisso";
-          excluir.setAttribute("aria-label", `Excluir ${item.titulo}`);
-          excluir.addEventListener("click", async (ev) => {
-            ev.stopPropagation();
+          };
+          const itensMenuAgenda = [{ texto: "Editar", acao: editarCompromissoTimeline }];
+          if (item?.recorrente) itensMenuAgenda.push({ texto: "Finalizar recorrência", danger: true, acao: () => finalizarRecorrencia(item, "agenda") });
+          itensMenuAgenda.push({ texto: "Excluir", danger: true, acao: async () => {
             if (!await modal.confirmar(`Excluir "${item.titulo}"?`, "Excluir compromisso", "vermelho")) return;
             await excluirTarefa(item.id);
             await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, resumo: true });
             renderizarTimelineOperacionalDesktop();
-          });
-          actions.appendChild(excluir);
+          }});
+          actions.appendChild(criarMenuAcoesContextuais({
+            titulo: "Ações do compromisso",
+            ariaLabel: `Ações de ${item.titulo}`,
+            itens: itensMenuAgenda,
+          }));
         } else {
           const toggle = document.createElement("button");
           toggle.type = "button";
