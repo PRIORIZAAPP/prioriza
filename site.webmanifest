@@ -1,7 +1,7 @@
 {
   "name": "PRIORIZA",
   "short_name": "PRIORIZA",
-  "description": "Organize compromissos, rotinas e prioridades em um unico lugar.",
+  "description": "Organize compromissos, rotinas e informações importantes em um só lugar.",
   "lang": "pt-BR",
   "start_url": "/app",
   "scope": "/",
