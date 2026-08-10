@@ -1874,6 +1874,13 @@
         trigger.setAttribute("aria-expanded", abrir ? "true" : "false");
         wrap.closest(".checklist-item, .nota-item")?.classList.toggle("menu-open", abrir);
         if (abrir) {
+          Object.assign(menu.style, {
+            position: "fixed",
+            right: "auto",
+            bottom: "auto",
+            zIndex: "10000",
+            width: "176px",
+          });
           const ancora = trigger.getBoundingClientRect();
           const largura = Math.max(176, menu.offsetWidth || 0);
           const altura = menu.offsetHeight || 0;
