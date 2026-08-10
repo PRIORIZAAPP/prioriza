@@ -23,5 +23,6 @@
                        "js/app.js",
                        "js/integrations/notifications.js"
                    ],
+    "data": ["demo_scenarios.json"],
     "compatibility":  "Scripts remain classic and ordered to preserve shared global lexical bindings."
 }

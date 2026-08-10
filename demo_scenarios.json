@@ -1,0 +1,1630 @@
+[
+  {
+    "id": "cenario-01",
+    "name": "Saúde",
+    "persona": "Coordenador Regional de Radiologia responsável por múltiplas unidades, equipes, indicadores e qualidade assistencial.",
+    "areas": [
+      "Hospitais",
+      "Equipe",
+      "Administrativo",
+      "Projetos",
+      "Pessoal"
+    ],
+    "agenda": [
+      {
+        "day": "Seg",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Seg",
+        "time": "08:00",
+        "title": "Reunião de alinhhamento com coordenadores",
+        "area": "Equipe"
+      },
+      {
+        "day": "Seg",
+        "time": "14:00",
+        "title": "Revisar indicadores",
+        "area": "Administrativo"
+      },
+      {
+        "day": "Ter",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Ter",
+        "time": "09:00",
+        "title": "Reunião com direção do Hospital",
+        "area": "Hospitais"
+      },
+      {
+        "day": "Ter",
+        "time": "15:00",
+        "title": "Treinamento de novos técnicos",
+        "area": "Equipe"
+      },
+      {
+        "day": "Qua",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Qua",
+        "time": "09:00",
+        "title": "Auditoria interna",
+        "area": "Hospitais"
+      },
+      {
+        "day": "Qua",
+        "time": "15:00",
+        "title": "Reunião com RH",
+        "area": "Administrativo"
+      },
+      {
+        "day": "Qui",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Qui",
+        "time": "09:00",
+        "title": "Visita técnica",
+        "area": "Hospitais"
+      },
+      {
+        "day": "Sex",
+        "time": "09:00",
+        "title": "Fechamento de indicadores",
+        "area": "Administrativo"
+      },
+      {
+        "day": "Sex",
+        "time": "14:00",
+        "title": "Reunião com diretoria",
+        "area": "Hospitais"
+      },
+      {
+        "day": "Sáb",
+        "time": "09:30",
+        "title": "Compras da semana",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Dom",
+        "time": "20:00",
+        "title": "Planejamento da próxima semana",
+        "area": "Projetos"
+      }
+    ],
+    "checklist": [
+      "Conferir passagem de plantão",
+      "Verificar e-mails críticos",
+      "Validar cobertura das escalas",
+      "Acompanhar exames pendentes",
+      "Responder gestores",
+      "Revisar ocorrências",
+      "Atualizar painel de indicadores",
+      "Conferir equipamentos críticos",
+      "Validar trocas de plantão",
+      "Acompanhar treinamentos",
+      "Reunião semanal com líderes",
+      "Conferir ponto da equipe",
+      "Enviar relatório semanal",
+      "Revisar férias programadas",
+      "Atualizar plano de ação",
+      "Trocar dosímetros",
+      "Coletar assinatura PEP",
+      "Revisar documentos obrigatórios",
+      "Auditar protocolos",
+      "Reunião de qualidade",
+      "Fechamento mensal de indicadores",
+      "Revisar contratos",
+      "Atualizar contatos das unidades",
+      "Planejar treinamentos",
+      "Atualizar calendário operacional",
+      "Revisar SATR",
+      "Revisar memorial descritivo",
+      "Planejar férias anuais",
+      "Revisar metas da equipe",
+      "Organizar prioridades da próxima semana"
+    ],
+    "notes": [
+      "Incluir tempo médio da TC na apresentação da diretoria.",
+      "Confirmar cobertura das férias antes do dia 15.",
+      "Solicitar orçamento para manutenção preventiva.",
+      "Equipe solicitou reorganização dos armários.",
+      "Atualizar contatos das lideranças.",
+      "Agendar treinamento de contraste.",
+      "Revisar fluxo de pacientes internados.",
+      "Confirmar entrega dos dosímetros.",
+      "Separar documentos da auditoria.",
+      "Revisar agenda da visita técnica."
+    ]
+  },
+  {
+    "id": "cenario-02",
+    "name": "Comercial e Vendas",
+    "persona": "Executivo(a) de Contas responsável por prospecção, negociação, relacionamento com clientes e gestão do funil de vendas.",
+    "areas": [
+      "Clientes",
+      "Prospecção",
+      "Comercial",
+      "Administrativo",
+      "Pessoal"
+    ],
+    "agenda": [
+      {
+        "day": "Seg",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Seg",
+        "time": "09:00",
+        "title": "Reunião de pipeline",
+        "area": "Comercial"
+      },
+      {
+        "day": "Seg",
+        "time": "15:00",
+        "title": "Contato com clientes prioritários",
+        "area": "Clientes"
+      },
+      {
+        "day": "Ter",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Ter",
+        "time": "10:00",
+        "title": "Apresentação de proposta",
+        "area": "Clientes"
+      },
+      {
+        "day": "Ter",
+        "time": "16:00",
+        "title": "Atualizar CRM",
+        "area": "Administrativo"
+      },
+      {
+        "day": "Qua",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Qua",
+        "time": "09:30",
+        "title": "Negociação comercial",
+        "area": "Clientes"
+      },
+      {
+        "day": "Qua",
+        "time": "18:30",
+        "title": "Jantar em família",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Qui",
+        "time": "08:30",
+        "title": "Prospecção ativa",
+        "area": "Prospecção"
+      },
+      {
+        "day": "Qui",
+        "time": "14:00",
+        "title": "Follow-up de propostas",
+        "area": "Clientes"
+      },
+      {
+        "day": "Sex",
+        "time": "09:00",
+        "title": "Revisão das metas",
+        "area": "Comercial"
+      },
+      {
+        "day": "Sex",
+        "time": "16:00",
+        "title": "Planejar visitas",
+        "area": "Administrativo"
+      },
+      {
+        "day": "Sáb",
+        "time": "10:00",
+        "title": "Café com parceiro",
+        "area": "Clientes"
+      },
+      {
+        "day": "Dom",
+        "time": "20:00",
+        "title": "Planejamento da próxima semana",
+        "area": "Pessoal"
+      }
+    ],
+    "checklist": [
+      "Responder leads",
+      "Atualizar CRM",
+      "Registrar visitas",
+      "Revisar agenda",
+      "Enviar propostas",
+      "Responder WhatsApp",
+      "Conferir e-mails",
+      "Atualizar funil",
+      "Preparar apresentações",
+      "Revisar contratos",
+      "Acompanhar negociações",
+      "Analisar metas",
+      "Reunião comercial semanal",
+      "Organizar carteira",
+      "Solicitar documentos",
+      "Emitir relatórios",
+      "Atualizar cadastro",
+      "Revisar oportunidades",
+      "Confirmar reuniões",
+      "Enviar pós-venda",
+      "Analisar concorrência",
+      "Atualizar tabela de preços",
+      "Planejar visitas",
+      "Estudar produto",
+      "Treinar argumentação",
+      "Revisar indicadores",
+      "Organizar contatos",
+      "Limpar tarefas concluídas",
+      "Revisar metas trimestrais",
+      "Planejar semana seguinte"
+    ],
+    "notes": [
+      "Cliente Alfa prefere proposta anual.",
+      "Retornar ligação até quinta.",
+      "Atualizar apresentação institucional.",
+      "Negociação depende da aprovação financeira.",
+      "Enviar contrato revisado.",
+      "Separar cases de sucesso.",
+      "Confirmar visita técnica.",
+      "Revisar descontos autorizados.",
+      "Solicitar material de marketing.",
+      "Priorizar clientes sem contato há 30 dias."
+    ]
+  },
+  {
+    "id": "cenario-03",
+    "name": "RH e Recrutamento",
+    "persona": "Analista de RH responsável por recrutamento e seleção, admissões, integração de novos colaboradores, treinamentos e apoio aos gestores.",
+    "areas": [
+      "Recrutamento",
+      "Admissões",
+      "Treinamentos",
+      "Administrativo",
+      "Pessoal"
+    ],
+    "agenda": [
+      {
+        "day": "Seg",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Seg",
+        "time": "09:00",
+        "title": "Alinhamento de vagas abertas",
+        "area": "Recrutamento"
+      },
+      {
+        "day": "Seg",
+        "time": "15:00",
+        "title": "Triagem de currículos",
+        "area": "Recrutamento"
+      },
+      {
+        "day": "Ter",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Ter",
+        "time": "09:30",
+        "title": "Entrevista para Analista Financeiro",
+        "area": "Recrutamento"
+      },
+      {
+        "day": "Ter",
+        "time": "14:00",
+        "title": "Agendar exames admissionais",
+        "area": "Admissões"
+      },
+      {
+        "day": "Qua",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Qua",
+        "time": "10:00",
+        "title": "Integração de novos colaboradores",
+        "area": "Treinamentos"
+      },
+      {
+        "day": "Qua",
+        "time": "16:00",
+        "title": "Reunião com gestores sobre novas vagas",
+        "area": "Administrativo"
+      },
+      {
+        "day": "Qui",
+        "time": "08:30",
+        "title": "Entrevistas técnicas",
+        "area": "Recrutamento"
+      },
+      {
+        "day": "Qui",
+        "time": "15:00",
+        "title": "Conferir documentos admissionais",
+        "area": "Admissões"
+      },
+      {
+        "day": "Sex",
+        "time": "09:00",
+        "title": "Fechamento semanal das vagas",
+        "area": "Administrativo"
+      },
+      {
+        "day": "Sex",
+        "time": "16:00",
+        "title": "Planejar entrevistas da próxima semana",
+        "area": "Recrutamento"
+      },
+      {
+        "day": "Sáb",
+        "time": "10:00",
+        "title": "Organizar documentos pessoais",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Dom",
+        "time": "20:00",
+        "title": "Planejamento da próxima semana",
+        "area": "Pessoal"
+      }
+    ],
+    "checklist": [
+      "Responder candidatos",
+      "Triar currículos",
+      "Atualizar sistema de vagas",
+      "Confirmar entrevistas",
+      "Enviar feedback aos candidatos",
+      "Conferir e-mails",
+      "Agendar entrevistas",
+      "Solicitar documentos admissionais",
+      "Validar documentação",
+      "Agendar exames admissionais",
+      "Preparar integração",
+      "Atualizar banco de talentos",
+      "Reunião semanal com gestores",
+      "Acompanhar período de experiência",
+      "Atualizar indicadores de recrutamento",
+      "Revisar descrições de vagas",
+      "Publicar novas vagas",
+      "Conferir contratos",
+      "Organizar arquivos de colaboradores",
+      "Atualizar planilha de admissões",
+      "Planejar treinamentos",
+      "Enviar comunicados internos",
+      "Revisar calendário de integrações",
+      "Atualizar contatos",
+      "Acompanhar vagas críticas",
+      "Preparar relatório mensal",
+      "Revisar metas de contratação",
+      "Arquivar processos concluídos",
+      "Organizar prioridades",
+      "Planejar semana seguinte"
+    ],
+    "notes": [
+      "Priorizar contratação para equipe de enfermagem.",
+      "Gestor solicitou perfil com experiência em liderança.",
+      "Candidato João disponível para início imediato.",
+      "Confirmar sala para integração de segunda-feira.",
+      "Atualizar apresentação institucional para integração.",
+      "Revisar fluxo de onboarding.",
+      "Aguardar aprovação da nova vaga comercial.",
+      "Separar crachás dos novos colaboradores.",
+      "Conferir documentos pendentes antes da admissão.",
+      "Preparar cronograma de treinamentos do mês."
+    ]
+  },
+  {
+    "id": "cenario-04",
+    "name": "Gestão e Administrativo",
+    "persona": "Supervisor(a) Administrativo(a) responsável por coordenar equipes de apoio, acompanhar indicadores, garantir o funcionamento da operação e apoiar a diretoria nas decisões do dia a dia.",
+    "areas": [
+      "Operações",
+      "Equipe",
+      "Financeiro",
+      "Administrativo",
+      "Pessoal"
+    ],
+    "agenda": [
+      {
+        "day": "Seg",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Seg",
+        "time": "08:30",
+        "title": "Reunião semanal com líderes",
+        "area": "Equipe"
+      },
+      {
+        "day": "Seg",
+        "time": "15:00",
+        "title": "Acompanhar indicadores operacionais",
+        "area": "Operações"
+      },
+      {
+        "day": "Ter",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Ter",
+        "time": "09:00",
+        "title": "Reunião com fornecedor de insumos",
+        "area": "Administrativo"
+      },
+      {
+        "day": "Ter",
+        "time": "16:00",
+        "title": "Validar solicitações de compras",
+        "area": "Financeiro"
+      },
+      {
+        "day": "Qua",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Qua",
+        "time": "10:00",
+        "title": "Reunião de acompanhamento de metas",
+        "area": "Equipe"
+      },
+      {
+        "day": "Qua",
+        "time": "15:30",
+        "title": "Revisar plano de ação das pendências",
+        "area": "Operações"
+      },
+      {
+        "day": "Qui",
+        "time": "09:00",
+        "title": "Visita aos setores administrativos",
+        "area": "Administrativo"
+      },
+      {
+        "day": "Qui",
+        "time": "14:30",
+        "title": "Conferir orçamento do mês",
+        "area": "Financeiro"
+      },
+      {
+        "day": "Sex",
+        "time": "09:00",
+        "title": "Apresentar indicadores à diretoria",
+        "area": "Operações"
+      },
+      {
+        "day": "Sex",
+        "time": "16:00",
+        "title": "Definir prioridades da próxima semana",
+        "area": "Equipe"
+      },
+      {
+        "day": "Sáb",
+        "time": "11:00",
+        "title": "Resolver assuntos bancários",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Dom",
+        "time": "20:00",
+        "title": "Planejamento da próxima semana",
+        "area": "Pessoal"
+      }
+    ],
+    "checklist": [
+      "Conferir e-mails prioritários",
+      "Atualizar painel de indicadores",
+      "Acompanhar equipes",
+      "Validar solicitações de compras",
+      "Responder gestores",
+      "Revisar ocorrências operacionais",
+      "Atualizar cronograma",
+      "Conferir contratos em andamento",
+      "Monitorar orçamento",
+      "Aprovar despesas autorizadas",
+      "Reunião semanal de liderança",
+      "Atualizar plano de ação",
+      "Revisar metas da equipe",
+      "Conferir ponto dos colaboradores",
+      "Organizar documentos administrativos",
+      "Revisar fornecedores",
+      "Acompanhar entregas",
+      "Atualizar calendário operacional",
+      "Emitir relatório semanal",
+      "Revisar processos internos",
+      "Preparar apresentação para diretoria",
+      "Conferir estoque administrativo",
+      "Atualizar contatos importantes",
+      "Planejar treinamentos",
+      "Arquivar documentos concluídos",
+      "Fechamento mensal administrativo",
+      "Revisar contratos anuais",
+      "Atualizar procedimentos internos",
+      "Organizar prioridades",
+      "Planejar semana seguinte"
+    ],
+    "notes": [
+      "Solicitar três orçamentos para novos computadores.",
+      "Diretoria pediu foco na redução de custos operacionais.",
+      "Atualizar lista de fornecedores homologados.",
+      "Equipe sugeriu revisão do fluxo de compras.",
+      "Conferir renovação do contrato de limpeza.",
+      "Agendar manutenção preventiva do ar-condicionado.",
+      "Preparar apresentação do fechamento mensal.",
+      "Revisar indicadores antes da reunião de sexta.",
+      "Separar documentos para auditoria interna.",
+      "Validar calendário de treinamentos do próximo mês."
+    ]
+  },
+  {
+    "id": "cenario-05",
+    "name": "Jurídico",
+    "persona": "Advogado(a) responsável pelo acompanhamento de processos, atendimento a clientes, reuniões, elaboração de peças processuais e cumprimento de prazos.",
+    "areas": [
+      "Clientes",
+      "Processos",
+      "Audiências",
+      "Administrativo",
+      "Pessoal"
+    ],
+    "agenda": [
+      {
+        "day": "Seg",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Seg",
+        "time": "09:00",
+        "title": "Revisar pauta processual da semana",
+        "area": "Processos"
+      },
+      {
+        "day": "Seg",
+        "time": "15:00",
+        "title": "Reunião com cliente",
+        "area": "Clientes"
+      },
+      {
+        "day": "Ter",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Ter",
+        "time": "09:30",
+        "title": "Audiência trabalhista",
+        "area": "Audiências"
+      },
+      {
+        "day": "Ter",
+        "time": "16:00",
+        "title": "Elaborar contestação",
+        "area": "Processos"
+      },
+      {
+        "day": "Qua",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Qua",
+        "time": "10:00",
+        "title": "Atendimento presencial a cliente",
+        "area": "Clientes"
+      },
+      {
+        "day": "Qua",
+        "time": "15:30",
+        "title": "Revisar contratos",
+        "area": "Administrativo"
+      },
+      {
+        "day": "Qui",
+        "time": "09:00",
+        "title": "Audiência cível",
+        "area": "Audiências"
+      },
+      {
+        "day": "Qui",
+        "time": "14:30",
+        "title": "Protocolar petições",
+        "area": "Processos"
+      },
+      {
+        "day": "Sex",
+        "time": "09:00",
+        "title": "Reunião de alinhamento do escritório",
+        "area": "Administrativo"
+      },
+      {
+        "day": "Sex",
+        "time": "16:00",
+        "title": "Revisar prazos da próxima semana",
+        "area": "Processos"
+      },
+      {
+        "day": "Sáb",
+        "time": "10:30",
+        "title": "Almoço em família",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Dom",
+        "time": "20:00",
+        "title": "Planejamento da próxima semana",
+        "area": "Pessoal"
+      }
+    ],
+    "checklist": [
+      "Consultar publicações",
+      "Responder clientes",
+      "Atualizar sistema processual",
+      "Revisar agenda",
+      "Conferir prazos",
+      "Elaborar petições",
+      "Protocolar documentos",
+      "Organizar processos",
+      "Revisar contratos",
+      "Preparar audiências",
+      "Separar documentos",
+      "Atualizar agenda de clientes",
+      "Reunião semanal do escritório",
+      "Revisar honorários",
+      "Emitir relatórios",
+      "Arquivar processos encerrados",
+      "Conferir e-mails",
+      "Solicitar documentos aos clientes",
+      "Atualizar cadastro",
+      "Analisar jurisprudência",
+      "Revisar procurações",
+      "Planejar audiências",
+      "Conferir intimações",
+      "Atualizar indicadores",
+      "Organizar arquivos",
+      "Revisar metas",
+      "Preparar apresentações",
+      "Limpar pendências concluídas",
+      "Organizar prioridades",
+      "Planejar semana seguinte"
+    ],
+    "notes": [
+      "Confirmar presença do cliente antes da audiência de terça.",
+      "Solicitar documentos complementares do processo 4587.",
+      "Atualizar modelo padrão de contrato de prestação de serviços.",
+      "Separar comprovantes para protocolo eletrônico.",
+      "Cliente prefere reuniões no período da manhã.",
+      "Revisar cláusulas do novo contrato empresarial.",
+      "Organizar documentos para audiência cível.",
+      "Conferir prazo final da contestação.",
+      "Atualizar contatos dos clientes ativos.",
+      "Preparar pauta da reunião do escritório."
+    ]
+  },
+  {
+    "id": "cenario-06",
+    "name": "Tecnologia",
+    "persona": "Product Manager em uma empresa de tecnologia. Atua alinhando produto, desenvolvimento, design e suporte, acompanhando entregas, métricas e prioridades da sprint.",
+    "areas": [
+      "Produto",
+      "Desenvolvimento",
+      "Reuniões",
+      "Projetos",
+      "Pessoal"
+    ],
+    "agenda": [
+      {
+        "day": "Seg",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Seg",
+        "time": "09:00",
+        "title": "Planning da Sprint",
+        "area": "Produto"
+      },
+      {
+        "day": "Seg",
+        "time": "15:00",
+        "title": "Refinar backlog",
+        "area": "Projetos"
+      },
+      {
+        "day": "Ter",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Ter",
+        "time": "09:30",
+        "title": "Daily com o time",
+        "area": "Desenvolvimento"
+      },
+      {
+        "day": "Ter",
+        "time": "16:00",
+        "title": "Revisar especificação de nova funcionalidade",
+        "area": "Produto"
+      },
+      {
+        "day": "Qua",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Qua",
+        "time": "10:00",
+        "title": "Reunião com UX para validar protótipo",
+        "area": "Produto"
+      },
+      {
+        "day": "Qua",
+        "time": "15:30",
+        "title": "Acompanhar homologação",
+        "area": "Desenvolvimento"
+      },
+      {
+        "day": "Qui",
+        "time": "09:00",
+        "title": "Alinhamento com Suporte",
+        "area": "Reuniões"
+      },
+      {
+        "day": "Qui",
+        "time": "14:30",
+        "title": "Priorização do backlog",
+        "area": "Projetos"
+      },
+      {
+        "day": "Sex",
+        "time": "09:00",
+        "title": "Review da Sprint",
+        "area": "Desenvolvimento"
+      },
+      {
+        "day": "Sex",
+        "time": "16:00",
+        "title": "Retrospectiva da Sprint",
+        "area": "Reuniões"
+      },
+      {
+        "day": "Sáb",
+        "time": "10:00",
+        "title": "Estudar tendências de IA",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Dom",
+        "time": "20:00",
+        "title": "Planejamento da próxima semana",
+        "area": "Pessoal"
+      }
+    ],
+    "checklist": [
+      "Revisar dashboard do produto",
+      "Responder Slack",
+      "Atualizar Jira",
+      "Revisar backlog",
+      "Validar prioridades",
+      "Acompanhar deploy",
+      "Revisar bugs críticos",
+      "Escrever histórias de usuário",
+      "Atualizar documentação",
+      "Responder equipe",
+      "Conferir métricas",
+      "Planejar releases",
+      "Reunião semanal de produto",
+      "Alinhar roadmap",
+      "Validar protótipos",
+      "Acompanhar homologação",
+      "Revisar feedback de usuários",
+      "Atualizar changelog",
+      "Analisar métricas de uso",
+      "Refinar backlog",
+      "Organizar demandas",
+      "Revisar OKRs",
+      "Atualizar cronograma",
+      "Estudar concorrentes",
+      "Preparar apresentação",
+      "Planejar próxima sprint",
+      "Arquivar demandas concluídas",
+      "Limpar backlog",
+      "Organizar prioridades",
+      "Planejar semana seguinte"
+    ],
+    "notes": [
+      "Nova funcionalidade depende da aprovação do Design.",
+      "Validar fluxo de cadastro antes do deploy.",
+      "Usuários solicitaram filtro por categorias.",
+      "Priorizar correção do bug na tela inicial.",
+      "Atualizar documentação da API.",
+      "Agendar reunião com equipe de Suporte.",
+      "Revisar métricas após o release.",
+      "Preparar roadmap do próximo trimestre.",
+      "Separar feedbacks recebidos na última semana.",
+      "Confirmar janela de deploy de sexta-feira."
+    ]
+  },
+  {
+    "id": "cenario-07",
+    "name": "Negócios",
+    "persona": "Empresário(a) responsável pela gestão de uma pequena empresa, acompanhando finanças, clientes, marketing, equipe e crescimento do negócio.",
+    "areas": [
+      "Empresa",
+      "Clientes",
+      "Financeiro",
+      "Marketing",
+      "Pessoal"
+    ],
+    "agenda": [
+      {
+        "day": "Seg",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Seg",
+        "time": "08:30",
+        "title": "Reunião de abertura da semana com a equipe",
+        "area": "Empresa"
+      },
+      {
+        "day": "Seg",
+        "time": "15:00",
+        "title": "Analisar fluxo de caixa",
+        "area": "Financeiro"
+      },
+      {
+        "day": "Ter",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Ter",
+        "time": "10:00",
+        "title": "Reunião com fornecedor estratégico",
+        "area": "Empresa"
+      },
+      {
+        "day": "Ter",
+        "time": "16:00",
+        "title": "Revisar campanhas de marketing",
+        "area": "Marketing"
+      },
+      {
+        "day": "Qua",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Qua",
+        "time": "09:30",
+        "title": "Visita a cliente importante",
+        "area": "Clientes"
+      },
+      {
+        "day": "Qua",
+        "time": "15:00",
+        "title": "Avaliar resultados de vendas",
+        "area": "Financeiro"
+      },
+      {
+        "day": "Qui",
+        "time": "09:00",
+        "title": "Definir metas do próximo mês",
+        "area": "Empresa"
+      },
+      {
+        "day": "Qui",
+        "time": "14:30",
+        "title": "Gravar conteúdo para redes sociais",
+        "area": "Marketing"
+      },
+      {
+        "day": "Sex",
+        "time": "09:00",
+        "title": "Fechamento financeiro semanal",
+        "area": "Financeiro"
+      },
+      {
+        "day": "Sex",
+        "time": "16:00",
+        "title": "Reunião de feedback com equipe",
+        "area": "Empresa"
+      },
+      {
+        "day": "Sáb",
+        "time": "10:00",
+        "title": "Pesquisar tendências do mercado",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Dom",
+        "time": "20:00",
+        "title": "Planejamento da próxima semana",
+        "area": "Pessoal"
+      }
+    ],
+    "checklist": [
+      "Conferir saldo das contas",
+      "Responder clientes",
+      "Acompanhar vendas",
+      "Revisar agenda",
+      "Autorizar pagamentos",
+      "Emitir notas fiscais",
+      "Conferir estoque",
+      "Atualizar fluxo de caixa",
+      "Responder fornecedores",
+      "Revisar contratos",
+      "Monitorar campanhas",
+      "Publicar conteúdo",
+      "Reunião semanal com equipe",
+      "Analisar indicadores",
+      "Atualizar metas",
+      "Planejar promoções",
+      "Revisar custos",
+      "Conferir pedidos",
+      "Atualizar CRM",
+      "Negociar com fornecedores",
+      "Responder avaliações de clientes",
+      "Acompanhar entregas",
+      "Organizar documentos",
+      "Revisar orçamento",
+      "Estudar mercado",
+      "Planejar investimentos",
+      "Arquivar documentos",
+      "Organizar prioridades",
+      "Revisar objetivos trimestrais",
+      "Planejar semana seguinte"
+    ],
+    "notes": [
+      "Negociar redução no custo do frete com fornecedor.",
+      "Cliente corporativo pediu proposta até sexta.",
+      "Separar documentos para reunião com contador.",
+      "Revisar margem de lucro dos produtos mais vendidos.",
+      "Testar nova campanha de anúncios na próxima semana.",
+      "Equipe sugeriu ampliar horário de atendimento.",
+      "Atualizar tabela de preços antes do próximo mês.",
+      "Pesquisar novo sistema de gestão financeira.",
+      "Reservar verba para treinamento da equipe.",
+      "Revisar metas de faturamento do trimestre."
+    ]
+  },
+  {
+    "id": "cenario-08",
+    "name": "Marketing e Criativos",
+    "persona": "Profissional de Marketing responsável pelo planejamento de conteúdo, campanhas, design, redes sociais e relacionamento com clientes.",
+    "areas": [
+      "Clientes",
+      "Conteúdo",
+      "Campanhas",
+      "Projetos",
+      "Pessoal"
+    ],
+    "agenda": [
+      {
+        "day": "Seg",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Seg",
+        "time": "09:00",
+        "title": "Planejamento de conteúdo da semana",
+        "area": "Conteúdo"
+      },
+      {
+        "day": "Seg",
+        "time": "15:00",
+        "title": "Reunião de briefing com cliente",
+        "area": "Clientes"
+      },
+      {
+        "day": "Ter",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Ter",
+        "time": "09:30",
+        "title": "Gravar vídeos para redes sociais",
+        "area": "Conteúdo"
+      },
+      {
+        "day": "Ter",
+        "time": "16:00",
+        "title": "Aprovação de artes",
+        "area": "Projetos"
+      },
+      {
+        "day": "Qua",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Qua",
+        "time": "10:00",
+        "title": "Analisar métricas das campanhas",
+        "area": "Campanhas"
+      },
+      {
+        "day": "Qua",
+        "time": "15:30",
+        "title": "Reunião de alinhamento com designer",
+        "area": "Projetos"
+      },
+      {
+        "day": "Qui",
+        "time": "09:00",
+        "title": "Publicação da campanha principal",
+        "area": "Campanhas"
+      },
+      {
+        "day": "Qui",
+        "time": "14:30",
+        "title": "Sessão de fotos para produtos",
+        "area": "Conteúdo"
+      },
+      {
+        "day": "Sex",
+        "time": "09:00",
+        "title": "Apresentação de resultados ao cliente",
+        "area": "Clientes"
+      },
+      {
+        "day": "Sex",
+        "time": "16:00",
+        "title": "Planejar calendário do próximo mês",
+        "area": "Projetos"
+      },
+      {
+        "day": "Sáb",
+        "time": "10:00",
+        "title": "Buscar referências criativas",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Dom",
+        "time": "20:00",
+        "title": "Planejamento da próxima semana",
+        "area": "Pessoal"
+      }
+    ],
+    "checklist": [
+      "Responder clientes",
+      "Revisar calendário editorial",
+      "Escrever legendas",
+      "Programar publicações",
+      "Revisar artes",
+      "Acompanhar comentários",
+      "Responder mensagens",
+      "Atualizar cronograma",
+      "Conferir campanhas ativas",
+      "Analisar métricas",
+      "Organizar arquivos",
+      "Reunião semanal com clientes",
+      "Enviar aprovações",
+      "Publicar stories",
+      "Planejar reels",
+      "Pesquisar tendências",
+      "Atualizar identidade visual",
+      "Preparar apresentações",
+      "Acompanhar anúncios",
+      "Revisar orçamento de mídia",
+      "Organizar banco de imagens",
+      "Atualizar portfólio",
+      "Conferir prazos",
+      "Emitir relatório semanal",
+      "Estudar concorrentes",
+      "Arquivar projetos concluídos",
+      "Organizar prioridades",
+      "Revisar metas",
+      "Atualizar tarefas",
+      "Planejar semana seguinte"
+    ],
+    "notes": [
+      "Cliente aprovou nova identidade visual.",
+      "Separar referências para campanha de inverno.",
+      "Testar formato de vídeo curto nas próximas publicações.",
+      "Solicitar fotos atualizadas dos produtos.",
+      "Revisar orçamento de mídia paga.",
+      "Criar calendário para datas comemorativas.",
+      "Atualizar bio das redes sociais.",
+      "Preparar apresentação de resultados mensais.",
+      "Priorizar campanha de lançamento.",
+      "Conferir materiais enviados pelo cliente."
+    ]
+  },
+  {
+    "id": "cenario-09",
+    "name": "Educação",
+    "persona": "Professor(a) universitário(a) responsável por aulas, orientação de alunos, preparação de conteúdos, correção de avaliações e participação em reuniões acadêmicas.",
+    "areas": [
+      "Aulas",
+      "Alunos",
+      "Planejamento",
+      "Instituição",
+      "Pessoal"
+    ],
+    "agenda": [
+      {
+        "day": "Seg",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Seg",
+        "time": "08:00",
+        "title": "Preparar aula da semana",
+        "area": "Planejamento"
+      },
+      {
+        "day": "Seg",
+        "time": "19:00",
+        "title": "Aula - Turma A",
+        "area": "Aulas"
+      },
+      {
+        "day": "Ter",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Ter",
+        "time": "09:30",
+        "title": "Atendimento aos alunos",
+        "area": "Alunos"
+      },
+      {
+        "day": "Ter",
+        "time": "19:00",
+        "title": "Aula - Turma B",
+        "area": "Aulas"
+      },
+      {
+        "day": "Qua",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Qua",
+        "time": "14:00",
+        "title": "Correção de avaliações",
+        "area": "Alunos"
+      },
+      {
+        "day": "Qua",
+        "time": "19:00",
+        "title": "Aula - Turma C",
+        "area": "Aulas"
+      },
+      {
+        "day": "Qui",
+        "time": "10:00",
+        "title": "Reunião pedagógica",
+        "area": "Instituição"
+      },
+      {
+        "day": "Qui",
+        "time": "19:00",
+        "title": "Aula - Turma D",
+        "area": "Aulas"
+      },
+      {
+        "day": "Sex",
+        "time": "09:00",
+        "title": "Atualizar material didático",
+        "area": "Planejamento"
+      },
+      {
+        "day": "Sex",
+        "time": "15:00",
+        "title": "Lançar notas no sistema",
+        "area": "Instituição"
+      },
+      {
+        "day": "Sáb",
+        "time": "09:00",
+        "title": "Leitura e atualização profissional",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Dom",
+        "time": "20:00",
+        "title": "Planejamento da próxima semana",
+        "area": "Pessoal"
+      }
+    ],
+    "checklist": [
+      "Preparar aulas",
+      "Responder alunos",
+      "Atualizar ambiente virtual",
+      "Corrigir atividades",
+      "Revisar cronograma",
+      "Planejar avaliações",
+      "Registrar frequência",
+      "Organizar materiais",
+      "Atualizar apresentações",
+      "Conferir e-mails",
+      "Orientar alunos",
+      "Reunião semanal com coordenação",
+      "Atualizar plano de ensino",
+      "Lançar notas",
+      "Preparar exercícios",
+      "Pesquisar referências",
+      "Revisar bibliografia",
+      "Emitir relatórios",
+      "Organizar arquivos",
+      "Atualizar calendário acadêmico",
+      "Revisar trabalhos finais",
+      "Planejar projetos",
+      "Estudar novas metodologias",
+      "Responder fórum dos alunos",
+      "Preparar aulas práticas",
+      "Arquivar avaliações",
+      "Organizar prioridades",
+      "Atualizar banco de questões",
+      "Revisar metas do semestre",
+      "Planejar semana seguinte"
+    ],
+    "notes": [
+      "Atualizar bibliografia da disciplina antes do próximo módulo.",
+      "Aluno solicitou orientação extra para o TCC.",
+      "Preparar aula prática com estudos de caso.",
+      "Revisar critérios de avaliação da próxima prova.",
+      "Separar artigos para indicação aos alunos.",
+      "Confirmar reserva do laboratório de informática.",
+      "Enviar cronograma atualizado para a turma.",
+      "Organizar banca de apresentação dos projetos.",
+      "Atualizar slides da disciplina.",
+      "Revisar calendário acadêmico após reunião pedagógica."
+    ]
+  },
+  {
+    "id": "cenario-10",
+    "name": "Estudantes",
+    "persona": "Universitário(a) que concilia aulas, estudos, trabalhos em grupo, provas e desenvolvimento pessoal, buscando manter uma rotina organizada durante o semestre.",
+    "areas": [
+      "Faculdade",
+      "Estudos",
+      "Trabalhos",
+      "Projetos",
+      "Pessoal"
+    ],
+    "agenda": [
+      {
+        "day": "Seg",
+        "time": "06:30",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Seg",
+        "time": "08:00",
+        "title": "Aula - Anatomia",
+        "area": "Faculdade"
+      },
+      {
+        "day": "Seg",
+        "time": "19:00",
+        "title": "Revisão do conteúdo",
+        "area": "Estudos"
+      },
+      {
+        "day": "Ter",
+        "time": "06:30",
+        "title": "Academia",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Ter",
+        "time": "09:00",
+        "title": "Reunião do trabalho em grupo",
+        "area": "Trabalhos"
+      },
+      {
+        "day": "Ter",
+        "time": "20:00",
+        "title": "Resolver lista de exercícios",
+        "area": "Estudos"
+      },
+      {
+        "day": "Qua",
+        "time": "08:00",
+        "title": "Aula - Fisiologia",
+        "area": "Faculdade"
+      },
+      {
+        "day": "Qua",
+        "time": "18:30",
+        "title": "Monitoria",
+        "area": "Faculdade"
+      },
+      {
+        "day": "Qua",
+        "time": "20:00",
+        "title": "Organizar resumos",
+        "area": "Estudos"
+      },
+      {
+        "day": "Qui",
+        "time": "09:00",
+        "title": "Pesquisa para seminário",
+        "area": "Projetos"
+      },
+      {
+        "day": "Qui",
+        "time": "19:00",
+        "title": "Aula prática",
+        "area": "Faculdade"
+      },
+      {
+        "day": "Sex",
+        "time": "14:00",
+        "title": "Entrega de trabalho",
+        "area": "Trabalhos"
+      },
+      {
+        "day": "Sex",
+        "time": "20:00",
+        "title": "Revisão para prova",
+        "area": "Estudos"
+      },
+      {
+        "day": "Sáb",
+        "time": "09:30",
+        "title": "Biblioteca",
+        "area": "Estudos"
+      },
+      {
+        "day": "Dom",
+        "time": "20:00",
+        "title": "Planejamento da próxima semana",
+        "area": "Pessoal"
+      }
+    ],
+    "checklist": [
+      "Revisar conteúdo do dia",
+      "Responder mensagens do grupo",
+      "Atualizar calendário acadêmico",
+      "Organizar materiais",
+      "Ler capítulos pendentes",
+      "Resolver exercícios",
+      "Assistir aulas gravadas",
+      "Atualizar resumos",
+      "Separar material da aula",
+      "Conferir e-mails da faculdade",
+      "Registrar prazos",
+      "Planejar estudos da semana",
+      "Participar da monitoria",
+      "Pesquisar referências",
+      "Organizar arquivos",
+      "Preparar apresentações",
+      "Revisar trabalhos",
+      "Enviar atividades",
+      "Atualizar agenda",
+      "Estudar 1 hora extra",
+      "Revisar flashcards",
+      "Preparar mochila",
+      "Conferir cronograma de provas",
+      "Atualizar notas",
+      "Ler artigo científico",
+      "Arquivar trabalhos concluídos",
+      "Organizar prioridades",
+      "Revisar metas do semestre",
+      "Planejar próxima prova",
+      "Planejar semana seguinte"
+    ],
+    "notes": [
+      "Confirmar data da prova prática.",
+      "Professor disponibilizou material complementar.",
+      "Reservar sala para reunião do grupo.",
+      "Atualizar referências do seminário.",
+      "Solicitar declaração de matrícula.",
+      "Separar documentos para estágio.",
+      "Revisar conteúdo com maior dificuldade.",
+      "Levar notebook carregado para aula prática.",
+      "Pesquisar oportunidades de iniciação científica.",
+      "Definir cronograma de estudos para a próxima avaliação."
+    ]
+  },
+  {
+    "id": "cenario-11",
+    "name": "Uso Pessoal",
+    "persona": "Pessoa que busca equilibrar vida pessoal, saúde, família, casa e objetivos de longo prazo. Utiliza o PRIORIZA para organizar tudo o que normalmente ficaria espalhado entre a memória, papel e aplicativos.",
+    "areas": [
+      "Casa",
+      "Saúde",
+      "Família",
+      "Objetivos",
+      "Pessoal"
+    ],
+    "agenda": [
+      {
+        "day": "Seg",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Saúde"
+      },
+      {
+        "day": "Seg",
+        "time": "19:00",
+        "title": "Organizar contas da semana",
+        "area": "Objetivos"
+      },
+      {
+        "day": "Ter",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Saúde"
+      },
+      {
+        "day": "Ter",
+        "time": "18:30",
+        "title": "Consulta odontológica",
+        "area": "Saúde"
+      },
+      {
+        "day": "Qua",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Saúde"
+      },
+      {
+        "day": "Qua",
+        "time": "20:00",
+        "title": "Jantar em família",
+        "area": "Família"
+      },
+      {
+        "day": "Qui",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Saúde"
+      },
+      {
+        "day": "Qui",
+        "time": "19:00",
+        "title": "Separar documentos pessoais",
+        "area": "Pessoal"
+      },
+      {
+        "day": "Sex",
+        "time": "06:00",
+        "title": "Academia",
+        "area": "Saúde"
+      },
+      {
+        "day": "Sex",
+        "time": "20:00",
+        "title": "Cinema",
+        "area": "Família"
+      },
+      {
+        "day": "Sáb",
+        "time": "09:00",
+        "title": "Compras do mês",
+        "area": "Casa"
+      },
+      {
+        "day": "Sáb",
+        "time": "15:00",
+        "title": "Lavar o carro",
+        "area": "Casa"
+      },
+      {
+        "day": "Dom",
+        "time": "10:00",
+        "title": "Almoço em família",
+        "area": "Família"
+      },
+      {
+        "day": "Dom",
+        "time": "17:00",
+        "title": "Planejar refeições da semana",
+        "area": "Casa"
+      },
+      {
+        "day": "Dom",
+        "time": "20:00",
+        "title": "Planejamento da próxima semana",
+        "area": "Objetivos"
+      }
+    ],
+    "checklist": [
+      "Beber 2 litros de água",
+      "Tomar vitaminas",
+      "Conferir agenda do dia",
+      "Responder mensagens importantes",
+      "Organizar mesa de trabalho",
+      "Registrar despesas",
+      "Revisar orçamento pessoal",
+      "Separar roupas do dia seguinte",
+      "Fazer caminhada",
+      "Estudar 30 minutos",
+      "Planejar refeições",
+      "Conferir validade dos alimentos",
+      "Regar plantas",
+      "Organizar lavanderia",
+      "Limpar caixa de e-mails",
+      "Agendar consultas preventivas",
+      "Atualizar lista de compras",
+      "Pagar contas",
+      "Conferir documentos",
+      "Organizar fotos",
+      "Fazer backup do celular",
+      "Ligar para familiares",
+      "Revisar metas pessoais",
+      "Ler um capítulo de livro",
+      "Doar itens sem uso",
+      "Organizar armário",
+      "Revisar objetivos do mês",
+      "Planejar viagem",
+      "Organizar prioridades",
+      "Planejar semana seguinte"
+    ],
+    "notes": [
+      "Renovar CNH no próximo mês.",
+      "Pesquisar destino para as férias.",
+      "Comprar presente de aniversário.",
+      "Trocar filtro do purificador de água.",
+      "Agendar revisão do carro.",
+      "Separar documentos para declaração anual.",
+      "Levar roupas para doação.",
+      "Experimentar três novas receitas este mês.",
+      "Reservar um fim de semana sem compromissos.",
+      "Definir meta de economia para o próximo trimestre."
+    ]
+  }
+]
