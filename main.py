@@ -23,7 +23,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from pydantic import BaseModel, Field
-from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, Text, create_engine, inspect, text
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, Text, UniqueConstraint, create_engine, inspect, text
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -160,6 +160,35 @@ class User(Base):
             "demo_welcome_seen": bool(self.demo_welcome_seen),
             "demo_removal_prompt_seen": bool(self.demo_removal_prompt_seen),
             "onboarding_completed": bool(self.onboarding_completed),
+        }
+
+
+class UserArea(Base):
+    __tablename__ = "user_areas"
+    __table_args__ = (UniqueConstraint("user_id", "normalized_name", name="uq_user_areas_user_name"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    name = Column(String(40), nullable=False)
+    normalized_name = Column(String(40), nullable=False)
+    color = Column(String(20), nullable=False, default="#2563eb")
+    icon = Column(String(30), nullable=True)
+    position = Column(Integer, nullable=False, default=0)
+    active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
+
+    def to_dict(self, has_history: bool = False):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "color": self.color,
+            "icon": self.icon,
+            "position": int(self.position or 0),
+            "active": bool(self.active),
+            "has_history": bool(has_history),
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
 
 
@@ -1052,6 +1081,101 @@ def decodificar_token(token: str) -> dict[str, Any]:
 
 def normalizar_email(email: str) -> str:
     return (email or "").strip().lower()
+
+
+AREA_CORES = {"#2563eb", "#16a34a", "#7c3aed", "#ea580c", "#dc2626", "#64748b", "#0d9488", "#db2777"}
+AREA_ICONES = {None, "briefcase", "user", "house", "book-open", "folder", "star", "shopping-cart", "monitor", "heart-pulse", "wallet"}
+
+
+def limpar_nome_area(valor: str) -> str:
+    return re.sub(r"\s+", " ", str(valor or "").strip())
+
+
+def normalizar_nome_area(valor: str) -> str:
+    return unicodedata.normalize("NFKC", limpar_nome_area(valor)).casefold()
+
+
+def validar_nome_area(valor: str) -> tuple[str, str]:
+    nome = limpar_nome_area(valor)
+    if not 1 <= len(nome) <= 40:
+        raise HTTPException(status_code=400, detail="O nome da área deve ter entre 1 e 40 caracteres.")
+    return nome, normalizar_nome_area(nome)
+
+
+def validar_cor_area(valor: Optional[str]) -> str:
+    cor = str(valor or "#2563eb").strip().lower()
+    if cor not in AREA_CORES:
+        raise HTTPException(status_code=400, detail="Cor de área inválida.")
+    return cor
+
+
+def validar_icone_area(valor: Optional[str]) -> Optional[str]:
+    icone = str(valor).strip().lower() if valor else None
+    if icone not in AREA_ICONES:
+        raise HTTPException(status_code=400, detail="Ícone de área inválido.")
+    return icone
+
+
+def area_tem_historico(db: Session, user_id: int, nome: str) -> bool:
+    alvo = normalizar_nome_area(nome)
+    origens = [v for (v,) in db.query(Tarefa.origem).filter(Tarefa.user_id == user_id).all()]
+    origens += [v for (v,) in db.query(Tarefa.local).filter(Tarefa.user_id == user_id).all()]
+    origens += [v for (v,) in db.query(ChecklistItem.origem).filter(ChecklistItem.user_id == user_id).all()]
+    return any(normalizar_nome_area(v) == alvo for v in origens if limpar_nome_area(v))
+
+
+def criar_areas_padrao(db: Session, user_id: int) -> list[UserArea]:
+    criadas = []
+    for posicao, (nome, cor, icone) in enumerate((("Trabalho", "#2563eb", "briefcase"), ("Pessoal", "#7c3aed", "user")), 1):
+        normalizado = normalizar_nome_area(nome)
+        existente = db.query(UserArea).filter(UserArea.user_id == user_id, UserArea.normalized_name == normalizado).first()
+        if existente:
+            continue
+        area = UserArea(user_id=user_id, name=nome, normalized_name=normalizado, color=cor, icon=icone, position=posicao, active=True)
+        db.add(area)
+        criadas.append(area)
+    return criadas
+
+
+def migrar_areas_existentes(db: Session) -> dict[str, int]:
+    relatorio = {"usuarios": 0, "origens_unicas": 0, "areas_criadas": 0, "duplicatas_evitadas": 0, "erros": 0}
+    for usuario in db.query(User).order_by(User.id).all():
+        relatorio["usuarios"] += 1
+        try:
+            valores = [v for (v,) in db.query(Tarefa.origem).filter(Tarefa.user_id == usuario.id).all()]
+            valores += [v for (v,) in db.query(Tarefa.local).filter(Tarefa.user_id == usuario.id).all()]
+            valores += [v for (v,) in db.query(ChecklistItem.origem).filter(ChecklistItem.user_id == usuario.id).all()]
+            nomes: dict[str, str] = {}
+            for valor in valores:
+                nome = limpar_nome_area(valor)
+                if not nome:
+                    continue
+                chave = normalizar_nome_area(nome)
+                if chave in nomes:
+                    relatorio["duplicatas_evitadas"] += 1
+                else:
+                    nomes[chave] = "Pessoal" if chave == "pessoal" else nome
+            relatorio["origens_unicas"] += len(nomes)
+            existentes = {a.normalized_name for a in db.query(UserArea).filter(UserArea.user_id == usuario.id).all()}
+            proxima = db.query(UserArea).filter(UserArea.user_id == usuario.id).count() + 1
+            if not nomes and not existentes:
+                criadas = criar_areas_padrao(db, usuario.id)
+                relatorio["areas_criadas"] += len(criadas)
+                continue
+            for chave, nome in nomes.items():
+                if chave in existentes:
+                    relatorio["duplicatas_evitadas"] += 1
+                    continue
+                db.add(UserArea(user_id=usuario.id, name=nome[:40], normalized_name=normalizar_nome_area(nome[:40]), color="#2563eb", position=proxima, active=True))
+                existentes.add(chave)
+                proxima += 1
+                relatorio["areas_criadas"] += 1
+        except Exception:
+            relatorio["erros"] += 1
+            db.rollback()
+            continue
+    db.commit()
+    return relatorio
 
 
 def validar_email(email: str) -> bool:
@@ -2706,7 +2830,7 @@ def icone(filename: str):
 def health():
     return {
         "status": "ok",
-        "build": "checklist-hora-liberacao-v1",
+        "build": "areas-personalizaveis-v1",
         "checklist_hora_liberacao": CHECKLIST_HORA_LIBERACAO
     }
 
@@ -2792,6 +2916,8 @@ async def auth_register(request: Request, db: Session = Depends(get_db)):
 
     usuario = User(nome=nome, email=email, senha_hash=hash_senha(senha), ativo=True)
     db.add(usuario)
+    db.flush()
+    criar_areas_padrao(db, usuario.id)
     db.commit()
     db.refresh(usuario)
     criar_dados_demo_primeiro_acesso(db, usuario)
@@ -4634,6 +4760,91 @@ def validar_competencia_operacao_endpoint(
     comp.atualizado_em = datetime.now(UTC)
     db.commit()
     return resumo_competencia_operacao(db, current_user.id, unidade.id, payload.competencia)
+
+
+# ============================================================
+# ÁREAS PERSONALIZÁVEIS
+# ============================================================
+
+@app.get("/areas")
+def listar_areas(include_archived: bool = Query(True), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    consulta = db.query(UserArea).filter(UserArea.user_id == current_user.id)
+    if not include_archived:
+        consulta = consulta.filter(UserArea.active == True)
+    areas = consulta.order_by(UserArea.position, UserArea.name, UserArea.id).all()
+    resultado = [area.to_dict(area_tem_historico(db, current_user.id, area.name)) for area in areas]
+    valores = [v for (v,) in db.query(Tarefa.origem).filter(Tarefa.user_id == current_user.id).all()]
+    valores += [v for (v,) in db.query(Tarefa.local).filter(Tarefa.user_id == current_user.id).all()]
+    valores += [v for (v,) in db.query(ChecklistItem.origem).filter(ChecklistItem.user_id == current_user.id).all()]
+    conhecidas = {normalizar_nome_area(area.name) for area in areas}
+    unicas: dict[str, str] = {}
+    for valor in valores:
+        nome = limpar_nome_area(valor)
+        chave = normalizar_nome_area(nome)
+        if nome and chave not in conhecidas:
+            unicas.setdefault(chave, "Pessoal" if chave == "pessoal" else nome[:40])
+    inicio = len(resultado) + 1
+    resultado.extend({"id": None, "name": nome, "color": "#64748b", "icon": None, "position": posicao, "active": True, "has_history": True, "legacy": True} for posicao, nome in enumerate(unicas.values(), inicio))
+    return resultado
+
+
+@app.post("/areas")
+async def criar_area(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    payload = await request.json()
+    nome, normalizado = validar_nome_area(payload.get("name"))
+    existente = db.query(UserArea).filter(UserArea.user_id == current_user.id, UserArea.normalized_name == normalizado).first()
+    if existente:
+        raise HTTPException(status_code=409, detail="Você já possui uma área com esse nome.")
+    ultima_posicao = db.query(UserArea).filter(UserArea.user_id == current_user.id).count()
+    area = UserArea(user_id=current_user.id, name=nome, normalized_name=normalizado, color=validar_cor_area(payload.get("color")), icon=validar_icone_area(payload.get("icon")), position=ultima_posicao + 1, active=True)
+    db.add(area)
+    db.commit()
+    db.refresh(area)
+    return area.to_dict(False)
+
+
+@app.patch("/areas/{area_id}")
+async def editar_area(area_id: int, request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    area = db.query(UserArea).filter(UserArea.id == area_id, UserArea.user_id == current_user.id).first()
+    if not area:
+        raise HTTPException(status_code=404, detail="Área não encontrada.")
+    payload = await request.json()
+    if "name" in payload:
+        nome, normalizado = validar_nome_area(payload.get("name"))
+        duplicada = db.query(UserArea).filter(UserArea.user_id == current_user.id, UserArea.normalized_name == normalizado, UserArea.id != area.id).first()
+        if duplicada:
+            raise HTTPException(status_code=409, detail="Você já possui uma área com esse nome.")
+        area.name, area.normalized_name = nome, normalizado
+    if "color" in payload:
+        area.color = validar_cor_area(payload.get("color"))
+    if "icon" in payload:
+        area.icon = validar_icone_area(payload.get("icon"))
+    if "position" in payload:
+        try:
+            area.position = max(0, int(payload.get("position")))
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail="Posição inválida.")
+    if "active" in payload:
+        area.active = bool(payload.get("active"))
+    area.updated_at = datetime.now(UTC)
+    db.commit()
+    db.refresh(area)
+    return area.to_dict(area_tem_historico(db, current_user.id, area.name))
+
+
+@app.delete("/areas/{area_id}")
+def excluir_area(area_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    area = db.query(UserArea).filter(UserArea.id == area_id, UserArea.user_id == current_user.id).first()
+    if not area:
+        raise HTTPException(status_code=404, detail="Área não encontrada.")
+    if area_tem_historico(db, current_user.id, area.name):
+        area.active = False
+        area.updated_at = datetime.now(UTC)
+        db.commit()
+        return {"ok": True, "archived": True}
+    db.delete(area)
+    db.commit()
+    return {"ok": True, "archived": False}
 
 
 @app.get("/tarefas")

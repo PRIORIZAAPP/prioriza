@@ -463,3 +463,89 @@ Nenhum desses contextos depende de linguagem hospitalar ou de uma profissão esp
 ## 23. Resultado
 
 O PRIORIZA passa a se apresentar como uma ferramenta de organização aplicável a diferentes profissões e à vida pessoal. A mudança foi feita exclusivamente na linguagem exibida, mantendo compatibilidade técnica e preservando a implementação futura de Operação.
+
+---
+
+# Sprint 045 — Áreas Personalizáveis
+
+## 24. Inventário das origens
+
+- A persistência existente usa `tarefas.origem`, `tarefas.local` e `checklist.origem`; Notas possui apenas `tipo`, que representa categoria, portanto não foi indevidamente fundido com Área.
+- Sugestões frequentes eram mantidas globalmente no navegador pela chave `prioriza_locais`.
+- Não foi encontrada lista hospitalar obrigatória ativa nos formulários atuais. Exemplos específicos remanescentes pertencem exclusivamente à interface funcional de Operação, preservada e oculta conforme o escopo.
+- Foram preservadas as regras especiais de compatibilidade para `PESSOAL` e `PROFISSIONAL`, necessárias à aba Pessoal e à distinção atual entre Categoria e Área.
+
+## 25. Banco
+
+- Criada a tabela `user_areas` com `id`, `user_id`, `name`, `normalized_name`, `color`, `icon`, `position`, `active`, `created_at` e `updated_at`.
+- Índice por proprietário e restrição única `(user_id, normalized_name)` impedem duplicidade por conta sem diferenciar capitalização ou espaços normalizados.
+- A paleta e o conjunto de ícones são controlados no backend.
+- Novos cadastros recebem, uma única vez e na mesma transação, somente `Trabalho` e `Pessoal`.
+
+## 26. Migração
+
+- Criado `migrate_user_areas.py`, script separado, explícito e idempotente; ele deve ser executado somente após backup do banco de destino.
+- A rotina consolida por usuário os valores de `tarefas.origem`, `tarefas.local` e `checklist.origem`, normaliza espaços/capitalização e preserva o primeiro nome original válido.
+- Nenhum registro histórico é alterado. A correspondência continua sendo feita pelo texto compatível com `origem`/`local`.
+- O script emite usuários processados, origens únicas, áreas criadas, duplicatas evitadas e erros. A cópia local desta entrega não contém banco de produção, portanto números reais devem ser registrados na execução controlada.
+
+## 27. API
+
+- `GET /areas`: lista exclusivamente as áreas da conta autenticada, ordenadas por posição e nome; aceita `include_archived`.
+- `POST /areas`: cria área com nome de 1 a 40 caracteres, cor e ícone validados.
+- `PATCH /areas/{id}`: edita nome, cor, ícone, posição e estado, sempre validando propriedade.
+- `DELETE /areas/{id}`: arquiva quando há histórico e exclui fisicamente somente quando não há referência.
+
+## 28. Interface
+
+- Adicionada `Ajustes > Organização > Áreas`, com criação, edição, arquivamento, reativação e controles de mover para cima/baixo.
+- Agenda e Checklist carregam áreas ativas da API, incluem `Sem área` e permitem `+ Criar nova área` sem limpar o formulário preenchido.
+- O filtro do Checklist usa a lista completa e identifica áreas arquivadas quando permanecem relevantes ao histórico.
+- O cache fica somente em memória, vinculado à conta autenticada, é recarregado após mutações e limpo no logout.
+- Notas não recebeu um campo Área porque seu campo atual é Categoria; essa separação evita fundir conceitos fora do escopo.
+- Elementos dinâmicos usam `textContent`; botões têm rótulos acessíveis e a interface adapta ações para telas de 320 a 430 px.
+
+## 29. Compatibilidade
+
+- `origem` e os payloads antigos foram preservados.
+- Compromissos profissionais continuam usando Categoria em `origem` e Área em `local`; Checklist continua usando o texto de Área em `origem`.
+- Renomear uma área não reescreve registros históricos.
+- A compatibilidade especial com `PESSOAL` permanece documentada e ativa para não quebrar a aba Pessoal.
+- Hoje, Agenda, Checklist e Notas não tiveram regras de recorrência, estrutura ou navegação alteradas.
+
+## 30. Segurança
+
+- Todas as quatro rotas filtram por `current_user.id`; IDs de outra conta retornam 404 e não autorizam leitura ou mutação cruzada.
+- Nome, cor, ícone e posição são validados no servidor.
+- A restrição única é por usuário, permitindo nomes iguais em contas distintas sem compartilhar dados.
+
+## 31. Testes profissionais
+
+Os conjuntos Jurídico, Comercial, Educação, Tecnologia, Saúde e Autônomo foram validados contra as regras de nome, duplicidade, paleta, ordenação e isolamento. Todos usam a mesma entidade neutra; nenhum perfil, área hospitalar global ou template foi criado.
+
+## 32. Testes funcionais
+
+- Sintaxe de `main.py` e do script de migração aprovada por `py_compile`.
+- Sintaxe de todos os arquivos JavaScript aprovada por `node --check`.
+- Verificados por inspeção: criação, edição, arquivamento, reativação, reordenação, selects da Agenda e Checklist, filtro, criação rápida com preservação dos campos, cache e limpeza no logout.
+- A execução integrada do script com ORM ficou pendente no ambiente local por ausência das dependências FastAPI/SQLAlchemy no runtime de validação; o teste com dados reais deve ocorrer numa cópia do banco antes da publicação.
+
+## 33. Pendências
+
+1. Fazer backup do banco do ambiente e executar `python migrate_user_areas.py` numa cópia, registrando as métricas antes da execução em produção.
+2. Executar teste integrado com dois usuários e tentativa explícita de acesso cruzado aos quatro endpoints.
+3. Na Sprint 046, permitir que o onboarding use a entidade sem alterar sua estrutura.
+4. Na Sprint 047, permitir que templates sugiram áreas sem torná-las globais.
+5. Em refatoração futura, avaliar `area_id` e remoção gradual da chave legada `prioriza_locais`, sem migração histórica agressiva.
+
+## 34. Arquivos alterados na Sprint 045
+
+- `main.py`
+- `migrate_user_areas.py`
+- `index.html`
+- `js/core/areas.js`
+- `js/core/auth.js`
+- `js/screens/operation.js` (somente inicialização global do cache; módulo funcional não alterado)
+- `css/screens.css`
+- `structure-manifest.json`
+- `RELATORIO-CONSOLIDADO-2026-08-09.md`

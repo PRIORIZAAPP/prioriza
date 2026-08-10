@@ -504,7 +504,10 @@
                         <div class="form-grid">
                           <div id="agenda-local-wrap">
                           <label for="agenda-local">Área</label>
-                            <input id="agenda-local" type="text" placeholder="Ex.: Trabalho, Cliente, Estudos" />
+                            <select id="agenda-local" aria-describedby="agenda-area-ajuda">
+                              <option value="">Sem área</option>
+                            </select>
+                            <small id="agenda-area-ajuda" class="field-help">Você pode criar uma área sem perder os dados deste compromisso.</small>
                           </div>
                           <div>
                             <label for="agenda-repetir">Frequência</label>
@@ -690,7 +693,9 @@
                       <div class="form-more-body">
                         <div>
                           <label for="chk-local">Área</label>
-                          <input id="chk-local" type="text" placeholder="Ex.: Trabalho, Cliente, Estudos" />
+                          <select id="chk-local">
+                            <option value="">Sem área</option>
+                          </select>
                           <div id="chk-locais-sugeridos" class="tag-row"></div>
                         </div>
                       </div>
@@ -718,7 +723,9 @@
                 </select>
               </div>
               <div class="filtro-select">
-                <input id="filtro-origem" type="text" placeholder="Filtrar por área" />
+                <select id="filtro-origem" aria-label="Filtrar por área">
+                  <option value="">Todas as áreas</option>
+                </select>
               </div>
             </div>
             <div id="checklist-segmented" class="checklist-segmented">
@@ -1612,6 +1619,11 @@
               </div>
 
               <div class="settings-group-card">
+                <button class="settings-link-row" type="button" data-settings-open="areas">
+                  <span class="settings-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" color="currentColor"><path d="M4 7.5h16M4 12h16M4 16.5h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="7" cy="7.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="17" cy="16.5" r="1.5" fill="currentColor"/></svg></span>
+                  <span class="settings-link-text"><strong>Organização</strong><small>Crie e organize os contextos da sua rotina.</small></span>
+                  <span class="settings-chevron" aria-hidden="true">›</span>
+                </button>
                 <button class="settings-link-row" type="button" data-settings-open="primeiros-passos">
                   <span class="settings-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" color="currentColor"><path d="M5 12.5 11 4l8 11h-5l-3 5v-5H6a1 1 0 0 1-1-2.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
                   <span class="settings-link-text">Primeiros passos</span>
@@ -1652,6 +1664,21 @@
             </div>
 
             <div id="settings-detail-view" class="settings-detail-view" hidden>
+              <section class="settings-detail-page" data-settings-page="areas" hidden>
+                <div class="settings-detail-header">
+                  <button class="settings-back-btn" type="button" data-settings-close aria-label="Voltar aos ajustes">‹</button>
+                  <h2>Áreas</h2>
+                  <span></span>
+                </div>
+                <div class="settings-detail-card areas-settings-card">
+                  <div class="areas-settings-heading">
+                    <div><h3>Áreas</h3><p>Organize os diferentes contextos da sua rotina.</p></div>
+                    <button id="btn-nova-area" class="btn-primary" type="button">+ Nova área</button>
+                  </div>
+                  <div id="areas-status" class="settings-note" role="status" aria-live="polite"></div>
+                  <div id="areas-lista" class="areas-lista"></div>
+                </div>
+              </section>
               <section class="settings-detail-page" data-settings-page="perfil" hidden>
                 <div class="settings-detail-header">
                   <button class="settings-back-btn" type="button" data-settings-close>‹</button>
@@ -2197,6 +2224,7 @@
     <script src="./js/core/runtime.js"></script>
     <script data-prioriza-module="financas" src="./js/screens/finance.js"></script>
     <script data-prioriza-module="core" src="./js/core/admin.js"></script>
+    <script data-prioriza-module="areas" src="./js/core/areas.js"></script>
     <script data-prioriza-module="agenda" src="./js/screens/agenda.js"></script>
     <script data-prioriza-module="checklist" src="./js/screens/checklist.js"></script>
     <script data-prioriza-module="core" src="./js/screens/workspace.js"></script>
