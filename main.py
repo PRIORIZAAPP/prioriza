@@ -1381,6 +1381,59 @@ def preencher_nulos_coluna(nome_tabela: str, nome_coluna: str, valor_sql: str):
         print(f"[MIGRAÇÃO] Falha ao preencher nulos em {nome_tabela}.{nome_coluna}: {erro}")
 
 
+def migrar_series_agenda_existentes():
+    """Reconhece somente sequências antigas com intervalo regular, sem criar IDs de série."""
+    db = SessionLocal()
+    try:
+        candidatos = db.query(Tarefa).filter(
+            Tarefa.ativo == True,
+            (Tarefa.recurrence_type == None) | (Tarefa.recurrence_type == "") | (Tarefa.recurrence_type == "NENHUMA"),
+        ).all()
+        grupos: dict[tuple, list[Tarefa]] = {}
+        for tarefa in candidatos:
+            chave = (
+                tarefa.user_id,
+                (tarefa.titulo or "").strip().casefold(),
+                (tarefa.origem or "").strip().casefold(),
+                (tarefa.local or "").strip().casefold(),
+                tarefa.hora_inicio or "",
+            )
+            grupos.setdefault(chave, []).append(tarefa)
+
+        alteradas = 0
+        for itens in grupos.values():
+            datas_validas = sorted(
+                [(date.fromisoformat(item.data), item) for item in itens if validar_data_iso(item.data or "")],
+                key=lambda par: par[0],
+            )
+            if len(datas_validas) < 2:
+                continue
+            intervalos = [(datas_validas[i][0] - datas_validas[i - 1][0]).days for i in range(1, len(datas_validas))]
+            if intervalos and all(valor == 1 for valor in intervalos):
+                frequencia = "DIARIA"
+            elif intervalos and all(valor == 7 for valor in intervalos):
+                frequencia = "SEMANAL"
+            elif intervalos and all(28 <= valor <= 31 for valor in intervalos):
+                frequencia = "MENSAL"
+            else:
+                continue
+            inicio = min((item.criado_em for _, item in datas_validas if item.criado_em), default=datetime.now(UTC))
+            limite = datas_validas[-1][0].isoformat()
+            for _, item in datas_validas:
+                item.recurrence_type = frequencia
+                item.recurrence_until = limite
+                item.recurrence_started_at = inicio
+                alteradas += 1
+        if alteradas:
+            db.commit()
+            print(f"[MIGRAÇÃO] {alteradas} compromisso(s) antigo(s) vinculados a séries regulares.")
+    except Exception as e:
+        db.rollback()
+        print(f"[MIGRAÇÃO] Aviso ao reconhecer séries antigas da Agenda: {e}")
+    finally:
+        db.close()
+
+
 def rodar_migracoes_automaticas():
     init_db()
 
@@ -1447,6 +1500,7 @@ def rodar_migracoes_automaticas():
     ]
     for coluna in colunas_tarefas:
         garantir_coluna_tabela("tarefas", coluna)
+    migrar_series_agenda_existentes()
 
     for tabela in ("checklist", "notes", "push_subscriptions", "google_calendar_tokens"):
         garantir_coluna_tabela(tabela, "user_id")
