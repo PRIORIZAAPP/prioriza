@@ -1500,7 +1500,6 @@ def rodar_migracoes_automaticas():
     ]
     for coluna in colunas_tarefas:
         garantir_coluna_tabela("tarefas", coluna)
-    migrar_series_agenda_existentes()
 
     for tabela in ("checklist", "notes", "push_subscriptions", "google_calendar_tokens"):
         garantir_coluna_tabela(tabela, "user_id")
@@ -6288,6 +6287,8 @@ def iniciar_thread_push():
     _push_thread_started = True
     thread = threading.Thread(target=_loop_notificacoes_push, daemon=True)
     thread.start()
+    thread_migracao = threading.Thread(target=migrar_series_agenda_existentes, daemon=True)
+    thread_migracao.start()
     print("[PUSH] Thread de notificações iniciada.")
 
 
