@@ -334,7 +334,10 @@
           : combinadaHoje;
 
         if (agendaHojeRender.length === 0) {
-          agendaDiv.innerHTML = "<small>Nenhum compromisso agendado para hoje.</small>";
+          PriorizaUX.renderizarEstado(agendaDiv, {
+            titulo: "Nenhum compromisso para hoje",
+            descricao: "Quando houver algo programado para este dia, ele aparecerá aqui."
+          });
         } else {
           agendaDiv.innerHTML = "";
           agendaHojeRender.forEach(t => {

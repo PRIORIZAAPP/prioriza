@@ -941,7 +941,6 @@
       conteudo.insertAdjacentHTML("beforeend", criarTagHTML(t));
 
       const metaLinhas = [];
-      if ((t.tipo_evento || "") !== "google") metaLinhas.push(`Prioridade ${t.prioridade || "–"}`);
       const contexto = obterRotuloContextoTarefa(t);
       if (contexto && contexto.toUpperCase() !== "PROFISSIONAL") metaLinhas.push(contexto);
       if (t.local && !metaLinhas.includes(t.local)) metaLinhas.push(t.local);
@@ -1034,7 +1033,7 @@
       renderizarMarcosDoDia(calendarioDiaSelecionadoISO);
       const itensDoDia = agendaDoDiaCombinada(calendarioDiaSelecionadoISO);
       if (itensDoDia.length === 0) {
-        lista.innerHTML = '<p class="agenda-dia-vazio">Nenhum compromisso neste dia.</p>';
+        lista.innerHTML = '<div class="agenda-dia-vazio"><strong>Nenhum compromisso encontrado.</strong><span>Quando houver algo programado para este dia, ele aparecerá aqui.</span></div>';
         return;
       }
       if (emLayoutDesktop()) {
@@ -1052,12 +1051,11 @@
         if (ehStatusCancelada(t.status)) item.classList.add("cancelada");
         const hor=document.createElement("div"); hor.className="agenda-horario"; hor.textContent=t.all_day ? "Dia todo" : (t.hora_inicio||"--:--");
         const con=document.createElement("div"); con.className="agenda-conteudo"; con.style.flex="1";
-        const ti=document.createElement("div"); ti.className="agenda-titulo"; ti.textContent=t.titulo;
+        const ti=document.createElement("div"); ti.className="agenda-titulo"; ti.innerHTML=`${textoSeguro(t.titulo)}${t?.recorrente ? iconeRecorrenciaHTML() : ""}`;
         con.appendChild(ti);
         con.insertAdjacentHTML("beforeend",criarTagHTML(t));
 
         const metaLinhas = [];
-        if ((t.tipo_evento || "") !== "google") metaLinhas.push(`Prioridade ${t.prioridade||"–"}`);
         if (t.local) metaLinhas.push(t.local);
         if (t.hora_fim && !t.all_day && t.hora_inicio !== "Dia todo") metaLinhas.push(`${t.hora_inicio} até ${t.hora_fim}`);
         if (t.descricao) metaLinhas.push(t.descricao);
@@ -1294,7 +1292,13 @@
         const res=await PriorizaUtils.fetchLatest("notas-lista", API+"/notes",{headers:authHeaders()});
         if (!res) return;
         let itens=(await res.json()); itens=(Array.isArray(itens)?itens:[]).filter(n=>n.ativo!==false);
-        if(itens.length===0){container.innerHTML=`<small>${emLayoutDesktop()?"Nenhuma nota encontrada.":"Nenhuma anotação salva."}</small>`;return;}
+        if(itens.length===0){
+          PriorizaUX.renderizarEstado(container, {
+            titulo: "Nenhuma nota salva",
+            descricao: "Use este espaço para registrar informações que você não quer esquecer."
+          });
+          return;
+        }
         itens.sort((a,b)=>(a.created_at||"").localeCompare(b.created_at||""));
         container.innerHTML="";
 

@@ -56,7 +56,10 @@
 
         checklistHojeCache = visiveis.map((item) => ({ ...item }));
         if (visiveis.length===0) {
-          container.innerHTML="<small>Nenhum item pendente para hoje. 🎉</small>";
+          PriorizaUX.renderizarEstado(container, {
+            titulo: "Nenhuma rotina pendente",
+            descricao: "Tudo em dia por aqui."
+          });
           renderizarTimelineOperacionalDesktop();
           return;
         }
@@ -216,7 +219,7 @@
 
       const tituloEl = document.createElement("div");
       tituloEl.className = "check-titulo";
-      tituloEl.innerHTML = `${textoSeguro(item.titulo)}${item?.recorrente ? iconeRecorrenciaHTML() : ""}`;
+      tituloEl.textContent = item.titulo || "";
 
       const sub = document.createElement("div");
       sub.className = "check-sub";
@@ -394,8 +397,8 @@
 
         if (itens.length === 0) {
           PriorizaUX.renderizarEstado(container, {
-            titulo: "Nenhuma rotina encontrada.",
-            descricao: "Revise os filtros ou crie uma nova rotina."
+            titulo: (filtroFreq || filtroOrigem) ? "Nenhum resultado para os filtros selecionados." : "Nenhum item encontrado.",
+            descricao: (filtroFreq || filtroOrigem) ? "Ajuste os filtros para visualizar outros itens." : "Os itens do checklist aparecerão aqui."
           });
           return;
         }
