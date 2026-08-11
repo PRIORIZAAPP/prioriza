@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="./css/layout.css">
     <link rel="stylesheet" href="./css/components.css">
     <link rel="stylesheet" href="./css/screens.css">
-    <link rel="stylesheet" href="./css/responsive.css?v=20260809-notas2">
+    <link rel="stylesheet" href="./css/responsive.css?v=20260811-tablet1">
   </head>
   <body>
 
@@ -296,6 +296,16 @@
                 <circle cx="188" cy="148" r="14" fill="currentColor"/>
               </svg>
               <span>Operação</span>
+            </div>
+
+            <div class="nav-item" data-target="screen-financas">
+              <svg viewBox="0 0 256 256" fill="none" color="currentColor">
+                <rect x="32" y="56" width="192" height="144" rx="14" fill="currentColor" opacity="0.16"/>
+                <rect x="32" y="56" width="192" height="144" rx="14" stroke="currentColor" stroke-width="16"/>
+                <line x1="32" y1="104" x2="224" y2="104" stroke="currentColor" stroke-width="16"/>
+                <line x1="64" y1="152" x2="112" y2="152" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>
+              </svg>
+              <span>Finanças</span>
             </div>
 
             <div class="nav-item" data-target="screen-notas">
@@ -1055,9 +1065,21 @@
                   <rect width="18" height="14" x="3" y="5" rx="2" />
                 </svg>
               </div>
-              <p class="module-evolution-kicker">Finanças</p>
-              <h2 id="financas-evolution-title">Esta área está em evolução</h2>
-              <p>Estamos preparando novos recursos para tornar esta área mais completa e útil no dia a dia. Em breve, ela estará disponível por aqui.</p>
+              <p class="operacao-coming-soon-kicker module-evolution-kicker">Finanças · Em implantação</p>
+              <h2 id="financas-evolution-title">Finanças</h2>
+              <p class="operacao-coming-soon-lead">Estamos preparando uma nova experiência para organizar sua vida financeira de forma simples e objetiva.</p>
+              <p class="operacao-coming-soon-description">Este módulo está sendo desenvolvido para reunir planejamento, acompanhamento e visão financeira em um único lugar.</p>
+              <div class="operacao-coming-soon-resources">
+                <h3>Recursos planejados</h3>
+                <ul>
+                  <li>Visão financeira mensal</li>
+                  <li>Receitas e despesas</li>
+                  <li>Contas fixas</li>
+                  <li>Indicadores financeiros</li>
+                  <li>Relatórios</li>
+                </ul>
+              </div>
+              <p class="operacao-coming-soon-note">Em breve este módulo estará disponível em uma atualização do Prioriza.</p>
             </article>
           </div>
 
@@ -2154,7 +2176,7 @@
         <span id="btn-toggle-form-checklist-text" class="sr-only">Nova rotina</span>
       </button>
 
-      <button id="btn-toggle-form-financas" class="fab-add fab-add-financas" type="button" aria-label="Novo lançamento" title="Novo lançamento">
+      <button id="btn-toggle-form-financas" class="fab-add fab-add-financas" type="button" aria-label="Novo lançamento" title="Novo lançamento" hidden aria-hidden="true">
         <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
           <line x1="128" y1="64" x2="128" y2="192" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
           <line x1="64" y1="128" x2="192" y2="128" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
@@ -2203,6 +2225,16 @@
               <polyline points="88,128 112,152 168,96" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span>Checklist</span>
+          </div>
+
+          <div class="nav-item tablet-only-nav" data-target="screen-financas">
+            <svg viewBox="0 0 256 256" fill="none" color="currentColor">
+              <rect x="32" y="56" width="192" height="144" rx="14" fill="currentColor" opacity="0.16"/>
+              <rect x="32" y="56" width="192" height="144" rx="14" stroke="currentColor" stroke-width="16"/>
+              <line x1="32" y1="104" x2="224" y2="104" stroke="currentColor" stroke-width="16"/>
+              <line x1="64" y1="152" x2="112" y2="152" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>
+            </svg>
+            <span>Finanças</span>
           </div>
 
           <div class="nav-item" data-target="screen-notas">

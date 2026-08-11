@@ -3077,7 +3077,7 @@ def icone(filename: str):
 def health():
     return {
         "status": "ok",
-        "build": "refinamento-visual-v1",
+        "build": "financas-tablet-v1",
         "checklist_hora_liberacao": CHECKLIST_HORA_LIBERACAO
     }
 
