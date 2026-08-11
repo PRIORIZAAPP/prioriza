@@ -8,17 +8,28 @@
     }
 
 /* Sprint 042 — faixa intermediaria/tablet */
+.tablet-only-nav { display: none !important; }
+
 @media (min-width: 768px) and (max-width: 1099px) {
+  :root { --header-width: 100vw; }
+  .app-shell { width: 100%; max-width: none; min-height: 100dvh; }
   .app-shell { grid-template-columns: 1fr !important; }
   .sidebar, .desktop-sidebar, .desktop-rail { display: none !important; }
-  .main-content, main { width: 100%; min-width: 0; }
+  .app-main-column, .main-content, main { width: 100%; max-width: none; min-width: 0; }
+  .content { width: 100%; }
   .screen.active { width: min(100%, 760px); margin-inline: auto; padding-inline: 20px; }
-  .bottom-nav { display: grid !important; }
+  .bottom-nav { display: flex !important; }
+  .bottom-nav { width: min(100%, 760px); max-width: 760px; flex-direction: row; align-items: stretch; }
+  .bottom-nav .nav-item.tablet-only-nav[data-target="screen-financas"] { display: flex !important; }
+  .bottom-nav .nav-item { flex: 1 1 0; min-width: 0; }
+  #screen-financas.screen.active { display: block !important; }
   .bottom-nav-item { min-height: 52px; }
   .modal-card, .modal-content { width: min(calc(100vw - 48px), 680px); max-height: calc(100dvh - 48px); }
   .form-grid, .agenda-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .module-evolution-card { width: min(100%, 680px); }
 }
+
+.fab-add-financas { display: none !important; }
 
 /* Sprint 042 — experiencia compacta no celular */
 @media (max-width: 767px) {
