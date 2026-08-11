@@ -2350,6 +2350,7 @@
     // ── DESFAZER (UNDO) após exclusão ──────────────────────────
     let _undoTimer = null;
     let _undoPendente = null;
+    const UNDO_DURATION_MS = 2500;
 
     function mostrarToastUndo(mensagem, onConfirmar, onDesfazer) {
       // Remove toast anterior se existir
@@ -2359,7 +2360,7 @@
 
       const toast = document.createElement("div");
       toast.id = "toast-undo";
-      toast.style.cssText = "position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e293b;color:#f9fafb;border-radius:14px;padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:12px;z-index:9998;box-shadow:0 4px 16px rgba(0,0,0,0.3);min-width:220px;max-width:320px";
+      toast.style.cssText = "position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e293b;color:#f9fafb;border-radius:14px;padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:12px;z-index:9998;box-shadow:0 4px 16px rgba(0,0,0,0.3);min-width:220px;max-width:320px;pointer-events:none";
 
       const texto = document.createElement("span");
       texto.textContent = mensagem;
@@ -2368,7 +2369,7 @@
       const btnDesfazer = document.createElement("button");
       btnDesfazer.type = "button";
       btnDesfazer.textContent = "Desfazer";
-      btnDesfazer.style.cssText = "background:var(--cor-tema);color:#fff;border:none;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap";
+      btnDesfazer.style.cssText = "background:var(--cor-tema);color:#fff;border:none;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;pointer-events:auto";
 
       btnDesfazer.addEventListener("click", () => {
         clearTimeout(_undoTimer);
@@ -2383,7 +2384,7 @@
       _undoTimer = setTimeout(() => {
         toast.remove();
         if (onConfirmar) onConfirmar();
-      }, 5000);
+      }, UNDO_DURATION_MS);
     }
 
     // ── FLASH ────────────────────────────────────────────────────
