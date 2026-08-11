@@ -53,6 +53,37 @@
 body .app-shell .fab-add-financas,
 body .app-shell[data-active-screen="screen-financas"] .fab-add-financas { display: none !important; }
 
+@media (min-width: 1100px) {
+  .app-shell[data-active-screen="screen-financas"] .topbar { display: flex !important; }
+  .app-shell[data-active-screen="screen-financas"] .desktop-sidebar { display: flex !important; }
+  .app-shell[data-active-screen="screen-financas"] .desktop-rail { display: none !important; }
+  .app-shell[data-active-screen="screen-financas"] .app-workspace {
+    display: grid !important;
+    grid-template-columns: 212px minmax(0, 1fr) !important;
+    gap: 20px !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    padding: calc(var(--layout-header-offset) + 12px) 14px 14px !important;
+    overflow: visible !important;
+  }
+  .app-shell[data-active-screen="screen-financas"] .app-main-column,
+  .app-shell[data-active-screen="screen-financas"] .content {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  body .app-shell[data-active-screen="screen-financas"] #screen-financas.screen.active {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+}
+
 /* Sprint 042 — experiencia compacta no celular */
 @media (max-width: 767px) {
   :root { --mobile-bottom-safe: env(safe-area-inset-bottom, 0px); }
