@@ -1965,12 +1965,6 @@
       const itens = obterDadosTimelineOperacional();
       container.innerHTML = "";
 
-      if (itens.length === 0) {
-        container.innerHTML = `<div class="timeline-empty">Nenhuma pendência crítica no momento. Abra a Agenda para planejar o restante do dia.</div>`;
-        renderizarLayoutAdaptativoHoje(itens);
-        return;
-      }
-
       const agendaItens = itens.filter((item) => item._tipo === "agenda");
       const checklistItens = itens.filter((item) => item._tipo === "checklist");
 
@@ -1981,7 +1975,7 @@
         head.className = "timeline-section-head";
         const title = document.createElement("div");
         title.className = "timeline-section-title";
-        title.textContent = titulo;
+        title.innerHTML = titulo;
         head.appendChild(title);
         if (subtitulo) {
           const sub = document.createElement("div");
@@ -1997,8 +1991,18 @@
         return list;
       };
 
-      const agendaList = criarSecaoTimeline("Compromissos do dia");
-      const checklistList = criarSecaoTimeline("Rotinas");
+      const iconeSecao = (tipo) => tipo === "agenda"
+        ? '<svg class="timeline-section-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>'
+        : '<svg class="timeline-section-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="m8 12 2.5 2.5L16 9"></path></svg>';
+      const agendaList = criarSecaoTimeline(`${iconeSecao("agenda")}<span>Agenda do dia</span>`);
+      const checklistList = criarSecaoTimeline(`${iconeSecao("checklist")}<span>Checklist de hoje</span>`);
+
+      if (!agendaItens.length) {
+        agendaList.innerHTML = '<div class="timeline-empty-state"><strong>Nenhum compromisso para hoje</strong><span>Quando houver algo programado para este dia, ele aparecerá aqui.</span></div>';
+      }
+      if (!checklistItens.length) {
+        checklistList.innerHTML = '<div class="timeline-empty-state"><strong>Nenhuma rotina pendente</strong><span>Tudo em dia por aqui.</span></div>';
+      }
 
       itens.forEach((item) => {
         const status = item._tipo === "checklist"
