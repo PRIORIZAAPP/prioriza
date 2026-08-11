@@ -941,8 +941,6 @@
       conteudo.insertAdjacentHTML("beforeend", criarTagHTML(t));
 
       const metaLinhas = [];
-      const contexto = obterRotuloContextoTarefa(t);
-      if (contexto && contexto.toUpperCase() !== "PROFISSIONAL") metaLinhas.push(contexto);
       if (t.local && !metaLinhas.includes(t.local)) metaLinhas.push(t.local);
       if (t.descricao) metaLinhas.push(t.descricao);
       if (metaLinhas.length) {
