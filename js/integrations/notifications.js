@@ -666,13 +666,6 @@
       excluirItem: excluirChecklistItem,
     });
 
-    PriorizaApp.registrarModulo("financas", {
-      vincularUI: vincularFinancasUI,
-      carregarPainel: carregarFinancasPainelCompleto,
-      abrirLancamento: abrirSheetFinancas,
-      renderizarMobile: renderizarMobileFinancas,
-    });
-
     PriorizaApp.registrarModulo("notificacoes", {
       iniciar: iniciarSistemaNotificacoes,
       atualizarStatus: atualizarStatusNotificacoesUI,
