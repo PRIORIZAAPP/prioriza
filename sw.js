@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "prioriza-public-v56";
+const CACHE_NAME = "prioriza-public-v57";
 const PUBLIC_ASSETS = [
   "/app",
   "/site.webmanifest",
@@ -9,14 +9,14 @@ const PUBLIC_ASSETS = [
   "/css/layout.css",
   "/css/components.css",
   "/css/screens.css",
-  "/css/responsive.css?v=20260811-financas3",
+  "/css/responsive.css?v=sprint-050",
   "/js/core/debug.js",
   "/js/core/utils.js"
 ];
 
 const PRIVATE_PREFIXES = [
   "/auth", "/tarefas", "/checklist", "/notes", "/admin", "/google",
-  "/operacao", "/financas", "/marcos", "/backup", "/push", "/debug"
+  "/marcos-operacionais", "/backup", "/push", "/debug"
 ];
 
 self.addEventListener("install", (event) => {

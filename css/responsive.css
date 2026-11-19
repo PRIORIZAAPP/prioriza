@@ -8,7 +8,6 @@
     }
 
 /* Sprint 042 — faixa intermediaria/tablet */
-.tablet-only-nav { display: none !important; }
 
 @media (min-width: 768px) and (max-width: 1099px) {
   :root { --header-width: 100vw; }
@@ -20,68 +19,10 @@
   .screen.active { width: min(100%, 760px); margin-inline: auto; padding-inline: 20px; }
   .bottom-nav { display: flex !important; }
   .bottom-nav { width: min(100%, 760px); max-width: 760px; flex-direction: row; align-items: stretch; }
-  .bottom-nav .nav-item.tablet-only-nav[data-target="screen-financas"] { display: flex !important; }
   .bottom-nav .nav-item { flex: 1 1 0; min-width: 0; }
-  #screen-financas.screen.active { display: block !important; }
-  .app-shell[data-active-screen="screen-financas"] .topbar,
-  .app-shell[data-active-screen="screen-financas"] .resumo-bar { display: flex !important; }
-  .app-shell[data-active-screen="screen-financas"] .desktop-sidebar,
-  .app-shell[data-active-screen="screen-financas"] .desktop-rail { display: none !important; }
-  .app-shell[data-active-screen="screen-financas"] .app-workspace,
-  .app-shell[data-active-screen="screen-financas"] .app-main-column { min-height: 0 !important; }
-  .app-shell[data-active-screen="screen-financas"] .content {
-    width: 100% !important;
-    max-width: none !important;
-    min-height: 0 !important;
-    padding: 12px 10px 88px !important;
-    overflow: visible !important;
-  }
-  body .app-shell[data-active-screen="screen-financas"] #screen-financas.screen.active {
-    width: min(100%, 760px) !important;
-    max-width: 760px !important;
-    min-height: 0 !important;
-    margin-inline: auto !important;
-    padding-inline: 20px !important;
-    overflow: visible !important;
-  }
   .bottom-nav-item { min-height: 52px; }
   .modal-card, .modal-content { width: min(calc(100vw - 48px), 680px); max-height: calc(100dvh - 48px); }
   .form-grid, .agenda-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .module-evolution-card { width: min(100%, 680px); }
-}
-
-body .app-shell .fab-add-financas,
-body .app-shell[data-active-screen="screen-financas"] .fab-add-financas { display: none !important; }
-
-@media (min-width: 1100px) {
-  .app-shell[data-active-screen="screen-financas"] .topbar { display: flex !important; }
-  .app-shell[data-active-screen="screen-financas"] .desktop-sidebar { display: flex !important; }
-  .app-shell[data-active-screen="screen-financas"] .desktop-rail { display: none !important; }
-  .app-shell[data-active-screen="screen-financas"] .app-workspace {
-    display: grid !important;
-    grid-template-columns: 212px minmax(0, 1fr) !important;
-    gap: 20px !important;
-    width: 100% !important;
-    max-width: none !important;
-    min-height: 0 !important;
-    padding: calc(var(--layout-header-offset) + 12px) 14px 14px !important;
-    overflow: visible !important;
-  }
-  .app-shell[data-active-screen="screen-financas"] .app-main-column,
-  .app-shell[data-active-screen="screen-financas"] .content {
-    width: 100% !important;
-    max-width: none !important;
-    min-height: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-  }
-  body .app-shell[data-active-screen="screen-financas"] #screen-financas.screen.active {
-    width: 100% !important;
-    max-width: none !important;
-    min-height: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-  }
 }
 
 /* Sprint 042 — experiencia compacta no celular */
@@ -339,11 +280,6 @@ body .app-shell[data-active-screen="screen-financas"] .fab-add-financas { displa
         #btn-salvar-compromisso,
         #btn-salvar-marco,
         #btn-salvar-rotina,
-        #btn-operacao-salvar-tecnico,
-        #btn-financas-salvar,
-        #btn-financas-salvar-fonte-renda,
-        #btn-financas-salvar-conta-fixa,
-        #btn-financas-salvar-confirm-sheet,
         #btn-salvar-nova-senha,
         #btn-salvar-nota,
         button[type="submit"].btn-primary
@@ -352,11 +288,6 @@ body .app-shell[data-active-screen="screen-financas"] .fab-add-financas { displa
         #btn-salvar-compromisso,
         #btn-salvar-marco,
         #btn-salvar-rotina,
-        #btn-operacao-salvar-tecnico,
-        #btn-financas-salvar,
-        #btn-financas-salvar-fonte-renda,
-        #btn-financas-salvar-conta-fixa,
-        #btn-financas-salvar-confirm-sheet,
         #btn-salvar-nova-senha,
         #btn-salvar-nota,
         button[type="submit"].btn-primary
@@ -369,11 +300,6 @@ body .app-shell[data-active-screen="screen-financas"] .fab-add-financas { displa
         #btn-salvar-compromisso,
         #btn-salvar-marco,
         #btn-salvar-rotina,
-        #btn-operacao-salvar-tecnico,
-        #btn-financas-salvar,
-        #btn-financas-salvar-fonte-renda,
-        #btn-financas-salvar-conta-fixa,
-        #btn-financas-salvar-confirm-sheet,
         #btn-salvar-nova-senha,
         #btn-salvar-nota,
         button[type="submit"].btn-primary
@@ -385,181 +311,12 @@ body .app-shell[data-active-screen="screen-financas"] .fab-add-financas { displa
         #btn-salvar-compromisso,
         #btn-salvar-marco,
         #btn-salvar-rotina,
-        #btn-operacao-salvar-tecnico,
-        #btn-financas-salvar,
-        #btn-financas-salvar-fonte-renda,
-        #btn-financas-salvar-conta-fixa,
-        #btn-financas-salvar-confirm-sheet,
         #btn-salvar-nova-senha,
         #btn-salvar-nota,
         button[type="submit"].btn-primary
       ):not(:disabled):is(:hover, :focus, :focus-visible, :active) {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff;
-      }
-
-      /* Operação: apresentação institucional temporária.
-         A interface funcional permanece preservada em #operacao-legacy-interface. */
-      #operacao-legacy-interface[hidden] {
-        display: none !important;
-      }
-
-      #screen-operacao .operacao-coming-soon-stage {
-        min-height: calc(100vh - var(--layout-header-offset, 124px) - 32px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px;
-      }
-
-      #screen-operacao .operacao-coming-soon-card {
-        width: min(100%, 760px);
-        margin: 0;
-        padding: clamp(28px, 5vw, 52px);
-        border: 1px solid rgba(203, 213, 225, 0.76);
-        border-radius: 20px;
-        background:
-          radial-gradient(circle at 100% 0%, rgba(var(--cor-tema-rgb), 0.08), transparent 34%),
-          #ffffff;
-        box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
-        text-align: center;
-      }
-
-      #screen-operacao .operacao-coming-soon-icon {
-        width: 58px;
-        height: 58px;
-        margin: 0 auto 16px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid rgba(var(--cor-tema-rgb), 0.18);
-        border-radius: 17px;
-        background: rgba(var(--cor-tema-rgb), 0.09);
-        color: var(--cor-tema-escura);
-        box-shadow: 0 10px 24px rgba(var(--cor-tema-rgb), 0.1);
-      }
-
-      #screen-operacao .operacao-coming-soon-kicker {
-        margin: 0 0 7px;
-        color: var(--cor-tema-escura);
-        font-size: 11px;
-        font-weight: 750;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-      }
-
-      #screen-operacao .operacao-coming-soon-card h2 {
-        margin: 0;
-        color: #172033;
-        font-size: clamp(28px, 4vw, 38px);
-        line-height: 1.1;
-        letter-spacing: -0.035em;
-      }
-
-      #screen-operacao .operacao-coming-soon-lead {
-        max-width: 590px;
-        margin: 14px auto 0;
-        color: #334155;
-        font-size: clamp(16px, 2vw, 18px);
-        font-weight: 650;
-        line-height: 1.5;
-      }
-
-      #screen-operacao .operacao-coming-soon-description {
-        max-width: 620px;
-        margin: 10px auto 0;
-        color: #64748b;
-        font-size: 14px;
-        line-height: 1.65;
-      }
-
-      #screen-operacao .operacao-coming-soon-resources {
-        max-width: 620px;
-        margin: 30px auto 0;
-        padding: 22px;
-        border: 1px solid rgba(226, 232, 240, 0.92);
-        border-radius: 14px;
-        background: rgba(248, 250, 252, 0.76);
-        text-align: left;
-      }
-
-      #screen-operacao .operacao-coming-soon-resources h3 {
-        margin: 0 0 14px;
-        color: #334155;
-        font-size: 12px;
-        font-weight: 750;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-      }
-
-      #screen-operacao .operacao-coming-soon-resources ul {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px 22px;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-      }
-
-      #screen-operacao .operacao-coming-soon-resources li {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 0;
-        color: #334155;
-        font-size: 13px;
-        font-weight: 600;
-        line-height: 1.35;
-      }
-
-      #screen-operacao .operacao-resource-check {
-        width: 21px;
-        height: 21px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 21px;
-        border-radius: 999px;
-        background: rgba(var(--cor-tema-rgb), 0.11);
-        color: var(--cor-tema-escura);
-        font-size: 12px;
-        font-weight: 800;
-      }
-
-      #screen-operacao .operacao-coming-soon-note {
-        margin: 24px 0 0;
-        color: #94a3b8;
-        font-size: 12px;
-        line-height: 1.5;
-      }
-
-      @media (max-width: 640px) {
-        #screen-operacao .operacao-coming-soon-stage {
-          min-height: calc(100vh - var(--layout-header-offset, 124px) - 76px);
-          padding: 14px 10px 22px;
-          align-items: flex-start;
-        }
-
-        #screen-operacao .operacao-coming-soon-card {
-          padding: 28px 18px 24px;
-          border-radius: 16px;
-        }
-
-        #screen-operacao .operacao-coming-soon-icon {
-          width: 52px;
-          height: 52px;
-          border-radius: 15px;
-        }
-
-        #screen-operacao .operacao-coming-soon-resources {
-          margin-top: 24px;
-          padding: 18px;
-        }
-
-        #screen-operacao .operacao-coming-soon-resources ul {
-          grid-template-columns: 1fr;
-          gap: 11px;
-        }
       }
 
 /* Correção Notas: regra global, fora dos blocos legados de desktop. */
@@ -613,80 +370,3 @@ body .app-shell[data-active-screen="screen-financas"] .fab-add-financas { displa
     padding: 0 !important;
   }
 }
-
-      #financas-legacy-interface[hidden],
-      #operacao-legacy-interface[hidden] {
-        display: none !important;
-      }
-
-      .module-evolution-stage {
-        min-height: calc(100vh - var(--layout-header-offset, 124px) - 32px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: var(--space-5);
-      }
-
-      .module-evolution-card {
-        width: min(100%, 680px);
-        margin: 0;
-        padding: clamp(30px, 5vw, 52px);
-        border: var(--border-soft);
-        border-radius: var(--radius-xl);
-        background: #ffffff;
-        box-shadow: var(--shadow-card);
-        text-align: center;
-      }
-
-      .module-evolution-card .module-evolution-icon,
-      .module-evolution-card .operacao-coming-soon-icon {
-        width: 58px;
-        height: 58px;
-        margin: 0 auto var(--space-4);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid rgba(var(--cor-tema-rgb), 0.18);
-        border-radius: var(--radius-lg);
-        background: rgba(var(--cor-tema-rgb), 0.09);
-        color: var(--cor-tema-escura);
-      }
-
-      .module-evolution-kicker,
-      .module-evolution-card .operacao-coming-soon-kicker {
-        margin: 0 0 var(--space-2);
-        color: var(--cor-tema-escura);
-        font-size: 11px;
-        font-weight: 750;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-      }
-
-      .module-evolution-card h2 {
-        margin: 0;
-        color: #172033;
-        font-size: clamp(25px, 4vw, 34px);
-        line-height: 1.15;
-        letter-spacing: -0.03em;
-      }
-
-      .module-evolution-card > p:last-child {
-        max-width: 560px;
-        margin: var(--space-4) auto 0;
-        color: #64748b;
-        font-size: 14px;
-        line-height: 1.65;
-      }
-
-      @media (max-width: 640px) {
-        .module-evolution-stage {
-          min-height: calc(100vh - var(--layout-header-offset, 124px) - 76px);
-          padding: 14px 10px 22px;
-          align-items: flex-start;
-        }
-
-        .module-evolution-card {
-          padding: 30px 20px;
-          border-radius: var(--radius-lg);
-        }
-      }

@@ -997,7 +997,6 @@
       const checklist = Array.isArray(dados.checklist) ? dados.checklist : [];
       const notas = Array.isArray(dados.notas) ? dados.notas : [];
       const marcos = Array.isArray(dados.marcos) ? dados.marcos : [];
-      const lancamentos = Array.isArray(dados.lancamentos) ? dados.lancamentos : [];
 
       const categorias = [
         {
@@ -1022,11 +1021,6 @@
           chave: "marcos",
           rotulo: "Marco importante",
           total: marcos.filter((marco) => marco?.ativo !== false && dataLocalDeRegistro(marco?.criado_em) === hoje).length,
-        },
-        {
-          chave: "financeiro",
-          rotulo: "Financeiro",
-          total: lancamentos.filter((item) => item?.ativo !== false && dataLocalDeRegistro(item?.criado_em) === hoje).length,
         },
       ].filter((categoria) => categoria.total > 0);
 
@@ -1141,8 +1135,6 @@
       if (!emLayoutDesktop()) return null;
       if (statusDoDiaPromise) return statusDoDiaPromise;
       statusDoDiaPromise = (async () => {
-        const hoje = new Date();
-        const paramsMes = new URLSearchParams({ mes: String(hoje.getMonth() + 1), ano: String(hoje.getFullYear()) });
         const buscarLista = async (url) => {
           try {
             const res = await fetch(url, { headers: authHeaders() });
@@ -1153,15 +1145,14 @@
             return [];
           }
         };
-        const [tarefas, checklist, notas, marcos, lancamentos] = await Promise.all([
+        const [tarefas, checklist, notas, marcos] = await Promise.all([
           buscarLista(API + "/tarefas"),
           buscarLista(API + "/checklist"),
           buscarLista(API + "/notes"),
           buscarLista(API + "/marcos-operacionais"),
-          buscarLista(API + "/financas/lancamentos?" + paramsMes.toString()),
         ]);
         const googleHoje = googleAgendaCache.filter((item) => normalizarDataParaISO(item?.data || "") === dataHojeISO());
-        const status = calcularStatusDoDia({ tarefas, compromissos: [...tarefas, ...googleHoje], checklist, notas, marcos, lancamentos });
+        const status = calcularStatusDoDia({ tarefas, compromissos: [...tarefas, ...googleHoje], checklist, notas, marcos });
         renderizarStatusDoDiaDesktop(status);
         return status;
       })();

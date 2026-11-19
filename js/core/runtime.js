@@ -8,7 +8,7 @@
       PriorizaApp.modulos[nome] = modulo;
       return modulo;
     };
-    ["autenticacao", "agenda", "checklist", "financas", "operacao", "notificacoes"].forEach((nome) => {
+    ["autenticacao", "agenda", "checklist", "notificacoes"].forEach((nome) => {
       PriorizaApp.registrarModulo(nome);
     });
 
