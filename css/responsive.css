@@ -25,7 +25,7 @@
   .form-grid, .agenda-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-.auth-mobile-slogan { display: none; }
+.auth-mobile-brand-copy { display: none; }
 
 /* Sprint 042 — experiencia compacta no celular */
 @media (max-width: 767px) {
@@ -46,7 +46,7 @@
   textarea { overflow-wrap: anywhere; }
   .empty-state { min-height: 132px; padding: 22px 16px; }
 
-  .auth-screen:has(#auth-form-login:not([hidden])):not(.is-transitioning) {
+  .auth-screen:has(#auth-form-login:not([hidden])) {
     align-items: safe center;
     overflow-y: auto;
 
@@ -54,11 +54,46 @@
     .auth-brand { gap: 8px; margin-bottom: 10px; }
     .auth-logo { width: min(228px, 100%); margin-bottom: 0; }
     .auth-brand-copy { display: none; }
-    .auth-mobile-slogan { display: block; }
+    .auth-mobile-brand-copy { display: contents; }
+    .auth-mobile-transition-slogan { display: none; }
+
+    &.is-transitioning {
+      .auth-card {
+        transition: background-color 180ms ease, border-color 180ms ease, box-shadow 240ms ease;
+      }
+
+      /* Mantém a altura que o bloco invisível ocupa antes da transição. */
+      .auth-transition-copy {
+        min-height: 0;
+        margin-top: 0;
+        visibility: hidden;
+        opacity: 0;
+        transition: none;
+      }
+      .auth-transition-slogan { display: none; }
+      .auth-mobile-brand-copy {
+        display: block;
+        position: relative;
+        width: 100%;
+      }
+      .auth-mobile-slogan { visibility: hidden; }
+
+      .auth-mobile-transition-slogan {
+        display: block;
+        position: absolute;
+        inset: 0 0 auto;
+        animation: authMobileSloganIn 200ms ease both;
+      }
+    }
     .auth-panel { margin-top: 10px; padding-top: 0; }
     #auth-form-login { gap: 10px; }
     #auth-error:empty { display: none; }
     .auth-switch { margin-top: 12px; }
+  }
+
+  @keyframes authMobileSloganIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   #btn-auth-login {
