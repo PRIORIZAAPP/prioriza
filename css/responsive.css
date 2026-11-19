@@ -25,6 +25,8 @@
   .form-grid, .agenda-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+.auth-mobile-slogan { display: none; }
+
 /* Sprint 042 — experiencia compacta no celular */
 @media (max-width: 767px) {
   :root { --mobile-bottom-safe: env(safe-area-inset-bottom, 0px); }
@@ -43,6 +45,30 @@
   input, textarea, select { max-width: 100%; }
   textarea { overflow-wrap: anywhere; }
   .empty-state { min-height: 132px; padding: 22px 16px; }
+
+  .auth-screen:has(#auth-form-login:not([hidden])):not(.is-transitioning) {
+    align-items: safe center;
+    overflow-y: auto;
+
+    .auth-card { padding-block: 24px 18px; }
+    .auth-brand { gap: 8px; margin-bottom: 10px; }
+    .auth-logo { width: min(228px, 100%); margin-bottom: 0; }
+    .auth-brand-copy { display: none; }
+    .auth-mobile-slogan { display: block; }
+    .auth-panel { margin-top: 10px; padding-top: 0; }
+    #auth-form-login { gap: 10px; }
+    #auth-error:empty { display: none; }
+    .auth-switch { margin-top: 12px; }
+  }
+
+  #btn-auth-login {
+    display: grid;
+    place-items: center;
+    text-align: center;
+    color: #fff !important;
+    -webkit-text-fill-color: #fff;
+    background: linear-gradient(180deg, #2563eb, #1d4ed8);
+  }
 }
 
       .auth-screen,
