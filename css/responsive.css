@@ -118,25 +118,28 @@
     .empty-state--empty :is(.empty-state-icon, .empty-state-description) {
       display: none;
     }
-  }
 
-  #screen-hoje #hoje-checklist-card {
-    .checklist-item {
+    :is(.agenda-item, .checklist-item) {
       display: flex;
       align-items: center;
       gap: 6px;
       padding: 3px 0;
     }
 
-    .checklist-item:last-child { border-bottom: 0; }
+    :is(.agenda-item, .checklist-item):last-child { border-bottom: 0; }
 
-    .check-status {
+    :is(.agenda-status-btn, .check-status) {
       position: relative;
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      min-height: 22px;
+      padding: 0;
       margin-inline: 11px;
     }
 
     /* Amplia a area de toque mantendo o indicador circular de 22 px. */
-    .check-status::after {
+    :is(button.agenda-status-btn, .check-status)::after {
       content: "";
       position: absolute;
       inset: 50% auto auto 50%;
@@ -145,20 +148,26 @@
       transform: translate(-50%, -50%);
     }
 
-    .check-info { width: auto; }
-    .check-titulo, .check-sub { overflow-wrap: anywhere; }
-    .check-titulo { white-space: normal; }
-
-    .checklist-item .checklist-item-actions {
+    :is(.agenda-conteudo, .check-info) {
+      min-width: 0;
       width: auto;
-      gap: 4px;
+      overflow-wrap: anywhere;
     }
 
-    .check-badge {
-      min-height: 18px;
-      padding: 2px 6px;
-      font-size: 10px;
+    :is(.agenda-titulo, .check-titulo) {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+      overflow-wrap: anywhere;
+      white-space: normal;
     }
+
+    :is(.agenda-titulo, .check-titulo)[aria-expanded="true"] {
+      display: block;
+    }
+
+    .timeline-action-menu { flex-shrink: 0; }
 
     .timeline-action-menu .timeline-menu-trigger {
       position: relative;
@@ -178,6 +187,72 @@
       border-radius: inherit;
       pointer-events: none;
     }
+  }
+
+  #screen-hoje #hoje-agenda-card {
+    .agenda-horario {
+      width: max-content;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .agenda-item.feito .agenda-titulo {
+      color: #6b7280;
+      text-decoration: line-through;
+    }
+
+    .agenda-item.feito .agenda-tag:is(.prio1, .prio2, .prio3) { display: none; }
+  }
+
+  #screen-hoje #hoje-checklist-card {
+    .checklist-item .checklist-item-actions {
+      width: auto;
+      gap: 4px;
+    }
+
+    .check-badge {
+      min-height: 18px;
+      padding: 2px 6px;
+      font-size: 10px;
+    }
+
+    .check-badge.atrasado {
+      max-width: 75px;
+      white-space: normal;
+      text-align: center;
+    }
+
+    .checklist-item.feito .check-badge { display: none; }
+  }
+
+  .timeline-menu-popover--hoje[hidden] { display: none; }
+
+  .timeline-menu-popover--hoje {
+    display: flex;
+    flex-direction: column;
+    max-width: calc(100vw - 16px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 4px;
+    border: 1px solid #dbe3ed;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(15 23 42 / 16%);
+
+    .timeline-menu-item {
+      flex-shrink: 0;
+      min-height: 44px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      text-align: left;
+      font-size: 13px;
+      color: #334155;
+    }
+
+    .timeline-menu-item:is(:hover, :focus-visible) { background: #f1f5f9; }
+    .timeline-menu-item.danger { color: #b91c1c; }
   }
 
   #btn-auth-login {

@@ -5,7 +5,7 @@
       try {
         const res = await fetch(API+"/checklist_status?"+new URLSearchParams({item_id:String(id),status:novoStatus}),{method:"POST",headers:authHeaders()});
         if (!res.ok) throw new Error("HTTP " + res.status);
-        return true;
+        return await res.json();
       } catch(e){console.error(e); return false;}
     }
 
@@ -47,7 +47,9 @@
           checklistTodosCache = itens.map((item) => ({ ...item }));
         }
 
+        const puladas = window.matchMedia("(max-width: 767px)").matches ? obterRotinasPuladasHoje() : null;
         const visiveis = itens.filter(i => {
+          if (puladas?.has(String(i.id))) return false;
           if (rotinaFoiForcadaHoje(i.id)) return true;
           if (i.pode_mostrar_hoje===false) return false;
           if (isWeekend && (i.frequencia_interna||"").toUpperCase()==="DIARIA") return false;
@@ -83,49 +85,36 @@
           const info = document.createElement("div"); info.className="check-info";
           const tituloEl = document.createElement("div"); tituloEl.className="check-titulo"; tituloEl.innerHTML=`${textoSeguro(item.titulo)}${item?.recorrente ? iconeRecorrenciaHTML() : ""}`;
           const sub = document.createElement("div"); sub.className="check-sub"; sub.textContent=`${item.frequencia} · ${obterRotuloOrigemChecklist(item)}`;
+          habilitarTituloCompletoHoje(tituloEl);
           info.appendChild(tituloEl); info.appendChild(sub);
           div.appendChild(bolinha); div.appendChild(info);
 
           const actions = document.createElement("div");
           actions.className = "checklist-item-actions";
-          const badge = obterBadgeChecklist(item, status);
-          const badgeEl = criarBadgeChecklistElemento(badge);
-          if (badgeEl) actions.appendChild(badgeEl);
+          const badgeInicial = criarBadgeChecklistElemento(obterBadgeChecklistHoje(item, status));
+          if (badgeInicial) actions.appendChild(badgeInicial);
 
-          const executarAcaoChecklistHoje = async (novoStatus, grupoAcoes) => {
-            const statusAnterior = bolinha.dataset.status || item.status || "pendente";
-            grupoAcoes?.__setDisabled?.(true);
+          const executarAcaoChecklistHoje = async (novoStatus) => {
+            const statusAnterior = item.status || "pendente";
             definirEstadoVisualChecklistHoje(div, bolinha, novoStatus);
-            const ok = await atualizarStatusChecklist(item.id, novoStatus);
-            if (!ok) {
+            const atualizado = await atualizarStatusChecklist(item.id, novoStatus);
+            if (!atualizado) {
               definirEstadoVisualChecklistHoje(div, bolinha, statusAnterior);
-              grupoAcoes?.__sync?.(statusAnterior);
-              grupoAcoes?.__setDisabled?.(false);
-              await modal.alerta("Não foi possível atualizar a rotina.", "Erro");
               return;
             }
-            item.status = novoStatus;
+            Object.assign(item, atualizado, { status: novoStatus });
+            actions.querySelector(".check-badge")?.remove();
+            const badgeNovo = criarBadgeChecklistElemento(obterBadgeChecklistHoje(item, novoStatus));
+            if (badgeNovo) actions.prepend(badgeNovo);
             await atualizarResumoBar();
-            grupoAcoes?.__setDisabled?.(false);
-            grupoAcoes?.__sync?.(novoStatus);
             sincronizarChecklistHojeEmSegundoPlano();
           };
 
-          bolinha.addEventListener("click", async ()=>{
-            const atual=bolinha.dataset.status||"pendente"; const novo=proximoStatus(atual);
-            definirEstadoVisualChecklistHoje(div, bolinha, novo);
-            const ok = await atualizarStatusChecklist(item.id,novo);
-            if (!ok) {
-              definirEstadoVisualChecklistHoje(div, bolinha, atual);
-              return;
-            }
-            item.status = novo;
-            await atualizarResumoBar();
-            sincronizarChecklistHojeEmSegundoPlano();
-          });
+          bolinha.addEventListener("click", () => executarAcaoChecklistHoje(proximoStatus(bolinha.dataset.status)));
 
           div.classList.add("has-action-menu");
           actions.appendChild(criarMenuAcoesContextuais({
+              hoje: true,
               titulo: "Ações da rotina",
               ariaLabel: `Ações de ${item.titulo}`,
               itens: [
@@ -152,8 +141,8 @@
           if (actions.childElementCount) div.appendChild(actions);
 
           adicionarSwipe(div,
-            ()=>{ mostrarFlashFull("success"); setTimeout(async()=>{ definirEstadoVisualChecklistHoje(div, bolinha, "feito"); const ok = await atualizarStatusChecklist(item.id,"feito"); if (!ok) { definirEstadoVisualChecklistHoje(div, bolinha, item.status || "pendente"); return; } item.status = "feito"; await atualizarResumoBar(); sincronizarChecklistHojeEmSegundoPlano(); },FLASH_DURATION_MS); },
-            ()=>{ mostrarFlashFull("warning"); setTimeout(async()=>{ definirEstadoVisualChecklistHoje(div, bolinha, "em_andamento"); const ok = await atualizarStatusChecklist(item.id,"em_andamento"); if (!ok) { definirEstadoVisualChecklistHoje(div, bolinha, item.status || "pendente"); return; } item.status = "em_andamento"; await atualizarResumoBar(); sincronizarChecklistHojeEmSegundoPlano(); },FLASH_DURATION_MS); },
+            () => { mostrarFlashFull("success"); setTimeout(() => executarAcaoChecklistHoje("feito"), FLASH_DURATION_MS); },
+            () => { mostrarFlashFull("warning"); setTimeout(() => executarAcaoChecklistHoje("em_andamento"), FLASH_DURATION_MS); },
             { previewRightClass: "swipe-preview-right", previewLeftClass: "swipe-preview-left" }
           );
           fragmentoHoje.appendChild(div);
@@ -187,6 +176,28 @@
       if (dias === 0) return { texto: "Hoje", classe: "hoje" };
       if (dias <= 7) return { texto: "Esta semana", classe: "semana" };
       return null;
+    }
+
+    function obterBadgeChecklistHoje(item, status) {
+      if (!window.matchMedia("(max-width: 767px)").matches) return obterBadgeChecklist(item, status);
+      if (status === "feito") return null;
+      const dias = -item.dias_para_proxima;
+      if (!(dias > 0)) return obterBadgeChecklist(item, status);
+
+      const vencimento = new Date(`${item.proxima_execucao}T00:00:00Z`);
+      let meses = 0;
+      if (!Number.isNaN(vencimento.getTime())) {
+        const hoje = new Date(vencimento);
+        hoje.setUTCDate(hoje.getUTCDate() + dias);
+        meses = (hoje.getUTCFullYear() - vencimento.getUTCFullYear()) * 12
+          + hoje.getUTCMonth() - vencimento.getUTCMonth();
+        const ultimoDia = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth() + 1, 0)).getUTCDate();
+        if (hoje.getUTCDate() < Math.min(vencimento.getUTCDate(), ultimoDia)) meses--;
+      }
+      const duracao = meses > 0
+        ? `${meses} ${meses === 1 ? "mês" : "meses"}`
+        : `${dias} ${dias === 1 ? "dia" : "dias"}`;
+      return { texto: `${duracao} de atraso`, classe: "atrasado" };
     }
 
     function criarBadgeChecklistElemento(badge) {

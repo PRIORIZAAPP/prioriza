@@ -182,6 +182,10 @@
       });
       document.getElementById("btn-cancelar-edicao-nota")?.addEventListener("click", () => limparFormularioNota());
       document.addEventListener("click", () => fecharMenusAcoesDesktop());
+      document.addEventListener("keydown", atualizarMenuHoje);
+      document.addEventListener("scroll", atualizarMenuHoje, { capture: true, passive: true });
+      window.addEventListener("resize", atualizarMenuHoje);
+      window.visualViewport?.addEventListener("resize", atualizarMenuHoje);
       ajustarCategoriasNotasUI();
       window.addEventListener("resize", ajustarCategoriasNotasUI);
 

@@ -1611,7 +1611,8 @@
         const informada = dataNoTexto ? normalizarDataParaISO(dataNoTexto) : "";
         if (informada) return informada;
 
-        const dias = Number(item?.dias_para_proxima);
+        if (item?.dias_para_proxima == null) return "";
+        const dias = Number(item.dias_para_proxima);
         if (!Number.isFinite(dias)) return "";
         const data = new Date(`${dataHojeISO()}T00:00:00`);
         data.setDate(data.getDate() + dias);
@@ -1813,17 +1814,77 @@
       return true;
     }
 
-    function fecharMenusAcoesDesktop(excecao = null) {
-      document.querySelectorAll(".timeline-menu-popover").forEach((menu) => {
-        if (menu === excecao) return;
-        menu.hidden = true;
-        menu.__trigger?.setAttribute("aria-expanded", "false");
-        menu.__owner?.closest(".checklist-item, .nota-item")?.classList.remove("menu-open");
-        if (menu.__owner && !menu.__owner.isConnected) menu.remove();
+    function habilitarTituloCompletoHoje(titulo) {
+      if (!window.matchMedia("(max-width: 767px)").matches) return;
+      titulo.tabIndex = 0;
+      titulo.setAttribute("role", "button");
+      titulo.setAttribute("aria-expanded", "false");
+      const alternar = (evento) => {
+        evento.stopPropagation();
+        const expandido = titulo.getAttribute("aria-expanded") === "true";
+        if (!expandido && titulo.scrollHeight <= titulo.clientHeight) return;
+        titulo.setAttribute("aria-expanded", String(!expandido));
+      };
+      titulo.addEventListener("click", alternar);
+      titulo.addEventListener("keydown", (evento) => {
+        if (evento.key !== "Enter" && evento.key !== " ") return;
+        evento.preventDefault();
+        alternar(evento);
       });
     }
 
-    function criarMenuAcoesContextuais({ titulo, ariaLabel, itens = [] }) {
+    function fecharMenuAcoes(menu) {
+      menu.hidden = true;
+      menu.__trigger?.setAttribute("aria-expanded", "false");
+      menu.__owner?.closest(".checklist-item, .nota-item")?.classList.remove("menu-open");
+      if (menu.__owner && !menu.__owner.isConnected) menu.remove();
+    }
+
+    function fecharMenusAcoesDesktop(excecao = null) {
+      document.querySelectorAll(".timeline-menu-popover").forEach((menu) => {
+        if (menu !== excecao) fecharMenuAcoes(menu);
+      });
+    }
+
+    function atualizarMenuHoje(evento) {
+      const menu = document.querySelector(".timeline-menu-popover--hoje:not([hidden])");
+      if (!menu || !window.matchMedia("(max-width: 767px)").matches) return;
+      if (evento?.type === "keydown") {
+        if (evento.key === "Escape") {
+          fecharMenuAcoes(menu);
+          menu.__trigger?.focus();
+        }
+        return;
+      }
+      if (evento?.type === "scroll" && evento.target === menu) return;
+
+      const margem = 8;
+      const viewport = window.visualViewport;
+      const esquerda = (viewport?.offsetLeft ?? 0) + margem;
+      const direita = esquerda + (viewport?.width ?? window.innerWidth) - margem * 2;
+      const topo = (viewport?.offsetTop ?? 0) + margem;
+      const fimTela = topo + (viewport?.height ?? window.innerHeight) - margem * 2;
+      const navegacao = document.querySelector(".bottom-nav-wrapper")?.getBoundingClientRect();
+      const fim = navegacao?.height ? Math.min(fimTela, navegacao.top - margem) : fimTela;
+      const ancora = menu.__trigger.getBoundingClientRect();
+      if (!menu.__trigger.isConnected || ancora.bottom <= topo || ancora.top >= fim) {
+        fecharMenuAcoes(menu);
+        return;
+      }
+
+      menu.style.width = `${Math.min(176, direita - esquerda)}px`;
+      const acima = Math.max(0, ancora.top - margem - topo);
+      const abaixo = Math.max(0, fim - ancora.bottom - margem);
+      const alturaCompleta = menu.scrollHeight + menu.offsetHeight - menu.clientHeight;
+      const abrirAcima = abaixo < alturaCompleta && acima > abaixo;
+      menu.style.maxHeight = `${abrirAcima ? acima : abaixo}px`;
+      const largura = menu.getBoundingClientRect().width;
+      const altura = menu.getBoundingClientRect().height;
+      menu.style.left = `${Math.max(esquerda, Math.min(ancora.right - largura, direita - largura))}px`;
+      menu.style.top = `${abrirAcima ? ancora.top - margem - altura : ancora.bottom + margem}px`;
+    }
+
+    function criarMenuAcoesContextuais({ titulo, ariaLabel, itens = [], hoje = false }) {
       const wrap = document.createElement("div");
       wrap.className = "timeline-action-menu";
       const trigger = document.createElement("button");
@@ -1835,6 +1896,7 @@
       trigger.innerHTML = `<svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><circle cx="56" cy="128" r="14"/><circle cx="128" cy="128" r="14"/><circle cx="200" cy="128" r="14"/></svg>`;
       const menu = document.createElement("div");
       menu.className = "timeline-menu-popover contextual-actions-card";
+      if (hoje) menu.classList.add("timeline-menu-popover--hoje");
       menu.hidden = true;
       menu.__trigger = trigger;
       menu.__owner = wrap;
@@ -1846,9 +1908,7 @@
         botao.textContent = texto;
         botao.addEventListener("click", async (ev) => {
           ev.stopPropagation();
-          menu.hidden = true;
-          trigger.setAttribute("aria-expanded", "false");
-          wrap.closest(".checklist-item, .nota-item")?.classList.remove("menu-open");
+          fecharMenuAcoes(menu);
           if (botao.disabled) return;
           botao.disabled = true;
           try {
@@ -1875,6 +1935,10 @@
             zIndex: "10000",
             width: "176px",
           });
+          if (hoje && window.matchMedia("(max-width: 767px)").matches) {
+            atualizarMenuHoje();
+            return;
+          }
           const ancora = trigger.getBoundingClientRect();
           const largura = Math.max(176, menu.offsetWidth || 0);
           const altura = menu.offsetHeight || 0;
@@ -2269,7 +2333,10 @@
 
     function definirEstadoVisualAgendaHoje(itemEl, bolinhaEl, status) {
       const statusAtual = status || "pendente";
-      if (itemEl) itemEl.classList.toggle("cancelada", ehStatusCancelada(statusAtual));
+      if (itemEl) {
+        itemEl.classList.toggle("cancelada", ehStatusCancelada(statusAtual));
+        itemEl.classList.toggle("feito", ehStatusFeito(statusAtual));
+      }
       if (!bolinhaEl) return;
       bolinhaEl.dataset.status = statusAtual;
       bolinhaEl.className = `agenda-status-btn ${statusAtual}`;
