@@ -335,7 +335,7 @@
 
         if (agendaHojeRender.length === 0) {
           PriorizaUX.renderizarEstado(agendaDiv, {
-            titulo: "Nenhum compromisso para hoje",
+            titulo: "Nenhum compromisso para hoje.",
             descricao: "Quando houver algo programado para este dia, ele aparecerá aqui."
           });
         } else {
