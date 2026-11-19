@@ -322,7 +322,7 @@ class ChecklistItem(Base):
         frequencia_corrigida = frequencia_interna_efetiva(self.frequencia, self.frequencia_interna)
         proxima = calcular_proxima_execucao(self)
         dias = calcular_dias_para_proxima(self)
-        atraso = dias < 0
+        atraso = dias is not None and dias < 0
         status_exibicao = self.status
         if atraso and self.status != "feito":
             status_exibicao = "atrasado"
@@ -1778,7 +1778,7 @@ def normalizar_frequencia_interna(freq: str) -> str:
 
     f = _texto_sem_acentos(freq)
 
-    if any(x in f for x in ["unico", "pontual", "esporadico"]):
+    if any(x in f for x in ["unico", "unica", "pontual", "esporadico"]):
         return "UNICO"
     if "diari" in f or "todo dia" in f or "todos os dias" in f:
         return "DIARIA"
@@ -1856,19 +1856,19 @@ def _dia_operacional_liberado() -> bool:
 def _data_base_proxima_execucao(item: ChecklistItem) -> Optional[date]:
     freq = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
 
-    if freq == "UNICO":
-        return None if item.ultimo_exec else _data_operacional_atual()
+    if freq == "UNICO" and (item.ultimo_exec or item.status == "feito"):
+        return None
 
-    ultimo = _ultima_execucao_ajustada(item)
-    if ultimo is None:
-        base = _data_operacional_atual()
+    # O reagendamento legado gravava a data escolhida menos o intervalo.
+    # Use o mesmo intervalo para recuperar a data sem alterar ultimo_exec.
+    if item.ultimo_exec:
+        base = item.ultimo_exec.date() + timedelta(days=_intervalo_dias(freq))
+    elif item.criado_em and item.status != "feito":
+        base = item.criado_em.date()
     else:
-        base = ultimo + timedelta(days=_intervalo_dias(freq))
+        return None
 
-    if freq == "DIARIA":
-        return _proxima_data_diaria_visivel(base)
-
-    return base
+    return _proxima_data_diaria_visivel(base) if freq == "DIARIA" else base
 
 
 def calcular_mensagem_status_checklist(item: ChecklistItem) -> str:
@@ -1883,6 +1883,8 @@ def calcular_mensagem_status_checklist(item: ChecklistItem) -> str:
         return f"Disponível às {CHECKLIST_HORA_LIBERACAO:02d}:00"
 
     dias = calcular_dias_para_proxima(item)
+    if dias is None:
+        return ""
     if item.status == "feito" and dias >= 0:
         if dias == 0:
             return "Disponível hoje"
@@ -1899,40 +1901,6 @@ def calcular_mensagem_status_checklist(item: ChecklistItem) -> str:
     if dias == 1:
         return "Próxima em 1 dia"
     return f"Próxima em {dias} dia(s)"
-
-
-def _ultima_execucao_ajustada(item: ChecklistItem) -> Optional[date]:
-    if not item.ultimo_exec:
-        return None
-
-    freq = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
-    ultimo = item.ultimo_exec
-
-    if ultimo.tzinfo is not None:
-        try:
-            ultimo = ultimo.astimezone()
-        except Exception:
-            pass
-
-    ultimo_date = ultimo.date()
-    hoje = _data_operacional_atual()
-    intervalo = _intervalo_dias(freq)
-
-    # Corrige registros antigos/inconsistentes que ficaram com ultimo_exec no futuro
-    # e acabavam escondendo itens diários por vários dias.
-    if ultimo_date > hoje:
-        if freq == "DIARIA":
-            return hoje - timedelta(days=1)
-        return hoje
-
-    # Se o item já venceu o próximo ciclo, mantém a última execução ajustada para
-    # o ciclo imediatamente anterior, evitando contagens estouradas.
-    if freq != "UNICO":
-        dias_passados = (hoje - ultimo_date).days
-        if dias_passados > intervalo:
-            return hoje - timedelta(days=intervalo)
-
-    return ultimo_date
 
 
 def sincronizar_frequencia_checklist_existente(db: Session, user_id: Optional[int] = None):
@@ -1970,7 +1938,7 @@ def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
 
     proxima_data = _data_base_proxima_execucao(item)
     if proxima_data is None:
-        return False
+        return item.status != "feito"
 
     return hoje >= proxima_data
 
@@ -1984,10 +1952,10 @@ def calcular_proxima_execucao(item: ChecklistItem) -> Optional[str]:
     return proxima_data.isoformat()
 
 
-def calcular_dias_para_proxima(item: ChecklistItem) -> int:
+def calcular_dias_para_proxima(item: ChecklistItem) -> Optional[int]:
     proxima = calcular_proxima_execucao(item)
     if not proxima:
-        return 0
+        return None
     return (date.fromisoformat(proxima) - _data_operacional_atual()).days
 
 
@@ -3926,11 +3894,8 @@ def alterar_status_checklist(item_id: int = Query(...), status: str = Query(...)
 
     if novo_status == "feito":
         item.ultimo_exec = datetime.now(UTC)
-    elif novo_status == "pendente":
-        if (item.frequencia_interna or "").upper() == "UNICO":
-            item.ultimo_exec = None
-        elif item.ultimo_exec and _ultima_execucao_ajustada(item) and _ultima_execucao_ajustada(item) < date.today():
-            item.ultimo_exec = datetime.combine(_ultima_execucao_ajustada(item), datetime.min.time(), tzinfo=UTC)
+    elif novo_status == "pendente" and item.frequencia_interna == "UNICO":
+        item.ultimo_exec = None
 
     db.commit()
     db.refresh(item)
