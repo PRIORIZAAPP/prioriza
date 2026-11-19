@@ -841,7 +841,10 @@
       const slogan = document.getElementById("auth-transition-slogan");
       if (!screen || !slogan) return;
 
-      slogan.textContent = escolherSloganSplash();
+      const frase = escolherSloganSplash();
+      slogan.textContent = frase;
+      const sloganMobile = document.getElementById("auth-mobile-transition-slogan");
+      if (sloganMobile) sloganMobile.textContent = frase;
       screen.setAttribute("aria-busy", "true");
       screen.classList.add("is-transitioning");
       await aguardar(1800);
