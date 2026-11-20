@@ -624,3 +624,215 @@
     padding: 0 !important;
   }
 }
+
+/* Sprint 056 — visualizações da Agenda mobile. */
+#screen-agenda :where(.agenda-mobile-controls, #agenda-mobile-feriados, .agenda-indicador-feriado) {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  #screen-agenda:not([data-agenda-visao="dia"]) #agenda-dia-container,
+  #screen-agenda[data-agenda-visao="dia"] #calendar-container {
+    display: none;
+  }
+
+  .app-shell[data-active-screen="screen-agenda"]:has(#screen-agenda[data-agenda-visao="dia"]) .fab-add-agenda {
+    display: none !important;
+  }
+
+  #screen-agenda {
+    .calendar-wrapper { padding-inline: 8px; }
+    .calendar-header { gap: 6px; }
+    .calendar-header-title { font-size: clamp(16px, 4.7vw, 20px); white-space: nowrap; }
+    .calendar-grid { gap: 4px; }
+
+    .calendar-day {
+      position: relative;
+      min-width: 0;
+      min-height: 57px;
+      padding: 7px 4px 5px;
+      gap: 3px;
+      border-radius: 12px;
+    }
+
+    .calendar-day-top { gap: 2px; }
+    .calendar-day-indicators { gap: 2px; margin-top: 1px; flex-wrap: nowrap; }
+    .calendar-indicator { flex-shrink: 1; min-width: 3px; }
+    .calendar-indicator.blocked { width: 10px; }
+    .agenda-indicador-feriado {
+      display: block;
+      position: absolute;
+      inset-inline-end: 4px;
+      top: 25px;
+      width: 5px;
+      height: 5px;
+      background: #b91c1c;
+      border-radius: 1px;
+      transform: rotate(45deg);
+    }
+
+    .marcos-operacionais-toolbar {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-block: 0 8px;
+    }
+
+    .marco-register-btn, .marco-search-form { width: auto; }
+    .marco-search-form.is-open { flex-basis: 100%; }
+    .marco-search-form:not(.is-open) input,
+    #btn-limpar-busca-marcos[hidden] { display: none; }
+    .marco-search-form input {
+      flex: 1;
+      padding-inline: 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .agenda-dia-container { padding: 0; }
+
+    .agenda-dia-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      column-gap: 8px;
+      position: sticky;
+      top: var(--layout-header-offset, 0px);
+      z-index: 2;
+      align-items: start;
+      margin-bottom: 4px;
+      padding-block: 5px;
+      background: #fff;
+    }
+
+    .agenda-dia-header > div:not(.agenda-mobile-controls) { display: none; }
+
+    .agenda-mobile-controls { display: contents; }
+
+    #btn-add-dia-agenda { grid-column: 3; grid-row: 1; }
+
+    .agenda-mobile-back {
+      justify-self: start;
+      padding: 0 6px;
+      border: 0;
+      background: transparent;
+      color: #334155;
+      font-weight: 600;
+    }
+
+    .agenda-mobile-day-nav { display: flex; gap: 4px; }
+    .agenda-mobile-day-nav .calendar-nav-btn { min-width: 42px; font-size: 20px; }
+    #agenda-mobile-dia-label {
+      grid-column: 1 / -1;
+      margin: 0 0 4px;
+      color: #0f172a;
+      font-size: 16px;
+      line-height: 1.25;
+      font-weight: 700;
+    }
+
+    #agenda-mobile-feriados:not(:empty) { display: block; margin: 0 0 6px; }
+    #agenda-mobile-feriados p {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 0;
+      padding: 6px 8px;
+      color: #991b1b;
+      background: #fff5f5;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    #agenda-mobile-feriados svg { flex: 0 0 auto; }
+
+    #agenda-geral-lista {
+      max-height: max(160px, calc(100dvh - var(--layout-header-offset, 0px) - 254px));
+      overflow: auto;
+      overscroll-behavior-y: contain;
+    }
+
+    .agenda-mobile-vazia { padding: 16px 4px; text-align: center; color: #64748b; }
+
+    #agenda-geral-lista .agenda-item-mobile {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) 44px;
+      align-items: center;
+      gap: 6px;
+      min-height: 50px;
+      padding: 3px 0;
+    }
+
+    .agenda-item-mobile:last-child { border-bottom: 0; }
+
+    .agenda-item-mobile .agenda-status-btn {
+      position: relative;
+      justify-self: center;
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      min-height: 22px;
+      padding: 0;
+    }
+
+    .agenda-item-mobile button.agenda-status-btn::after {
+      content: "";
+      position: absolute;
+      inset: 50% auto auto 50%;
+      width: 44px;
+      height: 44px;
+      transform: translate(-50%, -50%);
+    }
+
+    .agenda-mobile-compromisso { position: relative; min-width: 0; }
+    .agenda-item-mobile :is(.agenda-titulo, .agenda-mobile-horario) {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .agenda-item-mobile .agenda-titulo { font-size: 13px; line-height: 1.3; }
+    .agenda-mobile-horario { margin-top: 2px; color: #64748b; font-size: 11px; }
+
+    .agenda-item-mobile:has(.agenda-status-btn.feito) .agenda-titulo {
+      color: #6b7280;
+      text-decoration: line-through;
+    }
+
+    .agenda-item-mobile .hoje-detalhes-acao {
+      position: absolute;
+      inset: 50% 0 auto;
+      transform: translateY(-50%);
+      width: 100%;
+      min-height: 44px;
+      padding: 0;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .agenda-item-mobile .timeline-menu-trigger {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .agenda-item-mobile .timeline-menu-trigger::before {
+      content: "";
+      position: absolute;
+      inset: 9px 2px;
+      border: 1px solid #dbe3ed;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+  }
+}
