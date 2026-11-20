@@ -963,16 +963,16 @@
   }
 
   /* The grid cell paints the frame independently of the native picker. */
-  #form-agenda .agenda-form-datetime :is(.agenda-data-nativa, .agenda-hora-nativa) {
+  #form-agenda :is(.agenda-form-datetime, .agenda-repetir-ate) :is(.agenda-data-nativa, .agenda-hora-nativa) {
     border: 1px solid #d8dee8;
     border-radius: 10px;
     background: #fbfcfe;
   }
-  #form-agenda .agenda-form-datetime :is(.agenda-data-nativa, .agenda-hora-nativa):focus-within {
+  #form-agenda :is(.agenda-form-datetime, .agenda-repetir-ate) :is(.agenda-data-nativa, .agenda-hora-nativa):focus-within {
     border-color: var(--cor-tema);
     box-shadow: 0 0 0 1px rgba(var(--cor-tema-rgb), 0.28);
   }
-  #form-agenda .agenda-form-datetime :is(.agenda-data-nativa, .agenda-hora-nativa) input {
+  #form-agenda :is(.agenda-form-datetime, .agenda-repetir-ate) :is(.agenda-data-nativa, .agenda-hora-nativa) input {
     -webkit-appearance: none;
     appearance: none;
     min-height: 0;
@@ -1049,6 +1049,7 @@
   #form-agenda .agenda-repeticao { order: 1; }
   #form-agenda .agenda-mobile-grupos select { padding-inline: 5px; font-size: 14px; }
   #form-agenda :is(.agenda-frequencia, .agenda-repetir-ate) { order: 2; }
+  #form-agenda #agenda-repetir { height: 44px; }
   #form-agenda :has(#agenda-repetir option[value="NENHUMA"]:checked) .agenda-repetir-ate { display: none; }
   #form-agenda .agenda-integracao { order: 3; }
   #form-agenda .agenda-google-opcao { order: 4; margin: 0; padding-top: 2px; }

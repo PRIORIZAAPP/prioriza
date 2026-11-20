@@ -96,9 +96,33 @@ def check_layout(context, url, token, width):
     assert abs(first["width"] - last["width"]) < 1 and abs(first["y"] - last["y"]) < 1
 
     panel.locator("summary").tap()
-    expect(panel.locator("#agenda-repetir-ate")).to_be_hidden()
-    panel.locator("#agenda-repetir").select_option("DIARIA")
-    panel.locator("#agenda-repetir-ate").fill("2026-12-15")
+    frequency = panel.locator("#agenda-repetir")
+    end_date = panel.locator("#agenda-repetir-ate")
+    expect(end_date).to_be_hidden()
+    expect(end_date).to_be_disabled()
+    frequency.select_option("SEMANAL")
+    expect(end_date).to_be_enabled()
+    end_date.fill("2026-12-15")
+    expect(panel.locator(".agenda-repetir-ate .agenda-data-formatada")).to_have_text("15/12/2026")
+    assert end_date.evaluate("el => el.type === 'date' && el.parentElement.matches(':focus-within')")
+    for value in ("DIARIA", "MENSAL", "NENHUMA", "SEMANAL"):
+        frequency.select_option(value)
+        expect(end_date).to_have_value("2026-12-15")
+        if value == "NENHUMA":
+            expect(end_date).to_be_hidden()
+            expect(end_date).to_be_disabled()
+    panel.locator("summary").tap()
+    panel.locator("summary").tap()
+    expect(end_date).to_have_value("2026-12-15")
+    freq_box = frequency.bounding_box()
+    frame = panel.locator(".agenda-repetir-ate .agenda-data-nativa")
+    date_box = frame.bounding_box()
+    assert abs(freq_box["height"] - date_box["height"]) < 1
+    assert abs(freq_box["y"] - date_box["y"]) < 1
+    assert abs(freq_box["width"] - date_box["width"]) < 1
+    assert date_box["x"] - (freq_box["x"] + freq_box["width"]) >= 7
+    assert frame.evaluate("""el => ['Top', 'Right', 'Bottom', 'Left'].every(side =>
+        getComputedStyle(el)['border' + side + 'Width'] === '1px')""")
     panel.locator("#agenda-local").evaluate("""select => {
         const area = 'Área-' + 'W'.repeat(70);
         select.add(new Option(area, area, false, true));
