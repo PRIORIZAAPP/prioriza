@@ -162,7 +162,7 @@
         input.addEventListener("input", atualizarBotaoExclusaoConta);
       });
       document.addEventListener("focusin", (ev) => {
-        if (mediaAgendaMobile.matches && ev.target?.closest?.("#agenda-form-wrap")) return;
+        if (mediaAgendaMobile.matches && ev.target?.closest?.("#agenda-form-wrap, #checklist-form-wrap")) return;
         if (ev.target?.matches?.(".checklist-form-panel input, .checklist-form-panel textarea, .checklist-form-panel select, .modal-box input, .account-delete-card input")) {
           rolarCampoSobrepostoParaVisivel(ev.target);
         }
@@ -308,6 +308,7 @@
       document.getElementById("form-checklist")?.addEventListener("submit", salvarNovaRotinaChecklist);
 
       vincularFormularioAgendaMobile();
+      vincularPaineisFormularioMobile();
       document.getElementById("form-agenda")?.addEventListener("submit", async(ev)=>{
         ev.preventDefault();
         const edicao = edicaoAgendaMobile;

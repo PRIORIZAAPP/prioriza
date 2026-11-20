@@ -489,6 +489,7 @@
       wrap.hidden = !abrir;
       wrap.classList.toggle("open", abrir);
       atualizarBloqueioRolagemFundo();
+      posicionarPainelFormularioMobile(wrap, abrir && mediaAgendaMobile.matches);
       btn.classList.toggle("is-open", abrir);
       btn.setAttribute("aria-expanded", abrir ? "true" : "false");
       btn.setAttribute("aria-label", abrir ? "Fechar formulário de rotina" : "Nova rotina");
@@ -499,7 +500,15 @@
       }
       if (abrir) {
         atualizarCategoriaChecklistUI();
-        setTimeout(() => document.getElementById("chk-titulo")?.focus(), 50);
+        if (mediaAgendaMobile.matches) {
+          wrap.querySelector(".form-more-options").open = true;
+          wrap.querySelector(".checklist-mobile-conteudo").scrollTop = 0;
+          atualizarSalvarChecklistMobile();
+          ajustarViewportFormularioMobile();
+          document.getElementById("btn-fechar-form-checklist").focus({ preventScroll: true });
+        } else {
+          setTimeout(() => document.getElementById("chk-titulo")?.focus(), 50);
+        }
       }
     }
 
@@ -564,11 +573,15 @@
         || (repete && !edicaoAgendaMobile && !document.getElementById("agenda-repetir-ate").value);
     }
 
+    function atualizarEstadoGravacaoFormulario(form, botao, salvando) {
+      form.dataset.salvando = String(salvando);
+      botao.textContent = salvando ? "Salvando…" : "Salvar";
+      form.setAttribute("aria-busy", String(salvando));
+    }
+
     function marcarGravacaoAgendaMobile(salvando) {
       const form = document.getElementById("form-agenda");
-      form.dataset.salvando = String(salvando);
-      form.querySelector("#btn-salvar-compromisso").textContent = salvando ? "Salvando…" : "Salvar";
-      form.setAttribute("aria-busy", String(salvando));
+      atualizarEstadoGravacaoFormulario(form, document.getElementById("btn-salvar-compromisso"), salvando);
       atualizarFormularioAgendaMobile();
     }
 
@@ -627,21 +640,21 @@
       return true;
     }
 
-    let estadoPainelAgendaMobile = null;
+    let estadoPainelFormularioMobile = null;
 
-    function posicionarPainelAgendaMobile(wrap, abrir) {
-      if (abrir && !estadoPainelAgendaMobile) {
-        estadoPainelAgendaMobile = {
-          pai: wrap.parentNode, proximo: wrap.nextSibling, rolagem: window.scrollY,
+    function posicionarPainelFormularioMobile(wrap, abrir) {
+      if (abrir && !estadoPainelFormularioMobile) {
+        estadoPainelFormularioMobile = {
+          wrap, pai: wrap.parentNode, proximo: wrap.nextSibling, rolagem: window.scrollY,
         };
         document.body.style.setProperty("--agenda-scroll-top", `${-window.scrollY}px`);
         document.body.append(wrap);
         document.getElementById("app-shell").inert = true;
         document.documentElement.classList.add("agenda-modal-aberto");
         document.body.classList.add("agenda-modal-aberto");
-      } else if (!abrir && estadoPainelAgendaMobile) {
-        const { pai, proximo, rolagem } = estadoPainelAgendaMobile;
-        estadoPainelAgendaMobile = null;
+      } else if (!abrir && estadoPainelFormularioMobile?.wrap === wrap) {
+        const { pai, proximo, rolagem } = estadoPainelFormularioMobile;
+        estadoPainelFormularioMobile = null;
         pai.insertBefore(wrap, proximo);
         document.getElementById("app-shell").inert = false;
         document.body.classList.remove("agenda-modal-aberto");
@@ -655,10 +668,10 @@
       }
     }
 
-    function rolarCampoAgendaMobile() {
+    function rolarCampoFormularioMobile() {
       const campo = document.activeElement;
-      const conteudo = campo?.closest(".agenda-mobile-conteudo");
-      if (!estadoPainelAgendaMobile || !conteudo) return;
+      const conteudo = campo?.closest(".agenda-mobile-conteudo, .checklist-mobile-conteudo");
+      if (!estadoPainelFormularioMobile || !conteudo) return;
       const area = conteudo.getBoundingClientRect();
       const campoRect = campo.getBoundingClientRect();
       if (campoRect.bottom > area.bottom) {
@@ -668,9 +681,9 @@
       }
     }
 
-    function ajustarViewportAgendaMobile() {
-      if (!estadoPainelAgendaMobile) return;
-      const wrap = document.getElementById("agenda-form-wrap");
+    function ajustarViewportFormularioMobile() {
+      if (!estadoPainelFormularioMobile) return;
+      const wrap = estadoPainelFormularioMobile.wrap;
       const viewport = window.visualViewport;
       if (viewport) {
         wrap.style.setProperty("--agenda-viewport-height", `${viewport.height}px`);
@@ -678,7 +691,7 @@
         wrap.style.setProperty("--agenda-viewport-width", `${viewport.width}px`);
         wrap.style.setProperty("--agenda-viewport-left", `${viewport.offsetLeft}px`);
       }
-      requestAnimationFrame(rolarCampoAgendaMobile);
+      requestAnimationFrame(rolarCampoFormularioMobile);
     }
 
     function vincularFormularioAgendaMobile() {
@@ -701,22 +714,34 @@
       });
       form.addEventListener("input", atualizarFormularioAgendaMobile);
       form.addEventListener("change", atualizarFormularioAgendaMobile);
-      form.addEventListener("focusin", () => {
-        registrar();
-        if (estadoPainelAgendaMobile) requestAnimationFrame(rolarCampoAgendaMobile);
-      });
-      const wrap = document.getElementById("agenda-form-wrap");
-      wrap.addEventListener("touchmove", evento => {
-        if (estadoPainelAgendaMobile && evento.touches.length === 1
-          && !evento.target.closest(".agenda-mobile-conteudo") && evento.cancelable) {
-          evento.preventDefault();
-        }
-      }, { passive: false });
-      mediaAgendaMobile.addEventListener("change", () => {
-        if (wrap.classList.contains("open")) toggleFormAgenda(false);
-      });
-      window.visualViewport?.addEventListener("resize", ajustarViewportAgendaMobile);
-      window.visualViewport?.addEventListener("scroll", ajustarViewportAgendaMobile);
+      form.addEventListener("focusin", registrar);
+    }
+
+    function vincularPaineisFormularioMobile() {
+      document.getElementById("chk-titulo").addEventListener("input", atualizarSalvarChecklistMobile);
+      for (const [id, fechar] of [
+        ["agenda-form-wrap", toggleFormAgenda], ["checklist-form-wrap", toggleFormChecklist],
+      ]) {
+        const wrap = document.getElementById(id);
+        wrap.addEventListener("focusin", () => {
+          if (estadoPainelFormularioMobile?.wrap === wrap) requestAnimationFrame(rolarCampoFormularioMobile);
+        });
+        wrap.addEventListener("touchmove", evento => {
+          if (estadoPainelFormularioMobile?.wrap === wrap && evento.touches.length === 1
+            && !evento.target.closest(".agenda-mobile-conteudo, .checklist-mobile-conteudo") && evento.cancelable) {
+            evento.preventDefault();
+          }
+        }, { passive: false });
+        mediaAgendaMobile.addEventListener("change", () => {
+          if (wrap.classList.contains("open")) fechar(false);
+          if (id === "checklist-form-wrap" && !mediaAgendaMobile.matches
+            && document.getElementById("form-checklist").dataset.salvando !== "true") {
+            document.getElementById("btn-salvar-rotina").disabled = false;
+          }
+        });
+      }
+      window.visualViewport?.addEventListener("resize", ajustarViewportFormularioMobile);
+      window.visualViewport?.addEventListener("scroll", ajustarViewportFormularioMobile);
     }
 
     function toggleFormAgenda(forceOpen = null, tarefa = null, scope = "single") {
@@ -728,7 +753,7 @@
       wrap.hidden = !abrir;
       wrap.classList.toggle("open", abrir);
       atualizarBloqueioRolagemFundo();
-      posicionarPainelAgendaMobile(wrap, abrir && mediaAgendaMobile.matches);
+      posicionarPainelFormularioMobile(wrap, abrir && mediaAgendaMobile.matches);
       btn.classList.toggle("is-open", abrir);
       btn.setAttribute("aria-expanded", abrir ? "true" : "false");
       btn.setAttribute("aria-label", abrir ? "Fechar formulário de compromisso" : "Novo compromisso");
@@ -747,7 +772,7 @@
       if (abrir && mediaAgendaMobile.matches) {
         prepararFormularioAgendaMobile(calendarioDiaSelecionadoISO, tarefa, scope);
         wrap.querySelector(".agenda-mobile-conteudo").scrollTop = 0;
-        ajustarViewportAgendaMobile();
+        ajustarViewportFormularioMobile();
         document.getElementById("btn-fechar-form-agenda").focus({ preventScroll: true });
       } else if (abrir) {
         atualizarCategoriaAgendaUI();
@@ -790,8 +815,18 @@
     }
 
     // ── SALVAR ROTINA (form) ──────────────────────────────────────
+    function atualizarSalvarChecklistMobile() {
+      if (!mediaAgendaMobile.matches) return;
+      const form = document.getElementById("form-checklist");
+      document.getElementById("btn-salvar-rotina").disabled =
+        form.dataset.salvando === "true" || !document.getElementById("chk-titulo").value.trim();
+    }
+
     async function salvarNovaRotinaChecklist(e) {
       e.preventDefault();
+      const form = e.currentTarget;
+      const mobile = mediaAgendaMobile.matches;
+      if (form.dataset.salvando === "true") return;
       const titulo  = document.getElementById("chk-titulo").value.trim();
       const categoria = document.getElementById("chk-categoria")?.value || "PROFISSIONAL";
       const contexto  = document.getElementById("chk-local").value.trim();
@@ -799,6 +834,7 @@
       const freq    = document.getElementById("chk-frequencia").value;
       if (!titulo) return;
       const btn=document.getElementById("btn-salvar-rotina"); btn.disabled=true;
+      if (mobile) atualizarEstadoGravacaoFormulario(form, btn, true);
       try {
         const res=await fetch(API+"/checklist_criar?"+new URLSearchParams({titulo,origem,frequencia:freq}),{method:"POST",headers:authHeaders()});
         if (respostaDemoCancelada(res)) return;
@@ -813,7 +849,11 @@
         toggleFormChecklist(false);
         await carregarChecklistHoje(); await carregarChecklistGeral(); await carregarPessoalLista();
       } catch(e){console.error(e); await modal.alerta("Erro de conexão.","Erro");}
-      finally{btn.disabled=false;}
+      finally {
+        if (mobile) atualizarEstadoGravacaoFormulario(form, btn, false);
+        if (mediaAgendaMobile.matches) atualizarSalvarChecklistMobile();
+        else btn.disabled = false;
+      }
     }
 
     // ── NOVA ROTINA RÁPIDA ────────────────────────────────────────
