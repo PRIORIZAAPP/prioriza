@@ -1192,8 +1192,7 @@
       const feriados = document.getElementById("agenda-mobile-feriados");
       feriados.replaceChildren(...feriadosDaAgendaMobile(calendarioDiaSelecionadoISO).map((nome) => {
         const aviso = document.createElement("p");
-        aviso.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4m8-4v4"/></svg>';
-        aviso.append(`Feriado oficial · ${nome}`);
+        aviso.textContent = nome;
         return aviso;
       }));
 
