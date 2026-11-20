@@ -155,6 +155,9 @@
     }
 
     :is(.agenda-titulo, .check-titulo) {
+      /* O papel de botao nao deve alongar a area visivel do titulo. */
+      min-width: 0;
+      min-height: 0;
       display: -webkit-box;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 2;
@@ -190,18 +193,42 @@
   }
 
   #screen-hoje #hoje-agenda-card {
+    .agenda-item {
+      display: grid;
+      grid-template-columns: 44px max-content minmax(0, 1fr) auto;
+      min-height: 50px;
+    }
+
+    .agenda-titulo { line-height: 1.3; }
+
+    .agenda-meta {
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .agenda-item:has(.agenda-titulo[aria-expanded="true"]) .agenda-meta {
+      white-space: normal;
+    }
+
+    .timeline-menu-trigger {
+      display: grid;
+      place-items: center;
+    }
+
     .agenda-horario {
       width: max-content;
       font-size: 12px;
       white-space: nowrap;
     }
 
-    .agenda-item.feito .agenda-titulo {
+    .agenda-item:has(.agenda-status-btn.feito) .agenda-titulo {
       color: #6b7280;
       text-decoration: line-through;
     }
 
-    .agenda-item.feito .agenda-tag:is(.prio1, .prio2, .prio3) { display: none; }
+    .agenda-item:has(.agenda-status-btn.feito) .agenda-tag:is(.prio1, .prio2, .prio3) { display: none; }
   }
 
   #screen-hoje #hoje-checklist-card {

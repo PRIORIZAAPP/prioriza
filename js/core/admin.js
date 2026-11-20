@@ -1814,7 +1814,7 @@
       return true;
     }
 
-    function habilitarTituloCompletoHoje(titulo) {
+    function habilitarTituloCompletoHoje(titulo, metadados = []) {
       if (!window.matchMedia("(max-width: 767px)").matches) return;
       titulo.tabIndex = 0;
       titulo.setAttribute("role", "button");
@@ -1822,7 +1822,8 @@
       const alternar = (evento) => {
         evento.stopPropagation();
         const expandido = titulo.getAttribute("aria-expanded") === "true";
-        if (!expandido && titulo.scrollHeight <= titulo.clientHeight) return;
+        if (!expandido && titulo.scrollHeight <= titulo.clientHeight &&
+            !Array.from(metadados).some((el) => el.scrollWidth > el.clientWidth)) return;
         titulo.setAttribute("aria-expanded", String(!expandido));
       };
       titulo.addEventListener("click", alternar);
@@ -2333,10 +2334,7 @@
 
     function definirEstadoVisualAgendaHoje(itemEl, bolinhaEl, status) {
       const statusAtual = status || "pendente";
-      if (itemEl) {
-        itemEl.classList.toggle("cancelada", ehStatusCancelada(statusAtual));
-        itemEl.classList.toggle("feito", ehStatusFeito(statusAtual));
-      }
+      if (itemEl) itemEl.classList.toggle("cancelada", ehStatusCancelada(statusAtual));
       if (!bolinhaEl) return;
       bolinhaEl.dataset.status = statusAtual;
       bolinhaEl.className = `agenda-status-btn ${statusAtual}`;

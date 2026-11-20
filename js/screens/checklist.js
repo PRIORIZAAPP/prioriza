@@ -1,11 +1,11 @@
     "use strict";
 
     // ── CHECKLIST: status ─────────────────────────────────────────
-    async function atualizarStatusChecklist(id, novoStatus) {
+    async function atualizarStatusChecklist(id, novoStatus, incluirItem = false) {
       try {
         const res = await fetch(API+"/checklist_status?"+new URLSearchParams({item_id:String(id),status:novoStatus}),{method:"POST",headers:authHeaders()});
         if (!res.ok) throw new Error("HTTP " + res.status);
-        return await res.json();
+        return incluirItem ? await res.json() : true;
       } catch(e){console.error(e); return false;}
     }
 
@@ -97,15 +97,19 @@
           const executarAcaoChecklistHoje = async (novoStatus) => {
             const statusAnterior = item.status || "pendente";
             definirEstadoVisualChecklistHoje(div, bolinha, novoStatus);
-            const atualizado = await atualizarStatusChecklist(item.id, novoStatus);
+            const mobile = window.matchMedia("(max-width: 767px)").matches;
+            const atualizado = await atualizarStatusChecklist(item.id, novoStatus, mobile);
             if (!atualizado) {
               definirEstadoVisualChecklistHoje(div, bolinha, statusAnterior);
               return;
             }
-            Object.assign(item, atualizado, { status: novoStatus });
-            actions.querySelector(".check-badge")?.remove();
-            const badgeNovo = criarBadgeChecklistElemento(obterBadgeChecklistHoje(item, novoStatus));
-            if (badgeNovo) actions.prepend(badgeNovo);
+            item.status = novoStatus;
+            if (mobile) {
+              Object.assign(item, atualizado);
+              actions.querySelector(".check-badge")?.remove();
+              const badgeNovo = criarBadgeChecklistElemento(obterBadgeChecklistHoje(item, item.status));
+              if (badgeNovo) actions.prepend(badgeNovo);
+            }
             await atualizarResumoBar();
             sincronizarChecklistHojeEmSegundoPlano();
           };
