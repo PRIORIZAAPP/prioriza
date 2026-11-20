@@ -916,11 +916,12 @@
       btnCancel.addEventListener("click", () => { _fechar(); if (_resolve) _resolve({ ok: false, valor: "" }); });
       overlay.addEventListener("click", (e) => { if (e.target === overlay) { _fechar(); if (_resolve) _resolve({ ok: false, valor: "" }); } });
 
-      function _abrir({ titulo = "", mensagem = "", tipo = "alerta", placeholder = "", corBotaoOk = "", okText = "", cancelText = "" }) {
+      function _abrir({ titulo = "", mensagem = "", tipo = "alerta", placeholder = "", corBotaoOk = "", okText = "", cancelText = "", detalhesHoje = false }) {
         return new Promise((resolve) => {
           _resolve = resolve;
           tituloEl.textContent = titulo;
           msgEl.textContent    = mensagem;
+          msgEl.classList.toggle("hoje-detalhes-mensagem", detalhesHoje);
           btnOk.className      = "modal-btn-ok" + (corBotaoOk ? " " + corBotaoOk : "");
           btnOk.textContent    = okText || (tipo === "confirmar" ? "Confirmar" : "OK");
           btnCancel.textContent = cancelText || "Cancelar";
@@ -930,12 +931,17 @@
             setTimeout(() => inputEl.focus(), 50);
           } else { inputEl.style.display = "none"; }
           overlay.classList.add("aberto");
+          if (detalhesHoje) {
+            msgEl.closest(".modal-box").scrollTop = 0;
+            btnOk.focus({ preventScroll: true });
+          }
           atualizarBloqueioRolagemFundo();
         });
       }
 
       return {
         async alerta(mensagem, titulo = "Aviso", okText = "") { await _abrir({ titulo, mensagem, tipo: "alerta", okText }); },
+        async detalhesHoje(mensagem, titulo) { await _abrir({ titulo, mensagem, okText: "Fechar", detalhesHoje: true }); },
         async confirmar(mensagem, titulo = "Confirmar", corBotaoOk = "", okText = "", cancelText = "") {
           const r = await _abrir({ titulo, mensagem, tipo: "confirmar", corBotaoOk, okText, cancelText }); return r.ok;
         },
@@ -1680,7 +1686,7 @@
       return "";
     }
 
-    function formatarDataDetalheChecklist(valor, incluirHora = false) {
+    function formatarDataCivilDetalhe(valor, incluirHora = false) {
       if (!valor) return "Não informado";
       const texto = String(valor).trim();
       const iso = normalizarDataParaISO(texto);
@@ -1719,8 +1725,18 @@
         .join("\n");
     }
 
-    async function abrirDetalhesChecklistMobile(item) {
-      if (!window.matchMedia("(max-width: 640px)").matches) return;
+    function formatarInstanteDetalheHoje(valor) {
+      const texto = String(valor || "").trim();
+      if (!texto.includes("T")) return formatarDataCivilDetalhe(texto);
+      const instante = new Date(/(?:Z|[+-]\d{2}:?\d{2})$/i.test(texto) ? texto : `${texto}Z`);
+      if (Number.isNaN(instante.getTime())) return texto;
+      return new Intl.DateTimeFormat("pt-BR", {
+        dateStyle: "long", timeStyle: "short", timeZone: "America/Sao_Paulo",
+      }).format(instante);
+    }
+
+    async function abrirDetalhesChecklistMobile(item, naHome = false) {
+      if (!window.matchMedia(naHome ? "(max-width: 767px)" : "(max-width: 640px)").matches) return;
       const status = normalizarStatusChecklist(item?.status || "pendente");
       const statusTexto = {
         pendente: "Pendente",
@@ -1735,19 +1751,31 @@
       const ultimaConclusao = obterPrimeiroValorChecklist(item, [
         "ultimo_exec", "ultima_conclusao", "concluido_em", "completed_at", "ultima_execucao"
       ]);
+      const formatarRegistro = naHome ? formatarInstanteDetalheHoje : formatarDataCivilDetalhe;
       const linhas = [
         `Nome da tarefa\n${item?.titulo || "Sem título"}`,
         `Área\n${origem}`,
         `Categoria\n${categoria}`,
         `Frequência\n${item?.frequencia || item?.frequencia_interna || "Não informada"}`,
         `Status\n${statusTexto}`,
-        `Data de criação\n${formatarDataDetalheChecklist(criacao, true)}`,
-        `Última conclusão\n${formatarDataDetalheChecklist(ultimaConclusao, true)}`,
+        `Data de criação\n${formatarRegistro(criacao, true)}`,
+        `Última conclusão\n${formatarRegistro(ultimaConclusao, true)}`,
       ];
       if (ehRotinaRecorrenteNaoDiaria(item)) {
         linhas.push(`Próxima recorrência\n${formatarProximaRecorrenciaDetalhe(item)}`);
       }
-      await modal.alerta(linhas.join("\n\n"), "Detalhes do checklist", "Fechar");
+      if (naHome) {
+        const vencimento = item.proxima_execucao;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(vencimento || "")) {
+          linhas.push(`Vencimento\n${formatarDataCivilDetalhe(vencimento)}`);
+          if (estaAtrasadoChecklistHoje(item)) {
+            linhas.push(`Atraso\n${formatarAtrasoChecklistHoje(item)}`);
+          }
+        }
+        await modal.detalhesHoje(linhas.join("\n\n"), "Detalhes do checklist");
+      } else {
+        await modal.alerta(linhas.join("\n\n"), "Detalhes do checklist", "Fechar");
+      }
     }
 
     async function salvarDataRetornoChecklist(item, dataIso) {
@@ -1827,24 +1855,17 @@
       return true;
     }
 
-    function habilitarTituloCompletoHoje(titulo, metadados = []) {
-      if (!window.matchMedia("(max-width: 767px)").matches) return;
-      titulo.tabIndex = 0;
-      titulo.setAttribute("role", "button");
-      titulo.setAttribute("aria-expanded", "false");
-      const alternar = (evento) => {
+    function adicionarAcaoDetalhesHoje(conteudo, titulo, abrirDetalhes) {
+      const botao = document.createElement("button");
+      botao.type = "button";
+      botao.className = "hoje-apenas-mobile hoje-detalhes-acao";
+      botao.setAttribute("aria-label", `Ver detalhes de ${titulo}`);
+      botao.addEventListener("click", async (evento) => {
         evento.stopPropagation();
-        const expandido = titulo.getAttribute("aria-expanded") === "true";
-        if (!expandido && titulo.scrollHeight <= titulo.clientHeight &&
-            !Array.from(metadados).some((el) => el.scrollWidth > el.clientWidth)) return;
-        titulo.setAttribute("aria-expanded", String(!expandido));
-      };
-      titulo.addEventListener("click", alternar);
-      titulo.addEventListener("keydown", (evento) => {
-        if (evento.key !== "Enter" && evento.key !== " ") return;
-        evento.preventDefault();
-        alternar(evento);
+        await abrirDetalhes();
+        botao.focus({ preventScroll: true });
       });
+      conteudo.appendChild(botao);
     }
 
     function fecharMenuAcoes(menu) {

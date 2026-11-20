@@ -84,13 +84,25 @@
           const info = document.createElement("div"); info.className="check-info";
           const tituloEl = document.createElement("div"); tituloEl.className="check-titulo"; tituloEl.innerHTML=`${textoSeguro(item.titulo)}${item?.recorrente ? iconeRecorrenciaHTML() : ""}`;
           const sub = document.createElement("div"); sub.className="check-sub"; sub.textContent=`${item.frequencia} · ${obterRotuloOrigemChecklist(item)}`;
-          habilitarTituloCompletoHoje(tituloEl);
+          const resumoMobile = document.createElement("div");
+          resumoMobile.className = "hoje-apenas-mobile hoje-linha-secundaria";
+          const indicador = document.createElement("span");
+          resumoMobile.appendChild(indicador);
+          resumoMobile.append(` · ${item.categoria || obterRotuloOrigemChecklist(item)}`);
+          const atualizarResumoMobile = () => {
+            const atrasado = estaAtrasadoChecklistHoje(item);
+            indicador.classList.toggle("hoje-atrasado", atrasado);
+            indicador.textContent = atrasado ? "Atrasado" : item.frequencia;
+          };
+          atualizarResumoMobile();
           info.appendChild(tituloEl); info.appendChild(sub);
+          info.appendChild(resumoMobile);
+          adicionarAcaoDetalhesHoje(info, item.titulo, () => abrirDetalhesChecklistMobile(item, true));
           div.appendChild(bolinha); div.appendChild(info);
 
           const actions = document.createElement("div");
           actions.className = "checklist-item-actions";
-          const badgeInicial = criarBadgeChecklistElemento(obterBadgeChecklistHoje(item, status));
+          const badgeInicial = criarBadgeChecklistElemento(obterBadgeChecklist(item, status));
           if (badgeInicial) actions.appendChild(badgeInicial);
 
           const executarAcaoChecklistHoje = async (novoStatus) => {
@@ -105,9 +117,7 @@
             item.status = novoStatus;
             if (mobile) {
               Object.assign(item, atualizado);
-              actions.querySelector(".check-badge")?.remove();
-              const badgeNovo = criarBadgeChecklistElemento(obterBadgeChecklistHoje(item, item.status));
-              if (badgeNovo) actions.prepend(badgeNovo);
+              atualizarResumoMobile();
             }
             await atualizarResumoBar();
             sincronizarChecklistHojeEmSegundoPlano();
@@ -181,11 +191,12 @@
       return null;
     }
 
-    function obterBadgeChecklistHoje(item, status) {
-      if (!window.matchMedia("(max-width: 767px)").matches) return obterBadgeChecklist(item, status);
-      if (status === "feito") return null;
+    function estaAtrasadoChecklistHoje(item) {
+      return item.status !== "feito" && Number.isFinite(item.dias_para_proxima) && item.dias_para_proxima < 0;
+    }
+
+    function formatarAtrasoChecklistHoje(item) {
       const dias = -item.dias_para_proxima;
-      if (!(dias > 0)) return obterBadgeChecklist(item, status);
 
       const vencimento = new Date(`${item.proxima_execucao}T00:00:00Z`);
       let meses = 0;
@@ -200,7 +211,7 @@
       const duracao = meses > 0
         ? `${meses} ${meses === 1 ? "mês" : "meses"}`
         : `${dias} ${dias === 1 ? "dia" : "dias"}`;
-      return { texto: `${duracao} de atraso`, classe: "atrasado" };
+      return `${duracao} de atraso`;
     }
 
     function criarBadgeChecklistElemento(badge) {
