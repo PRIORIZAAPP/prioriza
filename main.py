@@ -10,7 +10,7 @@ import html
 import re
 import secrets
 import calendar
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
 from zoneinfo import ZoneInfo
@@ -40,7 +40,8 @@ except Exception:
 BASE_DIR = Path(__file__).resolve().parent
 TIMEZONE_PADRAO = "America/Sao_Paulo"
 UTC = timezone.utc
-CHECKLIST_HORA_LIBERACAO = int(os.environ.get("CHECKLIST_HORA_LIBERACAO", "5"))
+CHECKLIST_HORA_LIBERACAO = 0
+FUSO_OPERACIONAL = ZoneInfo(TIMEZONE_PADRAO)
 JWT_SECRET = os.environ.get("JWT_SECRET", "prioriza_jwt_dev_only_change_me").strip()
 JWT_EXP_HOURS = int(os.environ.get("JWT_EXP_HOURS", "168"))
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -318,10 +319,11 @@ class ChecklistItem(Base):
     recurrence_ended_at = Column(DateTime, nullable=True)
     criado_em = Column(DateTime, default=lambda: datetime.now(UTC))
 
-    def to_dict(self, incluir_pode_hoje: bool = False):
+    def to_dict(self, incluir_pode_hoje: bool = False, data_operacional: Optional[date] = None):
+        hoje = data_operacional or _data_operacional_atual()
         frequencia_corrigida = frequencia_interna_efetiva(self.frequencia, self.frequencia_interna)
         proxima = calcular_proxima_execucao(self)
-        dias = calcular_dias_para_proxima(self)
+        dias = calcular_dias_para_proxima(self, hoje)
         atraso = dias is not None and dias < 0
         status_exibicao = self.status
         if atraso and self.status != "feito":
@@ -343,11 +345,12 @@ class ChecklistItem(Base):
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
         }
         if incluir_pode_hoje:
-            d["pode_mostrar_hoje"] = calcular_pode_mostrar_hoje(self)
+            d["pode_mostrar_hoje"] = calcular_pode_mostrar_hoje(self, hoje)
+            d["concluido_hoje"] = checklist_concluido_no_dia(self, hoje)
             d["proxima_execucao"] = proxima
             d["dias_para_proxima"] = dias
             d["atrasado"] = atraso
-            d["mensagem_status"] = calcular_mensagem_status_checklist(self)
+            d["mensagem_status"] = calcular_mensagem_status_checklist(self, hoje)
         return d
 
 
@@ -1833,24 +1836,21 @@ def _proxima_data_diaria_visivel(data_ref: date) -> date:
 
 
 def _agora_local() -> datetime:
-    return datetime.now()
+    return datetime.now(FUSO_OPERACIONAL).replace(tzinfo=None)
 
 
 def _data_operacional_atual() -> date:
-    agora = _agora_local()
-    hoje = agora.date()
-    if agora.hour < CHECKLIST_HORA_LIBERACAO:
-        return hoje - timedelta(days=1)
-    return hoje
+    return _agora_local().date()
 
 
-def _inicio_do_dia_operacional() -> datetime:
-    agora = _agora_local()
-    return datetime.combine(agora.date(), time(hour=CHECKLIST_HORA_LIBERACAO))
-
-
-def _dia_operacional_liberado() -> bool:
-    return _agora_local() >= _inicio_do_dia_operacional()
+def checklist_concluido_no_dia(item: ChecklistItem, hoje: date) -> bool:
+    if item.status != "feito" or not item.ultimo_exec:
+        return False
+    # A coluna sem fuso contém o instante UTC gravado na conclusão.
+    execucao = item.ultimo_exec
+    if execucao.tzinfo is None:
+        execucao = execucao.replace(tzinfo=UTC)
+    return execucao.astimezone(FUSO_OPERACIONAL).date() == hoje
 
 
 def _data_base_proxima_execucao(item: ChecklistItem) -> Optional[date]:
@@ -1871,18 +1871,15 @@ def _data_base_proxima_execucao(item: ChecklistItem) -> Optional[date]:
     return _proxima_data_diaria_visivel(base) if freq == "DIARIA" else base
 
 
-def calcular_mensagem_status_checklist(item: ChecklistItem) -> str:
+def calcular_mensagem_status_checklist(item: ChecklistItem, hoje: Optional[date] = None) -> str:
     if not item.ativo:
         return ""
 
-    hoje = _data_operacional_atual()
+    hoje = hoje or _data_operacional_atual()
     if _eh_domingo(hoje):
         return "Folga de domingo"
 
-    if not _dia_operacional_liberado():
-        return f"Disponível às {CHECKLIST_HORA_LIBERACAO:02d}:00"
-
-    dias = calcular_dias_para_proxima(item)
+    dias = calcular_dias_para_proxima(item, hoje)
     if dias is None:
         return ""
     if item.status == "feito" and dias >= 0:
@@ -1920,15 +1917,12 @@ def sincronizar_frequencia_checklist_existente(db: Session, user_id: Optional[in
         db.commit()
 
 
-def calcular_pode_mostrar_hoje(item: ChecklistItem) -> bool:
+def calcular_pode_mostrar_hoje(item: ChecklistItem, hoje: Optional[date] = None) -> bool:
     if not item.ativo or item.recurrence_ended_at:
         return False
 
-    hoje = _data_operacional_atual()
+    hoje = hoje or _data_operacional_atual()
     if _eh_domingo(hoje):
-        return False
-
-    if not _dia_operacional_liberado():
         return False
 
     freq = frequencia_interna_efetiva(item.frequencia, item.frequencia_interna)
@@ -1952,11 +1946,11 @@ def calcular_proxima_execucao(item: ChecklistItem) -> Optional[str]:
     return proxima_data.isoformat()
 
 
-def calcular_dias_para_proxima(item: ChecklistItem) -> Optional[int]:
+def calcular_dias_para_proxima(item: ChecklistItem, hoje: Optional[date] = None) -> Optional[int]:
     proxima = calcular_proxima_execucao(item)
     if not proxima:
         return None
-    return (date.fromisoformat(proxima) - _data_operacional_atual()).days
+    return (date.fromisoformat(proxima) - (hoje or _data_operacional_atual())).days
 
 
 def google_configurado() -> bool:
@@ -3058,7 +3052,8 @@ def desconectar_google(db: Session = Depends(get_db), current_user: User = Depen
 @app.get("/resumo")
 def resumo(data_ref: str = Query(None, description="Data de referência YYYY-MM-DD"), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     sincronizar_frequencia_checklist_existente(db, current_user.id)
-    hoje = data_ref.strip() if data_ref and validar_data_iso(data_ref) else date.today().isoformat()
+    dia_operacional = _data_operacional_atual()
+    hoje = data_ref.strip() if data_ref and validar_data_iso(data_ref) else dia_operacional.isoformat()
 
     tarefas_hoje = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.user_id == current_user.id, Tarefa.data == hoje).all()
     total_hoje = len(tarefas_hoje)
@@ -3067,7 +3062,7 @@ def resumo(data_ref: str = Query(None, description="Data de referência YYYY-MM-
     pendentes_hoje = total_hoje - feitas_hoje - andamento_hoje
 
     checklist_itens = db.query(ChecklistItem).filter(ChecklistItem.ativo == True, ChecklistItem.user_id == current_user.id).all()
-    chk_disponiveis = [i for i in checklist_itens if calcular_pode_mostrar_hoje(i)]
+    chk_disponiveis = [i for i in checklist_itens if calcular_pode_mostrar_hoje(i, dia_operacional)]
     chk_feitos = [i for i in chk_disponiveis if i.status == "feito"]
 
     notas_pendentes = db.query(Note).filter(Note.ativo == True, Note.user_id == current_user.id, Note.status == "pendente").count()
@@ -3797,7 +3792,8 @@ def excluir_tarefa(tarefa_id: int = Query(..., alias="tarefa_id"), db: Session =
 def listar_checklist(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     sincronizar_frequencia_checklist_existente(db, current_user.id)
     itens = db.query(ChecklistItem).filter(ChecklistItem.user_id == current_user.id, ChecklistItem.ativo == True).order_by(ChecklistItem.criado_em, ChecklistItem.id).all()
-    return [i.to_dict(incluir_pode_hoje=True) for i in itens]
+    hoje = _data_operacional_atual()
+    return [i.to_dict(incluir_pode_hoje=True, data_operacional=hoje) for i in itens]
 
 
 @app.post("/checklist_criar")
@@ -3907,10 +3903,12 @@ def resetar_status_checklist(item_id: int = Query(...), db: Session = Depends(ge
     item = db.query(ChecklistItem).filter(ChecklistItem.id == item_id, ChecklistItem.user_id == current_user.id, ChecklistItem.ativo == True).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item não encontrado.")
-    item.status = "pendente"
-    db.commit()
-    db.refresh(item)
-    return item.to_dict(incluir_pode_hoje=True)
+    hoje = _data_operacional_atual()
+    if item.status == "feito" and not checklist_concluido_no_dia(item, hoje) and calcular_pode_mostrar_hoje(item, hoje):
+        item.status = "pendente"
+        db.commit()
+        db.refresh(item)
+    return item.to_dict(incluir_pode_hoje=True, data_operacional=hoje)
 
 
 @app.post("/checklist_excluir")

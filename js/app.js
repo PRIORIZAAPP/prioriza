@@ -1,5 +1,27 @@
     "use strict";
 
+    let diaOperacionalExibido;
+    let timerViradaOperacional;
+
+    function acompanharViradaOperacional() {
+      clearTimeout(timerViradaOperacional);
+      const agora = new Date();
+      const hoje = dataHojeISO(agora);
+      if (diaOperacionalExibido !== hoje) {
+        diaOperacionalExibido = hoje;
+        if (getAuthToken()) {
+          atualizarRelogio();
+          renderizarMiniCalendarioDesktop();
+          recarregarBlocosComRolagem({ checklistHoje: true, checklistGeral: true, agendaHoje: true, resumo: true })
+            .catch((erro) => console.error("[PRIORIZA] Virada do dia operacional:", erro));
+        }
+      }
+      const { hour, minute, second } = componentesDataOperacional(agora);
+      const segundosDesdeMeiaNoite = Number(hour) * 3600 + Number(minute) * 60 + Number(second);
+      const ateMeiaNoite = (86400 - segundosDesdeMeiaNoite) * 1000 - agora.getMilliseconds();
+      timerViradaOperacional = setTimeout(acompanharViradaOperacional, Math.min(ateMeiaNoite, 60 * 60 * 1000));
+    }
+
     // ── INIT ──────────────────────────────────────────────────────
     async function inicializarAppAutenticado() {
       const temaSalvo = (() => {
@@ -18,6 +40,11 @@
 
       atualizarRelogio();
       setInterval(atualizarRelogio, 60000);
+      diaOperacionalExibido = dataHojeISO();
+      acompanharViradaOperacional();
+      window.addEventListener("focus", acompanharViradaOperacional);
+      window.addEventListener("pageshow", acompanharViradaOperacional);
+      document.addEventListener("visibilitychange", acompanharViradaOperacional);
 
       // Navegação
       const navItems=document.querySelectorAll(".bottom-nav .nav-item, .desktop-sidebar .nav-item"); const screens=document.querySelectorAll(".screen");

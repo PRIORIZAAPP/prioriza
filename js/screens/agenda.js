@@ -347,7 +347,6 @@
             if (t.all_day) item.classList.add("all-day");
             if (t.blocked) item.classList.add("blocked");
             if (ehStatusCancelada(t.status)) item.classList.add("cancelada");
-            if (ehStatusFeito(t.status)) item.classList.add("feito");
             if (emLayoutDesktop()) {
               item.style.setProperty("--agenda-accent", obterCorIndicadorHoje(t));
             }
@@ -393,7 +392,6 @@
             const tituloEl = document.createElement("div");
             tituloEl.className = "agenda-titulo";
             tituloEl.innerHTML = `${textoSeguro(t.titulo)}${t?.recorrente ? iconeRecorrenciaHTML() : ""}`;
-            habilitarTituloCompletoHoje(tituloEl);
             conteudo.appendChild(tituloEl);
             if (!emLayoutDesktop()) {
               conteudo.insertAdjacentHTML("beforeend", criarTagHTML(t));
@@ -422,6 +420,7 @@
               }
             }
 
+            habilitarTituloCompletoHoje(tituloEl, conteudo.querySelectorAll(".agenda-meta"));
             item.appendChild(horario);
             item.appendChild(conteudo);
 

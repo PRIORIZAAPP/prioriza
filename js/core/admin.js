@@ -994,7 +994,8 @@
     }
 
     function calcularStatusDoDia(dados = {}, referencia = new Date()) {
-      const hoje = dateToISO(referencia);
+      const { year, month, day, hour, minute } = componentesDataOperacional(referencia);
+      const hoje = `${year}-${month}-${day}`;
       const tarefas = Array.isArray(dados.tarefas) ? dados.tarefas : [];
       const compromissos = Array.isArray(dados.compromissos) ? dados.compromissos : tarefas;
       const checklist = Array.isArray(dados.checklist) ? dados.checklist : [];
@@ -1005,7 +1006,8 @@
         {
           chave: "rotinas",
           rotulo: "Rotinas",
-          total: checklist.filter((item) => item?.ativo !== false && ehStatusFeito(item?.status) && dataLocalDeRegistro(item?.ultimo_exec) === hoje).length,
+          total: checklist.filter((item) => item?.ativo !== false && ehStatusFeito(item?.status) &&
+            (item.concluido_hoje ?? (dataLocalDeRegistro(item.ultimo_exec) === hoje))).length,
         },
         {
           chave: "notas",
@@ -1036,7 +1038,7 @@
       const comHorario = pendentes
         .filter((tarefa) => !tarefa?.all_day && horaParaMinutos(tarefa?.hora_inicio) !== null)
         .sort((a, b) => horaParaMinutos(a?.hora_inicio) - horaParaMinutos(b?.hora_inicio));
-      const agoraMin = referencia.getHours() * 60 + referencia.getMinutes();
+      const agoraMin = Number(hour) * 60 + Number(minute);
       const proximaComHorario = comHorario.find((tarefa) => horaParaMinutos(tarefa?.hora_inicio) >= agoraMin) || comHorario[0] || null;
       const proxima = proximaComHorario || pendentes.find((tarefa) => tarefa?.all_day || horaParaMinutos(tarefa?.hora_inicio) === null) || null;
 
@@ -1177,10 +1179,21 @@
     function dateToISO(d) {
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
     }
-    function dataHojeISO()  { return dateToISO(new Date()); }
-    function dataHojeBR()   { const h=new Date(); return `${String(h.getDate()).padStart(2,"0")}/${String(h.getMonth()+1).padStart(2,"0")}/${h.getFullYear()}`; }
-    function dataHojeLabel(){ const h=new Date(); return `${String(h.getDate()).padStart(2,"0")}/${String(h.getMonth()+1).padStart(2,"0")}`; }
-    function horaAtualCurta(){ const a=new Date(); return `${String(a.getHours()).padStart(2,"0")}:${String(a.getMinutes()).padStart(2,"0")}h`; }
+    const formatoOperacional = new Intl.DateTimeFormat("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+    });
+    function componentesDataOperacional(data = new Date()) {
+      return Object.fromEntries(formatoOperacional.formatToParts(data).map(({ type, value }) => [type, value]));
+    }
+    function dataHojeISO(data = new Date()) {
+      const { year, month, day } = componentesDataOperacional(data);
+      return `${year}-${month}-${day}`;
+    }
+    function dataHojeBR()    { const { day, month, year } = componentesDataOperacional(); return `${day}/${month}/${year}`; }
+    function dataHojeLabel() { const { day, month } = componentesDataOperacional(); return `${day}/${month}`; }
+    function horaAtualCurta(){ const { hour, minute } = componentesDataOperacional(); return `${hour}:${minute}h`; }
 
     function formatarDataCurtaBR(iso) {
       if (!iso) return ""; const [,mes,dia] = iso.split("-"); return `${dia}/${mes}`;
@@ -1814,7 +1827,7 @@
       return true;
     }
 
-    function habilitarTituloCompletoHoje(titulo) {
+    function habilitarTituloCompletoHoje(titulo, metadados = []) {
       if (!window.matchMedia("(max-width: 767px)").matches) return;
       titulo.tabIndex = 0;
       titulo.setAttribute("role", "button");
@@ -1822,7 +1835,8 @@
       const alternar = (evento) => {
         evento.stopPropagation();
         const expandido = titulo.getAttribute("aria-expanded") === "true";
-        if (!expandido && titulo.scrollHeight <= titulo.clientHeight) return;
+        if (!expandido && titulo.scrollHeight <= titulo.clientHeight &&
+            !Array.from(metadados).some((el) => el.scrollWidth > el.clientWidth)) return;
         titulo.setAttribute("aria-expanded", String(!expandido));
       };
       titulo.addEventListener("click", alternar);
@@ -1985,7 +1999,8 @@
     }
 
     function obterDadosTimelineOperacional() {
-      const agoraMin = new Date().getHours() * 60 + new Date().getMinutes();
+      const { hour, minute } = componentesDataOperacional();
+      const agoraMin = Number(hour) * 60 + Number(minute);
       const agendaHoje = agendaDoDiaCombinada(dataHojeISO())
         .filter((t) => t.ativo !== false && !ehStatusCancelada(t.status))
         .map(normalizarTarefaAgenda)
@@ -2333,10 +2348,7 @@
 
     function definirEstadoVisualAgendaHoje(itemEl, bolinhaEl, status) {
       const statusAtual = status || "pendente";
-      if (itemEl) {
-        itemEl.classList.toggle("cancelada", ehStatusCancelada(statusAtual));
-        itemEl.classList.toggle("feito", ehStatusFeito(statusAtual));
-      }
+      if (itemEl) itemEl.classList.toggle("cancelada", ehStatusCancelada(statusAtual));
       if (!bolinhaEl) return;
       bolinhaEl.dataset.status = statusAtual;
       bolinhaEl.className = `agenda-status-btn ${statusAtual}`;
