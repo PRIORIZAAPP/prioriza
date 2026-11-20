@@ -177,6 +177,7 @@
               headers: authHeaders()
             });
 
+            if (respostaAgendaCancelada(res)) return;
             if (!res.ok) {
               await modal.alerta("Não foi possível editar o compromisso.", "Erro");
               return;
@@ -1002,15 +1003,29 @@
 
       const editarCompromisso = async () => {
         const scope = t?.recorrente ? await modal.escolherRecorrencia("este compromisso") : "single";
-        const novoTitulo = await modal.perguntar("Título:","Editar compromisso", t.titulo);
+        const novoTitulo = await modal.perguntar("Título:","Editar compromisso", "", t.titulo);
         if (!novoTitulo?.trim()) return;
-        const novaHora = await modal.perguntar("Hora de início (HH:MM):","Hora", t.hora_inicio||"08:00");
+        const data = await modal.perguntar("Data (AAAA-MM-DD):", "Editar data", "", t.data);
+        if (!data) return;
+        const bloqueio = await modal.perguntar("Digite sim para bloquear o período, ou não para manter livre.", "Bloquear agenda", "", t.blocked ? "sim" : "não");
+        if (bloqueio === null) return;
+        const opcao = bloqueio.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (!["sim", "nao"].includes(opcao)) {
+          await modal.alerta('Informe "sim" ou "não" para o bloqueio.', "Editar compromisso");
+          return;
+        }
+        const novaHora = t.all_day ? "" : await modal.perguntar("Hora de início (HH:MM):","Hora", "", t.hora_inicio || "08:00");
         if (novaHora === null) return;
-        const novaDescricao = await modal.perguntar("Observação (opcional):","Observação", t.descricao||"");
+        const novaDescricao = await modal.perguntar("Observação (opcional):","Observação", "", t.descricao || "");
         if (novaDescricao === null) return;
         try {
-          const params = new URLSearchParams({ titulo: novoTitulo.trim(), hora_inicio: novaHora||"", descricao: novaDescricao||"", scope });
+          const params = new URLSearchParams({
+            titulo: novoTitulo.trim(), data, blocked: String(opcao === "sim"),
+            descricao: novaDescricao, scope,
+          });
+          if (!t.all_day && novaHora !== (t.hora_inicio || "")) params.set("hora_inicio", novaHora);
           const res = await fetch(API+"/tarefas/"+t.id+"?"+params,{method:"PUT",headers:authHeaders()});
+          if (respostaAgendaCancelada(res)) return;
           if (!res.ok) { await modal.alerta("Erro ao editar.","Erro"); return; }
           if (mobile) await carregarAgendaHoje();
           await atualizarAgendaMesEDia();
@@ -1551,7 +1566,7 @@
         const conteudo=text.replace(/^(agendar\s+compromisso|agendar|novo\s+compromisso)\s*/i,"").replace(/depois de amanhã/gi,"").replace(/amanhã/gi,"").replace(/hoje/gi,"").replace(/às\s+\d{1,2}(:\d{2})?/gi,"").replace(/\d{1,2}\s*(h|horas)/gi,"").trim()||text;
         if(!await modal.confirmar(`Criar COMPROMISSO?\n\nÁrea: ${origem||"(vazio)"}\nData:  ${formatarDataCurtaBR(data)}\nHora:  ${hora}\n\n"${conteudo}"`,"Novo Compromisso","verde")) return;
         const res=await fetch(API+"/tarefas?"+new URLSearchParams({titulo:conteudo,origem,data,hora_inicio:hora,duracao_min:"60",prioridade:"2"}),{method:"POST",headers:authHeaders()});
-        if (respostaDemoCancelada(res)) return;
+        if (respostaDemoCancelada(res) || respostaAgendaCancelada(res)) return;
         if(!res.ok){await modal.alerta("Erro ao salvar.","Erro");return;}
         await carregarAgendaHoje(); await atualizarAgendaMesEDia(); if(origem==="PESSOAL") await carregarPessoalLista();
         await modal.alerta("Compromisso salvo.","Sucesso"); return;
@@ -1563,7 +1578,7 @@
         const origem=lower.includes("pessoal")?"PESSOAL":"";
         if(!await modal.confirmar(`Adicionar ao CHECKLIST?\n\nÁrea: ${origem||"(vazio)"}\nFreq.: ${freq}\n\n"${conteudo}"`,"Nova Rotina","verde")) return;
         const res=await fetch(API+"/checklist_criar?"+new URLSearchParams({titulo:conteudo,origem,frequencia:freq}),{method:"POST",headers:authHeaders()});
-        if (respostaDemoCancelada(res)) return;
+        if (respostaDemoCancelada(res) || respostaAgendaCancelada(res)) return;
         if(!res.ok){await modal.alerta("Erro ao salvar.","Erro");return;}
         await carregarChecklistHoje(); await carregarChecklistGeral(); if(origem==="PESSOAL") await carregarPessoalLista();
         await modal.alerta("Tarefa adicionada! ✅","Sucesso"); return;

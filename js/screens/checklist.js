@@ -533,7 +533,6 @@
       const duracaoWrap = document.getElementById("agenda-duracao-wrap");
       if (!allDay || !blocked || !duracao || !duracaoWrap) return;
 
-      if (blocked.checked && !allDay.checked) allDay.checked = true;
       const ativoDiaInteiro = allDay.checked;
       duracao.value = ativoDiaInteiro ? "1440" : (duracao.value === "1440" ? "60" : (duracao.value || "60"));
       duracao.disabled = ativoDiaInteiro;

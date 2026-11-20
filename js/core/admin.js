@@ -397,6 +397,70 @@
       }
     }
 
+    const tentativasAgenda = new Map();
+    let filaAvisosAgenda = Promise.resolve();
+
+    function respostaAgendaCancelada(resposta) {
+      return resposta?.headers?.get("X-Prioriza-Agenda-Cancelled") === "1";
+    }
+
+    function mostrarConflitosAgenda(detalhe, edicao) {
+      const linhas = detalhe.conflitos.map(conflito => {
+        const data = formatarDataCurtaBR(conflito.data);
+        const fim = conflito.termina_em && conflito.termina_em !== conflito.data
+          ? ` (${formatarDataCurtaBR(conflito.termina_em)})` : "";
+        const periodo = conflito.all_day ? "Dia inteiro" : `${conflito.hora_inicio}–${conflito.hora_fim}${fim}`;
+        const ocorrencia = conflito.ocorrencia === conflito.data ? "" : ` · ocorrência de ${formatarDataCurtaBR(conflito.ocorrencia)}`;
+        return `${conflito.titulo} — ${periodo} · ${data}${ocorrencia}`;
+      });
+      const assunto = detalhe.conflitos.every(item => item.blocked)
+        ? "Já existe bloqueio para este período:" : "Estes compromissos serão afetados:";
+      const pergunta = edicao ? "Deseja salvar a alteração mesmo assim?" : "Deseja cadastrar este compromisso mesmo assim?";
+      return modal.confirmarConflitoAgenda(
+        `${assunto}\n\n${[...new Set(linhas)].join("\n")}\n\n${pergunta}`,
+        edicao ? "Salvar mesmo assim" : "Cadastrar mesmo assim",
+      );
+    }
+
+    async function gravarAgendaComConfirmacao(url, opts, metodo, rota) {
+      const chave = `${getAuthToken()}\n${metodo}\n${rota}\n${opts.body || ""}`;
+      const emCurso = tentativasAgenda.get(chave);
+      if (emCurso?.promessa) return (await emCurso.promessa).clone();
+      const tentativa = emCurso || { id: Array.from(crypto.getRandomValues(new Uint8Array(16)), n => n.toString(16).padStart(2, "0")).join("") };
+      tentativasAgenda.set(chave, tentativa);
+      const headers = new Headers(opts.headers);
+      headers.set("Idempotency-Key", tentativa.id);
+
+      tentativa.promessa = (async () => {
+        if (tentativa.confirmacao) headers.set("X-Agenda-Confirmacao", tentativa.confirmacao);
+        let resposta = await nativeFetch(url, { ...opts, headers });
+        if (resposta.status !== 409) return resposta;
+        const detalhe = (await resposta.clone().json().catch(() => null))?.detail;
+        if (detalhe?.codigo !== "agenda_conflito") return resposta;
+        const aviso = filaAvisosAgenda.then(() => mostrarConflitosAgenda(detalhe, metodo === "PUT" || rota.includes("/tarefas_editar")));
+        filaAvisosAgenda = aviso.catch(() => false);
+        if (!await aviso) {
+          return new Response(null, { status: 409, headers: { "X-Prioriza-Agenda-Cancelled": "1" } });
+        }
+        tentativa.confirmacao = detalhe.confirmacao;
+        headers.set("X-Agenda-Confirmacao", tentativa.confirmacao);
+        resposta = await nativeFetch(url, { ...opts, headers });
+        return resposta;
+      })();
+      try {
+        const resposta = await tentativa.promessa;
+        if (resposta.status < 500) tentativasAgenda.delete(chave);
+        return resposta.clone();
+      } finally {
+        tentativa.promessa = null;
+        // Mantém a chave em falhas de rede para a próxima tentativa do mesmo formulário.
+        if (tentativasAgenda.size > 50) {
+          const antiga = [...tentativasAgenda].find(([, valor]) => !valor.promessa);
+          if (antiga) tentativasAgenda.delete(antiga[0]);
+        }
+      }
+    }
+
     async function apiFetch(url, options = {}) {
       if (!urlPertenceApi(url)) {
         return nativeFetch(url, options);
@@ -420,8 +484,12 @@
         }
         url = adicionarConversaoDemoNaUrl(url, moduloConversao);
       }
-      const resposta = await nativeFetch(url, opts);
       const rota = obterUrlRecurso(url);
+      const caminho = new URL(rota, window.location.href).pathname;
+      const metodo = String(opts.method || "GET").toUpperCase();
+      const gravaAgenda = (metodo === "POST" && ["/tarefas", "/tarefas_editar", "/google/calendar/events"].includes(caminho))
+        || (metodo === "PUT" && /^\/(tarefas\/\d+|google\/calendar\/events\/[^/]+)$/.test(caminho));
+      const resposta = gravaAgenda ? await gravarAgendaComConfirmacao(url, opts, metodo, rota) : await nativeFetch(url, opts);
       const ignorar401 = rota.includes("/auth/login") || rota.includes("/auth/register") || rota.includes("/auth/forgot-password") || rota.includes("/auth/reset-password");
       if (resposta.status === 401 && !ignorar401) {
         handleUnauthorized();
@@ -916,21 +984,34 @@
       btnCancel.addEventListener("click", () => { _fechar(); if (_resolve) _resolve({ ok: false, valor: "" }); });
       overlay.addEventListener("click", (e) => { if (e.target === overlay) { _fechar(); if (_resolve) _resolve({ ok: false, valor: "" }); } });
 
-      function _abrir({ titulo = "", mensagem = "", tipo = "alerta", placeholder = "", corBotaoOk = "", okText = "", cancelText = "", detalhesHoje = false }) {
+      overlay.addEventListener("keydown", evento => {
+        if (evento.key === "Escape" && overlay.classList.contains("conflito-agenda")) {
+          evento.preventDefault();
+          evento.stopPropagation();
+          btnCancel.click();
+        }
+      });
+
+      function _abrir({ titulo = "", mensagem = "", tipo = "alerta", placeholder = "", valorInicial = "", corBotaoOk = "", okText = "", cancelText = "", detalhesHoje = false, conflitoAgenda = false }) {
         return new Promise((resolve) => {
           _resolve = resolve;
           tituloEl.textContent = titulo;
           msgEl.textContent    = mensagem;
-          msgEl.classList.toggle("hoje-detalhes-mensagem", detalhesHoje);
+          msgEl.classList.toggle("hoje-detalhes-mensagem", detalhesHoje || conflitoAgenda);
+          overlay.classList.toggle("conflito-agenda", conflitoAgenda);
           btnOk.className      = "modal-btn-ok" + (corBotaoOk ? " " + corBotaoOk : "");
           btnOk.textContent    = okText || (tipo === "confirmar" ? "Confirmar" : "OK");
           btnCancel.textContent = cancelText || "Cancelar";
           btnCancel.style.display = (tipo === "confirmar" || tipo === "prompt") ? "inline-block" : "none";
           if (tipo === "prompt") {
-            inputEl.style.display = "block"; inputEl.value = ""; inputEl.placeholder = placeholder || "";
+            inputEl.style.display = "block"; inputEl.value = valorInicial; inputEl.placeholder = placeholder || "";
             setTimeout(() => inputEl.focus(), 50);
           } else { inputEl.style.display = "none"; }
           overlay.classList.add("aberto");
+          if (conflitoAgenda) {
+            msgEl.closest(".modal-box").scrollTop = 0;
+            btnCancel.focus({ preventScroll: true });
+          }
           if (detalhesHoje) {
             msgEl.closest(".modal-box").scrollTop = 0;
             btnOk.focus({ preventScroll: true });
@@ -942,11 +1023,16 @@
       return {
         async alerta(mensagem, titulo = "Aviso", okText = "") { await _abrir({ titulo, mensagem, tipo: "alerta", okText }); },
         async detalhesHoje(mensagem, titulo) { await _abrir({ titulo, mensagem, okText: "Fechar", detalhesHoje: true }); },
+        async confirmarConflitoAgenda(mensagem, okText) {
+          const resultado = await _abrir({ titulo: "Conflito de agenda", mensagem, tipo: "confirmar",
+            okText, conflitoAgenda: true });
+          return resultado.ok;
+        },
         async confirmar(mensagem, titulo = "Confirmar", corBotaoOk = "", okText = "", cancelText = "") {
           const r = await _abrir({ titulo, mensagem, tipo: "confirmar", corBotaoOk, okText, cancelText }); return r.ok;
         },
-        async perguntar(mensagem, titulo = "", placeholder = "") {
-          const r = await _abrir({ titulo, mensagem, tipo: "prompt", placeholder }); return r.ok ? r.valor : null;
+        async perguntar(mensagem, titulo = "", placeholder = "", valorInicial = "") {
+          const r = await _abrir({ titulo, mensagem, tipo: "prompt", placeholder, valorInicial }); return r.ok ? r.valor : null;
         },
         async escolherRecorrencia(rotuloItem = "este item") {
           const toda = await _abrir({
@@ -2201,6 +2287,7 @@
                 method: "PUT",
                 headers: authHeaders()
               });
+              if (respostaAgendaCancelada(res)) return;
               if (!res.ok) {
                 await modal.alerta("Não foi possível editar o compromisso.", "Erro");
                 return;
