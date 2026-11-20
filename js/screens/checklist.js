@@ -11,7 +11,7 @@
 
     // ── CHECKLIST: reset automático ───────────────────────────────
     async function resetarItensVencidos(itens) {
-      const lista = itens.filter(i => i.pode_mostrar_hoje===true && i.status==="feito");
+      const lista = itens.filter(i => i.pode_mostrar_hoje===true && i.status==="feito" && !i.concluido_hoje);
       if (!lista.length) return false;
       await Promise.all(lista.map(i =>
         fetch(API+"/checklist_reset?"+new URLSearchParams({item_id:String(i.id)}),{method:"POST",headers:authHeaders()}).catch(e=>console.error(e))
@@ -29,7 +29,7 @@
     async function carregarChecklistHoje() {
       const container = document.getElementById("checklist-dia");
       PriorizaUX.renderizarLoading(container, "Carregando rotinas de hoje...");
-      const isWeekend = [0,6].includes(new Date().getDay());
+      const diaDaSemana = new Date(`${dataHojeISO()}T00:00:00Z`).getUTCDay();
 
       try {
         const res = await PriorizaUtils.fetchLatest("checklist-hoje", API+"/checklist",{headers:authHeaders()});
@@ -39,8 +39,8 @@
         itens = (Array.isArray(itens)?itens:[]).filter(i=>i.ativo!==false);
         checklistTodosCache = itens.map((item) => ({ ...item }));
 
-        const houvePeset = await resetarItensVencidos(itens);
-        if (houvePeset) {
+        const houveReset = await resetarItensVencidos(itens);
+        if (houveReset) {
           const r2 = await fetch(API+"/checklist",{headers:authHeaders()});
           if (!r2.ok) throw new Error("Servidor retornou " + r2.status);
           itens = (await r2.json()).filter(i=>i.ativo!==false);
@@ -51,9 +51,8 @@
         const visiveis = itens.filter(i => {
           if (puladas?.has(String(i.id))) return false;
           if (rotinaFoiForcadaHoje(i.id)) return true;
-          if (i.pode_mostrar_hoje===false) return false;
-          if (isWeekend && (i.frequencia_interna||"").toUpperCase()==="DIARIA") return false;
-          return true;
+          if (diaDaSemana === 0 || (diaDaSemana === 6 && (i.frequencia_interna||"").toUpperCase()==="DIARIA")) return false;
+          return i.pode_mostrar_hoje !== false || (i.concluido_hoje && !i.recurrence_ended_at);
         });
 
         checklistHojeCache = visiveis.map((item) => ({ ...item }));

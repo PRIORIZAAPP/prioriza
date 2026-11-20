@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "prioriza-public-v62";
+const CACHE_NAME = "prioriza-public-v63";
 const PUBLIC_ASSETS = [
   "/app",
   "/site.webmanifest",
