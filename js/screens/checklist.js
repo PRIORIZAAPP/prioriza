@@ -625,6 +625,8 @@
         document.body.style.removeProperty("--agenda-scroll-top");
         wrap.style.removeProperty("--agenda-viewport-height");
         wrap.style.removeProperty("--agenda-viewport-top");
+        wrap.style.removeProperty("--agenda-viewport-width");
+        wrap.style.removeProperty("--agenda-viewport-left");
         window.scrollTo({ top: rolagem, behavior: "instant" });
       }
     }
@@ -649,6 +651,8 @@
       if (viewport) {
         wrap.style.setProperty("--agenda-viewport-height", `${viewport.height}px`);
         wrap.style.setProperty("--agenda-viewport-top", `${viewport.offsetTop}px`);
+        wrap.style.setProperty("--agenda-viewport-width", `${viewport.width}px`);
+        wrap.style.setProperty("--agenda-viewport-left", `${viewport.offsetLeft}px`);
       }
       requestAnimationFrame(rolarCampoAgendaMobile);
     }

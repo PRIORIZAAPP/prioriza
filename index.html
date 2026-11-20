@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="./css/layout.css">
     <link rel="stylesheet" href="./css/components.css">
     <link rel="stylesheet" href="./css/screens.css">
-    <link rel="stylesheet" href="./css/responsive.css?v=hotfix-059-1">
+    <link rel="stylesheet" href="./css/responsive.css?v=hotfix-059-2">
   </head>
   <body>
 
@@ -462,10 +462,10 @@
                         <label for="agenda-titulo">Título</label>
                         <input id="agenda-titulo" type="text" placeholder="Ex: Reunião equipe, Fórum gestão..." required />
                       </div>
-                      <div class="form-grid agenda-form-datetime" style="margin-top:8px">
+                      <div class="form-grid agenda-form-datetime" style="margin-top:var(--agenda-form-date-gap, 8px)">
                         <div><label for="agenda-data">Data</label><div class="agenda-data-nativa"><input id="agenda-data" type="date" /><span class="agenda-form-mobile agenda-data-formatada" aria-hidden="true"></span></div></div>
-                        <div class="agenda-form-horario"><label for="agenda-hora"><span class="agenda-form-desktop">Hora início</span><span class="agenda-form-mobile">Início</span></label><input id="agenda-hora" type="time" value="08:00" /></div>
-                        <div class="agenda-form-mobile agenda-form-horario"><label for="agenda-hora-fim">Término</label><input id="agenda-hora-fim" type="time" value="09:00" /></div>
+                        <div class="agenda-form-horario"><label for="agenda-hora"><span class="agenda-form-desktop">Hora início</span><span class="agenda-form-mobile">Início</span></label><div class="agenda-hora-nativa"><input id="agenda-hora" type="time" value="08:00" /></div></div>
+                        <div class="agenda-form-mobile agenda-form-horario"><label for="agenda-hora-fim">Término</label><div class="agenda-hora-nativa"><input id="agenda-hora-fim" type="time" value="09:00" /></div></div>
                         <small id="agenda-form-virada" class="agenda-form-mobile agenda-form-virada" hidden>Término no dia seguinte.</small>
                       </div>
                       <div class="agenda-quick-toggles" aria-label="Opções rápidas do compromisso">
@@ -1460,7 +1460,7 @@
     <script data-prioriza-module="core" src="./js/core/admin.js?v=sprint-058"></script>
     <script data-prioriza-module="areas" src="./js/core/areas.js?v=sprint-059"></script>
     <script data-prioriza-module="agenda" src="./js/screens/agenda.js?v=sprint-059"></script>
-    <script data-prioriza-module="checklist" src="./js/screens/checklist.js?v=hotfix-059-1"></script>
+    <script data-prioriza-module="checklist" src="./js/screens/checklist.js?v=hotfix-059-2"></script>
     <script data-prioriza-module="core" src="./js/screens/workspace.js?v=sprint-059"></script>
     <script data-prioriza-module="autenticacao" src="./js/core/auth.js"></script>
     <script data-prioriza-module="experiencia" src="./js/core/experience.js"></script>
