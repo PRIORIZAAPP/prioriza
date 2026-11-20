@@ -254,7 +254,7 @@
       metaTexto.textContent = metaPartes.join(" • ");
       sub.appendChild(metaTexto);
       const retornoTexto = formatarRetornoChecklist(item);
-      const retornoMobileTexto = formatarRetornoChecklistMobile(item);
+      const retornoMobileTexto = formatarRetornoChecklistMobile(item, true);
       let retornoEl = null;
       if (retornoTexto) {
         retornoEl = document.createElement("span");
@@ -266,6 +266,23 @@
 
       info.appendChild(tituloEl);
       info.appendChild(sub);
+      const metaMobile = document.createElement("div");
+      metaMobile.className = "check-sub-mobile";
+      const retornoAtrasado = item.atrasado === true || estaAtrasadoChecklistHoje(item);
+      const dadosMobile = [
+        [item.frequencia, "check-mobile-frequencia"],
+        [retornoMobileTexto, "check-mobile-retorno" + (status !== "feito" && retornoAtrasado ? " atrasado" : "")],
+        [obterRotuloOrigemChecklist(item), "check-mobile-area"],
+      ];
+      for (const [texto, classe] of dadosMobile) {
+        if (!texto) continue;
+        const parte = document.createElement("span");
+        parte.className = classe;
+        parte.textContent = texto;
+        metaMobile.appendChild(parte);
+      }
+      info.appendChild(metaMobile);
+
 
       const actions = document.createElement("div");
       actions.className = "checklist-item-actions";
@@ -318,7 +335,7 @@
       });
 
       div.addEventListener("click", async (evento) => {
-        if (!window.matchMedia("(max-width: 640px)").matches) return;
+        if (!window.matchMedia("(max-width: 767px)").matches) return;
         if (evento.target.closest("button, input, select, textarea, a, .check-status")) return;
         await abrirDetalhesChecklistMobile(item);
       });
@@ -354,7 +371,7 @@
         feito: "Concluídas",
       };
 
-      if (!grupos[checklistGeralAbaAtiva]?.length) {
+      if (!grupos[checklistGeralAbaAtiva]?.length && Object.values(grupos).some(itens => itens.length)) {
         if (grupos.pendente.length) checklistGeralAbaAtiva = "pendente";
         else if (grupos.em_andamento.length) checklistGeralAbaAtiva = "em_andamento";
         else checklistGeralAbaAtiva = "feito";
@@ -421,6 +438,9 @@
         if (filtroOrigem) itens = itens.filter(i => (i.origem || "").toUpperCase().includes(filtroOrigem.toUpperCase()));
 
         if (itens.length === 0) {
+          if (window.matchMedia("(max-width: 767px)").matches) {
+            atualizarTabsChecklist({ pendente: [], em_andamento: [], feito: [] });
+          }
           PriorizaUX.renderizarEstado(container, {
             titulo: (filtroFreq || filtroOrigem) ? "Nenhum resultado para os filtros selecionados." : "Nenhum item encontrado.",
             descricao: (filtroFreq || filtroOrigem) ? "Ajuste os filtros para visualizar outros itens." : "Os itens do checklist aparecerão aqui."

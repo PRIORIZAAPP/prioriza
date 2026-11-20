@@ -1749,8 +1749,8 @@
       }
     }
 
-    function formatarRetornoChecklistMobile(item) {
-      if (!ehRotinaRecorrenteNaoDiaria(item)) return "";
+    function formatarRetornoChecklistMobile(item, incluirDiaria = false) {
+      if (!ehRotinaRecorrenteNaoDiaria(item) && !(incluirDiaria && item?.recorrente)) return "";
       const dataIso = obterDataRetornoChecklist(item);
       if (!dataIso) return "";
       if (dataIso === dataHojeISO()) return "↻ Hoje";
@@ -1822,7 +1822,7 @@
     }
 
     async function abrirDetalhesChecklistMobile(item, naHome = false) {
-      if (!window.matchMedia(naHome ? "(max-width: 767px)" : "(max-width: 640px)").matches) return;
+      if (!window.matchMedia("(max-width: 767px)").matches) return;
       const status = normalizarStatusChecklist(item?.status || "pendente");
       const statusTexto = {
         pendente: "Pendente",
