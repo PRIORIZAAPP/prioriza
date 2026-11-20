@@ -577,14 +577,16 @@
       const fim = new Date(inicio);
       fim.setDate(inicio.getDate() + 41);
       const params = new URLSearchParams({ data_from: dateToISO(inicio), data_to: dateToISO(fim) });
+      const mesAindaVisivel = () => !mediaAgendaMobile.matches
+        || (calendarioMesAtual.getFullYear() === ano && calendarioMesAtual.getMonth() === mes);
       try {
         const res = await fetch(API + "/marcos-operacionais?" + params.toString(), { headers: authHeaders() });
         const dados = await res.json().catch(() => []);
         if (!res.ok) throw new Error(dados?.detail || "Não foi possível carregar os Marcos Operacionais.");
-        marcosOperacionaisCache = Array.isArray(dados) ? dados : [];
+        if (mesAindaVisivel()) marcosOperacionaisCache = Array.isArray(dados) ? dados : [];
       } catch (e) {
         console.error(e);
-        marcosOperacionaisCache = [];
+        if (mesAindaVisivel()) marcosOperacionaisCache = [];
       }
     }
 
@@ -621,6 +623,7 @@
         const [ano, mes] = payload.data.split("-").map(Number);
         calendarioMesAtual = new Date(ano, mes - 1, 1);
         toggleFormMarcoOperacional(false);
+        if (mediaAgendaMobile.matches) mostrarVisaoAgendaMobile("dia");
         await carregarMarcosOperacionaisMes();
         montarCalendarioMes();
         preencherAgendaDiaSelecionado();
@@ -728,6 +731,7 @@
       const [ano, mes] = String(dataMarco).split("-").map(Number);
       if (!ano || !mes) return;
       limparBuscaMarcosOperacionais();
+      if (mediaAgendaMobile.matches) return selecionarDiaAgendaMobile(dataMarco, true);
       calendarioDiaSelecionadoISO = dataMarco;
       calendarioMesAtual = new Date(ano, mes - 1, 1);
       carregarMarcosOperacionaisMes().then(() => {
@@ -738,8 +742,98 @@
     }
 
     // ── CALENDÁRIO ────────────────────────────────────────────────
-    let calendarioMesAtual          = new Date();
+    const mediaAgendaMobile = window.matchMedia("(max-width: 767px)");
+
+    function mostrarVisaoAgendaMobile(visao, devolverFoco = false) {
+      const tela = document.getElementById("screen-agenda");
+      tela.dataset.agendaVisao = visao;
+      fecharMenusAcoesDesktop();
+      if (telaAtiva("screen-agenda")) irParaTopoSemAnimacao();
+      if (!devolverFoco) return;
+      const alvo = visao === "dia"
+        ? document.getElementById("agenda-mobile-dia-label")
+        : tela.querySelector(`#calendar-grid [data-iso="${calendarioDiaSelecionadoISO}"]`);
+      alvo?.focus({ preventScroll: true });
+    }
+
+    async function carregarComplementosAgendaMobile() {
+      await Promise.all([carregarMarcosOperacionaisMes(), carregarEventosGoogleAgendaMes(true)]);
+      montarCalendarioMes();
+      preencherAgendaDiaSelecionado();
+    }
+
+    async function selecionarDiaAgendaMobile(iso, abrir = false) {
+      fecharMenusAcoesDesktop();
+      const [ano, mes] = iso.split("-").map(Number);
+      const mudouMes = ano !== calendarioMesAtual.getFullYear() || mes - 1 !== calendarioMesAtual.getMonth();
+      calendarioDiaSelecionadoISO = iso;
+      if (mudouMes) calendarioMesAtual = new Date(ano, mes - 1, 1);
+      montarCalendarioMes();
+      preencherAgendaDiaSelecionado();
+      if (abrir) mostrarVisaoAgendaMobile("dia", true);
+      document.getElementById("agenda-geral-lista").scrollTop = 0;
+      if (mudouMes) await carregarComplementosAgendaMobile();
+    }
+
+    function navegarMesAgendaMobile(delta) {
+      calendarioMesAtual = new Date(calendarioMesAtual.getFullYear(), calendarioMesAtual.getMonth() + delta, 1);
+      montarCalendarioMes();
+      return carregarComplementosAgendaMobile();
+    }
+
+    const feriadosFixosAgendaMobile = {
+      "01-01": "Confraternização Universal",
+      "04-21": "Tiradentes",
+      "05-01": "Dia do Trabalho",
+      "09-07": "Independência do Brasil",
+      "10-12": "Nossa Senhora Aparecida",
+      "11-02": "Finados",
+      "11-15": "Proclamação da República",
+      "12-25": "Natal",
+    };
+
+    function sextaFeiraDaPaixaoISO(ano) {
+      // Computus gregoriano (Meeus/Jones/Butcher), seguido de dois dias a menos.
+      const cicloLunar = ano % 19;
+      const seculo = Math.floor(ano / 100);
+      const anoNoSeculo = ano % 100;
+      const correcaoSolar = Math.floor(seculo / 4);
+      const correcaoLunar = Math.floor((seculo + 8) / 25);
+      const epacta = (19 * cicloLunar + seculo - correcaoSolar
+        - Math.floor((seculo - correcaoLunar + 1) / 3) + 15) % 30;
+      const ajusteSemana = (32 + 2 * (seculo % 4) + 2 * Math.floor(anoNoSeculo / 4)
+        - epacta - (anoNoSeculo % 4)) % 7;
+      const ajustePascal = Math.floor((cicloLunar + 11 * epacta + 22 * ajusteSemana) / 451);
+      const pascoa = epacta + ajusteSemana - 7 * ajustePascal + 114;
+      const data = new Date(0);
+      data.setUTCFullYear(ano, Math.floor(pascoa / 31) - 1, pascoa % 31 - 1);
+      return data.toISOString().slice(0, 10);
+    }
+
+    function feriadosDaAgendaMobile(iso, localidade = {}, feriadosRegionais = []) {
+      const ano = Number(iso.slice(0, 4));
+      const mesDia = iso.slice(5);
+      const fixo = mesDia === "11-20" && ano >= 2024
+        ? "Dia Nacional de Zumbi e da Consciência Negra" : feriadosFixosAgendaMobile[mesDia];
+      const nacional = fixo || (iso === sextaFeiraDaPaixaoISO(ano) ? "Paixão de Cristo" : "");
+      const regionais = feriadosRegionais.filter((feriado) => feriado.data === iso
+        && localidade.uf && feriado.uf === localidade.uf
+        && (!feriado.municipioIBGE || feriado.municipioIBGE === localidade.municipioIBGE));
+      return [...new Set([nacional, ...regionais.map(({ nome }) => nome)].filter(Boolean))];
+    }
+
+    const formatoDiaAgendaMobile = new Intl.DateTimeFormat("pt-BR", {
+      weekday: "long", day: "numeric", month: "long", timeZone: "America/Sao_Paulo",
+    });
+
+    function formatarDiaAgendaMobile(iso) {
+      const texto = formatoDiaAgendaMobile.format(new Date(`${iso}T12:00:00Z`));
+      return texto[0].toUpperCase() + texto.slice(1);
+    }
+
     let calendarioDiaSelecionadoISO = dataHojeISO();
+    let calendarioMesAtual = mediaAgendaMobile.matches
+      ? new Date(`${calendarioDiaSelecionadoISO.slice(0, 7)}-01T12:00:00`) : new Date();
 
     function formatarAgendaDiaExtenso(iso) {
       if (!iso) return "Dia selecionado";
@@ -765,8 +859,8 @@
       return "tema";
     }
 
-    function indicadoresDoDia(iso) {
-      const itens = agendaDoDiaCombinada(iso);
+    function indicadoresDoDia(iso, eventosGoogle) {
+      const itens = agendaDoDiaCombinada(iso, eventosGoogle);
       const indicadores = itens.map(tipoIndicadorCalendario);
       if (marcosOperacionaisCache.some((marco) => marco.ativo !== false && marco.data === iso)) {
         indicadores.unshift("marco");
@@ -798,7 +892,9 @@
       if (!grid || !title) return;
       const ano = calendarioMesAtual.getFullYear();
       const mes = calendarioMesAtual.getMonth();
-      sincronizarDiaSelecionadoComMesAtual();
+      const mobile = mediaAgendaMobile.matches;
+      const eventosGoogle = mobile ? obterEventosGoogleAgendaBrasilia() : undefined;
+      if (!mobile) sincronizarDiaSelecionadoComMesAtual();
       const primeiroDia = new Date(ano, mes, 1);
       const inicio = new Date(ano, mes, 1 - primeiroDia.getDay());
       const hojeISO = dataHojeISO();
@@ -831,7 +927,7 @@
         num.textContent = dia.getDate();
         topo.appendChild(num);
 
-        const indicadores = indicadoresDoDia(iso);
+        const indicadores = indicadoresDoDia(iso, eventosGoogle);
         const excedentes = Math.max(0, indicadores.length - 3);
         if ((emLayoutDesktop() && indicadores.length > 0) || excedentes > 0) {
           const more = document.createElement("span");
@@ -853,9 +949,25 @@
           trilhas.appendChild(barra);
         });
 
+        if (mobile) {
+          cel.dataset.iso = iso;
+          cel.setAttribute("aria-pressed", String(iso === calendarioDiaSelecionadoISO));
+          if (iso === hojeISO) cel.setAttribute("aria-current", "date");
+          const feriados = feriadosDaAgendaMobile(iso);
+          if (feriados.length) {
+            const marcador = document.createElement("span");
+            marcador.className = "agenda-indicador-feriado";
+            marcador.setAttribute("aria-hidden", "true");
+            cel.title = feriados.join(", ");
+            cel.appendChild(marcador);
+          }
+          const registros = indicadores.length ? ` · ${indicadores.length} ${indicadores.length === 1 ? "registro" : "registros"}` : "";
+          cel.setAttribute("aria-label", [formatarDiaAgendaMobile(iso) + registros, ...feriados].join(" · "));
+        }
         cel.appendChild(topo);
         cel.appendChild(trilhas);
         cel.addEventListener("click", async () => {
+          if (mediaAgendaMobile.matches) return selecionarDiaAgendaMobile(iso, true);
           calendarioDiaSelecionadoISO = iso;
           if (dia.getMonth() !== mes) {
             calendarioMesAtual = new Date(dia.getFullYear(), dia.getMonth(), 1);
@@ -870,7 +982,7 @@
       renderizarMiniCalendarioDesktop();
     }
 
-    function criarAcoesCompromissoAgendaDesktop(t, item) {
+    function criarAcoesCompromissoAgenda(t, mobile = false) {
       if ((t.tipo_evento || "") === "google") {
         if (!t.link) return null;
         const link = document.createElement("a");
@@ -880,12 +992,13 @@
         link.rel = "noopener noreferrer";
         link.title = "Abrir no Google Agenda";
         link.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M104 152l72-72" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M136 80h40v40" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 136v48a8 8 0 0 1-8 8H72a8 8 0 0 1-8-8V112a8 8 0 0 1 8-8h48" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-        return link;
+        return mobile ? criarMenuAcoesContextuais({
+          hoje: true,
+          titulo: "Ações do compromisso",
+          ariaLabel: `Ações de ${t.titulo}`,
+          itens: [{ texto: "Abrir no Google Agenda", acao: () => link.click() }],
+        }) : link;
       }
-
-      const cancelarCompromisso = async () => {
-        await cancelarTarefaAgenda(t);
-      };
 
       const editarCompromisso = async () => {
         const scope = t?.recorrente ? await modal.escolherRecorrencia("este compromisso") : "single";
@@ -899,8 +1012,9 @@
           const params = new URLSearchParams({ titulo: novoTitulo.trim(), hora_inicio: novaHora||"", descricao: novaDescricao||"", scope });
           const res = await fetch(API+"/tarefas/"+t.id+"?"+params,{method:"PUT",headers:authHeaders()});
           if (!res.ok) { await modal.alerta("Erro ao editar.","Erro"); return; }
+          if (mobile) await carregarAgendaHoje();
           await atualizarAgendaMesEDia();
-          await carregarAgendaHoje();
+          if (!mobile) await carregarAgendaHoje();
         } catch(e){ console.error(e); await modal.alerta("Erro de conexão.","Erro"); }
       };
 
@@ -914,6 +1028,7 @@
       };
 
       return criarMenuAcoesContextuais({
+        hoje: mobile,
         titulo: "Ações do compromisso",
         ariaLabel: `Ações de ${t.titulo}`,
         itens: [
@@ -951,7 +1066,7 @@
       }
 
       item.appendChild(conteudo);
-      const acoes = criarAcoesCompromissoAgendaDesktop(t, item);
+      const acoes = criarAcoesCompromissoAgenda(t);
       if (acoes) item.appendChild(acoes);
       return item;
     }
@@ -1020,6 +1135,80 @@
       rolarTimelineParaPrimeiroCompromissoDesktop(lista);
     }
 
+    function criarCompromissoAgendaMobile(tarefa) {
+      const item = document.createElement("div");
+      item.className = "agenda-item agenda-item-mobile";
+      if (tarefa.id != null) item.dataset.taskId = String(tarefa.id);
+      const google = tarefa.tipo_evento === "google";
+      const status = tarefa.status || "pendente";
+      const bolinha = document.createElement(google ? "span" : "button");
+      definirEstadoVisualAgendaHoje(item, bolinha, google ? "pendente" : status);
+      if (google) {
+        bolinha.title = "Evento do Google Agenda";
+        bolinha.setAttribute("aria-label", "Evento do Google Agenda");
+      } else {
+        bolinha.type = "button";
+        bolinha.setAttribute("aria-label", `Alterar status de ${tarefa.titulo}`);
+        bolinha.addEventListener("click", async () => {
+          bolinha.disabled = true;
+          try {
+            const novo = proximoStatus(tarefa.status);
+            if (!await atualizarStatusTarefa(tarefa.id, novo)) {
+              await modal.alerta("Não foi possível atualizar o compromisso.", "Erro");
+              return;
+            }
+            tarefa.status = novo;
+            definirEstadoVisualAgendaHoje(item, bolinha, novo);
+            await carregarAgendaHoje();
+            await carregarEventosGoogleAgendaMes(true);
+            montarCalendarioMes();
+          } finally {
+            bolinha.disabled = false;
+          }
+        });
+      }
+
+      const centro = document.createElement("div");
+      centro.className = "agenda-mobile-compromisso";
+      const titulo = document.createElement("div");
+      titulo.className = "agenda-titulo";
+      titulo.textContent = tarefa.titulo;
+      const horario = document.createElement("div");
+      horario.className = "agenda-mobile-horario";
+      horario.textContent = tarefa.all_day || tarefa.hora_inicio === "Dia todo"
+        ? "Dia inteiro" : tarefa.hora_inicio || "Sem horário";
+      centro.append(titulo, horario);
+      adicionarAcaoDetalhesHoje(centro, tarefa.titulo, () => abrirDetalhesAgendaHoje(tarefa));
+
+      item.append(bolinha, centro);
+      const menu = criarAcoesCompromissoAgenda(tarefa, true);
+      if (menu) item.appendChild(menu);
+      return item;
+    }
+
+    function preencherAgendaListaMobile(lista, itensDoDia) {
+      const label = document.getElementById("agenda-mobile-dia-label");
+      label.textContent = formatarDiaAgendaMobile(calendarioDiaSelecionadoISO);
+      const feriados = document.getElementById("agenda-mobile-feriados");
+      feriados.replaceChildren(...feriadosDaAgendaMobile(calendarioDiaSelecionadoISO).map((nome) => {
+        const aviso = document.createElement("p");
+        aviso.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4m8-4v4"/></svg>';
+        aviso.append(`Feriado oficial · ${nome}`);
+        return aviso;
+      }));
+
+      const ordem = (tarefa) => tarefa.all_day || tarefa.hora_inicio === "Dia todo" ? -1 : tarefa.inicio_min ?? 1440;
+      const ordenados = itensDoDia.map(normalizarTarefaAgenda).sort((a, b) => ordem(a) - ordem(b));
+      if (ordenados.length) {
+        lista.replaceChildren(...ordenados.map(criarCompromissoAgendaMobile));
+      } else {
+        const vazio = document.createElement("p");
+        vazio.className = "agenda-mobile-vazia";
+        vazio.textContent = "Nenhum compromisso nesta data.";
+        lista.replaceChildren(vazio);
+      }
+    }
+
     function preencherAgendaDiaSelecionado() {
       const lista = document.getElementById("agenda-geral-lista");
       const label = document.getElementById("agenda-dia-label");
@@ -1027,9 +1216,13 @@
       if (!lista || !label) return;
       posicionarBuscaMarcosAgenda();
       label.textContent = formatarAgendaDiaExtenso(calendarioDiaSelecionadoISO);
-      if (inputData) inputData.value = calendarioDiaSelecionadoISO;
+      if (inputData && (!mediaAgendaMobile.matches || !document.getElementById("agenda-form-wrap").classList.contains("open"))) {
+        inputData.value = calendarioDiaSelecionadoISO;
+      }
       renderizarMarcosDoDia(calendarioDiaSelecionadoISO);
-      const itensDoDia = agendaDoDiaCombinada(calendarioDiaSelecionadoISO);
+      const eventosGoogle = mediaAgendaMobile.matches ? obterEventosGoogleAgendaBrasilia() : undefined;
+      const itensDoDia = agendaDoDiaCombinada(calendarioDiaSelecionadoISO, eventosGoogle);
+      if (mediaAgendaMobile.matches) return preencherAgendaListaMobile(lista, itensDoDia);
       if (itensDoDia.length === 0) {
         lista.innerHTML = '<div class="agenda-dia-vazio"><strong>Nenhum compromisso encontrado.</strong><span>Quando houver algo programado para este dia, ele aparecerá aqui.</span></div>';
         return;
@@ -1063,58 +1256,8 @@
 
         item.appendChild(hor); item.appendChild(con);
 
-        if ((t.tipo_evento || "") === "google") {
-          if (t.link) {
-            const link=document.createElement("a");
-            link.className="agenda-icon-link";
-            link.href=t.link;
-            link.target="_blank";
-            link.rel="noopener noreferrer";
-            link.title="Abrir no Google Agenda";
-            link.innerHTML=`<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M104 152l72-72" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M136 80h40v40" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 136v48a8 8 0 0 1-8 8H72a8 8 0 0 1-8-8V112a8 8 0 0 1 8-8h48" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-            item.appendChild(link);
-          }
-        } else {
-          const cancelarCompromisso = async () => {
-            await cancelarTarefaAgenda(t);
-          };
-
-          const editarCompromisso = async () => {
-            const scope = t?.recorrente ? await modal.escolherRecorrencia("este compromisso") : "single";
-            const novoTitulo = await modal.perguntar("Título:","Editar compromisso", t.titulo);
-            if (!novoTitulo?.trim()) return;
-            const novaHora = await modal.perguntar("Hora de início (HH:MM):","Hora", t.hora_inicio||"08:00");
-            if (novaHora === null) return;
-            const novaDescricao = await modal.perguntar("Observação (opcional):","Observação", t.descricao||"");
-            if (novaDescricao === null) return;
-            try {
-              const params = new URLSearchParams({ titulo: novoTitulo.trim(), hora_inicio: novaHora||"", descricao: novaDescricao||"", scope });
-              const res = await fetch(API+"/tarefas/"+t.id+"?"+params,{method:"PUT",headers:authHeaders()});
-              if (!res.ok) { await modal.alerta("Erro ao editar.","Erro"); return; }
-              await atualizarAgendaMesEDia();
-              await carregarAgendaHoje();
-            } catch(e){ console.error(e); await modal.alerta("Erro de conexão.","Erro"); }
-          };
-
-          const excluirCompromisso = () => {
-            mostrarFlashFull("danger");
-            mostrarToastUndo(
-              `"${t.titulo}" será excluído`,
-              async () => { await excluirTarefa(t.id); await carregarAgendaHoje(); await atualizarAgendaMesEDia(); },
-              () => { /* não faz nada — tarefa NÃO foi excluída ainda */ }
-            );
-          };
-
-          item.appendChild(criarMenuAcoesContextuais({
-            titulo: "Ações do compromisso",
-            ariaLabel: `Ações de ${t.titulo}`,
-            itens: [
-              { texto: "Editar", acao: editarCompromisso },
-              ...(t?.recorrente ? [{ texto: "Finalizar recorrência", acao: () => finalizarRecorrencia(t, "agenda"), danger: true }] : []),
-              { texto: "Excluir", acao: excluirCompromisso, danger: true }
-            ]
-          }));
-        }
+        const acoes = criarAcoesCompromissoAgenda(t);
+        if (acoes) item.appendChild(acoes);
 
         lista.appendChild(item);
       });
@@ -1127,7 +1270,7 @@
         tarefasAgendaCache=(await res.json())||[];
         if (!Array.isArray(tarefasAgendaCache)) tarefasAgendaCache = [];
         await carregarStatusGoogleAgenda();
-        await carregarEventosGoogleAgendaMes();
+        await carregarEventosGoogleAgendaMes(mediaAgendaMobile.matches);
         await carregarMarcosOperacionaisMes();
         montarCalendarioMes();
         preencherAgendaDiaSelecionado();

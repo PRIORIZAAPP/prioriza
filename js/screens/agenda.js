@@ -147,11 +147,22 @@
       };
     }
 
-    function agendaDoDiaCombinada(iso) {
+    function obterEventosGoogleAgendaBrasilia() {
+      const fuso = "America/Sao_Paulo";
+      const instante = (valor) => /T.*(?:Z|[+-]\d{2}:?\d{2})$/i.test(valor || "");
+      return googleAgendaCache.map(t => !t.all_day && instante(t.inicio) ? {
+        ...t,
+        data: formatarDataISOEvento(t.inicio, fuso),
+        hora_inicio: formatarHoraEvento(t.inicio, fuso),
+        hora_fim: instante(t.fim) ? formatarHoraEvento(t.fim, fuso) : t.hora_fim,
+      } : t);
+    }
+
+    function agendaDoDiaCombinada(iso, eventosGoogle = googleAgendaCache) {
       const locais = tarefasAgendaCache
         .filter(t => t.ativo !== false && normalizarDataParaISO(t.data || "") === iso)
         .map(t => ({ ...t, tipo_evento: "prioriza" }));
-      const google = googleAgendaCache
+      const google = eventosGoogle
         .filter(t => t.ativo !== false && normalizarDataParaISO(t.data || "") === iso)
         .map(t => ({ ...t, tipo_evento: "google" }));
       return [...locais, ...google].sort((a, b) => {
@@ -210,14 +221,20 @@
       return googleAgendaStatus;
     }
 
-    async function carregarEventosGoogleAgendaMes() {
+    async function carregarEventosGoogleAgendaMes(incluirBordas = false) {
       if (!googleAgendaStatus.conectado) {
         googleAgendaCache = [];
         return [];
       }
       const { date_from, date_to } = obterFaixaMesAtual();
+      const inicioGrade = addDaysToISO(date_from, -new Date(`${date_from}T12:00:00`).getDay());
       try {
-        const params = new URLSearchParams({ date_from, date_to, max_results: "100" });
+        const params = new URLSearchParams({
+          date_from: incluirBordas ? inicioGrade : date_from,
+          // A faixa da API termina em UTC e o ultimo dia civil pode terminar no dia UTC seguinte.
+          date_to: incluirBordas ? addDaysToISO(inicioGrade, 42) : date_to,
+          max_results: incluirBordas ? "150" : "100",
+        });
         const res = await PriorizaUtils.fetchLatest("agenda-google-mes", API + "/google/calendar/events?" + params.toString(), { headers: authHeaders() });
         if (!res) return googleAgendaCache;
         if (!res.ok) throw new Error("HTTP " + res.status);

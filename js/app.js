@@ -216,11 +216,16 @@
       ajustarCategoriasNotasUI();
       window.addEventListener("resize", ajustarCategoriasNotasUI);
 
-      document.getElementById("btn-cal-prev")?.addEventListener("click",async()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()-1); await carregarMarcosOperacionaisMes(); montarCalendarioMes(); preencherAgendaDiaSelecionado(); });
-      document.getElementById("btn-cal-next")?.addEventListener("click",async()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()+1); await carregarMarcosOperacionaisMes(); montarCalendarioMes(); preencherAgendaDiaSelecionado(); });
+      document.getElementById("btn-cal-prev")?.addEventListener("click",async()=>{ if (mediaAgendaMobile.matches) return navegarMesAgendaMobile(-1); calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()-1); await carregarMarcosOperacionaisMes(); montarCalendarioMes(); preencherAgendaDiaSelecionado(); });
+      document.getElementById("btn-cal-next")?.addEventListener("click",async()=>{ if (mediaAgendaMobile.matches) return navegarMesAgendaMobile(1); calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()+1); await carregarMarcosOperacionaisMes(); montarCalendarioMes(); preencherAgendaDiaSelecionado(); });
       document.getElementById("btn-desktop-mini-prev")?.addEventListener("click",async()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()-1); await carregarMarcosOperacionaisMes(); montarCalendarioMes(); preencherAgendaDiaSelecionado(); });
       document.getElementById("btn-desktop-mini-next")?.addEventListener("click",async()=>{ calendarioMesAtual.setMonth(calendarioMesAtual.getMonth()+1); await carregarMarcosOperacionaisMes(); montarCalendarioMes(); preencherAgendaDiaSelecionado(); });
-      document.getElementById("btn-voltar-calendario")?.addEventListener("click",()=>{ document.getElementById("calendar-container").style.display="block"; document.getElementById("agenda-dia-container").style.display="none"; });
+      document.getElementById("btn-voltar-calendario")?.addEventListener("click", () => mostrarVisaoAgendaMobile("mes", true));
+      document.getElementById("btn-agenda-dia-anterior")?.addEventListener("click", () => selecionarDiaAgendaMobile(addDaysToISO(calendarioDiaSelecionadoISO, -1)));
+      document.getElementById("btn-agenda-dia-seguinte")?.addEventListener("click", () => selecionarDiaAgendaMobile(addDaysToISO(calendarioDiaSelecionadoISO, 1)));
+      mediaAgendaMobile.addEventListener("change", () => {
+        if (telaAtiva("screen-agenda")) atualizarAgendaMesEDia();
+      });
 
       document.getElementById("btn-toggle-form-checklist")?.addEventListener("click", () => toggleFormChecklist());
       document.getElementById("btn-fechar-form-checklist")?.addEventListener("click", () => toggleFormChecklist(false));
@@ -252,7 +257,7 @@
         const form = ev.currentTarget;
         const input = document.getElementById("busca-marcos-texto");
         const termo = input?.value.trim() || "";
-        if (emLayoutDesktop() && (!form.classList.contains("is-open") || termo.length === 0)) {
+        if ((emLayoutDesktop() || mediaAgendaMobile.matches) && (!form.classList.contains("is-open") || termo.length === 0)) {
           form.classList.add("is-open");
           setTimeout(() => input?.focus(), 60);
           return;
