@@ -872,6 +872,8 @@
 /* Sprint 059 — formulário da Agenda no mobile */
 #agenda-form-wrap .agenda-form-mobile { display: none; }
 #agenda-form-wrap :is(.agenda-mobile-conteudo, .agenda-hora-nativa) { display: contents; }
+#checklist-form-wrap .checklist-form-mobile { display: none; }
+#checklist-form-wrap .checklist-mobile-conteudo { display: contents; }
 
 @media (max-width: 767px) {
   html.agenda-modal-aberto { overscroll-behavior: none; }
@@ -883,7 +885,7 @@
     touch-action: auto;
   }
 
-  #agenda-form-wrap {
+  :is(#agenda-form-wrap, #checklist-form-wrap) {
     top: var(--agenda-viewport-top, 0px);
     left: var(--agenda-viewport-left, 0px);
     right: auto;
@@ -896,7 +898,7 @@
     align-items: center;
   }
 
-  #agenda-form-wrap .checklist-form-panel {
+  :is(#agenda-form-wrap, #checklist-form-wrap) .checklist-form-panel {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -914,12 +916,12 @@
     display: none;
   }
 
-  #agenda-form-wrap .checklist-form-handle { flex: 0 0 4px; margin-bottom: 0; }
-  #agenda-form-wrap .checklist-form-header { flex-shrink: 0; margin-bottom: 2px; }
-  #agenda-form-wrap .checklist-form-subtitle { margin-top: 2px; }
-  #btn-fechar-form-agenda { flex: 0 0 44px; padding: 0; width: 44px; height: 44px; font-size: 25px; }
-  #form-agenda,
-  #form-agenda .form-main-stack {
+  :is(#agenda-form-wrap, #checklist-form-wrap) .checklist-form-handle { flex: 0 0 4px; margin-bottom: 0; }
+  :is(#agenda-form-wrap, #checklist-form-wrap) .checklist-form-header { flex-shrink: 0; margin-bottom: 2px; }
+  :is(#agenda-form-wrap, #checklist-form-wrap) .checklist-form-subtitle { margin-top: 2px; }
+  :is(#btn-fechar-form-agenda, #btn-fechar-form-checklist) { flex: 0 0 44px; padding: 0; width: 44px; height: 44px; font-size: 25px; }
+  :is(#form-agenda, #form-checklist),
+  :is(#form-agenda, #form-checklist) .form-main-stack {
     display: flex;
     flex-direction: column;
     flex: 0 1 auto;
@@ -930,7 +932,7 @@
   #form-agenda :is(.form-identity-agenda, .form-grid > div, .agenda-data-nativa, .agenda-google-opcao) {
     min-width: 0;
   }
-  #agenda-form-wrap .agenda-mobile-conteudo {
+  :is(#agenda-form-wrap, #checklist-form-wrap) :is(.agenda-mobile-conteudo, .checklist-mobile-conteudo) {
     display: block;
     min-height: 0;
     min-width: 0;
@@ -942,9 +944,9 @@
   }
 
   #form-agenda .form-identity-agenda { padding: 0; border: 0; background: none; }
-  #form-agenda label { margin-bottom: 2px; }
+  :is(#form-agenda, #form-checklist) label { margin-bottom: 2px; }
   #form-agenda .agenda-form-datetime { --agenda-form-date-gap: 4px; }
-  #form-agenda :is(input:not([type="checkbox"]), select) {
+  :is(#form-agenda, #form-checklist) :is(input:not([type="checkbox"]), select) {
     box-sizing: border-box;
     width: 100%;
     max-width: 100%;
@@ -1065,7 +1067,7 @@
   #form-agenda .agenda-google-opcao { order: 4; margin: 0; padding-top: 2px; }
   #form-agenda .agenda-google-check { min-height: 44px; margin: 0; }
   #form-agenda .agenda-google-ajuda { margin: 0; line-height: 1.25; }
-  #form-agenda .checklist-form-actions {
+  :is(#form-agenda, #form-checklist) .checklist-form-actions {
     flex-shrink: 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1074,32 +1076,32 @@
     padding: 5px 0;
     background: #fff;
   }
-  #form-agenda .checklist-form-actions button {
+  :is(#form-agenda, #form-checklist) .checklist-form-actions button {
     display: grid;
     place-items: center;
     min-height: 44px;
     padding: 0 12px;
   }
-  #form-agenda #btn-salvar-compromisso:not(:disabled) {
+  :is(#form-agenda, #form-checklist) :is(#btn-salvar-compromisso, #btn-salvar-rotina):not(:disabled) {
     background: #2563eb;
     border-color: #2563eb;
     color: #fff !important;
     -webkit-text-fill-color: #fff;
   }
-  #form-agenda #btn-salvar-compromisso:disabled {
+  :is(#form-agenda, #form-checklist) :is(#btn-salvar-compromisso, #btn-salvar-rotina):disabled {
     background: #e2e8f0;
     color: #475569 !important;
     -webkit-text-fill-color: #475569;
     box-shadow: none;
     opacity: 1;
   }
-  #form-agenda[data-salvando="true"] #btn-salvar-compromisso {
+  :is(#form-agenda, #form-checklist)[data-salvando="true"] :is(#btn-salvar-compromisso, #btn-salvar-rotina) {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
   }
-  #form-agenda[data-salvando="true"] #btn-salvar-compromisso::before {
+  :is(#form-agenda, #form-checklist)[data-salvando="true"] :is(#btn-salvar-compromisso, #btn-salvar-rotina)::before {
     content: "";
     width: 14px;
     height: 14px;
@@ -1108,7 +1110,7 @@
     border-radius: 50%;
   }
   @media (prefers-reduced-motion: no-preference) {
-    #form-agenda[data-salvando="true"] #btn-salvar-compromisso::before {
+    :is(#form-agenda, #form-checklist)[data-salvando="true"] :is(#btn-salvar-compromisso, #btn-salvar-rotina)::before {
       animation: agenda-carregando 700ms linear infinite;
     }
   }
@@ -1202,4 +1204,25 @@
     border-radius: 999px;
     pointer-events: none;
   }
+}
+
+@media (max-width: 767px) {
+  #checklist-form-wrap .checklist-form-mobile { display: block; }
+  #checklist-form-wrap :is(.checklist-form-desktop, summary) { display: none; }
+  #checklist-form-wrap .checklist-mobile-conteudo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  #form-checklist .checklist-mobile-conteudo > *,
+  #form-checklist .form-more-body > div { flex-shrink: 0; min-width: 0; }
+  #form-checklist .form-identity-checklist { padding: 0; border: 0; background: none; }
+  #form-checklist .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    margin-top: 6px !important;
+  }
+  #form-checklist :is(.form-more-options, .form-more-body) { display: contents; }
+  #form-checklist .form-more-body .field-hidden { display: block !important; }
+  #form-checklist #chk-locais-sugeridos:empty { display: none; }
 }
