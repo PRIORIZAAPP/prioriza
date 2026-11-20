@@ -962,6 +962,25 @@
     text-align: start;
   }
 
+  /* The grid cell paints the frame independently of the native picker. */
+  #form-agenda .agenda-form-datetime :is(.agenda-data-nativa, .agenda-hora-nativa) {
+    border: 1px solid #d8dee8;
+    border-radius: 10px;
+    background: #fbfcfe;
+  }
+  #form-agenda .agenda-form-datetime :is(.agenda-data-nativa, .agenda-hora-nativa):focus-within {
+    border-color: var(--cor-tema);
+    box-shadow: 0 0 0 1px rgba(var(--cor-tema-rgb), 0.28);
+  }
+  #form-agenda .agenda-form-datetime :is(.agenda-data-nativa, .agenda-hora-nativa) input {
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
   #form-agenda .agenda-data-nativa input { color: transparent; }
   #form-agenda .agenda-data-nativa input::-webkit-datetime-edit { -webkit-text-fill-color: transparent; }
   #form-agenda .agenda-data-nativa .agenda-data-formatada {
@@ -1051,13 +1070,36 @@
     padding: 0 12px;
   }
   #form-agenda #btn-salvar-compromisso:not(:disabled) {
+    background: #2563eb;
+    border-color: #2563eb;
     color: #fff !important;
     -webkit-text-fill-color: #fff;
   }
   #form-agenda #btn-salvar-compromisso:disabled {
     background: #e2e8f0;
-    color: #475569;
+    color: #475569 !important;
+    -webkit-text-fill-color: #475569;
     box-shadow: none;
     opacity: 1;
   }
+  #form-agenda[data-salvando="true"] #btn-salvar-compromisso {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  #form-agenda[data-salvando="true"] #btn-salvar-compromisso::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-inline-end-color: transparent;
+    border-radius: 50%;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    #form-agenda[data-salvando="true"] #btn-salvar-compromisso::before {
+      animation: agenda-carregando 700ms linear infinite;
+    }
+  }
+  @keyframes agenda-carregando { to { transform: rotate(360deg); } }
 }

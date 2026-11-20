@@ -39,6 +39,40 @@ def check_widths(panel, fields):
     assert all(item["extra"] <= 1 and not item["outside"] for item in report), report
 
 
+def check_native_fields(panel):
+    fields = (("agenda-data", "date", "2026-12-15"),
+              ("agenda-hora", "time", "23:30"),
+              ("agenda-hora-fim", "time", "00:15"))
+    for field, expected_type, value in fields:
+        control = panel.locator("#" + field)
+        control.fill(value)
+        expect(control).to_have_value(value)
+        assert control.evaluate("""(input, type) => {
+            const frame = input.parentElement;
+            const style = getComputedStyle(frame);
+            const rect = frame.getBoundingClientRect();
+            const bounds = input.getBoundingClientRect();
+            return input.type === type && !input.disabled
+                && ['Top', 'Right', 'Bottom', 'Left'].every(side => style['border' + side + 'Width'] === '1px')
+                && Math.abs(bounds.left - rect.left - 1) < 1
+                && Math.abs(rect.right - bounds.right - 1) < 1;
+        }""", expected_type), field
+    expect(panel.locator(".agenda-data-formatada").first).to_have_text("15/12/2026")
+
+
+def check_save_style(panel):
+    title = panel.locator("#agenda-titulo")
+    save = panel.locator("#btn-salvar-compromisso")
+    expect(title).to_have_value("")
+    expect(save).to_be_disabled()
+    expect(save).to_have_css("background-color", "rgb(226, 232, 240)")
+    expect(save).to_have_css("-webkit-text-fill-color", "rgb(71, 85, 105)")
+    title.fill("Validação de aparência")
+    expect(save).to_be_enabled()
+    expect(save).to_have_css("background-color", "rgb(37, 99, 235)")
+    expect(save).to_have_css("-webkit-text-fill-color", "rgb(255, 255, 255)")
+
+
 def check_layout(context, url, token, width):
     page = context.new_page()
     page.add_init_script(script=f"localStorage.setItem('prioriza_auth_token', {token!r})")
@@ -54,6 +88,8 @@ def check_layout(context, url, token, width):
     assert abs(position["y"] + position["height"] / 2 - 380) < 2, position
     assert scroller.evaluate("el => el.scrollHeight === el.clientHeight")
     check_widths(panel, MAIN_FIELDS)
+    check_native_fields(panel)
+    check_save_style(panel)
 
     first, last = (panel.locator("#" + field).bounding_box() for field in MAIN_FIELDS[-2:])
     assert first["x"] + first["width"] < last["x"]
