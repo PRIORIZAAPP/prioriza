@@ -519,6 +519,10 @@
     function atualizarFormularioAgendaMobile() {
       if (!mediaAgendaMobile.matches) return;
       const form = document.getElementById("form-agenda");
+      for (const campo of form.querySelectorAll(".agenda-data-nativa")) {
+        const [ano, mes, dia] = campo.querySelector("input").value.split("-");
+        campo.querySelector(".agenda-data-formatada").textContent = dia ? `${dia}/${mes}/${ano}` : "dd/mm/aaaa";
+      }
       const intervalo = lerIntervaloAgendaMobile();
       const fim = document.getElementById("agenda-hora-fim");
       fim.disabled = intervalo.diaInteiro;
@@ -549,6 +553,9 @@
       form.reset();
       form.querySelector(".form-more-options").open = false;
       document.getElementById("agenda-form-title").textContent = tarefa ? "Editar compromisso" : "Novo compromisso";
+      document.getElementById("agenda-form-subtitle-mobile").textContent = tarefa
+        ? "Atualize os detalhes do compromisso."
+        : "Organize seu próximo compromisso.";
       const val = (id, valor) => { document.getElementById(id).value = valor; };
       const check = (id, valor) => { document.getElementById(id).checked = Boolean(valor); };
       const originalInicio = tarefa?.hora_inicio || (tarefa?.all_day || !tarefa ? "08:00" : "");

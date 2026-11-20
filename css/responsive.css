@@ -911,6 +911,20 @@
     font-size: 16px;
   }
 
+  #form-agenda .agenda-data-nativa { position: relative; }
+  #form-agenda .agenda-data-nativa input { color: transparent; }
+  #form-agenda .agenda-data-nativa input::-webkit-datetime-edit { -webkit-text-fill-color: transparent; }
+  #form-agenda .agenda-data-nativa .agenda-data-formatada {
+    position: absolute;
+    inset: 0 44px 0 12px;
+    display: flex;
+    align-items: center;
+    color: #111827;
+    font-size: 16px;
+    pointer-events: none;
+  }
+  #form-agenda .agenda-data-nativa input:disabled + .agenda-data-formatada { color: #475569; }
+
   #form-agenda .agenda-form-datetime {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

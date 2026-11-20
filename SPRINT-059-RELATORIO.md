@@ -10,7 +10,8 @@ O cadastro da Agenda compartilhava o formulário de hora inicial e duração ent
 - A duração é calculada a partir dos horários. O formulário identifica quando o término cai no dia seguinte. Ao desligar Dia inteiro, os horários informados reaparecem.
 - Mais opções começa recolhido e agrupa Organização, Repetição e Integração. Repetir até aparece conforme a frequência. A criação de área mantém os campos preenchidos.
 - A edição preserva a escolha de escopo da recorrência, os campos avançados e os valores que o usuário deixou intactos. Os fluxos de conflito e prevenção de duplicidade da Sprint 058 continuam usando o backend existente.
-- Arquivos estáticos atualizados com o identificador `sprint-059` e o service worker com o cache `prioriza-public-v68`.
+- Após a aprovação visual, a data e o campo Repetir até passaram a exibir dia/mês/ano no mobile, com o seletor nativo e o valor ISO preservados. O subtítulo da edição passou a ser “Atualize os detalhes do compromisso.”
+- O CSS e o script ajustados usam o identificador `sprint-059-final`. O service worker mantém o cache `prioriza-public-v68`.
 
 ## Validação
 
@@ -18,10 +19,11 @@ O cadastro da Agenda compartilhava o formulário de hora inicial e duração ent
 | --- | --- | --- |
 | Cadastro, edição, Mais opções, horários e virada da meia-noite, área, bloqueio parcial e cancelamento | Chromium em 320, 360, 390 e 430 px, com API local e SQLite temporário | Aprovado |
 | Bloqueio “Feriado”, tentativa de cadastro, cancelamento sem gravar e confirmação com um único registro | Chromium nas quatro larguras mobile e SQLite temporário | Aprovado |
+| Data em DD/MM/AAAA na criação, edição e repetição, valor nativo ISO e subtítulos | Chromium em 320, 360, 390 e 430 px | Aprovado |
 | Suíte API Sprint 058: limites, edição, isolamento entre contas, séries e idempotência concorrente | FastAPI e SQLite temporário | Aprovado |
 | Bloqueio de dia inteiro e manutenção do rodapé com a viewport reduzida | Chromium em 390 px | Aprovado |
 | Envio da opção de sincronização com Google Agenda | Estado de conexão simulado com captura do payload local | Aprovado para o envio da opção |
-| Formulário desktop de cadastro, mesmas informações e mesmo estado | Chromium em 1024, 1280 e 1440 px, base `b4908f7` contra a Sprint 059 | Capturas idênticas pixel a pixel |
+| Formulário desktop de cadastro, mesmas informações e mesmo estado | Chromium em 1024, 1280 e 1440 px, base `b4908f7` contra a Sprint 059 | Capturas idênticas pixel a pixel, inclusive após os ajustes finais |
 | Sintaxe do JavaScript alterado, espaços inválidos no diff e ativação do service worker | Node.js, Git e Chromium | Aprovado |
 
 ## Limitações

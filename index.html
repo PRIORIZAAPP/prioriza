@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="./css/layout.css">
     <link rel="stylesheet" href="./css/components.css">
     <link rel="stylesheet" href="./css/screens.css">
-    <link rel="stylesheet" href="./css/responsive.css?v=sprint-059">
+    <link rel="stylesheet" href="./css/responsive.css?v=sprint-059-final">
   </head>
   <body>
 
@@ -449,7 +449,7 @@
                   <div>
                     <div id="agenda-form-title" class="checklist-form-title">Novo compromisso</div>
                     <div class="checklist-form-subtitle agenda-form-desktop">Só o essencial primeiro.</div>
-                    <div class="checklist-form-subtitle agenda-form-mobile">Organize seu próximo compromisso.</div>
+                    <div id="agenda-form-subtitle-mobile" class="checklist-form-subtitle agenda-form-mobile">Organize seu próximo compromisso.</div>
                   </div>
                   <button id="btn-fechar-form-agenda" class="btn-secondary" type="button"><span class="agenda-form-desktop">Fechar</span><span class="agenda-form-mobile"><span aria-hidden="true">×</span><span class="sr-only">Fechar</span></span></button>
                 </div>
@@ -463,7 +463,7 @@
                         <input id="agenda-titulo" type="text" placeholder="Ex: Reunião equipe, Fórum gestão..." required />
                       </div>
                       <div class="form-grid agenda-form-datetime" style="margin-top:8px">
-                        <div><label for="agenda-data">Data</label><input id="agenda-data" type="date" /></div>
+                        <div><label for="agenda-data">Data</label><div class="agenda-data-nativa"><input id="agenda-data" type="date" /><span class="agenda-form-mobile agenda-data-formatada" aria-hidden="true"></span></div></div>
                         <div class="agenda-form-horario"><label for="agenda-hora"><span class="agenda-form-desktop">Hora início</span><span class="agenda-form-mobile">Início</span></label><input id="agenda-hora" type="time" value="08:00" /></div>
                         <div class="agenda-form-mobile agenda-form-horario"><label for="agenda-hora-fim">Término</label><input id="agenda-hora-fim" type="time" value="09:00" /></div>
                         <small id="agenda-form-virada" class="agenda-form-mobile agenda-form-virada" hidden>Término no dia seguinte.</small>
@@ -536,7 +536,7 @@
                         </div>
                         <div id="agenda-locais-sugeridos" class="tag-row"></div>
                         <div class="form-grid" style="margin-bottom:0">
-                          <div class="agenda-repetir-ate"><label for="agenda-repetir-ate">Repetir até</label><input id="agenda-repetir-ate" type="date" disabled /></div>
+                          <div class="agenda-repetir-ate"><label for="agenda-repetir-ate">Repetir até</label><div class="agenda-data-nativa"><input id="agenda-repetir-ate" type="date" disabled /><span class="agenda-form-mobile agenda-data-formatada" aria-hidden="true"></span></div></div>
                           <div class="agenda-google-opcao">
                             <label class="agenda-google-check" for="agenda-sincronizar-google">
                               <input id="agenda-sincronizar-google" type="checkbox" />
@@ -1460,7 +1460,7 @@
     <script data-prioriza-module="core" src="./js/core/admin.js?v=sprint-058"></script>
     <script data-prioriza-module="areas" src="./js/core/areas.js?v=sprint-059"></script>
     <script data-prioriza-module="agenda" src="./js/screens/agenda.js?v=sprint-059"></script>
-    <script data-prioriza-module="checklist" src="./js/screens/checklist.js?v=sprint-059"></script>
+    <script data-prioriza-module="checklist" src="./js/screens/checklist.js?v=sprint-059-final"></script>
     <script data-prioriza-module="core" src="./js/screens/workspace.js?v=sprint-059"></script>
     <script data-prioriza-module="autenticacao" src="./js/core/auth.js"></script>
     <script data-prioriza-module="experiencia" src="./js/core/experience.js"></script>
