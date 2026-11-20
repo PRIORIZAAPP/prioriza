@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="./css/layout.css">
     <link rel="stylesheet" href="./css/components.css">
     <link rel="stylesheet" href="./css/screens.css">
-    <link rel="stylesheet" href="./css/responsive.css?v=sprint-058">
+    <link rel="stylesheet" href="./css/responsive.css?v=sprint-059">
   </head>
   <body>
 
@@ -448,25 +448,30 @@
                 <div class="checklist-form-header">
                   <div>
                     <div id="agenda-form-title" class="checklist-form-title">Novo compromisso</div>
-                    <div class="checklist-form-subtitle">Só o essencial primeiro.</div>
+                    <div class="checklist-form-subtitle agenda-form-desktop">Só o essencial primeiro.</div>
+                    <div class="checklist-form-subtitle agenda-form-mobile">Organize seu próximo compromisso.</div>
                   </div>
-                  <button id="btn-fechar-form-agenda" class="btn-secondary" type="button">Fechar</button>
+                  <button id="btn-fechar-form-agenda" class="btn-secondary" type="button"><span class="agenda-form-desktop">Fechar</span><span class="agenda-form-mobile"><span aria-hidden="true">×</span><span class="sr-only">Fechar</span></span></button>
                 </div>
 
                 <form id="form-agenda">
                   <div class="form-main-stack">
+                    <div class="agenda-mobile-conteudo">
                     <div class="form-identity-agenda">
                       <div>
                         <label for="agenda-titulo">Título</label>
                         <input id="agenda-titulo" type="text" placeholder="Ex: Reunião equipe, Fórum gestão..." required />
                       </div>
-                      <div class="form-grid" style="margin-top:8px">
+                      <div class="form-grid agenda-form-datetime" style="margin-top:8px">
                         <div><label for="agenda-data">Data</label><input id="agenda-data" type="date" /></div>
-                        <div><label for="agenda-hora">Hora início</label><input id="agenda-hora" type="time" value="08:00" /></div>
+                        <div class="agenda-form-horario"><label for="agenda-hora"><span class="agenda-form-desktop">Hora início</span><span class="agenda-form-mobile">Início</span></label><input id="agenda-hora" type="time" value="08:00" /></div>
+                        <div class="agenda-form-mobile agenda-form-horario"><label for="agenda-hora-fim">Término</label><input id="agenda-hora-fim" type="time" value="09:00" /></div>
+                        <small id="agenda-form-virada" class="agenda-form-mobile agenda-form-virada" hidden>Término no dia seguinte.</small>
                       </div>
                       <div class="agenda-quick-toggles" aria-label="Opções rápidas do compromisso">
                         <label class="agenda-toggle-row" for="agenda-all-day">
                           <input id="agenda-all-day" type="checkbox" />
+                          <svg class="agenda-form-mobile agenda-toggle-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16v13H4zM4 11h16M8 4v5m8-5v5"/></svg>
                           <span class="agenda-toggle-switch" aria-hidden="true"></span>
                           <span>
                             <strong>Dia inteiro</strong>
@@ -475,6 +480,7 @@
                         </label>
                         <label class="agenda-toggle-row agenda-toggle-row-blocked" for="agenda-blocked">
                           <input id="agenda-blocked" type="checkbox" />
+                          <svg class="agenda-form-mobile agenda-toggle-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M6 10h12v10H6zM9 10V7a3 3 0 1 1 6 0v3"/></svg>
                           <span class="agenda-toggle-switch" aria-hidden="true"></span>
                           <span>
                             <strong>Bloquear agenda</strong>
@@ -489,7 +495,10 @@
                     </div>
                     <details class="form-more-options">
                       <summary>Mais opções</summary>
-                      <div class="form-more-body">
+                      <div class="form-more-body agenda-mobile-grupos">
+                        <h3 class="agenda-form-mobile agenda-organizacao">Organização</h3>
+                        <h3 class="agenda-form-mobile agenda-repeticao">Repetição</h3>
+                        <h3 class="agenda-form-mobile agenda-integracao">Integração</h3>
                         <div class="form-grid">
                           <div>
                             <label for="agenda-categoria">Categoria</label>
@@ -515,7 +524,7 @@
                             </select>
                             <small id="agenda-area-ajuda" class="field-help">Você pode criar uma área sem perder os dados deste compromisso.</small>
                           </div>
-                          <div>
+                          <div class="agenda-frequencia">
                             <label for="agenda-repetir">Frequência</label>
                             <select id="agenda-repetir">
                               <option value="NENHUMA" selected>Não repetir</option>
@@ -527,7 +536,7 @@
                         </div>
                         <div id="agenda-locais-sugeridos" class="tag-row"></div>
                         <div class="form-grid" style="margin-bottom:0">
-                          <div><label for="agenda-repetir-ate">Repetir até</label><input id="agenda-repetir-ate" type="date" disabled /></div>
+                          <div class="agenda-repetir-ate"><label for="agenda-repetir-ate">Repetir até</label><input id="agenda-repetir-ate" type="date" disabled /></div>
                           <div class="agenda-google-opcao">
                             <label class="agenda-google-check" for="agenda-sincronizar-google">
                               <input id="agenda-sincronizar-google" type="checkbox" />
@@ -538,6 +547,7 @@
                         </div>
                       </div>
                     </details>
+                    </div>
                     <div class="checklist-form-actions">
                       <button id="btn-cancelar-form-agenda" class="btn-secondary" type="button">Cancelar</button>
                       <button type="submit" id="btn-salvar-compromisso" class="btn-primary">Salvar</button>
@@ -1448,13 +1458,13 @@
     <script src="./js/core/utils.js"></script>
     <script src="./js/core/runtime.js"></script>
     <script data-prioriza-module="core" src="./js/core/admin.js?v=sprint-058"></script>
-    <script data-prioriza-module="areas" src="./js/core/areas.js"></script>
-    <script data-prioriza-module="agenda" src="./js/screens/agenda.js?v=sprint-058"></script>
-    <script data-prioriza-module="checklist" src="./js/screens/checklist.js?v=sprint-058"></script>
-    <script data-prioriza-module="core" src="./js/screens/workspace.js?v=sprint-058"></script>
+    <script data-prioriza-module="areas" src="./js/core/areas.js?v=sprint-059"></script>
+    <script data-prioriza-module="agenda" src="./js/screens/agenda.js?v=sprint-059"></script>
+    <script data-prioriza-module="checklist" src="./js/screens/checklist.js?v=sprint-059"></script>
+    <script data-prioriza-module="core" src="./js/screens/workspace.js?v=sprint-059"></script>
     <script data-prioriza-module="autenticacao" src="./js/core/auth.js"></script>
     <script data-prioriza-module="experiencia" src="./js/core/experience.js"></script>
-    <script data-prioriza-module="bootstrap" src="./js/app.js?v=sprint-058"></script>
+    <script data-prioriza-module="bootstrap" src="./js/app.js?v=sprint-059"></script>
     <script data-prioriza-module="notificacoes" src="./js/integrations/notifications.js"></script>
   </body>
 </html>

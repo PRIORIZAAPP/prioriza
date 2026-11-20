@@ -142,7 +142,13 @@
   }
 
   ["agenda-local", "chk-local"].forEach((id) => document.addEventListener("focusin", (ev) => { if (ev.target?.id === id) ev.target.dataset.previousValue = ev.target.value; }));
-  document.addEventListener("change", (ev) => { if (["agenda-local", "chk-local"].includes(ev.target?.id) && ev.target.value === "__nova_area__") criarRapida(ev.target); });
+  document.addEventListener("change", (ev) => {
+    const select = ev.target;
+    if (!["agenda-local", "chk-local"].includes(select?.id) || select.value !== "__nova_area__") return;
+    criarRapida(select).finally(() => {
+      if (select.id === "agenda-local") atualizarFormularioAgendaMobile();
+    });
+  });
   document.addEventListener("click", (ev) => {
     if (ev.target.closest("#btn-nova-area")) formularioArea();
     if (ev.target.closest('[data-settings-open="areas"]')) carregar(true).catch((error) => {

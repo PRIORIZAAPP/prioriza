@@ -1002,6 +1002,7 @@
       }
 
       const editarCompromisso = async () => {
+        if (await abrirEdicaoAgendaMobile(t)) return;
         const scope = t?.recorrente ? await modal.escolherRecorrencia("este compromisso") : "single";
         const novoTitulo = await modal.perguntar("Título:","Editar compromisso", "", t.titulo);
         if (!novoTitulo?.trim()) return;
