@@ -858,3 +858,146 @@
 /* Sprint 058 */
 #modal-overlay.conflito-agenda .modal-mensagem { overflow-wrap: anywhere; }
 #modal-overlay.conflito-agenda .modal-btns { flex-wrap: wrap; }
+
+/* Sprint 059 — formulário da Agenda no mobile */
+#agenda-form-wrap .agenda-form-mobile { display: none; }
+#agenda-form-wrap .agenda-mobile-conteudo { display: contents; }
+
+@media (max-width: 767px) {
+  #agenda-form-wrap {
+    top: var(--agenda-viewport-top, 0px);
+    bottom: auto;
+    height: var(--agenda-viewport-height, 100dvh);
+    padding: 8px 8px 0;
+    align-items: flex-end;
+    box-sizing: border-box;
+  }
+
+  #agenda-form-wrap .checklist-form-panel {
+    display: flex;
+    flex-direction: column;
+    width: min(100%, 520px);
+    max-height: 100%;
+    min-height: 0;
+    padding: 10px 14px 0;
+    overflow: hidden;
+  }
+
+  #agenda-form-wrap .agenda-form-mobile:not([hidden]) { display: block; }
+  #agenda-form-wrap :is(.agenda-form-desktop, #agenda-duracao-wrap, .agenda-toggle-row small) {
+    display: none;
+  }
+
+  #agenda-form-wrap .checklist-form-handle { margin-bottom: 5px; }
+  #agenda-form-wrap .checklist-form-header { flex-shrink: 0; margin-bottom: 7px; }
+  #agenda-form-wrap .checklist-form-subtitle { margin-top: 2px; }
+  #btn-fechar-form-agenda { padding: 0; width: 44px; height: 44px; font-size: 25px; }
+  #form-agenda { display: flex; flex-direction: column; min-height: 0; }
+  #form-agenda .form-main-stack { min-height: 0; gap: 0; }
+  #agenda-form-wrap .agenda-mobile-conteudo {
+    display: block;
+    min-height: 0;
+    padding-bottom: 2px;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  #form-agenda .form-identity-agenda { padding: 0; border: 0; background: none; }
+  #form-agenda :is(input:not([type="checkbox"]), select) {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    margin: 0;
+    font-size: 16px;
+  }
+
+  #form-agenda .agenda-data-nativa { position: relative; }
+  #form-agenda .agenda-data-nativa input { color: transparent; }
+  #form-agenda .agenda-data-nativa input::-webkit-datetime-edit { -webkit-text-fill-color: transparent; }
+  #form-agenda .agenda-data-nativa .agenda-data-formatada {
+    position: absolute;
+    inset: 0 44px 0 12px;
+    display: flex;
+    align-items: center;
+    color: #111827;
+    font-size: 16px;
+    pointer-events: none;
+  }
+  #form-agenda .agenda-data-nativa input:disabled + .agenda-data-formatada { color: #475569; }
+
+  #form-agenda .agenda-form-datetime {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 8px;
+    margin-bottom: 6px;
+  }
+
+  #form-agenda :is(.agenda-form-datetime > :first-child, .agenda-form-virada) {
+    grid-column: 1 / -1;
+  }
+
+  #agenda-form-wrap:has(#agenda-all-day:checked) :is(.agenda-form-horario, .agenda-form-virada) {
+    display: none !important;
+  }
+
+  #form-agenda .agenda-quick-toggles { display: grid; grid-template-columns: 1fr; gap: 5px; margin: 0; }
+  #form-agenda .agenda-toggle-row {
+    grid-template-columns: 18px minmax(0, 1fr) auto;
+    min-height: 44px;
+    padding: 5px 9px;
+    border-radius: 9px;
+  }
+  #form-agenda .agenda-toggle-icon { color: var(--cor-tema); }
+  #form-agenda .agenda-toggle-row > :last-child { grid-column: 2; grid-row: 1; }
+  #form-agenda .agenda-toggle-switch { grid-column: 3; grid-row: 1; }
+  #form-agenda .agenda-toggle-row:focus-within { outline: 2px solid var(--cor-tema); }
+  #form-agenda .form-more-options { margin-top: 7px; }
+  #form-agenda .form-more-options summary { min-height: 44px; }
+  #form-agenda .agenda-mobile-grupos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 8px;
+  }
+  #form-agenda .agenda-mobile-grupos > .form-grid { display: contents; }
+  #form-agenda .agenda-mobile-grupos > h3 {
+    grid-column: 1 / -1;
+    margin: 4px 0 0;
+    color: #334155;
+    font-size: 12px;
+  }
+  #form-agenda .agenda-organizacao { order: -1; }
+  #form-agenda :is(#agenda-local-wrap, #agenda-locais-sugeridos, .agenda-repeticao, .agenda-integracao, .agenda-google-opcao) {
+    grid-column: 1 / -1;
+  }
+  #form-agenda #agenda-locais-sugeridos:empty { display: none; }
+  #form-agenda .agenda-repeticao { order: 1; }
+  #form-agenda :is(.agenda-frequencia, .agenda-repetir-ate) { order: 2; }
+  #form-agenda :has(#agenda-repetir option[value="NENHUMA"]:checked) .agenda-repetir-ate { display: none; }
+  #form-agenda .agenda-integracao { order: 3; }
+  #form-agenda .agenda-google-opcao { order: 4; }
+  #form-agenda .checklist-form-actions {
+    flex-shrink: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 0;
+    padding: 8px 0 max(8px, env(safe-area-inset-bottom, 0px));
+    background: #fff;
+  }
+  #form-agenda .checklist-form-actions button {
+    display: grid;
+    place-items: center;
+    min-height: 44px;
+    padding: 0 12px;
+  }
+  #form-agenda #btn-salvar-compromisso:not(:disabled) {
+    color: #fff !important;
+    -webkit-text-fill-color: #fff;
+  }
+  #form-agenda #btn-salvar-compromisso:disabled {
+    background: #e2e8f0;
+    color: #475569;
+    box-shadow: none;
+    opacity: 1;
+  }
+}

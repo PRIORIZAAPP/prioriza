@@ -301,8 +301,13 @@
 
       document.getElementById("form-checklist")?.addEventListener("submit", salvarNovaRotinaChecklist);
 
+      vincularFormularioAgendaMobile();
       document.getElementById("form-agenda")?.addEventListener("submit", async(ev)=>{
         ev.preventDefault();
+        const edicao = edicaoAgendaMobile;
+        const mobile = mediaAgendaMobile.matches || Boolean(edicao);
+        if (mobile && ev.currentTarget.dataset.salvando === "true") return;
+        const intervalo = mobile ? lerIntervaloAgendaMobile() : null;
         const titulo    = document.getElementById("agenda-titulo")?.value.trim();
         const categoria = document.getElementById("agenda-categoria")?.value || "PROFISSIONAL";
         const local     = document.getElementById("agenda-local")?.value.trim()||"";
@@ -311,34 +316,63 @@
         const allDay    = document.getElementById("agenda-all-day")?.checked === true;
         const blocked   = document.getElementById("agenda-blocked")?.checked === true;
         const hora      = allDay ? "" : (document.getElementById("agenda-hora")?.value||"00:00");
-        const duracao   = allDay ? "1440" : (document.getElementById("agenda-duracao")?.value||"60");
+        const duracao   = allDay ? "1440" : (mobile ? String(intervalo.duracao) : (document.getElementById("agenda-duracao")?.value||"60"));
         const prioridade= document.getElementById("agenda-prioridade")?.value||"2";
         const repetir   = document.getElementById("agenda-repetir")?.value||"NENHUMA";
         const repetirAte= document.getElementById("agenda-repetir-ate")?.value.trim()||"";
         const syncGoogle = document.getElementById("agenda-sincronizar-google")?.checked === true;
         if(!titulo||!data){await modal.alerta("Preencha pelo menos Título e Data.","Atenção");return;}
-        if (repetir !== "NENHUMA" && !repetirAte) {
+        if (mobile && !allDay && intervaloAgendaMobileAlterado(intervalo) && !intervalo.duracao) {
+          await modal.alerta("Informe horários de início e término diferentes.", "Atenção");
+          return;
+        }
+        if (!edicao && repetir !== "NENHUMA" && !repetirAte) {
           await modal.alerta("Informe até quando o compromisso deve se repetir.","Atenção");
           return;
         }
         const btn=document.getElementById("btn-salvar-compromisso"); btn.disabled=true;
+        if (mobile) marcarGravacaoAgendaMobile(true);
         try {
-          const res=await fetch(API+"/tarefas?"+new URLSearchParams({
-            titulo,
-            origem,
-            local,
-            data,
-            hora_inicio:hora,
-            duracao_min:duracao,
-            prioridade,
-            repetir,
-            repetir_ate: repetirAte,
-            all_day: allDay ? "true" : "false",
-            blocked: blocked ? "true" : "false",
-            sincronizar_google: syncGoogle ? "true" : "false"
-          }),{method:"POST",headers:authHeaders()});
+          let rota = "/tarefas";
+          let params = new URLSearchParams({
+            titulo, origem, local, data, hora_inicio: hora, duracao_min: duracao, prioridade,
+            repetir, repetir_ate: repetirAte, all_day: String(allDay), blocked: String(blocked),
+            sincronizar_google: String(syncGoogle)
+          });
+          if (mobile && !allDay) params.set("hora_fim", intervalo.termino);
+          if (edicao) {
+            const anterior = edicao.tarefa;
+            rota += `/${anterior.id}`;
+            params = new URLSearchParams({ scope: edicao.scope });
+            const enviarSeMudou = (campo, atual, original) => {
+              if (String(atual ?? "") !== String(original ?? "")) params.set(campo, String(atual));
+            };
+            enviarSeMudou("titulo", titulo, anterior.titulo);
+            enviarSeMudou("data", data, anterior.data);
+            enviarSeMudou("prioridade", prioridade, anterior.prioridade || 2);
+            enviarSeMudou("local", local, anterior.local);
+            enviarSeMudou("blocked", blocked, Boolean(anterior.blocked));
+            if (categoria !== edicao.categoria) params.set("origem", origem);
+            if (intervaloAgendaMobileAlterado(intervalo)) {
+              if (allDay !== edicao.intervalo.diaInteiro) params.set("all_day", String(allDay));
+              if (!allDay) {
+                params.set("hora_inicio", intervalo.inicio);
+                params.set("hora_fim", intervalo.termino);
+                params.set("duracao_min", duracao);
+              }
+            }
+            if (syncGoogle && !anterior.google_event_id) params.set("sincronizar_google", "true");
+            if ([...params].length === 1) { toggleFormAgenda(false); return; }
+          }
+          const res = await fetch(API + rota + "?" + params, {method: edicao ? "PUT" : "POST", headers: authHeaders()});
           if (respostaDemoCancelada(res) || respostaAgendaCancelada(res)) return;
           if(!res.ok){await modal.alerta("Não foi possível salvar o compromisso.","Erro");return;}
+          if (edicao) {
+            toggleFormAgenda(false);
+            await carregarAgendaHoje(); await atualizarAgendaMesEDia(); await carregarPessoalLista();
+            await modal.alerta("Compromisso atualizado no PRIORIZA.", "Sucesso");
+            return;
+          }
           const tarefaCriada = await res.json();
           const quantidadeCriada = Array.isArray(tarefaCriada?.tarefas)
             ? tarefaCriada.tarefas.length
@@ -378,7 +412,10 @@
           await modal.alerta(mensagemSucesso,"Sucesso");
           await carregarAgendaHoje(); await atualizarAgendaMesEDia(); await carregarPessoalLista();
         } catch(e){console.error(e); await modal.alerta("Erro ao conectar com o servidor.","Erro");}
-        finally{btn.disabled=false;}
+        finally{
+          if (mobile) marcarGravacaoAgendaMobile(false);
+          else btn.disabled=false;
+        }
       });
 
       document.getElementById("filtro-frequencia")?.addEventListener("change", carregarChecklistGeral);

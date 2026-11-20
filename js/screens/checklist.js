@@ -488,7 +488,154 @@
       toggleFormAgenda(true);
     }
 
-    function toggleFormAgenda(forceOpen = null) {
+    let edicaoAgendaMobile = null;
+
+    function horasAgendaEmMinutos(hora) {
+      if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(hora)) return null;
+      const [h, m] = hora.split(":").map(Number);
+      return h * 60 + m;
+    }
+
+    function horaAgendaDepois(inicio, duracao) {
+      const minutos = (inicio + duracao) % 1440;
+      return `${String(Math.floor(minutos / 60)).padStart(2, "0")}:${String(minutos % 60).padStart(2, "0")}`;
+    }
+
+    function lerIntervaloAgendaMobile() {
+      const inicio = document.getElementById("agenda-hora").value;
+      const termino = document.getElementById("agenda-hora-fim").value;
+      const a = horasAgendaEmMinutos(inicio);
+      const b = horasAgendaEmMinutos(termino);
+      const duracao = a === null || b === null ? 0 : (1440 + b - a) % 1440;
+      return { inicio, termino, duracao, diaInteiro: document.getElementById("agenda-all-day").checked };
+    }
+
+    function intervaloAgendaMobileAlterado(intervalo) {
+      const original = edicaoAgendaMobile?.intervalo;
+      return !original || intervalo.diaInteiro !== original.diaInteiro
+        || (!intervalo.diaInteiro && (intervalo.inicio !== original.inicio || intervalo.termino !== original.termino));
+    }
+
+    function atualizarFormularioAgendaMobile() {
+      if (!mediaAgendaMobile.matches) return;
+      const form = document.getElementById("form-agenda");
+      for (const campo of form.querySelectorAll(".agenda-data-nativa")) {
+        const [ano, mes, dia] = campo.querySelector("input").value.split("-");
+        campo.querySelector(".agenda-data-formatada").textContent = dia ? `${dia}/${mes}/${ano}` : "dd/mm/aaaa";
+      }
+      const intervalo = lerIntervaloAgendaMobile();
+      const fim = document.getElementById("agenda-hora-fim");
+      fim.disabled = intervalo.diaInteiro;
+      const invalido = !intervalo.diaInteiro && intervaloAgendaMobileAlterado(intervalo) && !intervalo.duracao;
+      fim.setCustomValidity(invalido ? "Informe horários de início e término diferentes." : "");
+      document.getElementById("agenda-form-virada").hidden = intervalo.diaInteiro
+        || !intervalo.duracao || intervalo.termino > intervalo.inicio;
+      const repete = document.getElementById("agenda-repetir").value !== "NENHUMA";
+      document.getElementById("agenda-repetir-ate").required = repete && !edicaoAgendaMobile;
+      const area = document.getElementById("agenda-local").value;
+      const botao = document.getElementById("btn-salvar-compromisso");
+      botao.disabled = form.dataset.salvando === "true" || invalido || area === "__nova_area__"
+        || !document.getElementById("agenda-titulo").value.trim()
+        || !document.getElementById("agenda-data").value
+        || (repete && !edicaoAgendaMobile && !document.getElementById("agenda-repetir-ate").value);
+    }
+
+    function marcarGravacaoAgendaMobile(salvando) {
+      const form = document.getElementById("form-agenda");
+      form.dataset.salvando = String(salvando);
+      form.querySelector("#btn-salvar-compromisso").textContent = salvando ? "Salvando…" : "Salvar";
+      form.setAttribute("aria-busy", String(salvando));
+      atualizarFormularioAgendaMobile();
+    }
+
+    function prepararFormularioAgendaMobile(data, tarefa = null, scope = "single") {
+      const form = document.getElementById("form-agenda");
+      form.reset();
+      form.querySelector(".form-more-options").open = false;
+      document.getElementById("agenda-form-title").textContent = tarefa ? "Editar compromisso" : "Novo compromisso";
+      document.getElementById("agenda-form-subtitle-mobile").textContent = tarefa
+        ? "Atualize os detalhes do compromisso."
+        : "Organize seu próximo compromisso.";
+      const val = (id, valor) => { document.getElementById(id).value = valor; };
+      const check = (id, valor) => { document.getElementById(id).checked = Boolean(valor); };
+      const originalInicio = tarefa?.hora_inicio || (tarefa?.all_day || !tarefa ? "08:00" : "");
+      const a = horasAgendaEmMinutos(originalInicio);
+      const duracao = tarefa?.duracao_min || 60;
+      const fimLegado = tarefa?.hora_fim === "23:59" && a !== null && a + duracao > 1439;
+      const termino = tarefa?.all_day ? "09:00"
+        : (!fimLegado && tarefa?.hora_fim) || (a === null ? "" : horaAgendaDepois(a, duracao));
+      val("agenda-titulo", tarefa?.titulo || "");
+      val("agenda-data", tarefa?.data || data || dataHojeISO());
+      val("agenda-hora", originalInicio);
+      val("agenda-hora-fim", termino);
+      val("agenda-prioridade", tarefa?.prioridade || "2");
+      const categoria = String(tarefa?.origem || "").toUpperCase() === "PESSOAL" ? "PESSOAL" : "PROFISSIONAL";
+      val("agenda-categoria", categoria);
+      const area = document.getElementById("agenda-local");
+      const local = tarefa?.local || "";
+      if (local && ![...area.options].some(opcao => opcao.value === local)) {
+        const opcao = new Option(local, local);
+        opcao.dataset.legadoAgenda = "true";
+        area.add(opcao);
+      }
+      area.value = local;
+      const repetir = document.getElementById("agenda-repetir");
+      repetir.value = tarefa?.recorrente ? tarefa.recurrence_type : "NENHUMA";
+      repetir.disabled = Boolean(tarefa);
+      val("agenda-repetir-ate", tarefa?.recurrence_until || "");
+      check("agenda-all-day", tarefa?.all_day);
+      check("agenda-blocked", tarefa?.blocked);
+      const google = document.getElementById("agenda-sincronizar-google");
+      google.checked = Boolean(tarefa?.google_event_id);
+      google.disabled = Boolean(tarefa?.google_event_id) || !googleAgendaStatus.conectado;
+      edicaoAgendaMobile = tarefa ? {
+        tarefa, scope, categoria, intervalo: lerIntervaloAgendaMobile(),
+      } : null;
+      atualizarCategoriaAgendaUI();
+      atualizarCampoRecorrenciaAgenda();
+      atualizarOpcoesDiaInteiroAgenda();
+    }
+
+    async function abrirEdicaoAgendaMobile(tarefa) {
+      if (!mediaAgendaMobile.matches) return false;
+      const scope = tarefa.recorrente ? await modal.escolherRecorrencia("este compromisso") : "single";
+      toggleFormAgenda(true, tarefa, scope);
+      return true;
+    }
+
+    function ajustarViewportAgendaMobile() {
+      if (!mediaAgendaMobile.matches || !window.visualViewport) return;
+      const wrap = document.getElementById("agenda-form-wrap");
+      wrap.style.setProperty("--agenda-viewport-height", `${window.visualViewport.height}px`);
+      wrap.style.setProperty("--agenda-viewport-top", `${window.visualViewport.offsetTop}px`);
+    }
+
+    function vincularFormularioAgendaMobile() {
+      const form = document.getElementById("form-agenda");
+      const inicio = document.getElementById("agenda-hora");
+      let intervaloAnterior;
+      const registrar = () => { intervaloAnterior = lerIntervaloAgendaMobile(); };
+      inicio.addEventListener("focus", registrar);
+      inicio.addEventListener("input", () => {
+        if (!mediaAgendaMobile.matches || !intervaloAnterior) return;
+        const atual = lerIntervaloAgendaMobile();
+        const a = horasAgendaEmMinutos(atual.inicio);
+        if (a !== null && intervaloAnterior.duracao && (
+          atual.inicio === atual.termino
+          || (intervaloAnterior.inicio < intervaloAnterior.termino && atual.inicio > atual.termino)
+        )) {
+          document.getElementById("agenda-hora-fim").value = horaAgendaDepois(a, intervaloAnterior.duracao);
+        }
+        registrar();
+      });
+      form.addEventListener("input", atualizarFormularioAgendaMobile);
+      form.addEventListener("change", atualizarFormularioAgendaMobile);
+      form.addEventListener("focusin", registrar);
+      window.visualViewport?.addEventListener("resize", ajustarViewportAgendaMobile);
+      window.visualViewport?.addEventListener("scroll", ajustarViewportAgendaMobile);
+    }
+
+    function toggleFormAgenda(forceOpen = null, tarefa = null, scope = "single") {
       const wrap = document.getElementById("agenda-form-wrap");
       const btn = document.getElementById("btn-toggle-form-agenda");
       const btnText = document.getElementById("btn-toggle-form-agenda-text");
@@ -505,7 +652,18 @@
       if (!abrir) {
         wrap.querySelector(".form-more-options")?.removeAttribute("open");
       }
-      if (abrir) {
+      if (!abrir && edicaoAgendaMobile) {
+        edicaoAgendaMobile = null;
+        document.getElementById("agenda-form-title").textContent = "Novo compromisso";
+        document.getElementById("agenda-repetir").disabled = false;
+        document.getElementById("agenda-repetir-ate").required = false;
+        document.getElementById("agenda-hora-fim").setCustomValidity("");
+      }
+      if (abrir && mediaAgendaMobile.matches) {
+        prepararFormularioAgendaMobile(calendarioDiaSelecionadoISO, tarefa, scope);
+        ajustarViewportAgendaMobile();
+        document.getElementById("btn-fechar-form-agenda").focus({ preventScroll: true });
+      } else if (abrir) {
         atualizarCategoriaAgendaUI();
         atualizarOpcoesDiaInteiroAgenda();
         const inputData = document.getElementById("agenda-data");
@@ -521,8 +679,9 @@
       const inputAte = document.getElementById("agenda-repetir-ate");
       if (!select || !inputAte) return;
       const ativo = (select.value || "NENHUMA") !== "NENHUMA";
-      inputAte.disabled = !ativo;
+      inputAte.disabled = !ativo || Boolean(edicaoAgendaMobile);
       if (!ativo) inputAte.value = "";
+      atualizarFormularioAgendaMobile();
     }
 
     function atualizarOpcoesDiaInteiroAgenda() {
@@ -541,6 +700,7 @@
         hora.disabled = ativoDiaInteiro;
         hora.title = ativoDiaInteiro ? "Dia inteiro: a hora fica apenas como referência visual." : "";
       }
+      atualizarFormularioAgendaMobile();
     }
 
     // ── SALVAR ROTINA (form) ──────────────────────────────────────

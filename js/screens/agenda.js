@@ -210,8 +210,10 @@
       if (btnConectar) btnConectar.style.display = conectado ? "none" : "inline-flex";
       if (btnDesconectar) btnDesconectar.style.display = conectado ? "inline-flex" : "none";
       if (syncCheckbox) {
-        syncCheckbox.disabled = !conectado;
-        if (!conectado) syncCheckbox.checked = false;
+        const vinculado = Boolean(edicaoAgendaMobile?.tarefa.google_event_id);
+        syncCheckbox.disabled = !conectado || vinculado;
+        if (vinculado) syncCheckbox.checked = true;
+        else if (!conectado) syncCheckbox.checked = false;
       }
       if (syncAjuda) {
         syncAjuda.textContent = conectado
