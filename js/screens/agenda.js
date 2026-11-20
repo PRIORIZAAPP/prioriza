@@ -286,6 +286,7 @@
         method: "POST",
         headers: authHeaders(),
       });
+      if (respostaAgendaCancelada(res)) return null;
       if (!res.ok) throw new Error("Falha ao criar evento no Google Agenda");
       return res.json();
     }
@@ -540,6 +541,7 @@
                 try {
                   const params = new URLSearchParams({ titulo: novoTitulo.trim(), hora_inicio: novaHora || "", descricao: novaDescricao || "", scope });
                   const res = await fetch(API+"/tarefas/"+t.id+"?"+params, { method:"PUT", headers:authHeaders() });
+                  if (respostaAgendaCancelada(res)) return;
                   if (!res.ok) { await modal.alerta("Erro ao editar.","Erro"); return; }
                   await carregarAgendaHoje();
                   await atualizarAgendaMesEDia();
@@ -621,7 +623,7 @@
       try {
         const params = new URLSearchParams({ titulo, descricao: descricao||"", origem:origem||"", data:dataHojeISO(), hora_inicio:hora||"08:00", duracao_min:"60", prioridade });
         const res = await fetch(API+"/tarefas?"+params,{method:"POST",headers:authHeaders()});
-        if (respostaDemoCancelada(res)) return;
+        if (respostaDemoCancelada(res) || respostaAgendaCancelada(res)) return;
         if (!res.ok) { await modal.alerta("Erro ao salvar tarefa.","Erro"); return; }
         const origemTrim=(origem||"").trim();
         if (origemTrim && !getLocaisSalvos().includes(origemTrim)) {

@@ -23,10 +23,12 @@ from google.auth.transport.requests import Request as GoogleAuthRequest
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from pydantic import BaseModel, Field
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, UniqueConstraint, column, create_engine, inspect, table, text
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.concurrency import run_in_threadpool
 
 try:
     from passlib.context import CryptContext
@@ -267,6 +269,16 @@ class Tarefa(Base):
             "recorrente": (self.recurrence_type or "NENHUMA").upper() != "NENHUMA",
             "criado_em": self.criado_em.isoformat() if self.criado_em else None,
         }
+
+
+class ReciboAgenda(Base):
+    __tablename__ = "agenda_recibos"
+
+    user_id = Column(Integer, primary_key=True)
+    chave = Column(String(128), primary_key=True)
+    requisicao = Column(String(64), nullable=False)
+    resposta = Column(Text, nullable=False)
+    expira_em = Column(Integer, nullable=False)
 
 
 class MarcoOperacional(Base):
@@ -1422,6 +1434,7 @@ def excluir_conta_usuario(db: Session, user: User) -> dict[str, int]:
     try:
         removidos = {
             "marcos_operacionais": db.query(MarcoOperacional).filter(MarcoOperacional.user_id == user_id).delete(synchronize_session=False),
+            "agenda_recibos": db.query(ReciboAgenda).filter(ReciboAgenda.user_id == user_id).delete(synchronize_session=False),
             "tarefas": db.query(Tarefa).filter(Tarefa.user_id == user_id).delete(synchronize_session=False),
             "checklist": db.query(ChecklistItem).filter(ChecklistItem.user_id == user_id).delete(synchronize_session=False),
             "notes": db.query(Note).filter(Note.user_id == user_id).delete(synchronize_session=False),
@@ -1742,7 +1755,7 @@ def _aplicar_payload_google_em_tarefa(tarefa: Tarefa, payload: dict[str, Any]) -
     return tarefa
 
 
-def criar_ou_atualizar_tarefa_importada_google(db: Session, user_id: int, payload: dict[str, Any]) -> Tarefa:
+def criar_ou_atualizar_tarefa_importada_google(db: Session, user_id: int, payload: dict[str, Any], *, commit=True) -> Tarefa:
     google_event_id = (payload.get("google_event_id") or "").strip()
     existente = _buscar_tarefa_por_google_event_id(db, user_id, google_event_id)
     if not existente:
@@ -1770,8 +1783,9 @@ def criar_ou_atualizar_tarefa_importada_google(db: Session, user_id: int, payloa
         )
         db.add(tarefa)
 
-    db.commit()
-    db.refresh(tarefa)
+    if commit:
+        db.commit()
+        db.refresh(tarefa)
     return tarefa
 
 
@@ -2159,6 +2173,8 @@ def montar_evento_google_body(
 
     inicio_dt = datetime.fromisoformat(f"{data_iso}T{hora_inicio}:00")
     fim_dt = datetime.fromisoformat(f"{data_iso}T{hora_fim}:00")
+    if fim_dt <= inicio_dt:
+        fim_dt += timedelta(days=1)
     return {
         "summary": titulo,
         "description": descricao,
@@ -2957,6 +2973,7 @@ def sincronizar_eventos_google_para_prioriza(
 
 @app.post("/google/calendar/events")
 def criar_evento_google(
+    request: Request,
     titulo: str = Query(...),
     data: str = Query(..., description="YYYY-MM-DD"),
     hora_inicio: str = Query("08:00", description="HH:MM"),
@@ -2972,9 +2989,16 @@ def criar_evento_google(
         raise HTTPException(status_code=400, detail="Data inválida. Use YYYY-MM-DD.")
     if not all_day and (not validar_hora(hora_inicio) or not validar_hora(hora_fim)):
         raise HTTPException(status_code=400, detail="Hora inválida. Use HH:MM.")
-    if not all_day and hora_para_minutos(hora_fim) <= hora_para_minutos(hora_inicio):
-        raise HTTPException(status_code=400, detail="Hora final deve ser maior que a inicial.")
+    if not all_day and hora_fim == hora_inicio:
+        raise HTTPException(status_code=400, detail="Informe horários inicial e final distintos.")
 
+    operacao = GravacaoAgenda(db, request, current_user.id)
+    anterior = operacao.repeticao()
+    if anterior is not None:
+        return anterior
+    candidato = Tarefa(titulo=titulo, data=data, hora_inicio=hora_inicio, hora_fim=hora_fim,
+                        all_day=all_day, blocked=blocked, ativo=True)
+    operacao.validar([candidato])
     service = google_service(db, current_user)
     body = montar_evento_google_body(
         titulo=titulo.strip(),
@@ -2986,9 +3010,16 @@ def criar_evento_google(
         all_day=all_day,
         blocked=blocked,
     )
-    criado = service.events().insert(calendarId="primary", body=body).execute()
+    id_google = hashlib.sha256(f"prioriza-agenda:{current_user.id}:{operacao.chave}".encode()).hexdigest()
+    body["id"] = id_google
+    try:
+        criado = service.events().insert(calendarId="primary", body=body).execute()
+    except HttpError as erro:
+        if erro.resp.status != 409:
+            raise
+        criado = service.events().get(calendarId="primary", eventId=id_google).execute()
     normalizado = normalizar_evento_google(criado)
-    return {
+    return operacao.salvar({
         "ok": True,
         "evento_id": criado.get("id"),
         "link": criado.get("htmlLink"),
@@ -2996,11 +3027,12 @@ def criar_evento_google(
         "inicio": (criado.get("start") or {}).get("dateTime") or (criado.get("start") or {}).get("date"),
         "fim": (criado.get("end") or {}).get("dateTime") or (criado.get("end") or {}).get("date"),
         "evento": normalizado,
-    }
+    })
 
 
 @app.put("/google/calendar/events/{event_id}")
 def editar_evento_google(
+    request: Request,
     event_id: str,
     titulo: str = Query(...),
     data: str = Query(...),
@@ -3018,10 +3050,20 @@ def editar_evento_google(
     if not all_day and (not validar_hora(hora_inicio) or not validar_hora(hora_fim)):
         raise HTTPException(status_code=400, detail="Hora inválida. Use HH:MM.")
 
+    if not all_day and hora_fim == hora_inicio:
+        raise HTTPException(status_code=400, detail="Informe horários inicial e final distintos.")
+    operacao = GravacaoAgenda(db, request, current_user.id)
+    anterior = operacao.repeticao()
+    if anterior is not None:
+        return anterior
+    vinculado = _buscar_tarefa_por_google_event_id(db, current_user.id, event_id)
+    candidato = Tarefa(titulo=titulo, data=data, hora_inicio=hora_inicio, hora_fim=hora_fim,
+                        all_day=all_day, blocked=blocked, ativo=True)
+    operacao.validar([candidato], ignorados={vinculado.id} if vinculado else ())
     service = google_service(db, current_user)
     body = montar_evento_google_body(titulo, data, hora_inicio, hora_fim, descricao, local, all_day, blocked)
     evento = service.events().update(calendarId="primary", eventId=event_id, body=body).execute()
-    return {"ok": True, "evento": normalizar_evento_google(evento)}
+    return operacao.salvar({"ok": True, "evento": normalizar_evento_google(evento)})
 
 
 @app.delete("/google/calendar/events/{event_id}")
@@ -3400,8 +3442,153 @@ def agenda_inteligencia(data_ref: str = Query(None, description="Data de referê
     }
 
 
+def intervalo_agenda(tarefa: Tarefa):
+    try:
+        dia = date.fromisoformat(tarefa.data).toordinal() * 1440
+    except (TypeError, ValueError):
+        return None
+    if tarefa.all_day or not tarefa.hora_inicio or not validar_hora(tarefa.hora_inicio):
+        return dia, dia + 1440
+    inicio = hora_para_minutos(tarefa.hora_inicio)
+    duracao = max(1, tarefa.duracao_min or 60)
+    if tarefa.hora_fim and validar_hora(tarefa.hora_fim):
+        fim = hora_para_minutos(tarefa.hora_fim)
+        # O cálculo antigo truncava o fim às 23h59, mesmo com duração remanescente.
+        if fim != 1439 or inicio + duracao <= 1439:
+            duracao = (fim - inicio) % 1440 or duracao
+    return dia + inicio, dia + inicio + duracao
+
+
+def fim_horario_agenda(inicio: str, duracao: int) -> str:
+    if not inicio:
+        return ""
+    minutos = (hora_para_minutos(inicio) + duracao) % 1440
+    return f"{minutos // 60:02d}:{minutos % 60:02d}"
+
+
+def assinatura_periodo_agenda(tarefa: Tarefa):
+    ativo = tarefa.ativo is not False and normalizar_status(tarefa.status) != "cancelada"
+    return (intervalo_agenda(tarefa), bool(tarefa.blocked)) if ativo else None
+
+
+def conflitos_de_agenda(db: Session, user_id: int, candidatos, ignorados=()):
+    with db.no_autoflush:
+        outros = db.query(Tarefa).filter(Tarefa.user_id == user_id, Tarefa.ativo.is_(True)).order_by(Tarefa.id).all()
+    comparar = []
+    for tarefa in outros:
+        if tarefa.id in ignorados:
+            continue
+        periodo = assinatura_periodo_agenda(tarefa)
+        if periodo and periodo[0]:
+            comparar.append((tarefa, *periodo))
+
+    conflitos = []
+    for candidato in candidatos:
+        periodo = assinatura_periodo_agenda(candidato)
+        if not periodo or not periodo[0]:
+            continue
+        (inicio, fim), bloqueado = periodo
+        for outro, (inicio_outro, fim_outro), bloqueio in comparar:
+            if (bloqueado or bloqueio) and inicio < fim_outro and inicio_outro < fim:
+                conflitos.append({
+                    "id": outro.id,
+                    "titulo": outro.titulo,
+                    "data": outro.data,
+                    "hora_inicio": outro.hora_inicio or "",
+                    "hora_fim": f"{(fim_outro // 60) % 24:02d}:{fim_outro % 60:02d}",
+                    "termina_em": date.fromordinal(fim_outro // 1440).isoformat(),
+                    "all_day": bool(outro.all_day or not outro.hora_inicio or not validar_hora(outro.hora_inicio)),
+                    "blocked": bloqueio,
+                    "ocorrencia": candidato.data,
+                    "inicio_civil": inicio_outro,
+                    "fim_civil": fim_outro,
+                })
+        comparar.append((candidato, (inicio, fim), bloqueado))
+    return conflitos
+
+
+class GravacaoAgenda:
+    """Serializa gravações da conta e vincula o aceite ao conteúdo e conflitos."""
+
+    def __init__(self, db: Session, request: Request, user_id: int, form=None):
+        self.db = db
+        self.user_id = user_id
+        self.confirmacao = request.headers.get("X-Agenda-Confirmacao", "")
+        chave_cliente = request.headers.get("Idempotency-Key", "")
+        chave_token = self.confirmacao.split(".", 1)[0]
+        self.chave = chave_cliente or chave_token or secrets.token_hex(16)
+        if not re.fullmatch(r"[A-Za-z0-9_-]{16,128}", self.chave):
+            raise HTTPException(status_code=400, detail="Chave de operação inválida.")
+        self.registrar_recibo = bool(chave_cliente or self.confirmacao)
+        self.agora = int(datetime.now(UTC).timestamp())
+        credenciais = {"token", "access_token"}
+        dados = [request.method, request.url.path,
+                 sorted((k, v) for k, v in request.query_params.items() if k not in credenciais),
+                 sorted((k, str(v)) for k, v in (form.items() if form else ()) if k not in credenciais)]
+        self.impressao = hashlib.sha256(json.dumps(dados, ensure_ascii=False).encode()).hexdigest()
+
+        if db.get_bind().dialect.name == "sqlite":
+            db.execute(text("BEGIN IMMEDIATE"))
+        else:
+            db.query(User.id).filter(User.id == user_id).with_for_update().one()
+
+    def repeticao(self):
+        recibo = self.db.get(ReciboAgenda, (self.user_id, self.chave))
+        if not recibo or recibo.expira_em <= self.agora:
+            return None
+        if recibo.requisicao != self.impressao:
+            raise HTTPException(status_code=409, detail={"codigo": "agenda_chave_reutilizada"})
+        return json.loads(recibo.resposta)
+
+    def validar(self, candidatos, ignorados=(), alterados=True):
+        conflitos = conflitos_de_agenda(self.db, self.user_id, candidatos, ignorados) if alterados else []
+        if not conflitos and not self.confirmacao:
+            return
+        digest = hashlib.sha256(json.dumps(conflitos, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
+
+        def assinar(expira):
+            dados = f"agenda-v1:{self.user_id}:{self.chave}:{expira}:{self.impressao}:{digest}"
+            return hmac.new(JWT_SECRET.encode(), dados.encode(), hashlib.sha256).hexdigest()
+
+        partes = self.confirmacao.split(".")
+        if (
+            len(partes) == 3 and partes[0] == self.chave
+            and partes[1].isascii() and partes[1].isdigit() and len(partes[1]) <= 12
+            and int(partes[1]) >= self.agora
+            and hmac.compare_digest(partes[2].encode(), assinar(partes[1]).encode())
+        ):
+            return
+        if not conflitos:
+            raise HTTPException(status_code=409, detail={"codigo": "agenda_confirmacao_expirada"})
+        expira = self.agora + 600
+        raise HTTPException(status_code=409, detail={
+            "codigo": "agenda_conflito",
+            "fuso": TIMEZONE_PADRAO,
+            "conflitos": conflitos,
+            "confirmacao": f"{self.chave}.{expira}.{assinar(expira)}",
+        })
+
+    def salvar(self, resposta):
+        if self.registrar_recibo:
+            self.db.query(ReciboAgenda).filter(
+                ReciboAgenda.user_id == self.user_id, ReciboAgenda.expira_em <= self.agora
+            ).delete(synchronize_session=False)
+            self.db.add(ReciboAgenda(user_id=self.user_id, chave=self.chave, requisicao=self.impressao,
+                                     resposta=json.dumps(resposta, ensure_ascii=False), expira_em=self.agora + 86400))
+        self.db.commit()
+        return resposta
+
+
 @app.post("/tarefas")
 async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    try:
+        form = await request.form() if not request.query_params.get("titulo") else {}
+    except Exception:
+        form = {}
+    return await run_in_threadpool(_criar_tarefa, request, form, db, current_user)
+
+
+def _criar_tarefa(request: Request, form, db: Session, current_user: User):
     user_id = garantir_user_id(current_user.id, "tarefa")
     q = request.query_params
     converter_demo = str(q.get("convert_demo") or "").lower() in {"1", "true", "agenda"}
@@ -3429,31 +3616,27 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
     repetir_ate = q.get("repetir_ate")
 
     if not titulo:
-        try:
-            form = await request.form()
-            titulo = form.get("titulo")
-            descricao = form.get("descricao")
-            origem = form.get("origem")
-            local = form.get("local")
-            data_str = form.get("data")
-            hora_inicio = form.get("hora_inicio")
-            hora_fim = form.get("hora_fim")
-            duracao_min = form.get("duracao_min")
-            prioridade = form.get("prioridade")
-            status = form.get("status")
-            sincronizar_google = form.get("sincronizar_google")
-            all_day = form.get("all_day")
-            blocked = form.get("blocked")
-            tipo_evento = form.get("tipo_evento")
-            origem_evento = form.get("origem_evento")
-            google_event_id = form.get("google_event_id")
-            google_html_link = form.get("google_html_link") or form.get("link")
-            sincronizado_google = form.get("sincronizado_google")
-            ultima_sync_google = form.get("ultima_sync_google")
-            repetir = form.get("repetir")
-            repetir_ate = form.get("repetir_ate")
-        except Exception:
-            pass
+        titulo = form.get("titulo")
+        descricao = form.get("descricao")
+        origem = form.get("origem")
+        local = form.get("local")
+        data_str = form.get("data")
+        hora_inicio = form.get("hora_inicio")
+        hora_fim = form.get("hora_fim")
+        duracao_min = form.get("duracao_min")
+        prioridade = form.get("prioridade")
+        status = form.get("status")
+        sincronizar_google = form.get("sincronizar_google")
+        all_day = form.get("all_day")
+        blocked = form.get("blocked")
+        tipo_evento = form.get("tipo_evento")
+        origem_evento = form.get("origem_evento")
+        google_event_id = form.get("google_event_id")
+        google_html_link = form.get("google_html_link") or form.get("link")
+        sincronizado_google = form.get("sincronizado_google")
+        ultima_sync_google = form.get("ultima_sync_google")
+        repetir = form.get("repetir")
+        repetir_ate = form.get("repetir_ate")
 
     if not titulo or not data_str:
         raise HTTPException(status_code=400, detail="É obrigatório informar pelo menos título e data.")
@@ -3464,7 +3647,7 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
     hora_fim = (hora_fim or "").strip()
     eh_all_day = str(all_day).lower() in {"1", "true", "sim", "yes"}
     eh_blocked = str(blocked).lower() in {"1", "true", "sim", "yes"}
-    if eh_blocked:
+    if eh_blocked and not hora_inicio:
         eh_all_day = True
 
     if not eh_all_day and hora_inicio and not validar_hora(hora_inicio):
@@ -3478,11 +3661,17 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
         duracao_val = 60
     if eh_all_day:
         duracao_val = 24 * 60
+    elif hora_inicio:
+        if hora_fim:
+            duracao_val = (hora_para_minutos(hora_fim) - hora_para_minutos(hora_inicio)) % 1440
+        if not 0 < duracao_val <= 1440:
+            raise HTTPException(status_code=400, detail="A duração deve estar entre 1 e 1440 minutos.")
+        hora_fim = hora_fim or fim_horario_agenda(hora_inicio, duracao_val)
 
-    if not hora_fim and hora_inicio and not eh_all_day:
-        hora_fim = calcular_hora_fim(hora_inicio, duracao_val)
-    if hora_inicio and hora_fim and hora_para_minutos(hora_fim) <= hora_para_minutos(hora_inicio):
-        raise HTTPException(status_code=400, detail="Hora final deve ser maior que a inicial.")
+    operacao = GravacaoAgenda(db, request, user_id, form)
+    anterior = operacao.repeticao()
+    if anterior is not None:
+        return anterior
 
     try:
         prioridade_val = int(prioridade) if prioridade else 2
@@ -3523,10 +3712,14 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
             "blocked": eh_blocked,
             "ativo": True,
         }
-        tarefa_google = criar_ou_atualizar_tarefa_importada_google(db, user_id, payload_google)
-        return tarefa_google.to_dict()
+        tarefa_google = criar_ou_atualizar_tarefa_importada_google(db, user_id, payload_google, commit=False)
+        operacao.validar([tarefa_google], ignorados={tarefa_google.id})
+        db.flush()
+        return operacao.salvar(tarefa_google.to_dict())
 
     recorrencia = normalizar_frequencia_interna(repetir or "Único") if str(repetir or "").upper() != "NENHUMA" else "NENHUMA"
+    if recorrencia == "UNICO":
+        recorrencia = "NENHUMA"
     data_final = (repetir_ate or "").strip()
     if recorrencia != "NENHUMA" and (not data_final or not validar_data_iso(data_final)):
         raise HTTPException(status_code=400, detail="Informe uma data final válida para a recorrência.")
@@ -3553,158 +3746,127 @@ async def criar_tarefa(request: Request, db: Session = Depends(get_db), current_
                 break
             datas_ocorrencias.append(proxima)
     tarefas_criadas = [nova_ocorrencia(valor.isoformat()) for valor in datas_ocorrencias]
+    operacao.validar(tarefas_criadas)
     db.add_all(tarefas_criadas)
     tarefa = tarefas_criadas[0]
     db.flush()
     if converter_demo:
         converter_modulo_demo_sem_commit(db, current_user, "agenda")
-    db.commit()
-    db.refresh(tarefa)
+    resposta = ({"quantidade": len(tarefas_criadas), "tarefas": [item.to_dict() for item in tarefas_criadas]}
+                if len(tarefas_criadas) > 1 else tarefa.to_dict())
+    operacao.salvar(resposta)
 
-    if str(sincronizar_google).lower() in {"1", "true", "sim", "yes"}:
+    if _bool_from_value(sincronizar_google):
         try:
             tarefa = sincronizar_tarefa_no_google(db, tarefa, current_user)
+            if len(tarefas_criadas) > 1:
+                resposta["tarefas"][0] = tarefa.to_dict()
+            else:
+                resposta = tarefa.to_dict()
+            if operacao.registrar_recibo:
+                recibo = db.get(ReciboAgenda, (user_id, operacao.chave))
+                recibo.resposta = json.dumps(resposta, ensure_ascii=False)
+                db.commit()
         except Exception as e:
             print(f"[GOOGLE] Falha ao sincronizar tarefa recém-criada: {e}")
-
-    if len(tarefas_criadas) > 1:
-        return {"quantidade": len(tarefas_criadas), "tarefas": [item.to_dict() for item in tarefas_criadas]}
-    return tarefa.to_dict()
+    return resposta
 
 
 @app.put("/tarefas/{tarefa_id}")
 async def editar_tarefa(tarefa_id: int, request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    tarefa = db.query(Tarefa).filter(Tarefa.id == tarefa_id, Tarefa.user_id == current_user.id, Tarefa.ativo == True).first()
-    if not tarefa:
-        raise HTTPException(status_code=404, detail="Tarefa não encontrada.")
-
-    q = request.query_params
     try:
         form = await request.form()
     except Exception:
         form = {}
+    return await run_in_threadpool(_editar_tarefa, tarefa_id, request, form, db, current_user)
+
+
+def _editar_tarefa(tarefa_id: int, request: Request, form, db: Session, current_user: User):
+    q = request.query_params
 
     def pegar(campo: str):
-        return q.get(campo) or (form.get(campo) if hasattr(form, "get") else None)
+        return q.get(campo, form.get(campo))
 
-    titulo = pegar("titulo")
-    descricao = pegar("descricao")
-    origem = pegar("origem")
-    local = pegar("local")
-    data_str = pegar("data")
+    operacao = GravacaoAgenda(db, request, current_user.id, form)
+    anterior = operacao.repeticao()
+    if anterior is not None:
+        return anterior
+
+    tarefa = db.query(Tarefa).filter(Tarefa.id == tarefa_id, Tarefa.user_id == current_user.id, Tarefa.ativo.is_(True)).first()
+    if not tarefa:
+        raise HTTPException(status_code=404, detail="Tarefa não encontrada.")
+
+    data_str = (pegar("data") or "").strip()
+    if data_str and not validar_data_iso(data_str):
+        raise HTTPException(status_code=400, detail="Formato de data inválido. Use YYYY-MM-DD.")
     hora_inicio = pegar("hora_inicio")
     hora_fim = pegar("hora_fim")
-    duracao_min = pegar("duracao_min")
-    prioridade = pegar("prioridade")
-    status = pegar("status")
-    sincronizar_google = pegar("sincronizar_google")
-    all_day = pegar("all_day")
-    blocked = pegar("blocked")
-    escopo = (pegar("scope") or "single").strip().lower()
+    for hora in (hora_inicio, hora_fim):
+        if hora and not validar_hora(hora.strip()):
+            raise HTTPException(status_code=400, detail="Hora inválida. Use HH:MM.")
+    try:
+        duracao = int(pegar("duracao_min")) if pegar("duracao_min") else None
+        prioridade = int(pegar("prioridade")) if pegar("prioridade") else None
+    except ValueError as erro:
+        raise HTTPException(status_code=400, detail="Duração ou prioridade inválida.") from erro
+
     alvos = [tarefa]
-    if escopo == "series" and tarefa.recurrence_started_at:
+    if (pegar("scope") or "").strip().lower() == "series" and tarefa.recurrence_started_at:
         alvos = db.query(Tarefa).filter(
-            Tarefa.user_id == current_user.id,
-            Tarefa.ativo == True,
-            Tarefa.recurrence_started_at == tarefa.recurrence_started_at,
-            Tarefa.data >= tarefa.data,
-        ).all()
+            Tarefa.user_id == current_user.id, Tarefa.ativo.is_(True),
+            Tarefa.recurrence_started_at == tarefa.recurrence_started_at, Tarefa.data >= tarefa.data,
+        ).order_by(Tarefa.data, Tarefa.id).all()
 
-    def aplicar_campos(alvo: Tarefa):
-        if titulo is not None:
-            alvo.titulo = titulo.strip()
-        if descricao is not None:
-            alvo.descricao = descricao.strip()
-        if origem is not None:
-            alvo.origem = origem.strip()
-        if local is not None:
-            alvo.local = local.strip()
-        if hora_inicio is not None:
-            alvo.hora_inicio = hora_inicio.strip()
-        if hora_fim is not None:
-            alvo.hora_fim = hora_fim.strip()
-        if duracao_min is not None and str(duracao_min).strip():
-            try: alvo.duracao_min = int(duracao_min)
-            except ValueError: pass
-        if prioridade is not None and str(prioridade).strip():
-            try:
-                valor = int(prioridade)
-                alvo.prioridade = valor if valor in (1, 2, 3) else 2
-            except ValueError: pass
-        if status is not None:
-            alvo.status = normalizar_status(status)
+    originais = {alvo.id: assinatura_periodo_agenda(alvo) for alvo in alvos}
+    for alvo in alvos:
+        for campo in ("titulo", "descricao", "origem", "local"):
+            valor = pegar(campo)
+            if valor is not None:
+                setattr(alvo, campo, valor.strip())
+        if prioridade is not None:
+            alvo.prioridade = prioridade if prioridade in (1, 2, 3) else 2
+        if pegar("status") is not None:
+            alvo.status = normalizar_status(pegar("status"))
+        if alvo is tarefa:
+            alvo.data = data_str or alvo.data
+            if pegar("all_day") is not None:
+                alvo.all_day = _bool_from_value(pegar("all_day"))
+            if pegar("blocked") is not None:
+                alvo.blocked = _bool_from_value(pegar("blocked"))
+                if alvo.blocked and pegar("all_day") is None and not (hora_inicio or alvo.hora_inicio):
+                    alvo.all_day = True
 
-    if escopo == "series":
-        for alvo in alvos:
-            aplicar_campos(alvo)
+        tempos_informados = hora_inicio is not None or hora_fim is not None or duracao is not None
+        if alvo.all_day and (tempos_informados or (alvo is tarefa and pegar("all_day") is not None)):
+            alvo.hora_inicio = alvo.hora_fim = ""
+            alvo.duracao_min = 1440
+        elif not alvo.all_day and tempos_informados:
+            if hora_inicio is not None:
+                alvo.hora_inicio = hora_inicio.strip()
+            intervalo = duracao if duracao is not None else (alvo.duracao_min or 60)
+            if hora_fim and alvo.hora_inicio:
+                intervalo = (hora_para_minutos(hora_fim) - hora_para_minutos(alvo.hora_inicio)) % 1440
+            if not 0 < intervalo <= 1440:
+                raise HTTPException(status_code=400, detail="A duração deve estar entre 1 e 1440 minutos.")
+            alvo.duracao_min = intervalo
+            alvo.hora_fim = fim_horario_agenda(alvo.hora_inicio, intervalo)
 
-    if titulo is not None:
-        tarefa.titulo = titulo.strip()
-    if descricao is not None:
-        tarefa.descricao = descricao.strip()
-    if origem is not None:
-        tarefa.origem = origem.strip()
-    if local is not None:
-        tarefa.local = local.strip()
-    if data_str is not None:
-        data_str = data_str.strip()
-        if data_str and not validar_data_iso(data_str):
-            raise HTTPException(status_code=400, detail="Formato de data inválido. Use YYYY-MM-DD.")
-        if data_str:
-            tarefa.data = data_str
-    if hora_inicio is not None:
-        hora_inicio = hora_inicio.strip()
-        if hora_inicio and not validar_hora(hora_inicio):
-            raise HTTPException(status_code=400, detail="Hora inicial inválida. Use HH:MM.")
-        tarefa.hora_inicio = hora_inicio
-    if hora_fim is not None:
-        hora_fim = hora_fim.strip()
-        if hora_fim and not validar_hora(hora_fim):
-            raise HTTPException(status_code=400, detail="Hora final inválida. Use HH:MM.")
-        tarefa.hora_fim = hora_fim
-    if duracao_min is not None and str(duracao_min).strip() != "":
-        try:
-            tarefa.duracao_min = int(duracao_min)
-        except ValueError:
-            pass
-    if prioridade is not None and str(prioridade).strip() != "":
-        try:
-            p = int(prioridade)
-            tarefa.prioridade = p if p in (1, 2, 3) else 2
-        except ValueError:
-            pass
-    if status is not None:
-        tarefa.status = normalizar_status(status)
-    if all_day is not None:
-        tarefa.all_day = str(all_day).lower() in {"1", "true", "sim", "yes"}
-        if tarefa.all_day:
-            tarefa.hora_inicio = ""
-            tarefa.hora_fim = ""
-            tarefa.duracao_min = 24 * 60
-    if blocked is not None:
-        tarefa.blocked = str(blocked).lower() in {"1", "true", "sim", "yes"}
-        if tarefa.blocked:
-            tarefa.all_day = True
-            tarefa.hora_inicio = ""
-            tarefa.hora_fim = ""
-            tarefa.duracao_min = 24 * 60
+    alterados = [alvo for alvo in alvos if assinatura_periodo_agenda(alvo) != originais[alvo.id]]
+    operacao.validar(alterados, ignorados={alvo.id for alvo in alterados}, alterados=bool(alterados))
+    resposta = operacao.salvar(tarefa.to_dict())
 
-    if tarefa.hora_inicio and not tarefa.hora_fim and not tarefa.all_day:
-        tarefa.hora_fim = calcular_hora_fim(tarefa.hora_inicio, tarefa.duracao_min)
-    if tarefa.hora_inicio and tarefa.hora_fim and hora_para_minutos(tarefa.hora_fim) <= hora_para_minutos(tarefa.hora_inicio):
-        raise HTTPException(status_code=400, detail="Hora final deve ser maior que a inicial.")
-
-    db.commit()
-    db.refresh(tarefa)
-
-    precisa_sync = str(sincronizar_google).lower() in {"1", "true", "sim", "yes"} or bool(tarefa.google_event_id)
-    if precisa_sync:
+    if _bool_from_value(pegar("sincronizar_google")) or tarefa.google_event_id:
         try:
             tarefa = sincronizar_tarefa_no_google(db, tarefa, current_user)
+            resposta = tarefa.to_dict()
+            if operacao.registrar_recibo:
+                recibo = db.get(ReciboAgenda, (current_user.id, operacao.chave))
+                recibo.resposta = json.dumps(resposta, ensure_ascii=False)
+                db.commit()
         except Exception as e:
             print(f"[GOOGLE] Falha ao sincronizar edição da tarefa {tarefa.id}: {e}")
 
-    return tarefa.to_dict()
+    return resposta
 
 
 @app.post("/tarefas/{tarefa_id}/finalizar-recorrencia")
@@ -3732,6 +3894,7 @@ def finalizar_recorrencia_tarefa(tarefa_id: int, db: Session = Depends(get_db), 
 
 @app.post("/tarefas_editar")
 def editar_tarefa_legado(
+    request: Request,
     tarefa_id: int,
     titulo: str,
     origem: str = "",
@@ -3744,29 +3907,35 @@ def editar_tarefa_legado(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    operacao = GravacaoAgenda(db, request, current_user.id)
+    anterior = operacao.repeticao()
+    if anterior is not None:
+        return anterior
     tarefa = db.query(Tarefa).filter(Tarefa.id == tarefa_id, Tarefa.user_id == current_user.id, Tarefa.ativo == True).first()
     if not tarefa:
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
 
     if data and not validar_data_iso(data):
         raise HTTPException(status_code=400, detail="Data inválida. Use YYYY-MM-DD.")
-    if not all_day and not blocked and hora_inicio and not validar_hora(hora_inicio):
+    if not all_day and hora_inicio and not validar_hora(hora_inicio):
         raise HTTPException(status_code=400, detail="Hora inicial inválida. Use HH:MM.")
 
+    original = assinatura_periodo_agenda(tarefa)
+    if not all_day and not 0 < duracao_min <= 1440:
+        raise HTTPException(status_code=400, detail="A duração deve estar entre 1 e 1440 minutos.")
     tarefa.titulo = titulo.strip()
     tarefa.origem = origem.strip()
     if data:
         tarefa.data = data
-    tarefa.all_day = bool(all_day or blocked)
+    tarefa.all_day = bool(all_day or (blocked and not hora_inicio))
     tarefa.blocked = bool(blocked)
     tarefa.hora_inicio = "" if tarefa.all_day else hora_inicio.strip()
     tarefa.duracao_min = 24 * 60 if tarefa.all_day else duracao_min
-    tarefa.hora_fim = "" if tarefa.all_day else calcular_hora_fim(tarefa.hora_inicio, tarefa.duracao_min)
+    tarefa.hora_fim = "" if tarefa.all_day else fim_horario_agenda(tarefa.hora_inicio, tarefa.duracao_min)
     tarefa.prioridade = prioridade if prioridade in (1, 2, 3) else 2
 
-    db.commit()
-    db.refresh(tarefa)
-    return {"ok": True, "mensagem": "Tarefa atualizada com sucesso", "tarefa": tarefa.to_dict()}
+    operacao.validar([tarefa], ignorados={tarefa.id}, alterados=original != assinatura_periodo_agenda(tarefa))
+    return operacao.salvar({"ok": True, "mensagem": "Tarefa atualizada com sucesso", "tarefa": tarefa.to_dict()})
 
 
 @app.post("/tarefas_excluir")

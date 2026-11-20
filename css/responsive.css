@@ -761,7 +761,8 @@
       content: "";
       flex: 0 0 6px;
       height: 6px;
-      border-radius: 50%;
+      border-radius: 1px;
+      transform: rotate(45deg);
       background: currentColor;
     }
 
@@ -853,3 +854,7 @@
     }
   }
 }
+
+/* Sprint 058 */
+#modal-overlay.conflito-agenda .modal-mensagem { overflow-wrap: anywhere; }
+#modal-overlay.conflito-agenda .modal-btns { flex-wrap: wrap; }

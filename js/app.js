@@ -337,7 +337,7 @@
             blocked: blocked ? "true" : "false",
             sincronizar_google: syncGoogle ? "true" : "false"
           }),{method:"POST",headers:authHeaders()});
-          if (respostaDemoCancelada(res)) return;
+          if (respostaDemoCancelada(res) || respostaAgendaCancelada(res)) return;
           if(!res.ok){await modal.alerta("Não foi possível salvar o compromisso.","Erro");return;}
           const tarefaCriada = await res.json();
           const quantidadeCriada = Array.isArray(tarefaCriada?.tarefas)
