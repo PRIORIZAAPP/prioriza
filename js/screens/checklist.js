@@ -742,7 +742,7 @@
       if (!select || !inputAte) return;
       const ativo = (select.value || "NENHUMA") !== "NENHUMA";
       inputAte.disabled = !ativo || Boolean(edicaoAgendaMobile);
-      if (!ativo) inputAte.value = "";
+      if (!ativo && !mediaAgendaMobile.matches) inputAte.value = "";
       atualizarFormularioAgendaMobile();
     }
 

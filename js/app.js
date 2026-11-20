@@ -337,7 +337,7 @@
           let rota = "/tarefas";
           let params = new URLSearchParams({
             titulo, origem, local, data, hora_inicio: hora, duracao_min: duracao, prioridade,
-            repetir, repetir_ate: repetirAte, all_day: String(allDay), blocked: String(blocked),
+            repetir, repetir_ate: repetir === "NENHUMA" ? "" : repetirAte, all_day: String(allDay), blocked: String(blocked),
             sincronizar_google: String(syncGoogle)
           });
           if (mobile && !allDay) params.set("hora_fim", intervalo.termino);
