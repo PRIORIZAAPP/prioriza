@@ -603,11 +603,54 @@
       return true;
     }
 
+    let estadoPainelAgendaMobile = null;
+
+    function posicionarPainelAgendaMobile(wrap, abrir) {
+      if (abrir && !estadoPainelAgendaMobile) {
+        estadoPainelAgendaMobile = {
+          pai: wrap.parentNode, proximo: wrap.nextSibling, rolagem: window.scrollY,
+        };
+        document.body.style.setProperty("--agenda-scroll-top", `${-window.scrollY}px`);
+        document.body.append(wrap);
+        document.getElementById("app-shell").inert = true;
+        document.documentElement.classList.add("agenda-modal-aberto");
+        document.body.classList.add("agenda-modal-aberto");
+      } else if (!abrir && estadoPainelAgendaMobile) {
+        const { pai, proximo, rolagem } = estadoPainelAgendaMobile;
+        estadoPainelAgendaMobile = null;
+        pai.insertBefore(wrap, proximo);
+        document.getElementById("app-shell").inert = false;
+        document.body.classList.remove("agenda-modal-aberto");
+        document.documentElement.classList.remove("agenda-modal-aberto");
+        document.body.style.removeProperty("--agenda-scroll-top");
+        wrap.style.removeProperty("--agenda-viewport-height");
+        wrap.style.removeProperty("--agenda-viewport-top");
+        window.scrollTo({ top: rolagem, behavior: "instant" });
+      }
+    }
+
+    function rolarCampoAgendaMobile() {
+      const campo = document.activeElement;
+      const conteudo = campo?.closest(".agenda-mobile-conteudo");
+      if (!estadoPainelAgendaMobile || !conteudo) return;
+      const area = conteudo.getBoundingClientRect();
+      const campoRect = campo.getBoundingClientRect();
+      if (campoRect.bottom > area.bottom) {
+        conteudo.scrollTop += campoRect.bottom - area.bottom + 8;
+      } else if (campoRect.top < area.top) {
+        conteudo.scrollTop -= area.top - campoRect.top + 8;
+      }
+    }
+
     function ajustarViewportAgendaMobile() {
-      if (!mediaAgendaMobile.matches || !window.visualViewport) return;
+      if (!estadoPainelAgendaMobile) return;
       const wrap = document.getElementById("agenda-form-wrap");
-      wrap.style.setProperty("--agenda-viewport-height", `${window.visualViewport.height}px`);
-      wrap.style.setProperty("--agenda-viewport-top", `${window.visualViewport.offsetTop}px`);
+      const viewport = window.visualViewport;
+      if (viewport) {
+        wrap.style.setProperty("--agenda-viewport-height", `${viewport.height}px`);
+        wrap.style.setProperty("--agenda-viewport-top", `${viewport.offsetTop}px`);
+      }
+      requestAnimationFrame(rolarCampoAgendaMobile);
     }
 
     function vincularFormularioAgendaMobile() {
@@ -630,7 +673,20 @@
       });
       form.addEventListener("input", atualizarFormularioAgendaMobile);
       form.addEventListener("change", atualizarFormularioAgendaMobile);
-      form.addEventListener("focusin", registrar);
+      form.addEventListener("focusin", () => {
+        registrar();
+        if (estadoPainelAgendaMobile) requestAnimationFrame(rolarCampoAgendaMobile);
+      });
+      const wrap = document.getElementById("agenda-form-wrap");
+      wrap.addEventListener("touchmove", evento => {
+        if (estadoPainelAgendaMobile && evento.touches.length === 1
+          && !evento.target.closest(".agenda-mobile-conteudo") && evento.cancelable) {
+          evento.preventDefault();
+        }
+      }, { passive: false });
+      mediaAgendaMobile.addEventListener("change", () => {
+        if (wrap.classList.contains("open")) toggleFormAgenda(false);
+      });
       window.visualViewport?.addEventListener("resize", ajustarViewportAgendaMobile);
       window.visualViewport?.addEventListener("scroll", ajustarViewportAgendaMobile);
     }
@@ -644,6 +700,7 @@
       wrap.hidden = !abrir;
       wrap.classList.toggle("open", abrir);
       atualizarBloqueioRolagemFundo();
+      posicionarPainelAgendaMobile(wrap, abrir && mediaAgendaMobile.matches);
       btn.classList.toggle("is-open", abrir);
       btn.setAttribute("aria-expanded", abrir ? "true" : "false");
       btn.setAttribute("aria-label", abrir ? "Fechar formulário de compromisso" : "Novo compromisso");
@@ -661,6 +718,7 @@
       }
       if (abrir && mediaAgendaMobile.matches) {
         prepararFormularioAgendaMobile(calendarioDiaSelecionadoISO, tarefa, scope);
+        wrap.querySelector(".agenda-mobile-conteudo").scrollTop = 0;
         ajustarViewportAgendaMobile();
         document.getElementById("btn-fechar-form-agenda").focus({ preventScroll: true });
       } else if (abrir) {

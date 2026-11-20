@@ -864,23 +864,35 @@
 #agenda-form-wrap .agenda-mobile-conteudo { display: contents; }
 
 @media (max-width: 767px) {
+  html.agenda-modal-aberto { overscroll-behavior: none; }
+  body.agenda-modal-aberto {
+    position: fixed;
+    top: var(--agenda-scroll-top);
+    inset-inline: 0;
+    width: 100%;
+    touch-action: auto;
+  }
+
   #agenda-form-wrap {
     top: var(--agenda-viewport-top, 0px);
     bottom: auto;
+    height: 100vh;
     height: var(--agenda-viewport-height, 100dvh);
-    padding: 8px 8px 0;
-    align-items: flex-end;
-    box-sizing: border-box;
+    padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+      max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    align-items: center;
   }
 
   #agenda-form-wrap .checklist-form-panel {
     display: flex;
     flex-direction: column;
-    width: min(100%, 520px);
+    width: 100%;
+    max-width: 520px;
+    min-width: 0;
     max-height: 100%;
     min-height: 0;
     padding: 10px 14px 0;
-    overflow: hidden;
+    overflow: visible;
   }
 
   #agenda-form-wrap .agenda-form-mobile:not([hidden]) { display: block; }
@@ -891,24 +903,47 @@
   #agenda-form-wrap .checklist-form-handle { margin-bottom: 5px; }
   #agenda-form-wrap .checklist-form-header { flex-shrink: 0; margin-bottom: 7px; }
   #agenda-form-wrap .checklist-form-subtitle { margin-top: 2px; }
-  #btn-fechar-form-agenda { padding: 0; width: 44px; height: 44px; font-size: 25px; }
-  #form-agenda { display: flex; flex-direction: column; min-height: 0; }
-  #form-agenda .form-main-stack { min-height: 0; gap: 0; }
+  #btn-fechar-form-agenda { flex: 0 0 44px; padding: 0; width: 44px; height: 44px; font-size: 25px; }
+  #form-agenda,
+  #form-agenda .form-main-stack {
+    display: flex;
+    flex-direction: column;
+    flex: 0 1 auto;
+    min-width: 0;
+    min-height: 0;
+    gap: 0;
+  }
+  #form-agenda :is(.form-identity-agenda, .form-grid > div, .agenda-data-nativa, .agenda-google-opcao) {
+    min-width: 0;
+  }
   #agenda-form-wrap .agenda-mobile-conteudo {
     display: block;
     min-height: 0;
+    min-width: 0;
     padding-bottom: 2px;
-    overflow: auto;
-    overscroll-behavior: contain;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   #form-agenda .form-identity-agenda { padding: 0; border: 0; background: none; }
   #form-agenda :is(input:not([type="checkbox"]), select) {
+    box-sizing: border-box;
     width: 100%;
+    max-width: 100%;
     min-width: 0;
     min-height: 44px;
     margin: 0;
     font-size: 16px;
+  }
+
+  #form-agenda :is(input[type="date"], input[type="time"]) {
+    display: block;
+    padding-inline: 8px;
+  }
+  #form-agenda input::-webkit-date-and-time-value {
+    min-width: 0;
+    text-align: start;
   }
 
   #form-agenda .agenda-data-nativa { position: relative; }
@@ -958,6 +993,9 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px 8px;
   }
+  #form-agenda :is(.agenda-google-check, .field-help, .agenda-google-ajuda) {
+    overflow-wrap: anywhere;
+  }
   #form-agenda .agenda-mobile-grupos > .form-grid { display: contents; }
   #form-agenda .agenda-mobile-grupos > h3 {
     grid-column: 1 / -1;
@@ -981,7 +1019,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 8px;
     margin: 0;
-    padding: 8px 0 max(8px, env(safe-area-inset-bottom, 0px));
+    padding: 8px 0;
     background: #fff;
   }
   #form-agenda .checklist-form-actions button {

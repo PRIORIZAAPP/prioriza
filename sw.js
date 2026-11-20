@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "prioriza-public-v68";
+const CACHE_NAME = "prioriza-public-v69";
 const PUBLIC_ASSETS = [
   "/app",
   "/site.webmanifest",
@@ -9,15 +9,15 @@ const PUBLIC_ASSETS = [
   "/css/layout.css",
   "/css/components.css",
   "/css/screens.css",
-  "/css/responsive.css?v=sprint-059-final",
+  "/css/responsive.css?v=hotfix-059-1",
   "/js/core/debug.js",
   "/js/core/utils.js",
   "/js/core/admin.js?v=sprint-058",
   "/js/core/areas.js?v=sprint-059",
-  "/js/screens/checklist.js?v=sprint-059-final",
+  "/js/screens/checklist.js?v=hotfix-059-1",
   "/js/screens/agenda.js?v=sprint-059",
   "/js/screens/workspace.js?v=sprint-059",
-  "/js/app.js?v=sprint-059"
+  "/js/app.js?v=hotfix-059-1"
 ];
 
 const PRIVATE_PREFIXES = [
