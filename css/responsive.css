@@ -1212,17 +1212,17 @@
   #checklist-form-wrap .checklist-mobile-conteudo {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 10px;
   }
   #form-checklist .checklist-mobile-conteudo > *,
   #form-checklist .form-more-body > div { flex-shrink: 0; min-width: 0; }
   #form-checklist .form-identity-checklist { padding: 0; border: 0; background: none; }
   #form-checklist .form-grid {
     grid-template-columns: minmax(0, 1fr);
-    gap: 6px;
-    margin-top: 6px !important;
+    gap: 10px;
+    margin-top: 10px !important;
   }
   #form-checklist :is(.form-more-options, .form-more-body) { display: contents; }
-  #form-checklist .form-more-body .field-hidden { display: block !important; }
+  #form-checklist .checklist-form-actions { padding-top: 12px; padding-bottom: 14px; }
   #form-checklist #chk-locais-sugeridos:empty { display: none; }
 }
