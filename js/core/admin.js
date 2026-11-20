@@ -2333,10 +2333,7 @@
 
     function definirEstadoVisualAgendaHoje(itemEl, bolinhaEl, status) {
       const statusAtual = status || "pendente";
-      if (itemEl) {
-        itemEl.classList.toggle("cancelada", ehStatusCancelada(statusAtual));
-        itemEl.classList.toggle("feito", ehStatusFeito(statusAtual));
-      }
+      if (itemEl) itemEl.classList.toggle("cancelada", ehStatusCancelada(statusAtual));
       if (!bolinhaEl) return;
       bolinhaEl.dataset.status = statusAtual;
       bolinhaEl.className = `agenda-status-btn ${statusAtual}`;

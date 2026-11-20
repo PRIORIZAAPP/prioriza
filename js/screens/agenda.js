@@ -347,7 +347,6 @@
             if (t.all_day) item.classList.add("all-day");
             if (t.blocked) item.classList.add("blocked");
             if (ehStatusCancelada(t.status)) item.classList.add("cancelada");
-            if (ehStatusFeito(t.status)) item.classList.add("feito");
             if (emLayoutDesktop()) {
               item.style.setProperty("--agenda-accent", obterCorIndicadorHoje(t));
             }

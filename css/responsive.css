@@ -196,12 +196,12 @@
       white-space: nowrap;
     }
 
-    .agenda-item.feito .agenda-titulo {
+    .agenda-item:has(.agenda-status-btn.feito) .agenda-titulo {
       color: #6b7280;
       text-decoration: line-through;
     }
 
-    .agenda-item.feito .agenda-tag:is(.prio1, .prio2, .prio3) { display: none; }
+    .agenda-item:has(.agenda-status-btn.feito) .agenda-tag:is(.prio1, .prio2, .prio3) { display: none; }
   }
 
   #screen-hoje #hoje-checklist-card {
