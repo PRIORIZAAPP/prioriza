@@ -129,6 +129,8 @@
         data: dataISO,
         hora_inicio: horaInicio,
         hora_fim: horaFim,
+        inicio: inicioRaw,
+        fim: fimRaw,
         origem: (evento?.origem || "google_calendar"),
         tipo_evento: "google",
         descricao: descricaoGoogleParaTexto(evento?.descricao || ""),
@@ -272,6 +274,35 @@
     }
 
     // ── AGENDA DO DIA + RESUMO BAR ────────────────────────────────
+
+    function abrirDetalhesAgendaHoje(tarefa) {
+      const status = {
+        pendente: "Pendente", em_andamento: "Em andamento", feito: "Concluído",
+        cancelada: "Cancelado", confirmed: "Confirmado",
+      }[tarefa.status] || tarefa.status;
+      const fuso = "America/Sao_Paulo";
+      const temInstante = (valor) => typeof valor === "string" && /T.*(?:Z|[+-]\d{2}:?\d{2})$/i.test(valor);
+      const data = temInstante(tarefa.inicio) ? formatarDataISOEvento(tarefa.inicio, fuso) : tarefa.data;
+      const inicio = temInstante(tarefa.inicio) ? formatarHoraEvento(tarefa.inicio, fuso) : tarefa.hora_inicio;
+      const fim = temInstante(tarefa.fim) ? formatarHoraEvento(tarefa.fim, fuso) : tarefa.hora_fim;
+      const horario = tarefa.all_day || tarefa.hora_inicio === "Dia todo"
+        ? "Dia inteiro"
+        : [inicio, fim].filter(Boolean).join(" – ");
+      const campos = [
+        ["Compromisso", tarefa.titulo],
+        ["Data", formatarDataCivilDetalhe(data)],
+        ["Horário", horario],
+        ["Status", status],
+        ["Agenda", tarefa.blocked ? "Bloqueada" : ""],
+        ["Prioridade", tarefa.prioridade],
+        ["Origem", tarefa.tipo_evento === "google" ? "Google Agenda" : tarefa.origem],
+        ["Recorrência", tarefa.recorrente ? tarefa.recurrencia : ""],
+        ["Local", tarefa.local],
+        ["Observações", tarefa.descricao],
+      ];
+      return modal.detalhesHoje(campos.filter(([, valor]) => valor)
+        .map(([rotulo, valor]) => `${rotulo}\n${valor}`).join("\n\n"), "Detalhes do compromisso");
+    }
 
     async function carregarAgendaHoje() {
       const agendaDiv  = document.getElementById("agenda-dia");
@@ -420,7 +451,12 @@
               }
             }
 
-            habilitarTituloCompletoHoje(tituloEl, conteudo.querySelectorAll(".agenda-meta"));
+            const resumoMobile = document.createElement("div");
+            resumoMobile.className = "hoje-apenas-mobile hoje-linha-secundaria";
+            resumoMobile.textContent = t.all_day || t.hora_inicio === "Dia todo"
+              ? "Dia inteiro" : (t.hora_inicio || "Sem horário");
+            conteudo.appendChild(resumoMobile);
+            adicionarAcaoDetalhesHoje(conteudo, t.titulo, () => abrirDetalhesAgendaHoje(t));
             item.appendChild(horario);
             item.appendChild(conteudo);
 
@@ -436,6 +472,14 @@
               link.title = "Abrir no Google Agenda";
               link.innerHTML = `<svg width="14" height="14" viewBox="0 0 256 256" fill="none" color="currentColor"><path d="M104 152l72-72" stroke="currentColor" stroke-width="20" stroke-linecap="round"/><path d="M136 80h40v40" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 136v48a8 8 0 0 1-8 8H72a8 8 0 0 1-8-8V112a8 8 0 0 1 8-8h48" stroke="currentColor" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
               (acoesDesktop || item).appendChild(link);
+              const menuGoogle = criarMenuAcoesContextuais({
+                hoje: true,
+                titulo: "Ações do compromisso",
+                ariaLabel: `Ações de ${t.titulo}`,
+                itens: [{ texto: "Abrir no Google Agenda", acao: () => link.click() }],
+              });
+              menuGoogle.classList.add("hoje-apenas-mobile");
+              item.appendChild(menuGoogle);
             } else if ((t.tipo_evento || "") !== "google" && !emLayoutDesktop()) {
               const bolinha = item.querySelector(".agenda-status-btn");
               const executarAcaoStatusHoje = async (novoStatus, grupoAcoes) => {
