@@ -317,6 +317,7 @@
       });
       actions.appendChild(criarMenuAcoesContextuais({
         titulo: "Ações da rotina",
+        checklist: true,
         ariaLabel: `Ações de ${item.titulo}`,
         itens: itensMenu,
       }));
@@ -423,6 +424,9 @@
     async function carregarChecklistGeral() {
       const container = document.getElementById("checklist-geral-lista");
       PriorizaUX.renderizarLoading(container, "Carregando checklist...");
+      if (window.matchMedia("(max-width: 767px)").matches) {
+        document.querySelectorAll(".timeline-menu-popover--checklist").forEach(fecharMenuAcoes);
+      }
       const filtroFreq = document.getElementById("filtro-frequencia").value;
       const filtroOrigem = document.getElementById("filtro-origem").value;
 

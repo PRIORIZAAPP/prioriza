@@ -1956,6 +1956,10 @@
 
     function fecharMenuAcoes(menu) {
       menu.hidden = true;
+      if (menu.dataset.checklistMobile) {
+        delete menu.dataset.checklistMobile;
+        menu.style.removeProperty("max-height");
+      }
       menu.__trigger?.setAttribute("aria-expanded", "false");
       menu.__owner?.closest(".checklist-item, .nota-item")?.classList.remove("menu-open");
       if (menu.__owner && !menu.__owner.isConnected) menu.remove();
@@ -1979,33 +1983,61 @@
       }
       if (evento?.type === "scroll" && evento.target === menu) return;
 
+      posicionarMenuAcoesMobile(menu);
+    }
+
+    function atualizarMenuChecklistMobile(evento) {
+      const menu = document.querySelector("[data-checklist-mobile]:not([hidden])");
+      if (!menu) return;
+      if (evento?.type === "keydown" && evento.key !== "Escape") return;
+      if (!window.matchMedia("(max-width: 767px)").matches || evento?.type === "keydown") {
+        fecharMenuAcoes(menu);
+        if (evento?.type === "keydown") menu.__trigger?.focus({ preventScroll: true });
+        return;
+      }
+      if (evento?.type === "scroll" && evento.target === menu) return;
+      posicionarMenuAcoesMobile(menu, { checklist: true });
+    }
+
+    function posicionarMenuAcoesMobile(menu, { checklist = false } = {}) {
       const margem = 8;
       const viewport = window.visualViewport;
-      const esquerda = (viewport?.offsetLeft ?? 0) + margem;
-      const direita = esquerda + (viewport?.width ?? window.innerWidth) - margem * 2;
-      const topo = (viewport?.offsetTop ?? 0) + margem;
-      const fimTela = topo + (viewport?.height ?? window.innerHeight) - margem * 2;
+      const estilos = checklist ? getComputedStyle(menu) : null;
+      const areaSegura = (lado) => parseFloat(estilos?.getPropertyValue(`--menu-safe-${lado}`)) || 0;
+      const esquerda = (viewport?.offsetLeft ?? 0) + Math.max(margem, areaSegura("left"));
+      const fimHorizontal = (viewport?.offsetLeft ?? 0) + (viewport?.width ?? window.innerWidth);
+      const direita = (checklist ? Math.min(fimHorizontal, document.documentElement.clientWidth) : fimHorizontal)
+        - Math.max(margem, areaSegura("right"));
+      const topo = (viewport?.offsetTop ?? 0) + Math.max(margem, areaSegura("top"));
+      const fimTela = (viewport?.offsetTop ?? 0) + (viewport?.height ?? window.innerHeight)
+        - Math.max(margem, areaSegura("bottom"));
       const navegacao = document.querySelector(".bottom-nav-wrapper")?.getBoundingClientRect();
       const fim = navegacao?.height ? Math.min(fimTela, navegacao.top - margem) : fimTela;
       const ancora = menu.__trigger.getBoundingClientRect();
-      if (!menu.__trigger.isConnected || ancora.bottom <= topo || ancora.top >= fim) {
+      if (!menu.__trigger.isConnected || ancora.bottom <= topo || ancora.top >= fim || (checklist && direita <= esquerda)) {
         fecharMenuAcoes(menu);
         return;
       }
 
-      menu.style.width = `${Math.min(176, direita - esquerda)}px`;
+      const larguraDisponivel = Math.min(checklist ? 200 : 176, direita - esquerda);
+      menu.style.width = `${larguraDisponivel}px`;
       const acima = Math.max(0, ancora.top - margem - topo);
       const abaixo = Math.max(0, fim - ancora.bottom - margem);
+      if (checklist && Math.max(acima, abaixo) < 44) {
+        fecharMenuAcoes(menu);
+        return;
+      }
       const alturaCompleta = menu.scrollHeight + menu.offsetHeight - menu.clientHeight;
       const abrirAcima = abaixo < alturaCompleta && acima > abaixo;
-      menu.style.maxHeight = `${abrirAcima ? acima : abaixo}px`;
-      const largura = menu.getBoundingClientRect().width;
-      const altura = menu.getBoundingClientRect().height;
+      const alturaDisponivel = abrirAcima ? acima : abaixo;
+      menu.style.maxHeight = `${alturaDisponivel}px`;
+      const largura = checklist ? larguraDisponivel : menu.getBoundingClientRect().width;
+      const altura = checklist ? Math.min(alturaCompleta, alturaDisponivel) : menu.getBoundingClientRect().height;
       menu.style.left = `${Math.max(esquerda, Math.min(ancora.right - largura, direita - largura))}px`;
       menu.style.top = `${abrirAcima ? ancora.top - margem - altura : ancora.bottom + margem}px`;
     }
 
-    function criarMenuAcoesContextuais({ titulo, ariaLabel, itens = [], hoje = false }) {
+    function criarMenuAcoesContextuais({ titulo, ariaLabel, itens = [], hoje = false, checklist = false }) {
       const wrap = document.createElement("div");
       wrap.className = "timeline-action-menu";
       const trigger = document.createElement("button");
@@ -2018,9 +2050,15 @@
       const menu = document.createElement("div");
       menu.className = "timeline-menu-popover contextual-actions-card";
       if (hoje) menu.classList.add("timeline-menu-popover--hoje");
+      if (checklist) menu.classList.add("timeline-menu-popover--checklist");
       menu.hidden = true;
       menu.__trigger = trigger;
       menu.__owner = wrap;
+      if (checklist) {
+        menu.addEventListener("click", (evento) => {
+          if (menu.dataset.checklistMobile) evento.stopPropagation();
+        });
+      }
 
       itens.forEach(({ texto, acao, danger = false }) => {
         const botao = document.createElement("button");
@@ -2056,6 +2094,11 @@
             zIndex: "10000",
             width: "176px",
           });
+          if (checklist && window.matchMedia("(max-width: 767px)").matches) {
+            menu.dataset.checklistMobile = "true";
+            atualizarMenuChecklistMobile();
+            return;
+          }
           if (hoje && window.matchMedia("(max-width: 767px)").matches) {
             atualizarMenuHoje();
             return;

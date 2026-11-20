@@ -214,6 +214,11 @@
       document.addEventListener("scroll", atualizarMenuHoje, { capture: true, passive: true });
       window.addEventListener("resize", atualizarMenuHoje);
       window.visualViewport?.addEventListener("resize", atualizarMenuHoje);
+      document.addEventListener("keydown", atualizarMenuChecklistMobile);
+      document.addEventListener("scroll", atualizarMenuChecklistMobile, { capture: true, passive: true });
+      window.addEventListener("resize", atualizarMenuChecklistMobile);
+      window.visualViewport?.addEventListener("resize", atualizarMenuChecklistMobile);
+      window.visualViewport?.addEventListener("scroll", atualizarMenuChecklistMobile);
       ajustarCategoriasNotasUI();
       window.addEventListener("resize", ajustarCategoriasNotasUI);
 
