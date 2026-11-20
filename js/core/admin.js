@@ -1645,16 +1645,29 @@
       const scope = item?.recorrente ? await modal.escolherRecorrencia("esta rotina") : "single";
       const titulo = await modal.perguntar(`Título atual: ${item.titulo || ""}`, "Editar rotina", item.titulo || "");
       if (titulo === null) return false;
-      const origem = await modal.perguntar(`Área atual: ${obterRotuloOrigemChecklist(item)}`, "Editar área", item.origem || "");
-      if (origem === null) return false;
+      let categoria = String(item.origem || "").toUpperCase() === "PESSOAL" ? "PESSOAL" : "PROFISSIONAL";
+      const categoriaOriginal = categoria;
+      if (mediaAgendaMobile.matches) {
+        const entrada = await modal.perguntar("Informe Pessoal ou Profissional.", "Editar categoria", "", categoria);
+        if (entrada === null) return false;
+        categoria = entrada.trim().toUpperCase() || categoria;
+        if (!["PESSOAL", "PROFISSIONAL"].includes(categoria)) {
+          await modal.alerta("Informe Pessoal ou Profissional.", "Categoria inválida");
+          return false;
+        }
+      }
+      const areaAtual = item.area ?? (["", "PESSOAL", "PROFISSIONAL"].includes(String(item.origem || "").toUpperCase()) ? "" : item.origem);
+      const area = await modal.perguntar(`Área atual: ${areaAtual || "Sem área"}`, "Editar área", "", areaAtual);
+      if (area === null) return false;
       const frequencia = await modal.perguntar(`Recorrência atual: ${item.frequencia || "Semanal"}`, "Editar recorrência", item.frequencia || "Semanal");
       if (frequencia === null) return false;
       const params = new URLSearchParams({
         titulo: titulo.trim() || item.titulo || "",
-        origem: origem.trim() || item.origem || "",
         frequencia: frequencia.trim() || item.frequencia || "Semanal",
         scope,
       });
+      if (area.trim() !== areaAtual || categoria !== categoriaOriginal) params.set("area", area.trim());
+      if (categoria !== categoriaOriginal) params.set("origem", categoria);
       try {
         const res = await fetch(API + `/checklist/${item.id}?` + params.toString(), { method: "PUT", headers: authHeaders() });
         if (!res.ok) throw new Error("Não foi possível editar a rotina.");
@@ -1829,8 +1842,7 @@
         em_andamento: "Em andamento",
         feito: "Concluído",
       }[status] || String(item?.status || "Não informado");
-      const origem = obterPrimeiroValorChecklist(item, ["unidade", "origem", "local"])
-        || "Não informada";
+      const origem = item?.area ?? obterPrimeiroValorChecklist(item, ["unidade", "origem", "local"]);
       const categoria = obterPrimeiroValorChecklist(item, ["categoria"])
         || (String(item?.origem || "").toUpperCase() === "PESSOAL" ? "Pessoal" : "Profissional");
       const criacao = obterPrimeiroValorChecklist(item, ["created_at", "criado_em", "data_criacao", "createdAt"]);
@@ -1840,7 +1852,7 @@
       const formatarRegistro = naHome ? formatarInstanteDetalheHoje : formatarDataCivilDetalhe;
       const linhas = [
         `Nome da tarefa\n${item?.titulo || "Sem título"}`,
-        `Área\n${origem}`,
+        `Área\n${origem || "Não informada"}`,
         `Categoria\n${categoria}`,
         `Frequência\n${item?.frequencia || item?.frequencia_interna || "Não informada"}`,
         `Status\n${statusTexto}`,
@@ -2461,6 +2473,7 @@
     }
 
     function obterRotuloOrigemChecklist(item) {
+      if (item?.area != null) return item.area || "Sem área";
       const origem = String(item?.origem || "").trim();
       const origemUpper = origem.toUpperCase();
       if (!origem) return "Profissional";
@@ -2480,17 +2493,6 @@
         label.textContent = pessoal ? "Referência (opcional)" : "Área (opcional)";
       }
       localInput.placeholder = pessoal ? "Ex.: Casa, Faculdade, Academia" : "Ex.: Trabalho, Cliente, Estudos";
-    }
-
-    function atualizarCategoriaChecklistUI() {
-      const categoria = document.getElementById("chk-categoria");
-      const localWrap = document.getElementById("chk-local")?.parentElement;
-      const localInput = document.getElementById("chk-local");
-      if (!categoria || !localWrap || !localInput) return;
-      const pessoal = (categoria.value || "PROFISSIONAL") === "PESSOAL";
-      localWrap.classList.toggle("field-hidden", pessoal);
-      localInput.disabled = pessoal;
-      if (pessoal) localInput.value = "";
     }
 
     function emLayoutDesktop() {
