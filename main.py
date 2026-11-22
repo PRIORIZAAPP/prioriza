@@ -25,7 +25,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from pydantic import BaseModel, Field
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, UniqueConstraint, column, create_engine, inspect, table, text
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, UniqueConstraint, VARCHAR, column, create_engine, inspect, table, text
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.concurrency import run_in_threadpool
@@ -989,6 +989,35 @@ def garantir_coluna_tabela(nome_tabela: str, nome_coluna: str) -> bool:
         return False
 
 
+def garantir_area_checklist(*, permitir_tabela_ausente: bool = False) -> bool:
+    def obter_coluna(conn):
+        return next((coluna for coluna in inspect(conn).get_columns("checklist") if coluna["name"] == "area"), None)
+
+    try:
+        with engine.begin() as conn:
+            if not IS_SQLITE:
+                conn.execute(text("SET LOCAL lock_timeout = '3s'"))
+
+            if permitir_tabela_ausente and not inspect(conn).has_table("checklist"):
+                return False
+
+            coluna = obter_coluna(conn)
+            if coluna is None:
+                # PostgreSQL resolves a concurrent ADD in the same statement.
+                condicao = "" if IS_SQLITE else "IF NOT EXISTS "
+                conn.execute(text(f"ALTER TABLE checklist ADD COLUMN {condicao}area VARCHAR"))
+                coluna = obter_coluna(conn)
+
+            if (coluna is None or not isinstance(coluna["type"], VARCHAR)
+                or coluna["type"].length is not None or not coluna["nullable"]):
+                raise RuntimeError("checklist.area deve ser uma coluna de texto anulável.")
+        return True
+    except Exception as erro:
+        raise RuntimeError(
+            "Inicialização interrompida: não foi possível garantir checklist.area."
+        ) from erro
+
+
 def preencher_nulos_coluna(nome_tabela: str, nome_coluna: str, valor_sql: str):
     sql = f"UPDATE {nome_tabela} SET {nome_coluna} = {valor_sql} WHERE {nome_coluna} IS NULL"
     ok, erro = executar_sql_seguro(sql)
@@ -1052,7 +1081,10 @@ def migrar_series_agenda_existentes():
 
 
 def rodar_migracoes_automaticas():
+    area_checklist_pronta = not IS_SQLITE and garantir_area_checklist(permitir_tabela_ausente=True)
     init_db()
+    if not area_checklist_pronta:
+        garantir_area_checklist()
 
     colunas_demo_usuario = (
         "demo_data_created",
@@ -1123,7 +1155,6 @@ def rodar_migracoes_automaticas():
     for tabela in ("checklist", "notes"):
         garantir_coluna_tabela(tabela, "is_demo")
     garantir_coluna_tabela("checklist", "recurrence_ended_at")
-    garantir_coluna_tabela("checklist", "area")
 
     try:
         PushSubscription.__table__.create(bind=engine, checkfirst=True)
