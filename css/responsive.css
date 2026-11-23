@@ -1042,7 +1042,7 @@
     gap: 4px 8px;
     padding: 0 8px 8px;
   }
-  #form-agenda :is(.agenda-google-check, .field-help, .agenda-google-ajuda) {
+  #form-agenda :is(.agenda-google-check, .agenda-google-ajuda) {
     overflow-wrap: anywhere;
   }
   #form-agenda .agenda-mobile-grupos > .form-grid { display: contents; }
@@ -1053,11 +1053,9 @@
     font-size: 12px;
   }
   #form-agenda .agenda-organizacao { order: -1; }
-  #form-agenda :is(#agenda-local-wrap, #agenda-locais-sugeridos, .agenda-repeticao, .agenda-integracao, .agenda-google-opcao) {
+  #form-agenda :is(.agenda-repeticao, .agenda-integracao, .agenda-google-opcao) {
     grid-column: 1 / -1;
   }
-  #form-agenda .field-help { margin-top: 3px; line-height: 1.25; }
-  #form-agenda #agenda-locais-sugeridos:empty { display: none; }
   #form-agenda .agenda-repeticao { order: 1; }
   #form-agenda .agenda-mobile-grupos select { padding-inline: 5px; font-size: 14px; }
   #form-agenda :is(.agenda-frequencia, .agenda-repetir-ate) { order: 2; }
@@ -1161,7 +1159,7 @@
   #checklist-geral-lista .check-status::after { content: ""; position: absolute; inset: -11px; }
   #checklist-geral-lista .check-info { grid-area: 1 / 2; gap: 2px; width: 100%; }
   #checklist-geral-lista .check-titulo,
-  #checklist-geral-lista .check-mobile-area {
+  #checklist-geral-lista .check-mobile-categoria {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1178,7 +1176,7 @@
     color: #475569;
     white-space: nowrap;
   }
-  #checklist-geral-lista .check-sub-mobile > :not(.check-mobile-area) { flex-shrink: 0; }
+  #checklist-geral-lista .check-sub-mobile > :not(.check-mobile-categoria) { flex-shrink: 0; }
   #checklist-geral-lista .check-sub-mobile > span + span::before { content: "·"; margin-right: 4px; }
   #checklist-geral-lista .check-mobile-retorno.atrasado { color: #b91c1c; }
   #checklist-geral-lista .checklist-item-actions {
@@ -1208,21 +1206,21 @@
 
 @media (max-width: 767px) {
   #checklist-form-wrap .checklist-form-mobile { display: block; }
-  #checklist-form-wrap :is(.checklist-form-desktop, summary) { display: none; }
+  #checklist-form-wrap .checklist-form-desktop { display: none; }
   #checklist-form-wrap .checklist-mobile-conteudo {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 10px;
   }
-  #form-checklist .checklist-mobile-conteudo > *,
-  #form-checklist .form-more-body > div { flex-shrink: 0; min-width: 0; }
+  #form-checklist .checklist-mobile-conteudo > * { flex-shrink: 0; min-width: 0; }
   #form-checklist .form-identity-checklist { padding: 0; border: 0; background: none; }
   #form-checklist .form-grid {
     grid-template-columns: minmax(0, 1fr);
-    gap: 6px;
-    margin-top: 6px !important;
+    gap: 10px;
+    margin-top: 10px !important;
   }
-  #form-checklist :is(.form-more-options, .form-more-body) { display: contents; }
-  #form-checklist .form-more-body .field-hidden { display: block !important; }
-  #form-checklist #chk-locais-sugeridos:empty { display: none; }
+}
+
+@media (max-width: 767px) {
+  #form-checklist .checklist-form-actions { padding-block: 12px 14px; }
 }

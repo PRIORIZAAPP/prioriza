@@ -29,7 +29,7 @@
           botao.textContent = "Ver usuários";
           botao.setAttribute("aria-expanded", "false");
         }
-        if (lista) lista.innerHTML = '<div class="admin-empty-state">Área disponível apenas para administradores.</div>';
+        if (lista) lista.innerHTML = '<div class="admin-empty-state">Seção disponível apenas para administradores.</div>';
         if (erro) erro.textContent = "";
       }
     }
@@ -274,14 +274,14 @@
     async function escolherCenarioInicial() {
       const res = await nativeFetch(API + "/demo/scenarios", { headers: authHeaders() });
       const cenarios = await res.json().catch(() => []);
-      if (!res.ok || !Array.isArray(cenarios)) throw new Error("Não foi possível carregar as áreas disponíveis.");
+      if (!res.ok || !Array.isArray(cenarios)) throw new Error("Não foi possível carregar os cenários disponíveis.");
       const icones = ["🏥", "💼", "👥", "📊", "⚖️", "💻", "🏢", "🎨", "🎓", "📚", "🏠"];
       return new Promise((resolve) => {
         const overlay = document.createElement("div");
         overlay.className = "modal-overlay aberto onboarding-area-overlay";
         overlay.innerHTML = `<div class="modal-box onboarding-area-box" role="dialog" aria-modal="true">
-          <h3 class="modal-titulo">Qual área mais se aproxima da sua rotina?</h3>
-          <p class="modal-mensagem">Escolha a área que melhor representa seu dia a dia.</p>
+          <h3 class="modal-titulo">Qual cenário mais se aproxima da sua rotina?</h3>
+          <p class="modal-mensagem">Escolha o cenário que melhor representa seu dia a dia.</p>
           <div class="onboarding-area-grid">${cenarios.map((item, index) => `<button type="button" class="onboarding-area-option" data-scenario-id="${textoSeguro(item.id)}"><span>${icones[index] || "•"}</span>${textoSeguro(item.name)}</button>`).join("")}</div>
           <div class="modal-btns"><button class="modal-btn-ok" type="button" data-scenario-continue disabled>Continuar</button></div>
         </div>`;
@@ -359,7 +359,6 @@
 
     async function recarregarTelasAposDemo() {
       await Promise.allSettled([
-        window.PriorizaAreas?.carregar?.(true),
         carregarAgendaHoje(),
         atualizarAgendaMesEDia(),
         carregarChecklistHoje(),
@@ -1487,7 +1486,7 @@
 
     function origemProximaAtividade(item) {
       if (item._tipo === "checklist") return obterRotuloOrigemChecklist(item);
-      return obterRotuloContextoTarefa(item) || item.local || item.origem || "Agenda";
+      return item.tipo_evento === "google" ? "Google Agenda" : obterRotuloContextoTarefa(item);
     }
 
     function obterProximasAtividadesAgrupadas() {
@@ -1645,16 +1644,16 @@
       const scope = item?.recorrente ? await modal.escolherRecorrencia("esta rotina") : "single";
       const titulo = await modal.perguntar(`Título atual: ${item.titulo || ""}`, "Editar rotina", item.titulo || "");
       if (titulo === null) return false;
-      const origem = await modal.perguntar(`Área atual: ${obterRotuloOrigemChecklist(item)}`, "Editar área", item.origem || "");
+      const origem = await perguntarCategoria(item.origem);
       if (origem === null) return false;
       const frequencia = await modal.perguntar(`Recorrência atual: ${item.frequencia || "Semanal"}`, "Editar recorrência", item.frequencia || "Semanal");
       if (frequencia === null) return false;
       const params = new URLSearchParams({
         titulo: titulo.trim() || item.titulo || "",
-        origem: origem.trim() || item.origem || "",
         frequencia: frequencia.trim() || item.frequencia || "Semanal",
         scope,
       });
+      if (origem !== categoriaPorOrigem(item.origem)) params.set("origem", origem);
       try {
         const res = await fetch(API + `/checklist/${item.id}?` + params.toString(), { method: "PUT", headers: authHeaders() });
         if (!res.ok) throw new Error("Não foi possível editar a rotina.");
@@ -1829,10 +1828,7 @@
         em_andamento: "Em andamento",
         feito: "Concluído",
       }[status] || String(item?.status || "Não informado");
-      const origem = obterPrimeiroValorChecklist(item, ["unidade", "origem", "local"])
-        || "Não informada";
-      const categoria = obterPrimeiroValorChecklist(item, ["categoria"])
-        || (String(item?.origem || "").toUpperCase() === "PESSOAL" ? "Pessoal" : "Profissional");
+      const categoria = obterRotuloOrigemChecklist(item);
       const criacao = obterPrimeiroValorChecklist(item, ["created_at", "criado_em", "data_criacao", "createdAt"]);
       const ultimaConclusao = obterPrimeiroValorChecklist(item, [
         "ultimo_exec", "ultima_conclusao", "concluido_em", "completed_at", "ultima_execucao"
@@ -1840,7 +1836,6 @@
       const formatarRegistro = naHome ? formatarInstanteDetalheHoje : formatarDataCivilDetalhe;
       const linhas = [
         `Nome da tarefa\n${item?.titulo || "Sem título"}`,
-        `Área\n${origem}`,
         `Categoria\n${categoria}`,
         `Frequência\n${item?.frequencia || item?.frequencia_interna || "Não informada"}`,
         `Status\n${statusTexto}`,
@@ -2394,20 +2389,6 @@
       renderizarLayoutAdaptativoHoje(itens);
     }
 
-    // ── LOCAIS ───────────────────────────────────────────────────
-    function getLocaisSalvos() { try { const r=localStorage.getItem("prioriza_locais"); const a=r?JSON.parse(r):[]; return Array.isArray(a)?a:[]; } catch { return []; } }
-    function salvarLocais(l)   { try { localStorage.setItem("prioriza_locais",JSON.stringify(l)); } catch(e){console.error(e);} }
-    function adicionarLocalSalvo(novo) {
-      const n=(novo||"").trim(); if(!n) return; const l=getLocaisSalvos(); if(!l.includes(n)){l.push(n);salvarLocais(l);}
-    }
-    function renderLocaisSugeridos(containerId, inputId) {
-      const c=document.getElementById(containerId); if(!c) return; c.innerHTML="";
-      getLocaisSalvos().forEach((local)=>{
-        const s=document.createElement("span"); s.className="checkbox-pill"; s.textContent=local; s.style.cursor="pointer";
-        s.addEventListener("click",()=>{ const inp=document.getElementById(inputId); if(inp) inp.value=local; }); c.appendChild(s);
-      });
-    }
-
     function restaurarScrollJanela(scrollTop) {
       try {
         window.scrollTo(0, Number(scrollTop || 0));
@@ -2450,47 +2431,30 @@
       });
     }
 
+    function categoriaPorOrigem(origem) {
+      return String(origem || "").trim().toUpperCase() === "PESSOAL" ? "PESSOAL" : "PROFISSIONAL";
+    }
+
+    async function perguntarCategoria(origem) {
+      const atual = categoriaPorOrigem(origem);
+      const valor = await modal.perguntar("Informe Pessoal ou Profissional.", "Categoria", "", atual);
+      if (valor === null) return null;
+      const categoria = valor.trim().toUpperCase() || atual;
+      if (categoria === "PESSOAL" || categoria === "PROFISSIONAL") return categoria;
+      await modal.alerta("Informe Pessoal ou Profissional.", "Categoria inválida");
+      return null;
+    }
+
     function obterRotuloContextoTarefa(tarefa) {
-      const origem = String(tarefa?.origem || "").trim();
-      const local = String(tarefa?.local || "").trim();
-      const origemUpper = origem.toUpperCase();
-      if (origemUpper === "PESSOAL") return "Pessoal";
-      if (local) return local;
-      if (origemUpper === "PROFISSIONAL") return "Profissional";
-      return origem;
+      return categoriaPorOrigem(tarefa?.origem) === "PESSOAL" ? "Pessoal" : "Profissional";
     }
 
     function obterRotuloOrigemChecklist(item) {
-      const origem = String(item?.origem || "").trim();
-      const origemUpper = origem.toUpperCase();
-      if (!origem) return "Profissional";
-      if (origemUpper === "PESSOAL") return "Pessoal";
-      if (origemUpper === "PROFISSIONAL") return "Profissional";
-      return origem;
+      return obterRotuloContextoTarefa(item);
     }
 
-    function atualizarCategoriaAgendaUI() {
-      const categoria = document.getElementById("agenda-categoria");
-      const localInput = document.getElementById("agenda-local");
-      const localWrap = document.getElementById("agenda-local-wrap");
-      if (!categoria || !localInput || !localWrap) return;
-      const pessoal = (categoria.value || "PROFISSIONAL") === "PESSOAL";
-      const label = localWrap.querySelector("label");
-      if (label) {
-        label.textContent = pessoal ? "Referência (opcional)" : "Área (opcional)";
-      }
-      localInput.placeholder = pessoal ? "Ex.: Casa, Faculdade, Academia" : "Ex.: Trabalho, Cliente, Estudos";
-    }
-
-    function atualizarCategoriaChecklistUI() {
-      const categoria = document.getElementById("chk-categoria");
-      const localWrap = document.getElementById("chk-local")?.parentElement;
-      const localInput = document.getElementById("chk-local");
-      if (!categoria || !localWrap || !localInput) return;
-      const pessoal = (categoria.value || "PROFISSIONAL") === "PESSOAL";
-      localWrap.classList.toggle("field-hidden", pessoal);
-      localInput.disabled = pessoal;
-      if (pessoal) localInput.value = "";
+    function localEventoGoogle(item) {
+      return item?.tipo_evento === "google" ? item.local : "";
     }
 
     function emLayoutDesktop() {
@@ -2782,7 +2746,7 @@
       }
       if (tarefa?.all_day) partes.push("Dia inteiro");
       if (tarefa?.blocked) partes.push("Agenda bloqueada");
-      if (tarefa?.local && !partes.includes(tarefa.local)) partes.push(tarefa.local);
+      if (localEventoGoogle(tarefa)) partes.push(localEventoGoogle(tarefa));
       if (tarefa?.descricao && String(tarefa.descricao).trim()) partes.push(String(tarefa.descricao).trim());
       return partes.filter(Boolean).slice(0, 2).join(" · ");
     }

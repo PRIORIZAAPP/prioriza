@@ -3,103 +3,96 @@
     "id": "cenario-01",
     "name": "Saúde",
     "persona": "Coordenador Regional de Radiologia responsável por múltiplas unidades, equipes, indicadores e qualidade assistencial.",
-    "areas": [
-      "Hospitais",
-      "Equipe",
-      "Administrativo",
-      "Projetos",
-      "Pessoal"
-    ],
     "agenda": [
       {
         "day": "Seg",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Seg",
         "time": "08:00",
         "title": "Reunião de alinhhamento com coordenadores",
-        "area": "Equipe"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Seg",
         "time": "14:00",
         "title": "Revisar indicadores",
-        "area": "Administrativo"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Ter",
         "time": "09:00",
         "title": "Reunião com direção do Hospital",
-        "area": "Hospitais"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "15:00",
         "title": "Treinamento de novos técnicos",
-        "area": "Equipe"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Qua",
         "time": "09:00",
         "title": "Auditoria interna",
-        "area": "Hospitais"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "15:00",
         "title": "Reunião com RH",
-        "area": "Administrativo"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Qui",
         "time": "09:00",
         "title": "Visita técnica",
-        "area": "Hospitais"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "09:00",
         "title": "Fechamento de indicadores",
-        "area": "Administrativo"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "14:00",
         "title": "Reunião com diretoria",
-        "area": "Hospitais"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sáb",
         "time": "09:30",
         "title": "Compras da semana",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Dom",
         "time": "20:00",
         "title": "Planejamento da próxima semana",
-        "area": "Projetos"
+        "categoria": "PROFISSIONAL"
       }
     ],
     "checklist": [
@@ -151,103 +144,96 @@
     "id": "cenario-02",
     "name": "Comercial e Vendas",
     "persona": "Executivo(a) de Contas responsável por prospecção, negociação, relacionamento com clientes e gestão do funil de vendas.",
-    "areas": [
-      "Clientes",
-      "Prospecção",
-      "Comercial",
-      "Administrativo",
-      "Pessoal"
-    ],
     "agenda": [
       {
         "day": "Seg",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Seg",
         "time": "09:00",
         "title": "Reunião de pipeline",
-        "area": "Comercial"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Seg",
         "time": "15:00",
         "title": "Contato com clientes prioritários",
-        "area": "Clientes"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Ter",
         "time": "10:00",
         "title": "Apresentação de proposta",
-        "area": "Clientes"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "16:00",
         "title": "Atualizar CRM",
-        "area": "Administrativo"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Qua",
         "time": "09:30",
         "title": "Negociação comercial",
-        "area": "Clientes"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "18:30",
         "title": "Jantar em família",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Qui",
         "time": "08:30",
         "title": "Prospecção ativa",
-        "area": "Prospecção"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "14:00",
         "title": "Follow-up de propostas",
-        "area": "Clientes"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "09:00",
         "title": "Revisão das metas",
-        "area": "Comercial"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "16:00",
         "title": "Planejar visitas",
-        "area": "Administrativo"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sáb",
         "time": "10:00",
         "title": "Café com parceiro",
-        "area": "Clientes"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Dom",
         "time": "20:00",
         "title": "Planejamento da próxima semana",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       }
     ],
     "checklist": [
@@ -299,103 +285,96 @@
     "id": "cenario-03",
     "name": "RH e Recrutamento",
     "persona": "Analista de RH responsável por recrutamento e seleção, admissões, integração de novos colaboradores, treinamentos e apoio aos gestores.",
-    "areas": [
-      "Recrutamento",
-      "Admissões",
-      "Treinamentos",
-      "Administrativo",
-      "Pessoal"
-    ],
     "agenda": [
       {
         "day": "Seg",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Seg",
         "time": "09:00",
         "title": "Alinhamento de vagas abertas",
-        "area": "Recrutamento"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Seg",
         "time": "15:00",
         "title": "Triagem de currículos",
-        "area": "Recrutamento"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Ter",
         "time": "09:30",
         "title": "Entrevista para Analista Financeiro",
-        "area": "Recrutamento"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "14:00",
         "title": "Agendar exames admissionais",
-        "area": "Admissões"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Qua",
         "time": "10:00",
         "title": "Integração de novos colaboradores",
-        "area": "Treinamentos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "16:00",
         "title": "Reunião com gestores sobre novas vagas",
-        "area": "Administrativo"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "08:30",
         "title": "Entrevistas técnicas",
-        "area": "Recrutamento"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "15:00",
         "title": "Conferir documentos admissionais",
-        "area": "Admissões"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "09:00",
         "title": "Fechamento semanal das vagas",
-        "area": "Administrativo"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "16:00",
         "title": "Planejar entrevistas da próxima semana",
-        "area": "Recrutamento"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sáb",
         "time": "10:00",
         "title": "Organizar documentos pessoais",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Dom",
         "time": "20:00",
         "title": "Planejamento da próxima semana",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       }
     ],
     "checklist": [
@@ -447,103 +426,96 @@
     "id": "cenario-04",
     "name": "Gestão e Administrativo",
     "persona": "Supervisor(a) Administrativo(a) responsável por coordenar equipes de apoio, acompanhar indicadores, garantir o funcionamento da operação e apoiar a diretoria nas decisões do dia a dia.",
-    "areas": [
-      "Operações",
-      "Equipe",
-      "Financeiro",
-      "Administrativo",
-      "Pessoal"
-    ],
     "agenda": [
       {
         "day": "Seg",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Seg",
         "time": "08:30",
         "title": "Reunião semanal com líderes",
-        "area": "Equipe"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Seg",
         "time": "15:00",
         "title": "Acompanhar indicadores operacionais",
-        "area": "Operações"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Ter",
         "time": "09:00",
         "title": "Reunião com fornecedor de insumos",
-        "area": "Administrativo"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "16:00",
         "title": "Validar solicitações de compras",
-        "area": "Financeiro"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Qua",
         "time": "10:00",
         "title": "Reunião de acompanhamento de metas",
-        "area": "Equipe"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "15:30",
         "title": "Revisar plano de ação das pendências",
-        "area": "Operações"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "09:00",
         "title": "Visita aos setores administrativos",
-        "area": "Administrativo"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "14:30",
         "title": "Conferir orçamento do mês",
-        "area": "Financeiro"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "09:00",
         "title": "Apresentar indicadores à diretoria",
-        "area": "Operações"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "16:00",
         "title": "Definir prioridades da próxima semana",
-        "area": "Equipe"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sáb",
         "time": "11:00",
         "title": "Resolver assuntos bancários",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Dom",
         "time": "20:00",
         "title": "Planejamento da próxima semana",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       }
     ],
     "checklist": [
@@ -595,103 +567,96 @@
     "id": "cenario-05",
     "name": "Jurídico",
     "persona": "Advogado(a) responsável pelo acompanhamento de processos, atendimento a clientes, reuniões, elaboração de peças processuais e cumprimento de prazos.",
-    "areas": [
-      "Clientes",
-      "Processos",
-      "Audiências",
-      "Administrativo",
-      "Pessoal"
-    ],
     "agenda": [
       {
         "day": "Seg",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Seg",
         "time": "09:00",
         "title": "Revisar pauta processual da semana",
-        "area": "Processos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Seg",
         "time": "15:00",
         "title": "Reunião com cliente",
-        "area": "Clientes"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Ter",
         "time": "09:30",
         "title": "Audiência trabalhista",
-        "area": "Audiências"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "16:00",
         "title": "Elaborar contestação",
-        "area": "Processos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Qua",
         "time": "10:00",
         "title": "Atendimento presencial a cliente",
-        "area": "Clientes"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "15:30",
         "title": "Revisar contratos",
-        "area": "Administrativo"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "09:00",
         "title": "Audiência cível",
-        "area": "Audiências"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "14:30",
         "title": "Protocolar petições",
-        "area": "Processos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "09:00",
         "title": "Reunião de alinhamento do escritório",
-        "area": "Administrativo"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "16:00",
         "title": "Revisar prazos da próxima semana",
-        "area": "Processos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sáb",
         "time": "10:30",
         "title": "Almoço em família",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Dom",
         "time": "20:00",
         "title": "Planejamento da próxima semana",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       }
     ],
     "checklist": [
@@ -743,103 +708,96 @@
     "id": "cenario-06",
     "name": "Tecnologia",
     "persona": "Product Manager em uma empresa de tecnologia. Atua alinhando produto, desenvolvimento, design e suporte, acompanhando entregas, métricas e prioridades da sprint.",
-    "areas": [
-      "Produto",
-      "Desenvolvimento",
-      "Reuniões",
-      "Projetos",
-      "Pessoal"
-    ],
     "agenda": [
       {
         "day": "Seg",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Seg",
         "time": "09:00",
         "title": "Planning da Sprint",
-        "area": "Produto"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Seg",
         "time": "15:00",
         "title": "Refinar backlog",
-        "area": "Projetos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Ter",
         "time": "09:30",
         "title": "Daily com o time",
-        "area": "Desenvolvimento"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "16:00",
         "title": "Revisar especificação de nova funcionalidade",
-        "area": "Produto"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Qua",
         "time": "10:00",
         "title": "Reunião com UX para validar protótipo",
-        "area": "Produto"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "15:30",
         "title": "Acompanhar homologação",
-        "area": "Desenvolvimento"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "09:00",
         "title": "Alinhamento com Suporte",
-        "area": "Reuniões"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "14:30",
         "title": "Priorização do backlog",
-        "area": "Projetos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "09:00",
         "title": "Review da Sprint",
-        "area": "Desenvolvimento"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "16:00",
         "title": "Retrospectiva da Sprint",
-        "area": "Reuniões"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sáb",
         "time": "10:00",
         "title": "Estudar tendências de IA",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Dom",
         "time": "20:00",
         "title": "Planejamento da próxima semana",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       }
     ],
     "checklist": [
@@ -891,103 +849,96 @@
     "id": "cenario-07",
     "name": "Negócios",
     "persona": "Empresário(a) responsável pela gestão de uma pequena empresa, acompanhando finanças, clientes, marketing, equipe e crescimento do negócio.",
-    "areas": [
-      "Empresa",
-      "Clientes",
-      "Financeiro",
-      "Marketing",
-      "Pessoal"
-    ],
     "agenda": [
       {
         "day": "Seg",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Seg",
         "time": "08:30",
         "title": "Reunião de abertura da semana com a equipe",
-        "area": "Empresa"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Seg",
         "time": "15:00",
         "title": "Analisar fluxo de caixa",
-        "area": "Financeiro"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Ter",
         "time": "10:00",
         "title": "Reunião com fornecedor estratégico",
-        "area": "Empresa"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "16:00",
         "title": "Revisar campanhas de marketing",
-        "area": "Marketing"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Qua",
         "time": "09:30",
         "title": "Visita a cliente importante",
-        "area": "Clientes"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "15:00",
         "title": "Avaliar resultados de vendas",
-        "area": "Financeiro"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "09:00",
         "title": "Definir metas do próximo mês",
-        "area": "Empresa"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "14:30",
         "title": "Gravar conteúdo para redes sociais",
-        "area": "Marketing"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "09:00",
         "title": "Fechamento financeiro semanal",
-        "area": "Financeiro"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "16:00",
         "title": "Reunião de feedback com equipe",
-        "area": "Empresa"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sáb",
         "time": "10:00",
         "title": "Pesquisar tendências do mercado",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Dom",
         "time": "20:00",
         "title": "Planejamento da próxima semana",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       }
     ],
     "checklist": [
@@ -1039,103 +990,96 @@
     "id": "cenario-08",
     "name": "Marketing e Criativos",
     "persona": "Profissional de Marketing responsável pelo planejamento de conteúdo, campanhas, design, redes sociais e relacionamento com clientes.",
-    "areas": [
-      "Clientes",
-      "Conteúdo",
-      "Campanhas",
-      "Projetos",
-      "Pessoal"
-    ],
     "agenda": [
       {
         "day": "Seg",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Seg",
         "time": "09:00",
         "title": "Planejamento de conteúdo da semana",
-        "area": "Conteúdo"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Seg",
         "time": "15:00",
         "title": "Reunião de briefing com cliente",
-        "area": "Clientes"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Ter",
         "time": "09:30",
         "title": "Gravar vídeos para redes sociais",
-        "area": "Conteúdo"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "16:00",
         "title": "Aprovação de artes",
-        "area": "Projetos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Qua",
         "time": "10:00",
         "title": "Analisar métricas das campanhas",
-        "area": "Campanhas"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "15:30",
         "title": "Reunião de alinhamento com designer",
-        "area": "Projetos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "09:00",
         "title": "Publicação da campanha principal",
-        "area": "Campanhas"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "14:30",
         "title": "Sessão de fotos para produtos",
-        "area": "Conteúdo"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "09:00",
         "title": "Apresentação de resultados ao cliente",
-        "area": "Clientes"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "16:00",
         "title": "Planejar calendário do próximo mês",
-        "area": "Projetos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sáb",
         "time": "10:00",
         "title": "Buscar referências criativas",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Dom",
         "time": "20:00",
         "title": "Planejamento da próxima semana",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       }
     ],
     "checklist": [
@@ -1187,103 +1131,96 @@
     "id": "cenario-09",
     "name": "Educação",
     "persona": "Professor(a) universitário(a) responsável por aulas, orientação de alunos, preparação de conteúdos, correção de avaliações e participação em reuniões acadêmicas.",
-    "areas": [
-      "Aulas",
-      "Alunos",
-      "Planejamento",
-      "Instituição",
-      "Pessoal"
-    ],
     "agenda": [
       {
         "day": "Seg",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Seg",
         "time": "08:00",
         "title": "Preparar aula da semana",
-        "area": "Planejamento"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Seg",
         "time": "19:00",
         "title": "Aula - Turma A",
-        "area": "Aulas"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Ter",
         "time": "09:30",
         "title": "Atendimento aos alunos",
-        "area": "Alunos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "19:00",
         "title": "Aula - Turma B",
-        "area": "Aulas"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "06:00",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Qua",
         "time": "14:00",
         "title": "Correção de avaliações",
-        "area": "Alunos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "19:00",
         "title": "Aula - Turma C",
-        "area": "Aulas"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "10:00",
         "title": "Reunião pedagógica",
-        "area": "Instituição"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "19:00",
         "title": "Aula - Turma D",
-        "area": "Aulas"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "09:00",
         "title": "Atualizar material didático",
-        "area": "Planejamento"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "15:00",
         "title": "Lançar notas no sistema",
-        "area": "Instituição"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sáb",
         "time": "09:00",
         "title": "Leitura e atualização profissional",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Dom",
         "time": "20:00",
         "title": "Planejamento da próxima semana",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       }
     ],
     "checklist": [
@@ -1335,103 +1272,96 @@
     "id": "cenario-10",
     "name": "Estudantes",
     "persona": "Universitário(a) que concilia aulas, estudos, trabalhos em grupo, provas e desenvolvimento pessoal, buscando manter uma rotina organizada durante o semestre.",
-    "areas": [
-      "Faculdade",
-      "Estudos",
-      "Trabalhos",
-      "Projetos",
-      "Pessoal"
-    ],
     "agenda": [
       {
         "day": "Seg",
         "time": "06:30",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Seg",
         "time": "08:00",
         "title": "Aula - Anatomia",
-        "area": "Faculdade"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Seg",
         "time": "19:00",
         "title": "Revisão do conteúdo",
-        "area": "Estudos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "06:30",
         "title": "Academia",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Ter",
         "time": "09:00",
         "title": "Reunião do trabalho em grupo",
-        "area": "Trabalhos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "20:00",
         "title": "Resolver lista de exercícios",
-        "area": "Estudos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "08:00",
         "title": "Aula - Fisiologia",
-        "area": "Faculdade"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "18:30",
         "title": "Monitoria",
-        "area": "Faculdade"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "20:00",
         "title": "Organizar resumos",
-        "area": "Estudos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "09:00",
         "title": "Pesquisa para seminário",
-        "area": "Projetos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "19:00",
         "title": "Aula prática",
-        "area": "Faculdade"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "14:00",
         "title": "Entrega de trabalho",
-        "area": "Trabalhos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "20:00",
         "title": "Revisão para prova",
-        "area": "Estudos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sáb",
         "time": "09:30",
         "title": "Biblioteca",
-        "area": "Estudos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Dom",
         "time": "20:00",
         "title": "Planejamento da próxima semana",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       }
     ],
     "checklist": [
@@ -1483,103 +1413,96 @@
     "id": "cenario-11",
     "name": "Uso Pessoal",
     "persona": "Pessoa que busca equilibrar vida pessoal, saúde, família, casa e objetivos de longo prazo. Utiliza o PRIORIZA para organizar tudo o que normalmente ficaria espalhado entre a memória, papel e aplicativos.",
-    "areas": [
-      "Casa",
-      "Saúde",
-      "Família",
-      "Objetivos",
-      "Pessoal"
-    ],
     "agenda": [
       {
         "day": "Seg",
         "time": "06:00",
         "title": "Academia",
-        "area": "Saúde"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Seg",
         "time": "19:00",
         "title": "Organizar contas da semana",
-        "area": "Objetivos"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "06:00",
         "title": "Academia",
-        "area": "Saúde"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Ter",
         "time": "18:30",
         "title": "Consulta odontológica",
-        "area": "Saúde"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "06:00",
         "title": "Academia",
-        "area": "Saúde"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qua",
         "time": "20:00",
         "title": "Jantar em família",
-        "area": "Família"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "06:00",
         "title": "Academia",
-        "area": "Saúde"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Qui",
         "time": "19:00",
         "title": "Separar documentos pessoais",
-        "area": "Pessoal"
+        "categoria": "PESSOAL"
       },
       {
         "day": "Sex",
         "time": "06:00",
         "title": "Academia",
-        "area": "Saúde"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sex",
         "time": "20:00",
         "title": "Cinema",
-        "area": "Família"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sáb",
         "time": "09:00",
         "title": "Compras do mês",
-        "area": "Casa"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Sáb",
         "time": "15:00",
         "title": "Lavar o carro",
-        "area": "Casa"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Dom",
         "time": "10:00",
         "title": "Almoço em família",
-        "area": "Família"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Dom",
         "time": "17:00",
         "title": "Planejar refeições da semana",
-        "area": "Casa"
+        "categoria": "PROFISSIONAL"
       },
       {
         "day": "Dom",
         "time": "20:00",
         "title": "Planejamento da próxima semana",
-        "area": "Objetivos"
+        "categoria": "PROFISSIONAL"
       }
     ],
     "checklist": [
