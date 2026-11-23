@@ -33,11 +33,6 @@
       })();
 
       await aplicarTema(temaSalvo);
-      if (window.PriorizaAreas) {
-        try { await window.PriorizaAreas.carregar(); }
-        catch (error) { console.error("[PRIORIZA] Áreas indisponíveis:", error); }
-      }
-
       atualizarRelogio();
       setInterval(atualizarRelogio, 60000);
       diaOperacionalExibido = dataHojeISO();
@@ -107,8 +102,6 @@
       abrirTela(document.querySelector(".screen.active")?.id || "screen-hoje");
       atualizarToggleUsuariosAdmin();
       atualizarCampoRecorrenciaAgenda();
-      atualizarCategoriaAgendaUI();
-      atualizarCategoriaChecklistUI();
       atualizarOffsetsCabecalho();
       renderizarMiniCalendarioDesktop();
       window.addEventListener("resize", atualizarOffsetsCabecalho);
@@ -284,8 +277,6 @@
       document.getElementById("agenda-repetir")?.addEventListener("change", atualizarCampoRecorrenciaAgenda);
       document.getElementById("agenda-all-day")?.addEventListener("change", atualizarOpcoesDiaInteiroAgenda);
       document.getElementById("agenda-blocked")?.addEventListener("change", atualizarOpcoesDiaInteiroAgenda);
-      document.getElementById("agenda-categoria")?.addEventListener("change", atualizarCategoriaAgendaUI);
-      document.getElementById("chk-categoria")?.addEventListener("change", atualizarCategoriaChecklistUI);
       document.getElementById("agenda-titulo")?.addEventListener("keydown", (ev) => {
         if (ev.key === "Escape") toggleFormAgenda(false);
       });
@@ -317,7 +308,6 @@
         const intervalo = mobile ? lerIntervaloAgendaMobile() : null;
         const titulo    = document.getElementById("agenda-titulo")?.value.trim();
         const categoria = document.getElementById("agenda-categoria")?.value || "PROFISSIONAL";
-        const local     = document.getElementById("agenda-local")?.value.trim()||"";
         const origem    = categoria === "PESSOAL" ? "PESSOAL" : "PROFISSIONAL";
         const data      = document.getElementById("agenda-data")?.value.trim();
         const allDay    = document.getElementById("agenda-all-day")?.checked === true;
@@ -342,7 +332,7 @@
         try {
           let rota = "/tarefas";
           let params = new URLSearchParams({
-            titulo, origem, local, data, hora_inicio: hora, duracao_min: duracao, prioridade,
+            titulo, origem, data, hora_inicio: hora, duracao_min: duracao, prioridade,
             repetir, repetir_ate: repetir === "NENHUMA" ? "" : repetirAte, all_day: String(allDay), blocked: String(blocked),
             sincronizar_google: String(syncGoogle)
           });
@@ -357,7 +347,6 @@
             enviarSeMudou("titulo", titulo, anterior.titulo);
             enviarSeMudou("data", data, anterior.data);
             enviarSeMudou("prioridade", prioridade, anterior.prioridade || 2);
-            enviarSeMudou("local", local, anterior.local);
             enviarSeMudou("blocked", blocked, Boolean(anterior.blocked));
             if (categoria !== edicao.categoria) params.set("origem", origem);
             if (intervaloAgendaMobileAlterado(intervalo)) {
@@ -403,18 +392,12 @@
             }
           }
 
-          if(local&&!getLocaisSalvos().includes(local)){
-            if(await modal.confirmar(`Salvar "${local}" como local frequente?`,"Local frequente","verde")){
-              adicionarLocalSalvo(local); renderLocaisSugeridos("agenda-locais-sugeridos","agenda-local"); renderLocaisSugeridos("chk-locais-sugeridos","chk-local");
-            }
-          }
           document.getElementById("form-agenda").reset();
           document.getElementById("agenda-categoria").value = "PROFISSIONAL";
           document.getElementById("agenda-sincronizar-google").checked = false;
           document.getElementById("agenda-duracao").value = "60";
           atualizarCampoRecorrenciaAgenda();
           atualizarOpcoesDiaInteiroAgenda();
-          atualizarCategoriaAgendaUI();
           toggleFormAgenda(false);
           await modal.alerta(mensagemSucesso,"Sucesso");
           await carregarAgendaHoje(); await atualizarAgendaMesEDia(); await carregarPessoalLista();
@@ -426,7 +409,7 @@
       });
 
       document.getElementById("filtro-frequencia")?.addEventListener("change", carregarChecklistGeral);
-      document.getElementById("filtro-origem")?.addEventListener("input",  carregarChecklistGeral);
+      document.getElementById("filtro-categoria")?.addEventListener("change",  carregarChecklistGeral);
       document.querySelectorAll("[data-checklist-tab]").forEach((botao) => {
         botao.addEventListener("click", () => {
           checklistGeralAbaAtiva = botao.dataset.checklistTab || "pendente";
@@ -465,9 +448,6 @@
           btn.textContent=notaEmEdicao?"Salvar alterações":"Salvar anotação";
         }
       });
-
-      renderLocaisSugeridos("agenda-locais-sugeridos","agenda-local");
-      renderLocaisSugeridos("chk-locais-sugeridos","chk-local");
 
       // ── BACKUP E RESTAURAÇÃO ──────────────────────────────────────
       document.getElementById("btn-exportar-backup")?.addEventListener("click", async () => {
@@ -534,7 +514,7 @@
           const resultado = await res.json();
           if (!res.ok) throw new Error(resultado.detail || "Erro ao restaurar.");
           const imp = resultado.importadas || {};
-          statusEl.textContent = `✅ ${resultado.mensagem}`;
+          statusEl.textContent = resultado.mensagem + (imp.erros?.length ? ` Ocorreram ${imp.erros.length} avisos na restauração.` : "");
           statusEl.style.color = "#10b981";
           if (imp.erros?.length) {
             console.warn("[BACKUP] Erros na importação:", imp.erros);

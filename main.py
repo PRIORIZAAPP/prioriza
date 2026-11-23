@@ -177,35 +177,6 @@ class User(Base):
         }
 
 
-class UserArea(Base):
-    __tablename__ = "user_areas"
-    __table_args__ = (UniqueConstraint("user_id", "normalized_name", name="uq_user_areas_user_name"),)
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, nullable=False, index=True)
-    name = Column(String(40), nullable=False)
-    normalized_name = Column(String(40), nullable=False)
-    color = Column(String(20), nullable=False, default="#2563eb")
-    icon = Column(String(30), nullable=True)
-    position = Column(Integer, nullable=False, default=0)
-    active = Column(Boolean, nullable=False, default=True)
-    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
-    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
-
-    def to_dict(self, has_history: bool = False):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "color": self.color,
-            "icon": self.icon,
-            "position": int(self.position or 0),
-            "active": bool(self.active),
-            "has_history": bool(has_history),
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-        }
-
-
 class Tarefa(Base):
     __tablename__ = "tarefas"
 
@@ -726,101 +697,6 @@ def normalizar_email(email: str) -> str:
     return (email or "").strip().lower()
 
 
-AREA_CORES = {"#2563eb", "#16a34a", "#7c3aed", "#ea580c", "#dc2626", "#64748b", "#0d9488", "#db2777"}
-AREA_ICONES = {None, "briefcase", "user", "house", "book-open", "folder", "star", "shopping-cart", "monitor", "heart-pulse", "wallet"}
-
-
-def limpar_nome_area(valor: str) -> str:
-    return re.sub(r"\s+", " ", str(valor or "").strip())
-
-
-def normalizar_nome_area(valor: str) -> str:
-    return unicodedata.normalize("NFKC", limpar_nome_area(valor)).casefold()
-
-
-def validar_nome_area(valor: str) -> tuple[str, str]:
-    nome = limpar_nome_area(valor)
-    if not 1 <= len(nome) <= 40:
-        raise HTTPException(status_code=400, detail="O nome da área deve ter entre 1 e 40 caracteres.")
-    return nome, normalizar_nome_area(nome)
-
-
-def validar_cor_area(valor: Optional[str]) -> str:
-    cor = str(valor or "#2563eb").strip().lower()
-    if cor not in AREA_CORES:
-        raise HTTPException(status_code=400, detail="Cor de área inválida.")
-    return cor
-
-
-def validar_icone_area(valor: Optional[str]) -> Optional[str]:
-    icone = str(valor).strip().lower() if valor else None
-    if icone not in AREA_ICONES:
-        raise HTTPException(status_code=400, detail="Ícone de área inválido.")
-    return icone
-
-
-def area_tem_historico(db: Session, user_id: int, nome: str) -> bool:
-    alvo = normalizar_nome_area(nome)
-    origens = [v for (v,) in db.query(Tarefa.origem).filter(Tarefa.user_id == user_id).all()]
-    origens += [v for (v,) in db.query(Tarefa.local).filter(Tarefa.user_id == user_id).all()]
-    origens += [v for (v,) in db.query(ChecklistItem.origem).filter(ChecklistItem.user_id == user_id).all()]
-    return any(normalizar_nome_area(v) == alvo for v in origens if limpar_nome_area(v))
-
-
-def criar_areas_padrao(db: Session, user_id: int) -> list[UserArea]:
-    criadas = []
-    for posicao, (nome, cor, icone) in enumerate((("Trabalho", "#2563eb", "briefcase"), ("Pessoal", "#7c3aed", "user")), 1):
-        normalizado = normalizar_nome_area(nome)
-        existente = db.query(UserArea).filter(UserArea.user_id == user_id, UserArea.normalized_name == normalizado).first()
-        if existente:
-            continue
-        area = UserArea(user_id=user_id, name=nome, normalized_name=normalizado, color=cor, icon=icone, position=posicao, active=True)
-        db.add(area)
-        criadas.append(area)
-    return criadas
-
-
-def migrar_areas_existentes(db: Session) -> dict[str, int]:
-    relatorio = {"usuarios": 0, "origens_unicas": 0, "areas_criadas": 0, "duplicatas_evitadas": 0, "erros": 0}
-    for usuario in db.query(User).order_by(User.id).all():
-        relatorio["usuarios"] += 1
-        try:
-            valores = [v for (v,) in db.query(Tarefa.origem).filter(Tarefa.user_id == usuario.id).all()]
-            valores += [v for (v,) in db.query(Tarefa.local).filter(Tarefa.user_id == usuario.id).all()]
-            valores += [v for (v,) in db.query(ChecklistItem.origem).filter(ChecklistItem.user_id == usuario.id).all()]
-            nomes: dict[str, str] = {}
-            for valor in valores:
-                nome = limpar_nome_area(valor)
-                if not nome:
-                    continue
-                chave = normalizar_nome_area(nome)
-                if chave in nomes:
-                    relatorio["duplicatas_evitadas"] += 1
-                else:
-                    nomes[chave] = "Pessoal" if chave == "pessoal" else nome
-            relatorio["origens_unicas"] += len(nomes)
-            existentes = {a.normalized_name for a in db.query(UserArea).filter(UserArea.user_id == usuario.id).all()}
-            proxima = db.query(UserArea).filter(UserArea.user_id == usuario.id).count() + 1
-            if not nomes and not existentes:
-                criadas = criar_areas_padrao(db, usuario.id)
-                relatorio["areas_criadas"] += len(criadas)
-                continue
-            for chave, nome in nomes.items():
-                if chave in existentes:
-                    relatorio["duplicatas_evitadas"] += 1
-                    continue
-                db.add(UserArea(user_id=usuario.id, name=nome[:40], normalized_name=normalizar_nome_area(nome[:40]), color="#2563eb", position=proxima, active=True))
-                existentes.add(chave)
-                proxima += 1
-                relatorio["areas_criadas"] += 1
-        except Exception:
-            relatorio["erros"] += 1
-            db.rollback()
-            continue
-    db.commit()
-    return relatorio
-
-
 def validar_email(email: str) -> bool:
     return bool(EMAIL_RE.match(normalizar_email(email)))
 
@@ -1189,7 +1065,6 @@ def _total_demo_ativo(db: Session, user_id: int) -> int:
 
 
 DEMO_SCENARIOS_PATH = BASE_DIR / "demo_scenarios.json"
-DEMO_SCENARIO_COLORS = ("#2563eb", "#0f766e", "#7c3aed", "#c2410c", "#be123c")
 DEMO_DAY_OFFSETS = {"Seg": 0, "Ter": 1, "Qua": 2, "Qui": 3, "Sex": 4, "Sáb": 5, "Sab": 5, "Dom": 6}
 
 
@@ -1207,7 +1082,7 @@ def buscar_cenario_demo(cenario_id: str) -> dict[str, Any]:
     for cenario in carregar_cenarios_demo():
         if cenario.get("id") == cenario_id:
             return cenario
-    raise HTTPException(status_code=400, detail="Selecione uma área válida.")
+    raise HTTPException(status_code=400, detail="Selecione um cenário válido.")
 
 
 def _desativar_demo_modulo(db: Session, user_id: int, modulo: str):
@@ -1243,31 +1118,13 @@ def importar_cenario_demo(db: Session, user: User, cenario_id: str) -> dict[str,
     _desativar_demo_modulo(db, user_id, "checklist")
     _desativar_demo_modulo(db, user_id, "notes")
 
-    existentes = {a.normalized_name: a for a in db.query(UserArea).filter(UserArea.user_id == user_id).all()}
-    proxima_posicao = len(existentes) + 1
-    for indice, nome in enumerate(cenario["areas"]):
-        normalizado = normalizar_nome_area(nome)
-        existente = existentes.get(normalizado)
-        if existente:
-            existente.active = True
-            continue
-        db.add(UserArea(
-            user_id=user_id,
-            name=nome,
-            normalized_name=normalizado,
-            color=DEMO_SCENARIO_COLORS[indice % len(DEMO_SCENARIO_COLORS)],
-            position=proxima_posicao,
-            active=True,
-        ))
-        proxima_posicao += 1
-
     for compromisso in cenario["agenda"]:
         hora = compromisso["time"]
         data_ref = segunda + timedelta(days=DEMO_DAY_OFFSETS.get(compromisso["day"], 0))
         db.add(Tarefa(
             user_id=user_id,
             titulo=compromisso["title"],
-            origem=compromisso["area"],
+            origem=compromisso["categoria"],
             data=data_ref.isoformat(),
             hora_inicio=hora,
             hora_fim=calcular_hora_fim(hora, 60),
@@ -1280,12 +1137,11 @@ def importar_cenario_demo(db: Session, user: User, cenario_id: str) -> dict[str,
             is_demo=True,
         ))
 
-    origem_padrao = cenario["areas"][0] if cenario["areas"] else "Geral"
     for titulo in cenario["checklist"]:
         db.add(ChecklistItem(
             user_id=user_id,
             titulo=titulo,
-            origem=origem_padrao,
+            origem="PROFISSIONAL",
             frequencia="Única",
             frequencia_interna="UNICO",
             status="pendente",
@@ -3262,91 +3118,6 @@ def desativar_marco_operacional(
     return {"ok": True, "id": marco.id}
 
 
-# ============================================================
-# ÁREAS PERSONALIZÁVEIS
-# ============================================================
-
-@app.get("/areas")
-def listar_areas(include_archived: bool = Query(True), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    consulta = db.query(UserArea).filter(UserArea.user_id == current_user.id)
-    if not include_archived:
-        consulta = consulta.filter(UserArea.active == True)
-    areas = consulta.order_by(UserArea.position, UserArea.name, UserArea.id).all()
-    resultado = [area.to_dict(area_tem_historico(db, current_user.id, area.name)) for area in areas]
-    valores = [v for (v,) in db.query(Tarefa.origem).filter(Tarefa.user_id == current_user.id).all()]
-    valores += [v for (v,) in db.query(Tarefa.local).filter(Tarefa.user_id == current_user.id).all()]
-    valores += [v for (v,) in db.query(ChecklistItem.origem).filter(ChecklistItem.user_id == current_user.id).all()]
-    conhecidas = {normalizar_nome_area(area.name) for area in areas}
-    unicas: dict[str, str] = {}
-    for valor in valores:
-        nome = limpar_nome_area(valor)
-        chave = normalizar_nome_area(nome)
-        if nome and chave not in conhecidas:
-            unicas.setdefault(chave, "Pessoal" if chave == "pessoal" else nome[:40])
-    inicio = len(resultado) + 1
-    resultado.extend({"id": None, "name": nome, "color": "#64748b", "icon": None, "position": posicao, "active": True, "has_history": True, "legacy": True} for posicao, nome in enumerate(unicas.values(), inicio))
-    return resultado
-
-
-@app.post("/areas")
-async def criar_area(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    payload = await request.json()
-    nome, normalizado = validar_nome_area(payload.get("name"))
-    existente = db.query(UserArea).filter(UserArea.user_id == current_user.id, UserArea.normalized_name == normalizado).first()
-    if existente:
-        raise HTTPException(status_code=409, detail="Você já possui uma área com esse nome.")
-    ultima_posicao = db.query(UserArea).filter(UserArea.user_id == current_user.id).count()
-    area = UserArea(user_id=current_user.id, name=nome, normalized_name=normalizado, color=validar_cor_area(payload.get("color")), icon=validar_icone_area(payload.get("icon")), position=ultima_posicao + 1, active=True)
-    db.add(area)
-    db.commit()
-    db.refresh(area)
-    return area.to_dict(False)
-
-
-@app.patch("/areas/{area_id}")
-async def editar_area(area_id: int, request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    area = db.query(UserArea).filter(UserArea.id == area_id, UserArea.user_id == current_user.id).first()
-    if not area:
-        raise HTTPException(status_code=404, detail="Área não encontrada.")
-    payload = await request.json()
-    if "name" in payload:
-        nome, normalizado = validar_nome_area(payload.get("name"))
-        duplicada = db.query(UserArea).filter(UserArea.user_id == current_user.id, UserArea.normalized_name == normalizado, UserArea.id != area.id).first()
-        if duplicada:
-            raise HTTPException(status_code=409, detail="Você já possui uma área com esse nome.")
-        area.name, area.normalized_name = nome, normalizado
-    if "color" in payload:
-        area.color = validar_cor_area(payload.get("color"))
-    if "icon" in payload:
-        area.icon = validar_icone_area(payload.get("icon"))
-    if "position" in payload:
-        try:
-            area.position = max(0, int(payload.get("position")))
-        except (TypeError, ValueError):
-            raise HTTPException(status_code=400, detail="Posição inválida.")
-    if "active" in payload:
-        area.active = bool(payload.get("active"))
-    area.updated_at = datetime.now(UTC)
-    db.commit()
-    db.refresh(area)
-    return area.to_dict(area_tem_historico(db, current_user.id, area.name))
-
-
-@app.delete("/areas/{area_id}")
-def excluir_area(area_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    area = db.query(UserArea).filter(UserArea.id == area_id, UserArea.user_id == current_user.id).first()
-    if not area:
-        raise HTTPException(status_code=404, detail="Área não encontrada.")
-    if area_tem_historico(db, current_user.id, area.name):
-        area.active = False
-        area.updated_at = datetime.now(UTC)
-        db.commit()
-        return {"ok": True, "archived": True}
-    db.delete(area)
-    db.commit()
-    return {"ok": True, "archived": False}
-
-
 @app.get("/tarefas")
 def listar_tarefas(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     tarefas = db.query(Tarefa).filter(Tarefa.ativo == True, Tarefa.user_id == current_user.id).order_by(Tarefa.data, Tarefa.hora_inicio, Tarefa.id).all()
@@ -4188,20 +3959,46 @@ def excluir_nota(note_id: int = Query(...), db: Session = Depends(get_db), curre
 # BACKUP E RESTAURAÇÃO
 # ============================================================
 
+def tabela_checklist_backup_legado(db: Session):
+    colunas = inspect(db.connection()).get_columns("checklist")
+    if any(coluna["name"] == "area" for coluna in colunas):
+        return table("checklist", column("id"), column("user_id"), column("area"))
+    return None
+
+
 @app.get("/backup")
 def exportar_backup(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     tarefas = db.query(Tarefa).filter(Tarefa.user_id == current_user.id, Tarefa.ativo == True).all()
     checklist = db.query(ChecklistItem).filter(ChecklistItem.user_id == current_user.id, ChecklistItem.ativo == True).all()
     notas = db.query(Note).filter(Note.user_id == current_user.id, Note.ativo == True).all()
     marcos = db.query(MarcoOperacional).filter(MarcoOperacional.user_id == current_user.id, MarcoOperacional.ativo == True).all()
+    checklist_exportado = [c.to_dict(incluir_pode_hoje=True) for c in checklist]
+    legado = tabela_checklist_backup_legado(db)
+    if legado is not None and checklist_exportado:
+        areas = dict(db.query(legado.c.id, legado.c.area).filter(
+            legado.c.user_id == current_user.id, legado.c.area.is_not(None)
+        ).all())
+        for item in checklist_exportado:
+            if item["id"] in areas:
+                item["area"] = areas[item["id"]]
     return {
         "versao": "2.1",
         "exportado_em": datetime.now(UTC).isoformat(),
         "tarefas": [t.to_dict() for t in tarefas],
-        "checklist": [c.to_dict(incluir_pode_hoje=True) for c in checklist],
+        "checklist": checklist_exportado,
         "notas": [n.to_dict() for n in notas],
         "marcos_operacionais": [m.to_dict() for m in marcos],
     }
+
+
+def data_hora_backup(valor):
+    if isinstance(valor, str) and valor:
+        try:
+            data = datetime.fromisoformat(valor)
+            return data.astimezone(UTC).replace(tzinfo=None) if data.tzinfo else data
+        except ValueError:
+            pass
+    return None
 
 
 @app.post("/restaurar")
@@ -4259,6 +4056,8 @@ async def importar_backup(request: Request, db: Session = Depends(get_db), curre
         except Exception as e:
             importadas["erros"].append(f"Tarefa '{t.get('titulo', '?')}': {e}")
 
+    legado = tabela_checklist_backup_legado(db)
+    vinculos_legados = []
     for c in checklist_raw:
         try:
             titulo = (c.get("titulo") or "").strip()
@@ -4271,12 +4070,29 @@ async def importar_backup(request: Request, db: Session = Depends(get_db), curre
                 frequencia=c.get("frequencia") or "Semanal",
                 frequencia_interna=c.get("frequencia_interna") or normalizar_frequencia_interna(c.get("frequencia") or "Semanal"),
                 status=normalizar_status(c.get("status") or "pendente"),
+                ultimo_exec=data_hora_backup(c.get("ultimo_exec")),
+                recurrence_ended_at=data_hora_backup(c.get("recurrence_ended_at")),
+                criado_em=data_hora_backup(c.get("criado_em")),
                 ativo=True,
             )
             db.add(novo)
+            if isinstance(c.get("area"), str) and c["area"]:
+                if legado is not None:
+                    vinculos_legados.append((novo, c["area"]))
+                else:
+                    importadas["erros"].append(
+                        f"Checklist '{titulo}': rotina restaurada sem vínculo legado de Área."
+                    )
             importadas["checklist"] += 1
         except Exception as e:
             importadas["erros"].append(f"Checklist '{c.get('titulo', '?')}': {e}")
+
+    if vinculos_legados:
+        db.flush()
+        for rotina, area in vinculos_legados:
+            db.execute(legado.update().where(
+                legado.c.id == rotina.id, legado.c.user_id == user_id
+            ).values(area=area))
 
     for n in notas_raw:
         try:

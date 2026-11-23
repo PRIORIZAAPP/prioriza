@@ -12,7 +12,6 @@
                        "js/core/utils.js",
                        "js/core/runtime.js",
                        "js/core/admin.js",
-                       "js/core/areas.js",
                        "js/screens/agenda.js",
                        "js/screens/checklist.js",
                        "js/screens/workspace.js",

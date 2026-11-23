@@ -315,9 +315,9 @@
         ["Status", status],
         ["Agenda", tarefa.blocked ? "Bloqueada" : ""],
         ["Prioridade", tarefa.prioridade],
-        ["Origem", tarefa.tipo_evento === "google" ? "Google Agenda" : tarefa.origem],
+        [tarefa.tipo_evento === "google" ? "Origem" : "Categoria", tarefa.tipo_evento === "google" ? "Google Agenda" : obterRotuloContextoTarefa(tarefa)],
         ["Recorrência", tarefa.recorrente ? tarefa.recurrencia : ""],
-        ["Local", tarefa.local],
+        ["Local", localEventoGoogle(tarefa)],
         ["Observações", tarefa.descricao],
       ];
       return modal.detalhesHoje(campos.filter(([, valor]) => valor)
@@ -447,10 +447,10 @@
             if (!emLayoutDesktop()) {
               conteudo.insertAdjacentHTML("beforeend", criarTagHTML(t));
 
-              if (t.local) {
+              if (localEventoGoogle(t)) {
                 const meta = document.createElement("div");
                 meta.className = "agenda-meta";
-                meta.textContent = t.local;
+                meta.textContent = localEventoGoogle(t);
                 conteudo.appendChild(meta);
               }
 
@@ -611,7 +611,7 @@
       if (!titulo?.trim()) return;
       const hora   = await modal.perguntar("Hora de início (HH:MM):","Hora","08:00");
       if (hora === null) return;
-      const origem = await modal.perguntar("Área ou contexto (opcional):","Área");
+      const origem = await perguntarCategoria();
       if (origem === null) return;
       const prioStr = await modal.perguntar("Prioridade (1=Alta · 2=Média · 3=Baixa):","Prioridade","2");
       if (prioStr === null) return;
@@ -627,14 +627,6 @@
         const res = await fetch(API+"/tarefas?"+params,{method:"POST",headers:authHeaders()});
         if (respostaDemoCancelada(res) || respostaAgendaCancelada(res)) return;
         if (!res.ok) { await modal.alerta("Erro ao salvar tarefa.","Erro"); return; }
-        const origemTrim=(origem||"").trim();
-        if (origemTrim && !getLocaisSalvos().includes(origemTrim)) {
-          if (await modal.confirmar(`Salvar "${origemTrim}" como área frequente?`,"Área frequente","verde")) {
-            adicionarLocalSalvo(origemTrim);
-            renderLocaisSugeridos("agenda-locais-sugeridos","agenda-local");
-            renderLocaisSugeridos("chk-locais-sugeridos","chk-local");
-          }
-        }
         await carregarAgendaHoje();
         await atualizarAgendaMesEDia();
       } catch(e) { console.error(e); await modal.alerta("Erro de conexão.","Erro"); }

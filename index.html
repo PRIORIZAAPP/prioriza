@@ -28,8 +28,8 @@
     <link rel="stylesheet" href="./css/base.css">
     <link rel="stylesheet" href="./css/layout.css">
     <link rel="stylesheet" href="./css/components.css">
-    <link rel="stylesheet" href="./css/screens.css">
-    <link rel="stylesheet" href="./css/responsive.css?v=sprint-061">
+    <link rel="stylesheet" href="./css/screens.css?v=sem-areas">
+    <link rel="stylesheet" href="./css/responsive.css?v=sem-areas">
   </head>
   <body>
 
@@ -517,13 +517,6 @@
                           </div>
                         </div>
                         <div class="form-grid">
-                          <div id="agenda-local-wrap">
-                          <label for="agenda-local">Área</label>
-                            <select id="agenda-local" aria-describedby="agenda-area-ajuda">
-                              <option value="">Sem área</option>
-                            </select>
-                            <small id="agenda-area-ajuda" class="field-help">Você pode criar uma área sem perder os dados deste compromisso.</small>
-                          </div>
                           <div class="agenda-frequencia">
                             <label for="agenda-repetir">Frequência</label>
                             <select id="agenda-repetir">
@@ -534,7 +527,6 @@
                             </select>
                           </div>
                         </div>
-                        <div id="agenda-locais-sugeridos" class="tag-row"></div>
                         <div class="form-grid" style="margin-bottom:0">
                           <div class="agenda-repetir-ate"><label for="agenda-repetir-ate">Repetir até</label><div class="agenda-data-nativa"><input id="agenda-repetir-ate" type="date" disabled /><span class="agenda-form-mobile agenda-data-formatada" aria-hidden="true"></span></div></div>
                           <div class="agenda-google-opcao">
@@ -714,18 +706,6 @@
                         </div>
                       </div>
                     </div>
-                    <details class="form-more-options">
-                      <summary>Mais opções</summary>
-                      <div class="form-more-body">
-                        <div>
-                          <label for="chk-local">Área</label>
-                          <select id="chk-local">
-                            <option value="">Sem área</option>
-                          </select>
-                          <div id="chk-locais-sugeridos" class="tag-row"></div>
-                        </div>
-                      </div>
-                    </details>
                     </div>
                     <div class="checklist-form-actions">
                       <button id="btn-cancelar-form-checklist" class="btn-secondary" type="button">Cancelar</button>
@@ -750,8 +730,10 @@
                 </select>
               </div>
               <div class="filtro-select">
-                <select id="filtro-origem" aria-label="Filtrar por área">
-                  <option value="">Todas as áreas</option>
+                <select id="filtro-categoria" aria-label="Filtrar por categoria">
+                  <option value="">Todas as categorias</option>
+                  <option value="PESSOAL">Pessoal</option>
+                  <option value="PROFISSIONAL">Profissional</option>
                 </select>
               </div>
             </div>
@@ -867,11 +849,6 @@
               </div>
 
               <div class="settings-group-card">
-                <button class="settings-link-row" type="button" data-settings-open="areas">
-                  <span class="settings-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" color="currentColor"><path d="M4 7.5h16M4 12h16M4 16.5h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="7" cy="7.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="17" cy="16.5" r="1.5" fill="currentColor"/></svg></span>
-                  <span class="settings-link-text"><strong>Organização</strong><small>Crie e organize os contextos da sua rotina.</small></span>
-                  <span class="settings-chevron" aria-hidden="true">›</span>
-                </button>
                 <button class="settings-link-row" type="button" data-settings-open="primeiros-passos">
                   <span class="settings-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" color="currentColor"><path d="M5 12.5 11 4l8 11h-5l-3 5v-5H6a1 1 0 0 1-1-2.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
                   <span class="settings-link-text">Primeiros passos</span>
@@ -912,21 +889,6 @@
             </div>
 
             <div id="settings-detail-view" class="settings-detail-view" hidden>
-              <section class="settings-detail-page" data-settings-page="areas" hidden>
-                <div class="settings-detail-header">
-                  <button class="settings-back-btn" type="button" data-settings-close aria-label="Voltar aos ajustes">‹</button>
-                  <h2>Áreas</h2>
-                  <span></span>
-                </div>
-                <div class="settings-detail-card areas-settings-card">
-                  <div class="areas-settings-heading">
-                    <div><h3>Áreas</h3><p>Organize os diferentes contextos da sua rotina.</p></div>
-                    <button id="btn-nova-area" class="btn-primary" type="button">+ Nova área</button>
-                  </div>
-                  <div id="areas-status" class="settings-note" role="status" aria-live="polite"></div>
-                  <div id="areas-lista" class="areas-lista"></div>
-                </div>
-              </section>
               <section class="settings-detail-page" data-settings-page="perfil" hidden>
                 <div class="settings-detail-header">
                   <button class="settings-back-btn" type="button" data-settings-close>‹</button>
@@ -1459,14 +1421,13 @@
     <!-- ══════════════════════════════════════════════════════════ -->
     <script src="./js/core/utils.js"></script>
     <script src="./js/core/runtime.js"></script>
-    <script data-prioriza-module="core" src="./js/core/admin.js?v=hotfix-060-1"></script>
-    <script data-prioriza-module="areas" src="./js/core/areas.js?v=sprint-059"></script>
-    <script data-prioriza-module="agenda" src="./js/screens/agenda.js?v=sprint-059"></script>
-    <script data-prioriza-module="checklist" src="./js/screens/checklist.js?v=sprint-061"></script>
-    <script data-prioriza-module="core" src="./js/screens/workspace.js?v=sprint-059"></script>
+    <script data-prioriza-module="core" src="./js/core/admin.js?v=sem-areas"></script>
+    <script data-prioriza-module="agenda" src="./js/screens/agenda.js?v=sem-areas"></script>
+    <script data-prioriza-module="checklist" src="./js/screens/checklist.js?v=sem-areas"></script>
+    <script data-prioriza-module="core" src="./js/screens/workspace.js?v=sem-areas"></script>
     <script data-prioriza-module="autenticacao" src="./js/core/auth.js"></script>
     <script data-prioriza-module="experiencia" src="./js/core/experience.js"></script>
-    <script data-prioriza-module="bootstrap" src="./js/app.js?v=sprint-061"></script>
+    <script data-prioriza-module="bootstrap" src="./js/app.js?v=sem-areas"></script>
     <script data-prioriza-module="notificacoes" src="./js/integrations/notifications.js"></script>
   </body>
 </html>

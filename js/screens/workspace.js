@@ -62,7 +62,7 @@
 
   function metaPessoalDesktop(t) {
     const partes = [];
-    if (t.local) partes.push(t.local);
+    if (localEventoGoogle(t)) partes.push(localEventoGoogle(t));
     const contexto = String(obterRotuloContextoTarefa?.(t) || "").trim();
     if (contexto && !partes.includes(contexto) && contexto.toUpperCase() !== "PESSOAL") partes.push(contexto);
     if (ehStatusCancelada(t.status)) partes.push("Cancelada");
@@ -248,6 +248,7 @@
   }
 
   function chaveSerieRecorrente(t) {
+    // O local legado mantém separadas séries antigas com os mesmos horários e títulos.
     return [
       String(t.titulo || "").trim().toLowerCase(),
       String(t.hora_inicio || "").trim(),
@@ -374,7 +375,7 @@
     let tarefas = await resT.json();
 
     tarefas = (Array.isArray(tarefas) ? tarefas : []).filter(
-      (t) => (t.origem || "").toUpperCase() === "PESSOAL" && t.ativo !== false
+      (t) => categoriaPorOrigem(t.origem) === "PESSOAL" && t.ativo !== false
     );
 
     tarefas.sort(compararDataHora);
@@ -417,7 +418,7 @@
     let itens = await resC.json();
 
     itens = (Array.isArray(itens) ? itens : []).filter(
-      (i) => i.ativo !== false && (i.origem || "").toUpperCase() === "PESSOAL"
+      (i) => i.ativo !== false && categoriaPorOrigem(i.origem) === "PESSOAL"
     );
 
     if (itens.length === 0) {
@@ -1072,7 +1073,7 @@
       conteudo.insertAdjacentHTML("beforeend", criarTagHTML(t));
 
       const metaLinhas = [];
-      if (t.local && !metaLinhas.includes(t.local)) metaLinhas.push(t.local);
+      if (localEventoGoogle(t)) metaLinhas.push(localEventoGoogle(t));
       if (t.descricao) metaLinhas.push(t.descricao);
       if (metaLinhas.length) {
         const meta = document.createElement("div");
@@ -1262,7 +1263,7 @@
         con.insertAdjacentHTML("beforeend",criarTagHTML(t));
 
         const metaLinhas = [];
-        if (t.local) metaLinhas.push(t.local);
+        if (localEventoGoogle(t)) metaLinhas.push(localEventoGoogle(t));
         if (t.hora_fim && !t.all_day && t.hora_inicio !== "Dia todo") metaLinhas.push(`${t.hora_inicio} até ${t.hora_fim}`);
         if (t.descricao) metaLinhas.push(t.descricao);
         if (metaLinhas.length) {
@@ -1563,9 +1564,9 @@
         let hora="08:00"; let m=lower.match(/(\d{1,2})[:h](\d{2})/);
         if(m) hora=`${String(Math.min(parseInt(m[1]),23)).padStart(2,"0")}:${String(Math.min(parseInt(m[2]),59)).padStart(2,"0")}`;
         else { m=lower.match(/(\d{1,2})\s*(?:h|horas)/); if(m) hora=`${String(Math.min(parseInt(m[1]),23)).padStart(2,"0")}:00`; }
-        const origem=lower.includes("pessoal")?"PESSOAL":"";
+        const origem=lower.includes("pessoal")?"PESSOAL":"PROFISSIONAL";
         const conteudo=text.replace(/^(agendar\s+compromisso|agendar|novo\s+compromisso)\s*/i,"").replace(/depois de amanhã/gi,"").replace(/amanhã/gi,"").replace(/hoje/gi,"").replace(/às\s+\d{1,2}(:\d{2})?/gi,"").replace(/\d{1,2}\s*(h|horas)/gi,"").trim()||text;
-        if(!await modal.confirmar(`Criar COMPROMISSO?\n\nÁrea: ${origem||"(vazio)"}\nData:  ${formatarDataCurtaBR(data)}\nHora:  ${hora}\n\n"${conteudo}"`,"Novo Compromisso","verde")) return;
+        if(!await modal.confirmar(`Criar COMPROMISSO?\n\nCategoria: ${obterRotuloContextoTarefa({ origem })}\nData:  ${formatarDataCurtaBR(data)}\nHora:  ${hora}\n\n"${conteudo}"`,"Novo Compromisso","verde")) return;
         const res=await fetch(API+"/tarefas?"+new URLSearchParams({titulo:conteudo,origem,data,hora_inicio:hora,duracao_min:"60",prioridade:"2"}),{method:"POST",headers:authHeaders()});
         if (respostaDemoCancelada(res) || respostaAgendaCancelada(res)) return;
         if(!res.ok){await modal.alerta("Erro ao salvar.","Erro");return;}
@@ -1576,8 +1577,8 @@
         const conteudo=text.replace(/^(adicionar|nova|novo)\s+(tarefa|checklist)\s*/i,"").trim()||text;
         let freq="Semanal";
         ["diária","semanal","mensal","bimestral","trimestral","semestral","anual"].forEach(f=>{ if(lower.includes(f)) freq=f.charAt(0).toUpperCase()+f.slice(1); });
-        const origem=lower.includes("pessoal")?"PESSOAL":"";
-        if(!await modal.confirmar(`Adicionar ao CHECKLIST?\n\nÁrea: ${origem||"(vazio)"}\nFreq.: ${freq}\n\n"${conteudo}"`,"Nova Rotina","verde")) return;
+        const origem=lower.includes("pessoal")?"PESSOAL":"PROFISSIONAL";
+        if(!await modal.confirmar(`Adicionar ao CHECKLIST?\n\nCategoria: ${obterRotuloContextoTarefa({ origem })}\nFreq.: ${freq}\n\n"${conteudo}"`,"Nova Rotina","verde")) return;
         const res=await fetch(API+"/checklist_criar?"+new URLSearchParams({titulo:conteudo,origem,frequencia:freq}),{method:"POST",headers:authHeaders()});
         if (respostaDemoCancelada(res) || respostaAgendaCancelada(res)) return;
         if(!res.ok){await modal.alerta("Erro ao salvar.","Erro");return;}
