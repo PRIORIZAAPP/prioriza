@@ -41,7 +41,7 @@
     const valor = select.value;
     select.replaceChildren();
     option(select, "", filtro ? "Todas as áreas" : "Sem área");
-    todas().forEach((area) => {
+    todas().filter(area => select.id !== "chk-local" || !area.legacy).forEach((area) => {
       option(select, area.name, area.name + (!area.active ? " · Arquivada" : ""), !filtro && !area.active);
     });
     if (!filtro) option(select, "__nova_area__", "+ Criar nova área");
@@ -147,6 +147,7 @@
     if (!["agenda-local", "chk-local"].includes(select?.id) || select.value !== "__nova_area__") return;
     criarRapida(select).finally(() => {
       if (select.id === "agenda-local") atualizarFormularioAgendaMobile();
+      else atualizarSalvarChecklistMobile();
     });
   });
   document.addEventListener("click", (ev) => {

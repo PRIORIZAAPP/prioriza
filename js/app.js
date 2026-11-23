@@ -108,7 +108,6 @@
       atualizarToggleUsuariosAdmin();
       atualizarCampoRecorrenciaAgenda();
       atualizarCategoriaAgendaUI();
-      atualizarCategoriaChecklistUI();
       atualizarOffsetsCabecalho();
       renderizarMiniCalendarioDesktop();
       window.addEventListener("resize", atualizarOffsetsCabecalho);
@@ -285,7 +284,6 @@
       document.getElementById("agenda-all-day")?.addEventListener("change", atualizarOpcoesDiaInteiroAgenda);
       document.getElementById("agenda-blocked")?.addEventListener("change", atualizarOpcoesDiaInteiroAgenda);
       document.getElementById("agenda-categoria")?.addEventListener("change", atualizarCategoriaAgendaUI);
-      document.getElementById("chk-categoria")?.addEventListener("change", atualizarCategoriaChecklistUI);
       document.getElementById("agenda-titulo")?.addEventListener("keydown", (ev) => {
         if (ev.key === "Escape") toggleFormAgenda(false);
       });

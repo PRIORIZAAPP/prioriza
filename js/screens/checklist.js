@@ -439,7 +439,11 @@
         checklistTodosCache = itens.map((item) => ({ ...item }));
 
         if (filtroFreq) itens = itens.filter(i => (i.frequencia || "").toLowerCase() === filtroFreq.toLowerCase());
-        if (filtroOrigem) itens = itens.filter(i => (i.origem || "").toUpperCase().includes(filtroOrigem.toUpperCase()));
+        if (filtroOrigem) itens = itens.filter(item => {
+          const alvo = filtroOrigem.toUpperCase();
+          if (item.area == null) return (item.origem || "").toUpperCase().includes(alvo);
+          return item.area.toUpperCase() === alvo;
+        });
 
         if (itens.length === 0) {
           if (window.matchMedia("(max-width: 767px)").matches) {
@@ -499,7 +503,6 @@
         wrap.querySelector(".form-more-options")?.removeAttribute("open");
       }
       if (abrir) {
-        atualizarCategoriaChecklistUI();
         if (mediaAgendaMobile.matches) {
           wrap.querySelector(".form-more-options").open = true;
           wrap.querySelector(".checklist-mobile-conteudo").scrollTop = 0;
@@ -719,6 +722,7 @@
 
     function vincularPaineisFormularioMobile() {
       document.getElementById("chk-titulo").addEventListener("input", atualizarSalvarChecklistMobile);
+      document.getElementById("chk-local").addEventListener("change", atualizarSalvarChecklistMobile);
       for (const [id, fechar] of [
         ["agenda-form-wrap", toggleFormAgenda], ["checklist-form-wrap", toggleFormChecklist],
       ]) {
@@ -819,7 +823,8 @@
       if (!mediaAgendaMobile.matches) return;
       const form = document.getElementById("form-checklist");
       document.getElementById("btn-salvar-rotina").disabled =
-        form.dataset.salvando === "true" || !document.getElementById("chk-titulo").value.trim();
+        form.dataset.salvando === "true" || !document.getElementById("chk-titulo").value.trim()
+        || document.getElementById("chk-local").value === "__nova_area__";
     }
 
     async function salvarNovaRotinaChecklist(e) {
@@ -830,22 +835,15 @@
       const titulo  = document.getElementById("chk-titulo").value.trim();
       const categoria = document.getElementById("chk-categoria")?.value || "PROFISSIONAL";
       const contexto  = document.getElementById("chk-local").value.trim();
-      const origem    = categoria === "PESSOAL" ? "PESSOAL" : (contexto || "PROFISSIONAL");
       const freq    = document.getElementById("chk-frequencia").value;
-      if (!titulo) return;
+      if (!titulo || contexto === "__nova_area__") return;
       const btn=document.getElementById("btn-salvar-rotina"); btn.disabled=true;
       if (mobile) atualizarEstadoGravacaoFormulario(form, btn, true);
       try {
-        const res=await fetch(API+"/checklist_criar?"+new URLSearchParams({titulo,origem,frequencia:freq}),{method:"POST",headers:authHeaders()});
+        const res=await fetch(API+"/checklist_criar?"+new URLSearchParams({titulo,origem:categoria,area:contexto,frequencia:freq}),{method:"POST",headers:authHeaders()});
         if (respostaDemoCancelada(res)) return;
         if (!res.ok){await modal.alerta("Erro ao salvar rotina.","Erro");return;}
-        if (categoria !== "PESSOAL" && contexto && !getLocaisSalvos().includes(contexto)) {
-          if (await modal.confirmar(`Salvar "${contexto}" como local frequente?`,"Local frequente","verde")) {
-            adicionarLocalSalvo(contexto); renderLocaisSugeridos("agenda-locais-sugeridos","agenda-local"); renderLocaisSugeridos("chk-locais-sugeridos","chk-local");
-          }
-        }
         document.getElementById("chk-titulo").value=""; document.getElementById("chk-local").value=""; document.getElementById("chk-categoria").value="PROFISSIONAL"; document.getElementById("chk-frequencia").value="Diária";
-        atualizarCategoriaChecklistUI();
         toggleFormChecklist(false);
         await carregarChecklistHoje(); await carregarChecklistGeral(); await carregarPessoalLista();
       } catch(e){console.error(e); await modal.alerta("Erro de conexão.","Erro");}

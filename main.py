@@ -25,7 +25,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from pydantic import BaseModel, Field
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, UniqueConstraint, column, create_engine, inspect, table, text
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, UniqueConstraint, VARCHAR, column, create_engine, inspect, table, text
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.concurrency import run_in_threadpool
@@ -322,6 +322,7 @@ class ChecklistItem(Base):
     user_id = Column(Integer, nullable=False, index=True)
     titulo = Column(String, nullable=False)
     origem = Column(String, default="")
+    area = Column(String, nullable=True)
     frequencia = Column(String, default="Semanal")
     frequencia_interna = Column(String, default="SEMANAL")
     status = Column(String, default="pendente")
@@ -345,6 +346,7 @@ class ChecklistItem(Base):
             "id": self.id,
             "titulo": self.titulo,
             "origem": self.origem,
+            "area": self.area,
             "frequencia": self.frequencia,
             "frequencia_interna": frequencia_corrigida,
             "status": self.status,
@@ -764,6 +766,7 @@ def area_tem_historico(db: Session, user_id: int, nome: str) -> bool:
     origens = [v for (v,) in db.query(Tarefa.origem).filter(Tarefa.user_id == user_id).all()]
     origens += [v for (v,) in db.query(Tarefa.local).filter(Tarefa.user_id == user_id).all()]
     origens += [v for (v,) in db.query(ChecklistItem.origem).filter(ChecklistItem.user_id == user_id).all()]
+    origens += [v for (v,) in db.query(ChecklistItem.area).filter(ChecklistItem.user_id == user_id).all()]
     return any(normalizar_nome_area(v) == alvo for v in origens if limpar_nome_area(v))
 
 
@@ -986,6 +989,35 @@ def garantir_coluna_tabela(nome_tabela: str, nome_coluna: str) -> bool:
         return False
 
 
+def garantir_area_checklist(*, permitir_tabela_ausente: bool = False) -> bool:
+    def obter_coluna(conn):
+        return next((coluna for coluna in inspect(conn).get_columns("checklist") if coluna["name"] == "area"), None)
+
+    try:
+        with engine.begin() as conn:
+            if not IS_SQLITE:
+                conn.execute(text("SET LOCAL lock_timeout = '3s'"))
+
+            if permitir_tabela_ausente and not inspect(conn).has_table("checklist"):
+                return False
+
+            coluna = obter_coluna(conn)
+            if coluna is None:
+                # PostgreSQL resolves a concurrent ADD in the same statement.
+                condicao = "" if IS_SQLITE else "IF NOT EXISTS "
+                conn.execute(text(f"ALTER TABLE checklist ADD COLUMN {condicao}area VARCHAR"))
+                coluna = obter_coluna(conn)
+
+            if (coluna is None or not isinstance(coluna["type"], VARCHAR)
+                or coluna["type"].length is not None or not coluna["nullable"]):
+                raise RuntimeError("checklist.area deve ser uma coluna de texto anulável.")
+        return True
+    except Exception as erro:
+        raise RuntimeError(
+            "Inicialização interrompida: não foi possível garantir checklist.area."
+        ) from erro
+
+
 def preencher_nulos_coluna(nome_tabela: str, nome_coluna: str, valor_sql: str):
     sql = f"UPDATE {nome_tabela} SET {nome_coluna} = {valor_sql} WHERE {nome_coluna} IS NULL"
     ok, erro = executar_sql_seguro(sql)
@@ -1049,7 +1081,10 @@ def migrar_series_agenda_existentes():
 
 
 def rodar_migracoes_automaticas():
+    area_checklist_pronta = not IS_SQLITE and garantir_area_checklist(permitir_tabela_ausente=True)
     init_db()
+    if not area_checklist_pronta:
+        garantir_area_checklist()
 
     colunas_demo_usuario = (
         "demo_data_created",
@@ -3305,7 +3340,7 @@ async def criar_area(request: Request, db: Session = Depends(get_db), current_us
 
 @app.patch("/areas/{area_id}")
 async def editar_area(area_id: int, request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    area = db.query(UserArea).filter(UserArea.id == area_id, UserArea.user_id == current_user.id).first()
+    area = db.query(UserArea).filter(UserArea.id == area_id, UserArea.user_id == current_user.id).with_for_update().first()
     if not area:
         raise HTTPException(status_code=404, detail="Área não encontrada.")
     payload = await request.json()
@@ -3314,6 +3349,9 @@ async def editar_area(area_id: int, request: Request, db: Session = Depends(get_
         duplicada = db.query(UserArea).filter(UserArea.user_id == current_user.id, UserArea.normalized_name == normalizado, UserArea.id != area.id).first()
         if duplicada:
             raise HTTPException(status_code=409, detail="Você já possui uma área com esse nome.")
+        db.query(ChecklistItem).filter(
+            ChecklistItem.user_id == current_user.id, ChecklistItem.area == area.name,
+        ).update({ChecklistItem.area: nome})
         area.name, area.normalized_name = nome, normalizado
     if "color" in payload:
         area.color = validar_cor_area(payload.get("color"))
@@ -3334,7 +3372,7 @@ async def editar_area(area_id: int, request: Request, db: Session = Depends(get_
 
 @app.delete("/areas/{area_id}")
 def excluir_area(area_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    area = db.query(UserArea).filter(UserArea.id == area_id, UserArea.user_id == current_user.id).first()
+    area = db.query(UserArea).filter(UserArea.id == area_id, UserArea.user_id == current_user.id).with_for_update().first()
     if not area:
         raise HTTPException(status_code=404, detail="Área não encontrada.")
     if area_tem_historico(db, current_user.id, area.name):
@@ -3965,10 +4003,25 @@ def listar_checklist(db: Session = Depends(get_db), current_user: User = Depends
     return [i.to_dict(incluir_pode_hoje=True, data_operacional=hoje) for i in itens]
 
 
+def resolver_area_checklist(db: Session, user_id: int, nome: Optional[str], *, ativa: bool = True) -> Optional[str]:
+    if nome is None or not nome.strip():
+        return None if nome is None else ""
+    consulta = db.query(UserArea).filter(
+        UserArea.user_id == user_id, UserArea.normalized_name == normalizar_nome_area(nome),
+    )
+    if ativa:
+        consulta = consulta.filter(UserArea.active.is_(True))
+    area = consulta.with_for_update().first()
+    if not area:
+        raise HTTPException(status_code=404, detail="Área não encontrada.")
+    return area.name
+
+
 @app.post("/checklist_criar")
 def criar_checklist_item(
     titulo: str = Query(...),
     origem: str = Query(""),
+    area: Optional[str] = Query(None),
     frequencia: str = Query("Semanal"),
     convert_demo: bool = Query(False),
     db: Session = Depends(get_db),
@@ -3980,6 +4033,7 @@ def criar_checklist_item(
         user_id=user_id,
         titulo=titulo,
         origem=(origem or "").strip(),
+        area=resolver_area_checklist(db, user_id, area),
         frequencia=(frequencia or "Semanal").strip(),
         frequencia_interna=normalizar_frequencia_interna(frequencia or "Semanal"),
         status="pendente",
@@ -4000,6 +4054,7 @@ def editar_checklist_item(
     item_id: int,
     titulo: str = Query(None),
     origem: str = Query(None),
+    area: Optional[str] = Query(None),
     frequencia: str = Query(None),
     scope: str = Query("single"),
     proxima_execucao: str = Query(None),
@@ -4010,10 +4065,14 @@ def editar_checklist_item(
     if not item:
         raise HTTPException(status_code=404, detail="Item não encontrado.")
 
+    area_atualizada = item.area
+    if area is not None and area != item.area:
+        area_atualizada = resolver_area_checklist(db, current_user.id, area)
     if titulo is not None:
         item.titulo = titulo.strip()
     if origem is not None:
         item.origem = origem.strip()
+    item.area = area_atualizada
     if frequencia is not None:
         item.frequencia = frequencia.strip()
         item.frequencia_interna = normalizar_frequencia_interna(item.frequencia)
@@ -4264,7 +4323,13 @@ async def importar_backup(request: Request, db: Session = Depends(get_db), curre
             titulo = (c.get("titulo") or "").strip()
             if not titulo:
                 continue
+            try:
+                area_restaurada = resolver_area_checklist(db, user_id, c.get("area"), ativa=False)
+            except HTTPException:
+                area_restaurada = ""
+                importadas["erros"].append(f"Checklist '{titulo}': área indisponível na conta de destino.")
             novo = ChecklistItem(
+                area=area_restaurada,
                 user_id=user_id,
                 titulo=titulo,
                 origem=(c.get("origem") or "").strip(),
