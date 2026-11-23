@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="./css/layout.css">
     <link rel="stylesheet" href="./css/components.css">
     <link rel="stylesheet" href="./css/screens.css?v=sem-areas">
-    <link rel="stylesheet" href="./css/responsive.css?v=sem-areas">
+    <link rel="stylesheet" href="./css/responsive.css?v=sprint-062">
   </head>
   <body>
 
@@ -1307,6 +1307,35 @@
             </form>
           </div>
 
+          <div id="nota-form-wrap" class="checklist-form-wrap" hidden>
+            <form id="form-nota-mobile" class="checklist-form-panel" role="dialog" aria-modal="true" aria-labelledby="nota-mobile-titulo">
+              <div class="checklist-form-handle" aria-hidden="true"></div>
+              <div class="checklist-form-header">
+                <div>
+                  <div id="nota-mobile-titulo" class="checklist-form-title">Nova anotação</div>
+                  <div class="checklist-form-subtitle">Registre o que importa.</div>
+                </div>
+                <button id="nota-mobile-fechar" class="btn-secondary" type="button" aria-label="Fechar">×</button>
+              </div>
+              <div class="nota-mobile-conteudo">
+                <div><label for="nota-mobile-texto">Anotação</label><textarea id="nota-mobile-texto" name="texto" rows="3" required></textarea></div>
+                <div><label for="nota-mobile-data">Data (opcional)</label><input id="nota-mobile-data" name="data" type="date" /></div>
+                <div>
+                  <label for="nota-mobile-tipo">Categoria</label>
+                  <select id="nota-mobile-tipo" name="tipo">
+                    <option value="TRABALHO">Profissional</option>
+                    <option value="PESSOAL">Pessoal</option>
+                  </select>
+                </div>
+                <p id="nota-mobile-erro" role="alert" hidden></p>
+              </div>
+              <div class="checklist-form-actions">
+                <button id="nota-mobile-cancelar" class="btn-secondary" type="button">Cancelar</button>
+                <button class="btn-primary" type="submit" disabled>Salvar</button>
+              </div>
+            </form>
+          </div>
+
           <div class="card notas-list-card">
             <div class="card-header">
               <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
@@ -1333,6 +1362,13 @@
           </div>
         </aside>
       </div><!-- /app-workspace -->
+
+      <button id="btn-toggle-form-nota-mobile" class="fab-add" type="button" aria-expanded="false" aria-controls="nota-form-wrap" aria-label="Nova anotação">
+        <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
+          <line x1="128" y1="64" x2="128" y2="192" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+          <line x1="64" y1="128" x2="192" y2="128" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+        </svg>
+      </button>
 
       <button id="btn-toggle-form-agenda" class="fab-add fab-add-agenda" type="button" aria-expanded="false" aria-controls="agenda-form-wrap" aria-label="Novo compromisso" title="Novo compromisso">
         <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
@@ -1423,11 +1459,11 @@
     <script src="./js/core/runtime.js"></script>
     <script data-prioriza-module="core" src="./js/core/admin.js?v=sem-areas"></script>
     <script data-prioriza-module="agenda" src="./js/screens/agenda.js?v=sem-areas"></script>
-    <script data-prioriza-module="checklist" src="./js/screens/checklist.js?v=sem-areas"></script>
-    <script data-prioriza-module="core" src="./js/screens/workspace.js?v=sem-areas"></script>
+    <script data-prioriza-module="checklist" src="./js/screens/checklist.js?v=sprint-062"></script>
+    <script data-prioriza-module="core" src="./js/screens/workspace.js?v=sprint-062"></script>
     <script data-prioriza-module="autenticacao" src="./js/core/auth.js"></script>
     <script data-prioriza-module="experiencia" src="./js/core/experience.js"></script>
-    <script data-prioriza-module="bootstrap" src="./js/app.js?v=sem-areas"></script>
+    <script data-prioriza-module="bootstrap" src="./js/app.js?v=sprint-062"></script>
     <script data-prioriza-module="notificacoes" src="./js/integrations/notifications.js"></script>
   </body>
 </html>

@@ -53,6 +53,7 @@
 
       function abrirTela(id, opts = {}) {
         if (!id) return;
+        fecharFormularioNotaMobile();
         toggleFormChecklist(false);
         toggleFormAgenda(false);
         toggleFormMarcoOperacional(false);
@@ -300,6 +301,7 @@
 
       vincularFormularioAgendaMobile();
       vincularPaineisFormularioMobile();
+      vincularFormularioNotaMobile();
       document.getElementById("form-agenda")?.addEventListener("submit", async(ev)=>{
         ev.preventDefault();
         const edicao = edicaoAgendaMobile;

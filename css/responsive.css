@@ -885,7 +885,7 @@
     touch-action: auto;
   }
 
-  :is(#agenda-form-wrap, #checklist-form-wrap) {
+  :is(#agenda-form-wrap, #checklist-form-wrap, #nota-form-wrap) {
     top: var(--agenda-viewport-top, 0px);
     left: var(--agenda-viewport-left, 0px);
     right: auto;
@@ -898,7 +898,7 @@
     align-items: center;
   }
 
-  :is(#agenda-form-wrap, #checklist-form-wrap) .checklist-form-panel {
+  :is(#agenda-form-wrap, #checklist-form-wrap, #nota-form-wrap) .checklist-form-panel {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -916,9 +916,9 @@
     display: none;
   }
 
-  :is(#agenda-form-wrap, #checklist-form-wrap) .checklist-form-handle { flex: 0 0 4px; margin-bottom: 0; }
-  :is(#agenda-form-wrap, #checklist-form-wrap) .checklist-form-header { flex-shrink: 0; margin-bottom: 2px; }
-  :is(#agenda-form-wrap, #checklist-form-wrap) .checklist-form-subtitle { margin-top: 2px; }
+  :is(#agenda-form-wrap, #checklist-form-wrap, #nota-form-wrap) .checklist-form-handle { flex: 0 0 4px; margin-bottom: 0; }
+  :is(#agenda-form-wrap, #checklist-form-wrap, #nota-form-wrap) .checklist-form-header { flex-shrink: 0; margin-bottom: 2px; }
+  :is(#agenda-form-wrap, #checklist-form-wrap, #nota-form-wrap) .checklist-form-subtitle { margin-top: 2px; }
   :is(#btn-fechar-form-agenda, #btn-fechar-form-checklist) { flex: 0 0 44px; padding: 0; width: 44px; height: 44px; font-size: 25px; }
   :is(#form-agenda, #form-checklist),
   :is(#form-agenda, #form-checklist) .form-main-stack {
@@ -932,7 +932,7 @@
   #form-agenda :is(.form-identity-agenda, .form-grid > div, .agenda-data-nativa, .agenda-google-opcao) {
     min-width: 0;
   }
-  :is(#agenda-form-wrap, #checklist-form-wrap) :is(.agenda-mobile-conteudo, .checklist-mobile-conteudo) {
+  :is(#agenda-form-wrap, #checklist-form-wrap, #nota-form-wrap) :is(.agenda-mobile-conteudo, .checklist-mobile-conteudo, .nota-mobile-conteudo) {
     display: block;
     min-height: 0;
     min-width: 0;
@@ -1065,7 +1065,7 @@
   #form-agenda .agenda-google-opcao { order: 4; margin: 0; padding-top: 2px; }
   #form-agenda .agenda-google-check { min-height: 44px; margin: 0; }
   #form-agenda .agenda-google-ajuda { margin: 0; line-height: 1.25; }
-  :is(#form-agenda, #form-checklist) .checklist-form-actions {
+  :is(#form-agenda, #form-checklist, #form-nota-mobile) .checklist-form-actions {
     flex-shrink: 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1074,7 +1074,7 @@
     padding: 5px 0;
     background: #fff;
   }
-  :is(#form-agenda, #form-checklist) .checklist-form-actions button {
+  :is(#form-agenda, #form-checklist, #form-nota-mobile) .checklist-form-actions button {
     display: grid;
     place-items: center;
     min-height: 44px;
@@ -1223,4 +1223,94 @@
 
 @media (max-width: 767px) {
   #form-checklist .checklist-form-actions { padding-block: 12px 14px; }
+}
+
+/* Sprint 062 — Notas mobile. */
+#btn-toggle-form-nota-mobile { display: none; }
+
+@media (max-width: 767px) {
+  #screen-notas .notas-editor-card { display: none; }
+  #screen-notas { padding-bottom: 72px; }
+  .app-shell[data-active-screen="screen-notas"] #btn-toggle-form-nota-mobile {
+    display: inline-flex;
+    right: max(18px, env(safe-area-inset-right));
+    bottom: calc(88px + env(safe-area-inset-bottom));
+    border-radius: 50%;
+    background: #2563eb;
+  }
+
+  #screen-notas .nota-item {
+    align-items: center;
+    padding: 4px 0;
+    margin: 0;
+    gap: 8px;
+    border: 0;
+    border-bottom: 1px solid #e2e8f0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  #screen-notas .nota-item:last-child { border-bottom: 0; }
+  #screen-notas .nota-info { flex: 1; min-width: 0; }
+  #screen-notas .nota-texto { white-space: pre-wrap; overflow-wrap: anywhere; }
+  #screen-notas .nota-data { color: #64748b; font-size: .75rem; }
+  #screen-notas .nota-item .timeline-action-menu { margin: 0; }
+
+  #screen-notas .nota-item button.nota-dot {
+    flex: 0 0 44px !important;
+    width: 44px !important;
+    height: 44px !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+  }
+  #screen-notas .nota-dot::before {
+    content: "";
+    position: absolute;
+    inset: 12px;
+    border: 2px solid var(--cor-tema);
+    border-radius: 50%;
+  }
+  #screen-notas .nota-dot.feito::before {
+    background: #15803d;
+    border-color: #15803d;
+  }
+  #screen-notas .nota-dot.feito::after { top: 14px; left: 18px; height: 11px; }
+
+  #nota-form-wrap .checklist-form-header { gap: 8px; }
+  #nota-mobile-fechar {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 25px;
+  }
+  #form-nota-mobile .nota-mobile-conteudo { display: grid; gap: 9px; }
+  #form-nota-mobile .nota-mobile-conteudo > div { min-width: 0; }
+  #form-nota-mobile :is(textarea, input, select) {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+    font-size: 16px;
+  }
+  #form-nota-mobile textarea { resize: vertical; }
+  #form-nota-mobile input[type="date"] { -webkit-appearance: none; appearance: none; }
+  #form-nota-mobile input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+  #form-nota-mobile .checklist-form-actions { padding: 10px 0 14px; }
+  #form-nota-mobile .btn-primary {
+    background: #2563eb;
+    color: #fff;
+    -webkit-text-fill-color: #fff;
+  }
+  #form-nota-mobile .btn-primary:disabled {
+    opacity: 1;
+    background: #e2e8f0;
+    color: #475569;
+    -webkit-text-fill-color: #475569;
+  }
+  #nota-mobile-erro { margin: 0; color: #b91c1c; }
 }
