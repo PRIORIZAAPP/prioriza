@@ -1297,6 +1297,96 @@
     let notaEmEdicao = null;
     const notasEmProcessamento = new Set();
 
+    let notaMobileEmEdicao = null;
+    let notaMobileAcionador = null;
+
+    function abrirFormularioNotaMobile(nota = null) {
+      const wrap = document.getElementById("nota-form-wrap");
+      const form = document.getElementById("form-nota-mobile");
+      if (!mediaAgendaMobile.matches || wrap.classList.contains("open") || form.dataset.salvando) return;
+      const erro = document.getElementById("nota-mobile-erro");
+      notaMobileEmEdicao = nota;
+      notaMobileAcionador = document.activeElement;
+      form.reset();
+      form.elements.texto.value = nota?.texto || "";
+      form.elements.data.value = normalizarDataParaISO(nota?.data || "");
+      form.elements.tipo.value = String(nota?.tipo || "").toUpperCase() === "PESSOAL" ? "PESSOAL" : "TRABALHO";
+      document.getElementById("nota-mobile-titulo").textContent = nota ? "Editar anotação" : "Nova anotação";
+      erro.hidden = true;
+      form.querySelector("[type=submit]").disabled = !form.elements.texto.value.trim();
+      wrap.hidden = false;
+      wrap.classList.add("open");
+      posicionarPainelFormularioMobile(wrap, true);
+      ajustarViewportFormularioMobile();
+      wrap.querySelector(".nota-mobile-conteudo").scrollTop = 0;
+      document.getElementById("btn-toggle-form-nota-mobile").setAttribute("aria-expanded", "true");
+      document.getElementById("nota-mobile-fechar").focus({ preventScroll: true });
+    }
+
+    function fecharFormularioNotaMobile() {
+      const wrap = document.getElementById("nota-form-wrap");
+      if (!wrap.classList.contains("open")) return;
+      wrap.classList.remove("open");
+      wrap.hidden = true;
+      posicionarPainelFormularioMobile(wrap, false);
+      document.getElementById("btn-toggle-form-nota-mobile").setAttribute("aria-expanded", "false");
+      notaMobileAcionador?.focus({ preventScroll: true });
+      notaMobileAcionador = null;
+      notaMobileEmEdicao = null;
+    }
+
+    function vincularFormularioNotaMobile() {
+      const wrap = document.getElementById("nota-form-wrap");
+      const form = document.getElementById("form-nota-mobile");
+      const salvar = form.querySelector("[type=submit]");
+      const erroEl = document.getElementById("nota-mobile-erro");
+      const fechar = () => { if (!form.dataset.salvando) fecharFormularioNotaMobile(); };
+      document.addEventListener("prioriza:logout", fecharFormularioNotaMobile);
+      document.getElementById("btn-toggle-form-nota-mobile").addEventListener("click", () => abrirFormularioNotaMobile());
+      for (const id of ["nota-mobile-fechar", "nota-mobile-cancelar"]) {
+        document.getElementById(id).addEventListener("click", fechar);
+      }
+      wrap.addEventListener("click", evento => { if (evento.target === wrap) fechar(); });
+      wrap.addEventListener("keydown", evento => {
+        if (evento.key === "Escape") fechar();
+      });
+      form.elements.texto.addEventListener("input", () => {
+        salvar.disabled = Boolean(form.dataset.salvando) || !form.elements.texto.value.trim();
+      });
+      form.addEventListener("submit", async evento => {
+        evento.preventDefault();
+        const texto = form.elements.texto.value.trim();
+        if (wrap.hidden || form.dataset.salvando || !texto) return;
+        const nota = notaMobileEmEdicao;
+        const data = form.elements.data.value;
+        const categoria = form.elements.tipo.value;
+        // Preserva o tipo legado quando a categoria exibida não foi alterada.
+        const tipo = nota && categoria === "TRABALHO" && String(nota.tipo).toUpperCase() !== "PESSOAL"
+          ? nota.tipo : categoria;
+        form.dataset.salvando = "true";
+        salvar.disabled = true;
+        salvar.textContent = "Salvando…";
+        erroEl.hidden = true;
+        try {
+          if (nota) await atualizarNotaExistente(nota, texto, data, tipo);
+          else await salvarNota(texto, data, tipo);
+          fecharFormularioNotaMobile();
+          await carregarNotas();
+          await atualizarResumoBar();
+        } catch (erro) {
+          if (erro?.name !== "PriorizaDemoCancelError") {
+            erroEl.textContent = erro?.message || "Não foi possível salvar a anotação.";
+            erroEl.hidden = false;
+            erroEl.scrollIntoView({ block: "nearest" });
+          }
+        } finally {
+          delete form.dataset.salvando;
+          salvar.textContent = "Salvar";
+          salvar.disabled = !form.elements.texto.value.trim();
+        }
+      });
+    }
+
     function ajustarCategoriasNotasUI() {
       const select = document.getElementById("nota-tipo");
       if (!select) return;
@@ -1358,6 +1448,10 @@
 
     function abrirEdicaoNota(nota) {
       if (!nota?.id || !usuarioPodeGerenciarNota(nota) || notasEmProcessamento.has(String(nota.id))) return;
+      if (mediaAgendaMobile.matches) {
+        abrirFormularioNotaMobile(nota);
+        return;
+      }
       notaEmEdicao = { ...nota };
       ajustarCategoriasNotasUI();
       const textoEl = document.getElementById("nota-texto");
@@ -1385,12 +1479,10 @@
         tipo: tipo || nota?.tipo || "GERAL",
         status: nota?.status || "pendente",
       });
-      const opcoes = {
+      let resposta = await fetch(API + `/notes/${encodeURIComponent(noteId)}?` + dados.toString(), {
         method: "PUT",
-        headers: authHeaders({ "Content-Type": "application/x-www-form-urlencoded" }),
-        body: dados,
-      };
-      let resposta = await fetch(API + `/notes/${encodeURIComponent(noteId)}`, opcoes);
+        headers: authHeaders(),
+      });
       if ([404, 405].includes(resposta.status)) {
         resposta = await fetch(API + "/notes_update?" + dados.toString(), {
           method: "POST",
@@ -1491,6 +1583,12 @@
 
           if (emLayoutDesktop()) {
             dataEl.textContent = `${nota.data ? formatarDataCurtaBR(nota.data) + " · " : ""}${notaPessoal ? "Pessoal" : "Trabalho"}`;
+          }
+
+          if (mediaAgendaMobile.matches) {
+            const categoria = notaPessoal ? "Pessoal" : "Profissional";
+            dataEl.textContent = [nota.data && formatarDataCurtaBR(nota.data), categoria].filter(Boolean).join(" · ");
+            dot.setAttribute("aria-label", dot.title);
           }
 
           dot.addEventListener("click", async (ev) => {

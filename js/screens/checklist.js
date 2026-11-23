@@ -655,7 +655,7 @@
 
     function rolarCampoFormularioMobile() {
       const campo = document.activeElement;
-      const conteudo = campo?.closest(".agenda-mobile-conteudo, .checklist-mobile-conteudo");
+      const conteudo = campo?.closest(".agenda-mobile-conteudo, .checklist-mobile-conteudo, .nota-mobile-conteudo");
       if (!estadoPainelFormularioMobile || !conteudo) return;
       const area = conteudo.getBoundingClientRect();
       const campoRect = campo.getBoundingClientRect();
@@ -706,6 +706,7 @@
       document.getElementById("chk-titulo").addEventListener("input", atualizarSalvarChecklistMobile);
       for (const [id, fechar] of [
         ["agenda-form-wrap", toggleFormAgenda], ["checklist-form-wrap", toggleFormChecklist],
+        ["nota-form-wrap", fecharFormularioNotaMobile],
       ]) {
         const wrap = document.getElementById(id);
         wrap.addEventListener("focusin", () => {
@@ -713,7 +714,7 @@
         });
         wrap.addEventListener("touchmove", evento => {
           if (estadoPainelFormularioMobile?.wrap === wrap && evento.touches.length === 1
-            && !evento.target.closest(".agenda-mobile-conteudo, .checklist-mobile-conteudo") && evento.cancelable) {
+            && !evento.target.closest(".agenda-mobile-conteudo, .checklist-mobile-conteudo, .nota-mobile-conteudo") && evento.cancelable) {
             evento.preventDefault();
           }
         }, { passive: false });
