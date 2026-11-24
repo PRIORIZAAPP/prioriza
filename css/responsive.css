@@ -48,7 +48,7 @@
   textarea { overflow-wrap: anywhere; }
   .empty-state { min-height: 132px; padding: 22px 16px; }
 
-  .auth-screen:has(#auth-form-login:not([hidden])) {
+  .auth-screen:has(:is(#auth-form-login, #auth-form-register):not([hidden])) {
     align-items: safe center;
     overflow-y: auto;
 
@@ -59,7 +59,7 @@
     .auth-mobile-brand-copy { display: contents; }
     .auth-mobile-transition-slogan { display: none; }
 
-    &.is-transitioning {
+    &.is-transitioning:where(:has(#auth-form-login:not([hidden]))) {
       .auth-card {
         transition: background-color 180ms ease, border-color 180ms ease, box-shadow 240ms ease;
       }
@@ -88,9 +88,34 @@
       }
     }
     .auth-panel { margin-top: 10px; padding-top: 0; }
-    #auth-form-login { gap: 10px; }
+    :is(#auth-form-login, #auth-form-register) { gap: 10px; }
     #auth-error:empty { display: none; }
     .auth-switch { margin-top: 12px; }
+  }
+
+  .auth-screen:has(#auth-form-register:not([hidden])) {
+    padding-top: max(24px, env(safe-area-inset-top));
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+
+    .auth-brand-copy { display: contents; }
+    .auth-brand-copy > :not(.auth-title) { display: none; }
+    .auth-title {
+      order: 1;
+      font-size: 20px;
+    }
+    #auth-form-register input { scroll-margin-block: 12px; }
+    #auth-register-nome {
+      padding: 0 14px;
+      border-radius: 12px;
+      font-size: 16px;
+      color: #0f172a;
+    }
+    #auth-register-nome:not(:focus, :hover) {
+      border-color: #d9e2ec;
+      background: #fff;
+    }
+
+    &:not(.is-transitioning) .auth-transition-copy { display: none; }
   }
 
   @keyframes authMobileSloganIn {
@@ -350,7 +375,7 @@
     max-width: none;
   }
 
-  #btn-auth-login {
+  :is(#btn-auth-login, #btn-auth-register) {
     display: grid;
     place-items: center;
     text-align: center;
