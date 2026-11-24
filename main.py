@@ -12,7 +12,7 @@ import secrets
 import calendar
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 from zoneinfo import ZoneInfo
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
@@ -3741,7 +3741,7 @@ def criar_checklist_item(
     titulo: str = Query(...),
     origem: str = Query(""),
     frequencia: str = Query("Semanal"),
-    convert_demo: bool = Query(False),
+    convert_demo: bool | Literal["checklist"] = Query(False),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -3876,7 +3876,7 @@ def criar_nota(
     texto: str = Form(...),
     data: str = Form(""),
     tipo: str = Form("GERAL"),
-    convert_demo: bool = Query(False),
+    convert_demo: bool | Literal["notes"] = Query(False),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
