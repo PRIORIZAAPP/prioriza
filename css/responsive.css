@@ -105,6 +105,18 @@
     background: #f97316 center / 11px 11px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M128 48v80l55 40' fill='none' stroke='white' stroke-width='32' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
 
+  #screen-hoje :is(#hoje-agenda-card, #hoje-checklist-card) :is(.agenda-status-btn, .check-status).em_andamento {
+    border: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #screen-hoje #hoje-agenda-card .agenda-status-btn.em_andamento:focus:not(:focus-visible) { outline: none; }
+
+  #screen-hoje #hoje-agenda-card .agenda-status-btn.em_andamento:focus-visible {
+    outline: 2px solid var(--cor-tema);
+    outline-offset: 3px;
+  }
+
   #screen-checklist #checklist-geral-lista .check-status.em_andamento > svg { display: none; }
 
   #screen-hoje :is(#hoje-agenda-card, #hoje-checklist-card) {
@@ -151,7 +163,7 @@
       margin-inline: 11px;
     }
 
-    :is(.agenda-status-btn, .check-status):is(.pendente, .em_andamento, .feito) {
+    :is(.agenda-status-btn, .check-status):is(.pendente, .feito) {
       border: 1.75px solid;
       border-radius: 50%;
     }
