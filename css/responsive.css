@@ -104,6 +104,18 @@
       font-size: 20px;
     }
     #auth-form-register input { scroll-margin-block: 12px; }
+    #auth-register-nome {
+      padding: 0 14px;
+      border-radius: 12px;
+      font-size: 16px;
+      color: #0f172a;
+    }
+    #auth-register-nome:not(:focus, :hover) {
+      border-color: #d9e2ec;
+      background: #fff;
+    }
+
+    &:not(.is-transitioning) .auth-transition-copy { display: none; }
   }
 
   @keyframes authMobileSloganIn {
