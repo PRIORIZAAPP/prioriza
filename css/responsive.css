@@ -1186,7 +1186,8 @@
     border: 0;
     background: transparent;
   }
-  #checklist-geral-lista .timeline-menu-trigger::before {
+  #checklist-geral-lista .timeline-menu-trigger::before,
+  #screen-notas #lista-notas .timeline-menu-trigger::before {
     content: "";
     position: absolute;
     inset: 10px 5px;
@@ -1218,7 +1219,7 @@
 }
 
 /* Sprint 062 — Notas mobile. */
-#btn-toggle-form-nota-mobile { display: none; }
+:is(#btn-toggle-form-nota-mobile, .nota-expandir) { display: none; }
 
 @media (max-width: 767px) {
   #screen-notas .notas-editor-card { display: none; }
@@ -1227,7 +1228,6 @@
     display: inline-flex;
     right: max(18px, env(safe-area-inset-right));
     bottom: calc(88px + env(safe-area-inset-bottom));
-    border-radius: 50%;
     background: #2563eb;
   }
 
@@ -1250,6 +1250,25 @@
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
+  #screen-notas .nota-info { position: relative; }
+  #screen-notas .nota-info:has(.nota-expandir[aria-expanded="false"]) .nota-texto {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+  #screen-notas .nota-expandir {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    box-shadow: none;
+  }
+  #screen-notas .nota-expandir:focus-visible { outline: 2px solid var(--cor-tema); }
   #screen-notas .nota-data { color: #64748b; font-size: .75rem; }
   #screen-notas .nota-item .timeline-action-menu { margin: 0; }
   #screen-notas .nota-item .timeline-menu-trigger { color: #64748b; }

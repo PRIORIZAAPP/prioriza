@@ -1600,12 +1600,25 @@
           });
 
           info.appendChild(textoEl);
+          const expandir = document.createElement("button");
+          expandir.type = "button";
+          expandir.className = "nota-expandir";
+          expandir.setAttribute("aria-label", "Expandir anotação");
+          expandir.setAttribute("aria-expanded", "false");
+          expandir.addEventListener("click", () => {
+            const aberta = expandir.getAttribute("aria-expanded") === "true";
+            if (!aberta && textoEl.scrollHeight <= textoEl.clientHeight) return;
+            expandir.setAttribute("aria-expanded", String(!aberta));
+            expandir.setAttribute("aria-label", aberta ? "Expandir anotação" : "Recolher anotação");
+          });
+          info.appendChild(expandir);
           info.appendChild(dataEl);
           div.appendChild(dot);
           div.appendChild(info);
           if (usuarioPodeGerenciarNota(nota)) {
             const menuAcoes = criarMenuAcoesContextuais({
               titulo: "Ações da nota",
+              checklist: true,
               ariaLabel: `Ações da nota: ${nota.texto || "sem título"}`,
               itens: [
                 { texto: "Editar", acao: () => abrirEdicaoNota(nota) },
