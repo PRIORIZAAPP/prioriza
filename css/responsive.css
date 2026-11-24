@@ -142,6 +142,30 @@
       margin-inline: 11px;
     }
 
+    :is(.agenda-status-btn, .check-status):is(.pendente, .em_andamento, .feito) {
+      border: 1.75px solid;
+      border-radius: 50%;
+    }
+
+    :is(.agenda-status-btn, .check-status).pendente {
+      border-color: #cbd5e1;
+      background: #fff;
+    }
+
+    :is(.agenda-status-btn, .check-status).em_andamento {
+      border-color: #f97316;
+      background: #f97316 center / 11px 11px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M128 48v80l55 40' fill='none' stroke='white' stroke-width='32' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    }
+
+    :is(.agenda-status-btn, .check-status).feito {
+      border-color: #22c55e;
+      background: #22c55e center / 11px 11px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpolyline points='48,128 104,184 208,72' fill='none' stroke='white' stroke-width='32' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    }
+
+    :is(.agenda-status-btn, .check-status):is(.pendente, .em_andamento, .feito) > svg {
+      display: none;
+    }
+
     /* Amplia a area de toque mantendo o indicador circular de 22 px. */
     :is(button.agenda-status-btn, .check-status)::after {
       content: "";
@@ -250,6 +274,15 @@
   }
 
   #screen-hoje #hoje-checklist-card {
+    /* O indicador concluído mantém a cor; o restante conserva o esmaecimento. */
+    .checklist-item.feito {
+      opacity: 1;
+      border-bottom-color: rgb(226 232 240 / 60.48%);
+    }
+
+    .checklist-item.feito:hover { background: rgb(248 250 252 / 75.6%); }
+    .checklist-item.feito > :is(.check-info, .checklist-item-actions) { opacity: 0.84; }
+
     :is(.check-sub, .check-badge) { display: none; }
 
     .checklist-item .checklist-item-actions {
