@@ -98,6 +98,15 @@
     to { opacity: 1; }
   }
 
+  #screen-hoje :is(#hoje-agenda-card, #hoje-checklist-card) :is(.agenda-status-btn, .check-status).em_andamento,
+  #screen-checklist #checklist-geral-lista .check-status.em_andamento {
+    border: 1.75px solid #f97316;
+    border-radius: 50%;
+    background: #f97316 center / 11px 11px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M128 48v80l55 40' fill='none' stroke='white' stroke-width='32' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+
+  #screen-checklist #checklist-geral-lista .check-status.em_andamento > svg { display: none; }
+
   #screen-hoje :is(#hoje-agenda-card, #hoje-checklist-card) {
     background: #fff;
     box-shadow: 0 2px 8px rgb(15 23 42 / 7%);
@@ -150,11 +159,6 @@
     :is(.agenda-status-btn, .check-status).pendente {
       border-color: #cbd5e1;
       background: #fff;
-    }
-
-    :is(.agenda-status-btn, .check-status).em_andamento {
-      border-color: #f97316;
-      background: #f97316 center / 11px 11px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M128 48v80l55 40' fill='none' stroke='white' stroke-width='32' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     }
 
     :is(.agenda-status-btn, .check-status).feito {
