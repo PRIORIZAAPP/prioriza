@@ -203,7 +203,9 @@
     .hoje-detalhes-acao:focus-visible { outline: 2px solid var(--cor-tema); }
 
     .timeline-action-menu { flex-shrink: 0; }
+  }
 
+  :is(#screen-hoje :is(#hoje-agenda-card, #hoje-checklist-card), #screen-notas) {
     .timeline-action-menu .timeline-menu-trigger {
       position: relative;
       display: grid;
@@ -623,16 +625,6 @@
   border-width: 0 3px 3px 0;
   opacity: 1;
   transform: rotate(45deg) scale(1);
-}
-
-@media (max-width: 767px) {
-  #screen-notas .nota-item .timeline-menu-trigger {
-    width: 36px !important;
-    height: 36px !important;
-    min-width: 36px !important;
-    min-height: 36px !important;
-    padding: 0 !important;
-  }
 }
 
 /* Sprint 056 — visualizações da Agenda mobile. */
@@ -1252,11 +1244,17 @@
   }
   #screen-notas .nota-item:last-child { border-bottom: 0; }
   #screen-notas .nota-info { flex: 1; min-width: 0; }
-  #screen-notas .nota-texto { white-space: pre-wrap; overflow-wrap: anywhere; }
+  #screen-notas .nota-texto {
+    font-size: 14px;
+    font-weight: 600;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
   #screen-notas .nota-data { color: #64748b; font-size: .75rem; }
   #screen-notas .nota-item .timeline-action-menu { margin: 0; }
+  #screen-notas .nota-item .timeline-menu-trigger { color: #64748b; }
 
-  #screen-notas .nota-item button.nota-dot {
+  #screen-notas #lista-notas .nota-dot {
     flex: 0 0 44px !important;
     width: 44px !important;
     height: 44px !important;
@@ -1267,15 +1265,24 @@
   #screen-notas .nota-dot::before {
     content: "";
     position: absolute;
-    inset: 12px;
-    border: 2px solid var(--cor-tema);
+    inset: 11px;
+    box-sizing: border-box;
+    border: 1.75px solid #cbd5e1;
+    background: #fff;
     border-radius: 50%;
   }
   #screen-notas .nota-dot.feito::before {
-    background: #15803d;
-    border-color: #15803d;
+    background: #22c55e;
+    border-color: #22c55e;
   }
-  #screen-notas .nota-dot.feito::after { top: 14px; left: 18px; height: 11px; }
+  #screen-notas .nota-dot.feito::after {
+    inset: 50% auto auto 50%;
+    width: 11px;
+    height: 11px;
+    border: 0;
+    transform: translate(-50%, -50%);
+    background: center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpolyline points='48,128 104,184 208,72' fill='none' stroke='white' stroke-width='32' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
 
   #nota-form-wrap .checklist-form-header { gap: 8px; }
   #nota-mobile-fechar {
