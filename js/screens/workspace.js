@@ -1246,7 +1246,7 @@
     function abrirFormularioNotaMobile(nota = null) {
       const wrap = document.getElementById("nota-form-wrap");
       const form = document.getElementById("form-nota-mobile");
-      if (!mediaAgendaMobile.matches || wrap.classList.contains("open") || form.dataset.salvando) return;
+      if ((!mediaAgendaMobile.matches && !emLayoutDesktop()) || wrap.classList.contains("open") || form.dataset.salvando) return;
       const erro = document.getElementById("nota-mobile-erro");
       notaMobileEmEdicao = nota;
       notaMobileAcionador = document.activeElement;
@@ -1259,8 +1259,12 @@
       form.querySelector("[type=submit]").disabled = !form.elements.texto.value.trim();
       wrap.hidden = false;
       wrap.classList.add("open");
-      posicionarPainelFormularioMobile(wrap, true);
-      ajustarViewportFormularioMobile();
+      if (mediaAgendaMobile.matches) {
+        posicionarPainelFormularioMobile(wrap, true);
+        ajustarViewportFormularioMobile();
+      } else {
+        atualizarBloqueioRolagemFundo();
+      }
       wrap.querySelector(".nota-mobile-conteudo").scrollTop = 0;
       document.getElementById("btn-toggle-form-nota-mobile").setAttribute("aria-expanded", "true");
       document.getElementById("nota-mobile-fechar").focus({ preventScroll: true });
@@ -1272,6 +1276,7 @@
       wrap.classList.remove("open");
       wrap.hidden = true;
       posicionarPainelFormularioMobile(wrap, false);
+      if (!mediaAgendaMobile.matches) atualizarBloqueioRolagemFundo();
       document.getElementById("btn-toggle-form-nota-mobile").setAttribute("aria-expanded", "false");
       notaMobileAcionador?.focus({ preventScroll: true });
       notaMobileAcionador = null;
@@ -1285,6 +1290,13 @@
       const erroEl = document.getElementById("nota-mobile-erro");
       const fechar = () => { if (!form.dataset.salvando) fecharFormularioNotaMobile(); };
       document.addEventListener("prioriza:logout", fecharFormularioNotaMobile);
+      window.matchMedia("(min-width: 1100px)").addEventListener("change", () => {
+        fecharFormularioNotaMobile();
+        if (telaAtiva("screen-notas")) {
+          fecharMenusAcoesDesktop();
+          carregarNotas();
+        }
+      });
       document.getElementById("btn-toggle-form-nota-mobile").addEventListener("click", () => abrirFormularioNotaMobile());
       for (const id of ["nota-mobile-fechar", "nota-mobile-cancelar"]) {
         document.getElementById(id).addEventListener("click", fechar);
@@ -1391,7 +1403,7 @@
 
     function abrirEdicaoNota(nota) {
       if (!nota?.id || !usuarioPodeGerenciarNota(nota) || notasEmProcessamento.has(String(nota.id))) return;
-      if (mediaAgendaMobile.matches) {
+      if (mediaAgendaMobile.matches || emLayoutDesktop()) {
         abrirFormularioNotaMobile(nota);
         return;
       }
@@ -1485,6 +1497,13 @@
         if (!res) return;
         let itens=(await res.json()); itens=(Array.isArray(itens)?itens:[]).filter(n=>n.ativo!==false);
         if(itens.length===0){
+          if (emLayoutDesktop()) {
+            const vazio = document.createElement("p");
+            vazio.className = "notas-desktop-vazio";
+            vazio.textContent = "Nenhuma nota salva.";
+            container.replaceChildren(vazio);
+            return;
+          }
           PriorizaUX.renderizarEstado(container, {
             titulo: "Nenhuma nota salva",
             descricao: "Use este espaço para registrar informações que você não quer esquecer."
@@ -1524,11 +1543,7 @@
           const textoEl=document.createElement("div"); textoEl.className=notaFeita?"nota-texto nota-status-feito":"nota-texto"; textoEl.textContent=nota.texto;
           const dataEl=document.createElement("div"); dataEl.className="nota-data"; dataEl.textContent=`${nota.data?formatarDataCurtaBR(nota.data):""} · ${nota.tipo||"GERAL"}`;
 
-          if (emLayoutDesktop()) {
-            dataEl.textContent = `${nota.data ? formatarDataCurtaBR(nota.data) + " · " : ""}${notaPessoal ? "Pessoal" : "Trabalho"}`;
-          }
-
-          if (mediaAgendaMobile.matches) {
+          if (mediaAgendaMobile.matches || emLayoutDesktop()) {
             const categoria = notaPessoal ? "Pessoal" : "Profissional";
             dataEl.textContent = [nota.data && formatarDataCurtaBR(nota.data), categoria].filter(Boolean).join(" · ");
             dot.setAttribute("aria-label", dot.title);
