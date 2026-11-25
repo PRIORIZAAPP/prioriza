@@ -1441,7 +1441,8 @@
     --modulo-secundario: #64748b;
   }
 
-  .content > :is(#screen-hoje, #screen-agenda, #screen-checklist, #screen-pessoal, #screen-notas) > .card,
+  .content > :is(#screen-hoje, #screen-agenda, #screen-checklist, #screen-pessoal) > .card,
+  #screen-notas.screen.active,
   #screen-ajustes :is(.settings-profile-card, .settings-group-card, .settings-detail-card),
   #screen-pessoal .pessoal-panel {
     border: 1px solid var(--modulo-card-border);
@@ -1450,7 +1451,8 @@
   }
 
   .content > .screen:not(#screen-notas) > .card { padding: 16px; }
-  #screen-notas > .card { background: #f8fafc; padding: 16px; }
+  #screen-notas.screen.active { background: #f8fafc; }
+  #screen-notas > .card { padding: 16px; }
   #screen-notas > .notas-list-card { padding-block: 12px; }
 
   .content > .screen :is(.card-header h2, .settings-detail-header h2, .settings-section-title h2, .agenda-dia-label, .pessoal-panel h3),
