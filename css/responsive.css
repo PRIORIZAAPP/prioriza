@@ -25,6 +25,10 @@
   .form-grid, .agenda-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+:root { --agenda-origem-google: #86198f; }
+
+.calendar-indicator.origem-google { background: var(--agenda-origem-google); }
+
 .auth-mobile-brand-copy { display: none; }
 
 #screen-hoje .hoje-apenas-mobile { display: none; }
@@ -1413,4 +1417,12 @@
     -webkit-text-fill-color: #475569;
   }
   #nota-mobile-erro { margin: 0; color: #b91c1c; }
+}
+
+@media (max-width: 1099px) {
+  #screen-hoje #hoje-agenda-card .agenda-status-btn.origem-google,
+  #screen-agenda #agenda-geral-lista .agenda-status-btn.origem-google {
+    background: var(--agenda-origem-google);
+    border-color: var(--agenda-origem-google);
+  }
 }

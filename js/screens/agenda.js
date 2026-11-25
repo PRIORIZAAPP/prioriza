@@ -133,6 +133,7 @@
         fim: fimRaw,
         origem: (evento?.origem || "google_calendar"),
         tipo_evento: "google",
+        origem_evento: "google",
         descricao: descricaoGoogleParaTexto(evento?.descricao || ""),
         local: evento?.local || "",
         link: evento?.link || evento?.google_html_link || "",
@@ -161,7 +162,7 @@
     function agendaDoDiaCombinada(iso, eventosGoogle = googleAgendaCache) {
       const locais = tarefasAgendaCache
         .filter(t => t.ativo !== false && normalizarDataParaISO(t.data || "") === iso)
-        .map(t => ({ ...t, tipo_evento: "prioriza" }));
+        .map(t => ({ ...t, origem_evento: t.origem_evento || t.tipo_evento, tipo_evento: "prioriza" }));
       const google = eventosGoogle
         .filter(t => t.ativo !== false && normalizarDataParaISO(t.data || "") === iso)
         .map(t => ({ ...t, tipo_evento: "google" }));
@@ -404,26 +405,23 @@
 
             if ((t.tipo_evento || "") === "google" && !emLayoutDesktop()) {
               const marcador = document.createElement("div");
-              marcador.className = "agenda-status-btn pendente";
-              marcador.innerHTML = `<svg width="12" height="12" viewBox="0 0 256 256" fill="none" color="var(--cor-tema)"><rect x="48" y="48" width="160" height="160" rx="24" fill="currentColor" opacity="0.18"/><rect x="48" y="48" width="160" height="160" rx="24" stroke="currentColor" stroke-width="20"/></svg>`;
+              definirEstadoVisualAgendaHoje(item, marcador, statusVisualEventoGoogle(t), t);
               marcador.title = "Evento do Google Agenda";
               item.appendChild(marcador);
             } else if (!emLayoutDesktop() || (t.tipo_evento || "") !== "google") {
               const statusAtual = t.status || "pendente";
               const bolinha = document.createElement("button");
               bolinha.type = "button";
-              bolinha.className = `agenda-status-btn ${statusAtual}`;
-              bolinha.dataset.status = statusAtual;
               bolinha.title = "Toque para mudar status";
               bolinha.setAttribute("aria-label", `Alterar status de ${t.titulo || "compromisso"}`);
-              bolinha.innerHTML = iconStatusInline(statusAtual);
+              definirEstadoVisualAgendaHoje(item, bolinha, statusAtual, t);
               bolinha.addEventListener("click", async () => {
                 const atual = bolinha.dataset.status || "pendente";
                 const novo  = proximoStatus(atual);
-                definirEstadoVisualAgendaHoje(item, bolinha, novo);
+                definirEstadoVisualAgendaHoje(item, bolinha, novo, t);
                 const ok = await atualizarStatusTarefa(t.id, novo);
                 if (!ok) {
-                  definirEstadoVisualAgendaHoje(item, bolinha, atual);
+                  definirEstadoVisualAgendaHoje(item, bolinha, atual, t);
                   console.warn("[PRIORIZA] PUT falhou para tarefa", t.id);
                   return;
                 }
@@ -506,10 +504,10 @@
                 if (!bolinha) return;
                 const statusAnterior = bolinha.dataset.status || t.status || "pendente";
                 grupoAcoes?.__setDisabled?.(true);
-                definirEstadoVisualAgendaHoje(item, bolinha, novoStatus);
+                definirEstadoVisualAgendaHoje(item, bolinha, novoStatus, t);
                 const ok = await atualizarStatusTarefa(t.id, novoStatus);
                 if (!ok) {
-                  definirEstadoVisualAgendaHoje(item, bolinha, statusAnterior);
+                  definirEstadoVisualAgendaHoje(item, bolinha, statusAnterior, t);
                   grupoAcoes?.__sync?.(statusAnterior);
                   grupoAcoes?.__setDisabled?.(false);
                   await modal.alerta("Não foi possível atualizar o status.", "Erro");

@@ -2461,12 +2461,13 @@
       return window.matchMedia("(min-width: 1100px)").matches;
     }
 
-    function definirEstadoVisualAgendaHoje(itemEl, bolinhaEl, status) {
+    function definirEstadoVisualAgendaHoje(itemEl, bolinhaEl, status, tarefa) {
       const statusAtual = status || "pendente";
       if (itemEl) itemEl.classList.toggle("cancelada", ehStatusCancelada(statusAtual));
       if (!bolinhaEl) return;
       bolinhaEl.dataset.status = statusAtual;
       bolinhaEl.className = `agenda-status-btn ${statusAtual}`;
+      bolinhaEl.classList.toggle("origem-google", indicarOrigemGoogleAgenda(tarefa, tarefa?.tipo_evento === "google" ? tarefa.status : statusAtual));
       bolinhaEl.innerHTML = iconStatusInline(statusAtual);
     }
 
@@ -2717,6 +2718,20 @@
       return `<span class="agenda-tag">Trabalho</span>`;
     }
 
+    function indicarOrigemGoogleAgenda(tarefa, status = tarefa?.status) {
+      const origem = String(tarefa?.origem_evento || tarefa?.tipo_evento || "").trim().toLowerCase();
+      return origem === "google" && !tarefa.blocked && !tarefa.atrasado
+        && tarefa.status_exibicao !== "atrasado" && status !== "atrasado"
+        && !ehStatusFeito(status) && !ehStatusAndamento(status) && !ehStatusCancelada(status);
+    }
+
+    function statusVisualEventoGoogle(tarefa) {
+      const status = tarefa.status;
+      return ehStatusFeito(status) ? "feito"
+        : ehStatusAndamento(status) ? "em_andamento"
+        : ehStatusCancelada(status) ? "cancelada" : "pendente";
+    }
+
     function obterCorIndicadorHoje(tarefa) {
       const tipo = String(tarefa?.tipo_evento || "").toLowerCase();
       const origem = String(tarefa?.origem || "").toUpperCase();
@@ -2725,6 +2740,7 @@
       if (ehStatusCancelada(tarefa?.status)) return "#cbd5e1";
       if (ehStatusFeito(tarefa?.status)) return "#22c55e";
       if (tarefa?.blocked) return "#ef4444";
+      if (indicarOrigemGoogleAgenda(tarefa)) return "var(--agenda-origem-google)";
       if (tarefa?.all_day) return "#0ea5e9";
       if (tipo === "google") return "rgba(var(--cor-tema-rgb), 0.72)";
       if (prioridade === "1") return "#ef4444";
