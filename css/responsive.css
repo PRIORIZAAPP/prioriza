@@ -2219,3 +2219,210 @@
     opacity: 1;
   }
 }
+
+#screen-ajustes .settings-desktop-heading { display: none; }
+
+@media (min-width: 1100px) {
+  #screen-ajustes .settings-native-shell {
+    width: 100%;
+    max-width: 1120px;
+    padding: 0;
+    min-width: 0;
+    overflow-x: visible;
+  }
+
+  #screen-ajustes .settings-desktop-heading {
+    display: block;
+    margin: 0;
+    color: var(--modulo-titulo, #0f172a);
+    font-weight: 650;
+  }
+
+  #screen-ajustes h1.settings-desktop-heading {
+    grid-column: 1 / -1;
+    font-size: 18px;
+  }
+
+  #screen-ajustes h2.settings-desktop-heading {
+    padding: 12px 12px 6px;
+    font-size: 13px;
+  }
+
+  #screen-ajustes .settings-main-view:not([hidden]) {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    align-items: start;
+  }
+
+  #screen-ajustes .settings-profile-card { grid-column: 1 / -1; min-width: 0; padding: 10px 14px; }
+  #screen-ajustes .settings-profile-copy { min-width: 0; overflow-wrap: anywhere; }
+  #screen-ajustes .settings-group-card { min-width: 0; padding: 0 4px 4px; overflow: visible; }
+  #screen-ajustes .settings-link-row {
+    min-height: 46px;
+    gap: 8px;
+    padding: 6px 8px;
+  }
+
+  #screen-ajustes .settings-link-row:hover { background: #f8fafc; }
+  #screen-ajustes .settings-link-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: var(--cor-tema-clara);
+    color: var(--cor-tema-escura);
+  }
+
+  #screen-ajustes .settings-link-text { min-width: 0; white-space: normal; }
+
+  #screen-ajustes .settings-logout-row {
+    grid-column: 1 / -1;
+    justify-self: start;
+    width: auto;
+    min-height: 36px;
+    padding: 0 16px;
+    border-radius: 10px;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  #screen-ajustes .settings-main-footer { display: none; }
+
+  #screen-ajustes .settings-native-shell.settings-detail-open {
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+  }
+
+  #screen-ajustes .settings-detail-view {
+    position: relative;
+    padding: 0 0 12px;
+    border-radius: 0;
+    background: transparent;
+    transform: none;
+    overflow: visible;
+  }
+
+  #screen-ajustes .settings-detail-header {
+    position: static;
+    grid-template-columns: 36px minmax(0, 1fr);
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
+
+  #screen-ajustes .settings-detail-header h2 { text-align: left; }
+  #screen-ajustes .settings-detail-header > span:empty { display: none; }
+  #screen-ajustes .settings-back-btn { width: 36px; height: 36px; min-width: 36px; }
+
+  #screen-ajustes :is(.settings-detail-list, .settings-placeholder-grid) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 8px;
+  }
+
+  #screen-ajustes .settings-detail-item {
+    min-width: 0;
+    padding: 8px 10px;
+    border-radius: 10px;
+    overflow-wrap: anywhere;
+  }
+
+  #screen-ajustes :is(.settings-note, .settings-detail-footnote) { overflow-wrap: anywhere; }
+  #screen-ajustes .settings-note:empty { display: none; }
+
+  #screen-ajustes .settings-profile-detail-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    justify-items: start;
+    text-align: left;
+    column-gap: 14px;
+  }
+
+  #screen-ajustes .settings-profile-detail-avatar { grid-row: span 3; }
+  #screen-ajustes .settings-profile-avatar-actions,
+  #screen-ajustes .settings-profile-avatar-hint { grid-column: 1 / -1; width: auto; text-align: left; }
+  #screen-ajustes .settings-profile-detail-email { overflow-wrap: anywhere; }
+
+  #screen-ajustes #form-alterar-senha-ajustes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  #screen-ajustes #form-alterar-senha-ajustes > button { grid-column: 1 / -1; }
+  #screen-ajustes #form-alterar-senha-ajustes input { min-width: 0; }
+
+  #screen-ajustes .appearance-options {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    max-width: 480px;
+  }
+  #screen-ajustes .theme-option { min-width: 0; min-height: 48px; border-radius: 10px; }
+
+  #screen-ajustes :is(.settings-soft-btn, .settings-placeholder-btn, .btn-outline, .backup-label) {
+    min-height: 38px;
+    border-radius: 10px;
+  }
+
+  #screen-ajustes :is(.settings-soft-btn, .btn-outline) { width: auto; }
+  #screen-ajustes :is(#btn-logout, #btn-google-desconectar) { color: #475569; }
+  #screen-ajustes :is(button, input, select, .backup-label):focus-visible {
+    outline: 2px solid var(--cor-tema);
+    outline-offset: 2px;
+  }
+
+  #screen-ajustes [data-settings-page="google"] .settings-detail-list,
+  #screen-ajustes .agenda-integracao-titulo { display: none; }
+
+  #screen-ajustes #agenda-google-card {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  #screen-ajustes .agenda-integracao-subtitulo { margin: 0; font-size: 13px; font-weight: 500; color: #475569; }
+  #screen-ajustes .agenda-integracao-acoes { flex-wrap: wrap; }
+
+  #screen-ajustes [data-settings-page="backup"] .settings-body-copy { display: none; }
+
+  #screen-ajustes :is(#btn-exportar-backup, #btn-exportar-backup:hover) {
+    border-color: var(--cor-tema);
+    background: var(--cor-tema-escura);
+    color: #fff;
+  }
+
+  #screen-ajustes #label-importar-backup {
+    position: relative;
+    border-color: #cbd5e1;
+    background: #fff;
+    color: #334155;
+  }
+
+  #screen-ajustes #input-importar-backup {
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  #screen-ajustes #label-importar-backup:has(:focus-visible) {
+    outline: 2px solid var(--cor-tema);
+    outline-offset: 2px;
+  }
+
+  body:has(#screen-ajustes.active) :is(#modal-overlay .modal-box, #account-delete-modal .account-delete-card) {
+    border-radius: var(--modulo-card-radius, 16px);
+    border: 1px solid #e2e8f0;
+  }
+
+  body:has(#screen-ajustes.active) :is(#modal-overlay button, #account-delete-modal button) {
+    border-radius: 10px;
+  }
+}
