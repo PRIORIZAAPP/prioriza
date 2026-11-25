@@ -222,14 +222,18 @@
       return badgeEl;
     }
 
-    function criarElementoChecklistItem(item) {
+    function criarElementoChecklistItem(item, desktop = false) {
       const status = normalizarStatusChecklist(item.status || "pendente");
       const origem = (item.origem || "").toUpperCase();
       const div = document.createElement("div");
       div.className = "checklist-item" + (origem === "PESSOAL" ? " pessoal" : "");
       div.dataset.id = item.id;
 
-      const bolinha = document.createElement("div");
+      const bolinha = document.createElement(desktop ? "button" : "div");
+      if (desktop) {
+        bolinha.type = "button";
+        bolinha.setAttribute("aria-label", `Alterar status de ${item.titulo} (${status.replace("_", " ")})`);
+      }
       bolinha.className = `check-status ${status}`;
       bolinha.dataset.status = status;
       if (status === "feito") {
@@ -242,7 +246,7 @@
       const info = document.createElement("div");
       info.className = "check-info";
 
-      const tituloEl = document.createElement("div");
+      const tituloEl = document.createElement(desktop ? "button" : "div");
       tituloEl.className = "check-titulo";
       tituloEl.textContent = item.titulo || "";
 
@@ -265,6 +269,39 @@
       }
 
       info.appendChild(tituloEl);
+      if (desktop) {
+        tituloEl.type = "button";
+        tituloEl.setAttribute("aria-expanded", "false");
+        if (ehRotinaRecorrenteNaoDiaria(item) && !retornoMobileTexto) {
+          tituloEl.insertAdjacentHTML("beforeend", iconeRecorrenciaHTML());
+        }
+        tituloEl.addEventListener("click", () => {
+          const expandido = tituloEl.getAttribute("aria-expanded") === "true";
+          if (!expandido && tituloEl.scrollHeight <= tituloEl.clientHeight) return;
+          tituloEl.setAttribute("aria-expanded", String(!expandido));
+        });
+        const categoria = obterRotuloOrigemChecklist(item);
+        const retornoAtrasado = status !== "feito" && (item.atrasado === true || estaAtrasadoChecklistHoje(item));
+        metaTexto.textContent = categoria;
+        if (retornoMobileTexto) {
+          const retorno = document.createElement("span");
+          retorno.className = "check-desktop-retorno" + (retornoAtrasado ? " atrasado" : "");
+          retorno.textContent = retornoMobileTexto;
+          if (retornoTexto) retorno.title = retornoTexto;
+          sub.append(" · ", retorno);
+        }
+        if (retornoAtrasado) {
+          const atraso = document.createElement("span");
+          atraso.className = "check-desktop-atraso";
+          atraso.textContent = "Atrasado";
+          sub.append(" · ", atraso);
+        }
+        const frequencia = document.createElement("div");
+        frequencia.className = "check-desktop-frequencia";
+        frequencia.textContent = item.frequencia || "Único";
+        div.classList.add("checklist-item-desktop", status);
+        div.appendChild(frequencia);
+      }
       info.appendChild(sub);
       const metaMobile = document.createElement("div");
       metaMobile.className = "check-sub-mobile";
@@ -286,12 +323,12 @@
 
       const actions = document.createElement("div");
       actions.className = "checklist-item-actions";
-      if (retornoEl) actions.appendChild(retornoEl);
+      if (!desktop && retornoEl) actions.appendChild(retornoEl);
       const badgeEl = criarBadgeChecklistElemento(badge);
-      if (badgeEl) actions.appendChild(badgeEl);
+      if (!desktop && badgeEl) actions.appendChild(badgeEl);
 
       const itensMenu = [
-        { texto: "Editar", acao: () => editarRotinaChecklist(item) },
+        { texto: "Editar", acao: () => desktop ? abrirEdicaoChecklistDesktop(item) : editarRotinaChecklist(item) },
       ];
       if (ehRotinaRecorrenteNaoDiaria(item)) {
         itensMenu.push(
@@ -323,9 +360,12 @@
       }));
       div.classList.add("has-action-menu");
 
-      div.appendChild(bolinha);
-      div.appendChild(info);
-      div.appendChild(actions);
+      if (desktop) {
+        actions.prepend(bolinha);
+        div.append(info, actions);
+      } else {
+        div.append(bolinha, info, actions);
+      }
 
       bolinha.addEventListener("click", async (evento) => {
         evento.stopPropagation();
@@ -372,7 +412,7 @@
         feito: "Concluídas",
       };
 
-      if (!grupos[checklistGeralAbaAtiva]?.length && Object.values(grupos).some(itens => itens.length)) {
+      if (!emLayoutDesktop() && !grupos[checklistGeralAbaAtiva]?.length && Object.values(grupos).some(itens => itens.length)) {
         if (grupos.pendente.length) checklistGeralAbaAtiva = "pendente";
         else if (grupos.em_andamento.length) checklistGeralAbaAtiva = "em_andamento";
         else checklistGeralAbaAtiva = "feito";
@@ -380,7 +420,10 @@
 
       document.querySelectorAll("[data-checklist-tab]").forEach((botao) => {
         const status = botao.dataset.checklistTab || "pendente";
-        botao.classList.toggle("active", status === checklistGeralAbaAtiva);
+        const ativa = status === checklistGeralAbaAtiva;
+        botao.classList.toggle("active", ativa);
+        if (emLayoutDesktop()) botao.setAttribute("aria-pressed", String(ativa));
+        else botao.removeAttribute("aria-pressed");
       });
 
       document.getElementById("checklist-count-pendente").textContent = String(grupos.pendente.length);
@@ -407,7 +450,15 @@
 
       container.innerHTML = "";
 
+      const desktop = emLayoutDesktop();
       if (!itens.length) {
+        if (desktop) {
+          const vazio = document.createElement("p");
+          vazio.className = "checklist-desktop-vazio";
+          vazio.textContent = mensagensVazias[statusKey] || "Nenhum item nesta lista.";
+          container.append(vazio);
+          return;
+        }
         PriorizaUX.renderizarEstado(container, {
           titulo: mensagensVazias[statusKey] || "Nenhum item nesta lista.",
           descricao: statusKey === "pendente" ? "Você está em dia com suas rotinas." : "Os itens aparecerão aqui quando houver movimentação."
@@ -416,7 +467,7 @@
       }
 
       const fragmento = document.createDocumentFragment();
-      itens.forEach((item) => fragmento.appendChild(criarElementoChecklistItem(item)));
+      itens.forEach((item) => fragmento.appendChild(criarElementoChecklistItem(item, desktop)));
       container.appendChild(fragmento);
     }
 
@@ -442,6 +493,18 @@
         if (filtroCategoria) itens = itens.filter(i => categoriaPorOrigem(i.origem) === filtroCategoria);
 
         if (itens.length === 0) {
+          if (emLayoutDesktop()) {
+            atualizarTabsChecklist({ pendente: [], em_andamento: [], feito: [] });
+            if (!filtroFreq && !filtroCategoria) {
+              renderChecklistLista(container, checklistGeralAbaAtiva, []);
+              return;
+            }
+            const vazio = document.createElement("p");
+            vazio.className = "checklist-desktop-vazio";
+            vazio.textContent = "Nenhum resultado para os filtros selecionados.";
+            container.replaceChildren(vazio);
+            return;
+          }
           if (window.matchMedia("(max-width: 767px)").matches) {
             atualizarTabsChecklist({ pendente: [], em_andamento: [], feito: [] });
           }
@@ -480,6 +543,26 @@
       }
     }
 
+    let edicaoChecklistDesktop = null;
+
+    async function abrirEdicaoChecklistDesktop(item) {
+      const scope = item.recorrente ? await modal.escolherRecorrencia("esta rotina") : "single";
+      const titulo = document.getElementById("chk-titulo");
+      const categoria = document.getElementById("chk-categoria");
+      const frequencia = document.getElementById("chk-frequencia");
+      const opcaoLegada = item.frequencia && !Array.from(frequencia.options).some(opcao => opcao.value === item.frequencia)
+        ? new Option(item.frequencia, item.frequencia) : null;
+      edicaoChecklistDesktop = {
+        item, scope, opcaoLegada, valoresCriacao: [titulo.value, categoria.value, frequencia.value],
+      };
+      if (opcaoLegada) frequencia.add(opcaoLegada);
+      titulo.value = item.titulo || "";
+      categoria.value = categoriaPorOrigem(item.origem);
+      frequencia.value = item.frequencia || "Semanal";
+      document.getElementById("checklist-form-title").textContent = "Editar rotina";
+      toggleFormChecklist(true);
+    }
+
     function toggleFormChecklist(forceOpen = null) {
       const wrap = document.getElementById("checklist-form-wrap");
       const btn = document.getElementById("btn-toggle-form-checklist");
@@ -495,10 +578,19 @@
       btn.setAttribute("aria-label", abrir ? "Fechar formulário de rotina" : "Nova rotina");
       btn.title = abrir ? "Fechar formulário de rotina" : "Nova rotina";
       btnText.textContent = abrir ? "Fechar formulário de rotina" : "Nova rotina";
+      if (!abrir && edicaoChecklistDesktop) {
+        const { opcaoLegada, valoresCriacao } = edicaoChecklistDesktop;
+        opcaoLegada?.remove();
+        ["chk-titulo", "chk-categoria", "chk-frequencia"].forEach((id, indice) => {
+          document.getElementById(id).value = valoresCriacao[indice];
+        });
+        document.getElementById("checklist-form-title").textContent = "Nova rotina";
+        edicaoChecklistDesktop = null;
+      }
       if (abrir) {
+        atualizarSalvarChecklistMobile();
         if (mediaAgendaMobile.matches) {
           wrap.querySelector(".checklist-mobile-conteudo").scrollTop = 0;
-          atualizarSalvarChecklistMobile();
           ajustarViewportFormularioMobile();
           document.getElementById("btn-fechar-form-checklist").focus({ preventScroll: true });
         } else {
@@ -711,6 +803,19 @@
 
     function vincularPaineisFormularioMobile() {
       document.getElementById("chk-titulo").addEventListener("input", atualizarSalvarChecklistMobile);
+      window.matchMedia("(min-width: 1100px)").addEventListener("change", () => {
+        if (!telaAtiva("screen-checklist")) return;
+        fecharMenusAcoesDesktop();
+        const wrap = document.getElementById("checklist-form-wrap");
+        if (wrap.classList.contains("open")) {
+          if (edicaoChecklistDesktop) toggleFormChecklist(false);
+          else if (emLayoutDesktop()) atualizarSalvarChecklistMobile();
+          else if (document.getElementById("form-checklist").dataset.salvando !== "true") {
+            document.getElementById("btn-salvar-rotina").disabled = false;
+          }
+        }
+        carregarChecklistGeral();
+      });
       for (const [id, fechar] of [
         ["agenda-form-wrap", toggleFormAgenda], ["checklist-form-wrap", toggleFormChecklist],
         ["nota-form-wrap", fecharFormularioNotaMobile],
@@ -808,7 +913,7 @@
 
     // ── SALVAR ROTINA (form) ──────────────────────────────────────
     function atualizarSalvarChecklistMobile() {
-      if (!mediaAgendaMobile.matches) return;
+      if (!mediaAgendaMobile.matches && !emLayoutDesktop() && !edicaoChecklistDesktop) return;
       const form = document.getElementById("form-checklist");
       document.getElementById("btn-salvar-rotina").disabled =
         form.dataset.salvando === "true" || !document.getElementById("chk-titulo").value.trim();
@@ -817,7 +922,8 @@
     async function salvarNovaRotinaChecklist(e) {
       e.preventDefault();
       const form = e.currentTarget;
-      const mobile = mediaAgendaMobile.matches;
+      const edicao = edicaoChecklistDesktop;
+      const compacto = mediaAgendaMobile.matches || emLayoutDesktop() || Boolean(edicao);
       if (form.dataset.salvando === "true") return;
       const titulo  = document.getElementById("chk-titulo").value.trim();
       const categoria = document.getElementById("chk-categoria")?.value || "PROFISSIONAL";
@@ -825,18 +931,32 @@
       const freq    = document.getElementById("chk-frequencia").value;
       if (!titulo) return;
       const btn=document.getElementById("btn-salvar-rotina"); btn.disabled=true;
-      if (mobile) atualizarEstadoGravacaoFormulario(form, btn, true);
+      if (compacto) atualizarEstadoGravacaoFormulario(form, btn, true);
       try {
-        const res=await fetch(API+"/checklist_criar?"+new URLSearchParams({titulo,origem,frequencia:freq}),{method:"POST",headers:authHeaders()});
+        const params = new URLSearchParams({ titulo, origem, frequencia: freq });
+        const rota = edicao ? `/checklist/${edicao.item.id}` : "/checklist_criar";
+        if (edicao) {
+          params.set("scope", edicao.scope);
+          if (origem === categoriaPorOrigem(edicao.item.origem)) params.delete("origem");
+          if (freq === edicao.item.frequencia) params.delete("frequencia");
+        }
+        const res = await fetch(API + rota + "?" + params, {
+          method: edicao ? "PUT" : "POST",
+          headers: authHeaders(),
+        });
         if (respostaDemoCancelada(res)) return;
         if (!res.ok){await modal.alerta("Erro ao salvar rotina.","Erro");return;}
-        document.getElementById("chk-titulo").value=""; document.getElementById("chk-categoria").value="PROFISSIONAL"; document.getElementById("chk-frequencia").value="Diária";
+        if (!edicao) {
+          document.getElementById("chk-titulo").value = "";
+          document.getElementById("chk-categoria").value = "PROFISSIONAL";
+          document.getElementById("chk-frequencia").value = "Diária";
+        }
         toggleFormChecklist(false);
         await carregarChecklistHoje(); await carregarChecklistGeral(); await carregarPessoalLista();
       } catch(e){console.error(e); await modal.alerta("Erro de conexão.","Erro");}
       finally {
-        if (mobile) atualizarEstadoGravacaoFormulario(form, btn, false);
-        if (mediaAgendaMobile.matches) atualizarSalvarChecklistMobile();
+        if (compacto) atualizarEstadoGravacaoFormulario(form, btn, false);
+        if (compacto) atualizarSalvarChecklistMobile();
         else btn.disabled = false;
       }
     }
