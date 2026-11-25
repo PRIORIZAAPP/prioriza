@@ -1732,3 +1732,234 @@
 
   #screen-hoje .hoje-next-item.origem-google::before { background: var(--agenda-origem-google); }
 }
+
+/* Sprint 067 — Agenda desktop. */
+@media (min-width: 1100px) {
+  #screen-agenda > .agenda-calendar-card {
+    grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
+  }
+
+  #screen-agenda #btn-add-dia-agenda { display: none; }
+
+  #screen-agenda #agenda-dia-container {
+    padding: 8px 0 0 12px;
+  }
+
+  #screen-agenda #agenda-geral-lista {
+    max-height: max(280px, calc(100dvh - 240px));
+    overscroll-behavior-y: contain;
+  }
+
+  #screen-agenda .calendar-day.today { box-shadow: inset 0 0 0 1px var(--cor-tema); }
+  #screen-agenda .calendar-day.selected { background: var(--cor-tema-clara); }
+  #screen-agenda .calendar-day:not(.out-month) .calendar-indicator.em-andamento { background: #f97316; }
+  #screen-agenda .calendar-indicator.atrasado { background: #b91c1c; }
+
+  #screen-agenda .calendar-day .agenda-indicador-feriado {
+    display: block;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 5px;
+    height: 5px;
+    border-radius: 1px;
+    background: #b91c1c;
+    transform: rotate(45deg);
+  }
+
+  #screen-agenda #agenda-mobile-feriados:not(:empty) {
+    display: block;
+    margin: 0 0 6px;
+    color: #b91c1c;
+    font-size: 12px;
+  }
+
+  #screen-agenda #agenda-mobile-feriados p { margin: 0; }
+
+  #screen-agenda #agenda-geral-lista .agenda-item-desktop {
+    position: relative;
+    display: grid;
+    grid-template-columns: 78px minmax(0, 1fr) 22px auto;
+    gap: 8px;
+    align-items: center;
+    min-height: 56px;
+    margin: 0 0 4px;
+    padding: 6px 6px 6px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  #screen-agenda .agenda-item-desktop::before {
+    content: "";
+    position: absolute;
+    inset: 8px auto 8px 0;
+    width: 3px;
+    border-radius: 4px;
+    background: var(--agenda-accent);
+  }
+
+  #screen-agenda .agenda-desktop-horario {
+    font-size: 13px;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #screen-agenda .agenda-item-desktop.blocked .agenda-desktop-horario,
+  #screen-agenda .agenda-item-desktop .hoje-atrasado { color: #b91c1c; }
+
+  #screen-agenda .agenda-item-desktop .agenda-mobile-compromisso { position: relative; min-width: 0; }
+
+  #screen-agenda .agenda-item-desktop .agenda-titulo {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+
+  #screen-agenda .agenda-item-desktop:has(.agenda-status-btn.feito) .agenda-titulo {
+    color: #475569;
+    text-decoration: line-through;
+  }
+
+  #screen-agenda .agenda-item-desktop .agenda-status-btn.origem-google {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border-color: transparent;
+    background: var(--agenda-origem-google);
+  }
+
+  #screen-agenda .agenda-item-desktop .hoje-detalhes-acao {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  #screen-agenda .agenda-item-desktop .hoje-detalhes-acao:focus-visible {
+    outline: 2px solid var(--cor-tema);
+  }
+
+  #screen-agenda .agenda-desktop-vazia {
+    margin: 0;
+    padding: 14px 0;
+    color: #64748b;
+    text-align: center;
+  }
+
+  #screen-agenda .marco-register-btn,
+  #screen-agenda #btn-expandir-busca-marcos { border-radius: 12px; }
+
+  .app-shell[data-active-screen="screen-agenda"] #agenda-form-wrap .checklist-form-panel {
+    width: min(100%, 620px);
+    padding: 16px;
+    max-height: calc(100dvh - 32px);
+    overscroll-behavior: contain;
+  }
+
+  .app-shell[data-active-screen="screen-agenda"] #agenda-form-wrap .agenda-form-mobile:not([hidden]) { display: block; }
+  .app-shell[data-active-screen="screen-agenda"] #agenda-form-wrap :is(.agenda-form-desktop, #agenda-duracao-wrap, .agenda-toggle-row small) { display: none; }
+  #screen-agenda #btn-fechar-form-agenda {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    background: #e2e8f0;
+    font-size: 22px;
+  }
+
+  #screen-agenda .agenda-data-nativa { position: relative; }
+  #screen-agenda .agenda-data-nativa input { color: transparent; }
+  #screen-agenda .agenda-data-nativa input::-webkit-datetime-edit { -webkit-text-fill-color: transparent; }
+  #screen-agenda #form-agenda .agenda-data-formatada {
+    position: absolute;
+    inset: 0 30px 0 12px;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  #screen-agenda #form-agenda .agenda-toggle-row {
+    grid-template-columns: 18px minmax(0, 1fr) auto;
+    min-height: 44px;
+    padding: 6px 12px;
+  }
+
+  #screen-agenda #form-agenda .agenda-toggle-row > :last-child { grid-area: 1 / 2; }
+  #screen-agenda #form-agenda .agenda-toggle-switch { grid-area: 1 / 3; }
+  #screen-agenda #form-agenda .agenda-toggle-row:focus-within { outline: 2px solid var(--cor-tema); }
+  .app-shell[data-active-screen="screen-agenda"] #form-agenda .agenda-form-datetime {
+    grid-template-columns: 1.3fr 1fr 1fr;
+  }
+
+  .app-shell[data-active-screen="screen-agenda"] #form-agenda .agenda-form-virada { grid-column: 1 / -1; }
+  .app-shell[data-active-screen="screen-agenda"] #form-agenda .agenda-mobile-conteudo:has(#agenda-all-day:checked) .agenda-form-horario { display: none; }
+  .app-shell[data-active-screen="screen-agenda"] #form-agenda :is(input, select) { min-width: 0; }
+  .app-shell[data-active-screen="screen-agenda"] #form-agenda .agenda-mobile-grupos h3 {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: #334155;
+  }
+
+  .app-shell[data-active-screen="screen-agenda"] #form-agenda .agenda-organizacao { order: -1; }
+  .app-shell[data-active-screen="screen-agenda"] #form-agenda .agenda-mobile-grupos > .form-grid { display: contents; }
+  .app-shell[data-active-screen="screen-agenda"] #form-agenda .agenda-mobile-grupos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .app-shell[data-active-screen="screen-agenda"] #form-agenda :is(.agenda-organizacao, .agenda-repeticao, .agenda-integracao, .agenda-google-opcao) { grid-column: 1 / -1; }
+  .app-shell[data-active-screen="screen-agenda"] #form-agenda .agenda-repeticao { order: 1; }
+  .app-shell[data-active-screen="screen-agenda"] #form-agenda :is(.agenda-frequencia, .agenda-repetir-ate) { order: 2; }
+  .app-shell[data-active-screen="screen-agenda"] #form-agenda .agenda-integracao { order: 3; }
+  .app-shell[data-active-screen="screen-agenda"] #form-agenda .agenda-google-opcao { order: 4; }
+  .app-shell[data-active-screen="screen-agenda"] #form-agenda:has(#agenda-repetir option[value="NENHUMA"]:checked) .agenda-repetir-ate { display: none; }
+
+  .app-shell[data-active-screen="screen-agenda"] #agenda-edicao-observacoes {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+
+  body:has(.app-shell[data-active-screen="screen-agenda"]) .modal-box:has(.hoje-detalhes-mensagem) {
+    width: min(620px, 100%);
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+  }
+
+  body:has(.app-shell[data-active-screen="screen-agenda"]) .hoje-detalhes-mensagem {
+    overflow-wrap: anywhere;
+  }
+
+  .app-shell[data-active-screen="screen-agenda"] #form-agenda .checklist-form-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  #screen-agenda #form-agenda .checklist-form-actions button {
+    min-height: 40px;
+    border-radius: 999px;
+  }
+
+  #screen-agenda #form-agenda #btn-salvar-compromisso:not(:disabled) {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: #fff;
+  }
+
+  #screen-agenda #form-agenda #btn-salvar-compromisso:disabled {
+    background: #e2e8f0;
+    color: #475569;
+  }
+}
