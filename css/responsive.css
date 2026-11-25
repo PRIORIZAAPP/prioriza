@@ -1498,6 +1498,7 @@
   }
 
   .content > .screen :is(.timeline-status-toggle, .agenda-status-btn, .check-status):is(.pendente, .em_andamento, .feito),
+  #screen-hoje .timeline-status-toggle.atrasado,
   #screen-hoje .timeline-status-toggle.origem-google,
   #screen-pessoal .pessoal-item:not(.is-cancelada) .pessoal-btn.feito {
     box-sizing: border-box;
@@ -1652,4 +1653,82 @@
     outline: 2px solid #2563eb;
     outline-offset: 2px;
   }
+}
+
+/* Sprint 066 — Home desktop. */
+@media (min-width: 1100px) {
+  #screen-hoje .timeline-row {
+    grid-template-columns: 94px minmax(0, 1fr) auto;
+    column-gap: 12px;
+  }
+
+  #screen-hoje .timeline-stamp {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 14px;
+    font-weight: 650;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  #screen-hoje .timeline-row.checklist .timeline-stamp {
+    font-size: 11px;
+    letter-spacing: 0.03em;
+  }
+
+  #screen-hoje .timeline-row.agenda.feito .timeline-body,
+  #screen-hoje .timeline-row.agenda.feito .timeline-stamp { opacity: 1; }
+  #screen-hoje .timeline-row.agenda.feito .timeline-title { color: #475569; }
+
+  #screen-hoje button.timeline-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    align-self: stretch;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    box-shadow: none;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+  }
+
+  #screen-hoje button.timeline-title[aria-expanded="true"] {
+    display: block;
+    overflow: visible;
+  }
+
+  #screen-hoje .timeline-meta { white-space: normal; overflow-wrap: anywhere; }
+
+  #screen-hoje .timeline-empty-state {
+    display: block;
+    min-height: 0;
+    margin: 0;
+    padding: 10px 0;
+    border: 0;
+    background: transparent;
+    color: #64748b;
+    font-size: 13px;
+  }
+
+  #screen-hoje .desktop-mini-day.today { box-shadow: inset 0 0 0 1px var(--cor-tema); }
+  #screen-hoje .desktop-mini-day.selected { background: var(--cor-tema-clara); }
+
+  #screen-hoje .hoje-next-item {
+    grid-template-columns: minmax(0, 1fr);
+    overflow-wrap: anywhere;
+  }
+
+  #screen-hoje .hoje-next-item-hora {
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #screen-hoje .hoje-next-item.origem-google::before { background: var(--agenda-origem-google); }
 }
