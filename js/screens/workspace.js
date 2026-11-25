@@ -848,6 +848,7 @@
 
     function tipoIndicadorCalendario(item) {
       if (ehStatusFeito(item.status)) return "feito";
+      if (indicarOrigemGoogleAgenda(item)) return "origem-google";
       if (item.blocked) return "blocked";
       if (item.all_day) return "all-day";
       const prioridade = String(item.prioridade || "");
@@ -1059,6 +1060,7 @@
     function criarCardTimelineAgenda(t) {
       const item = document.createElement("div");
       item.className = "agenda-timeline-event agenda-item";
+      if (indicarOrigemGoogleAgenda(t)) item.style.borderLeftColor = "var(--agenda-origem-google)";
       if (t?.id !== undefined && t?.id !== null) item.dataset.taskId = String(t.id);
       if (t.all_day) item.classList.add("all-day");
       if (t.blocked) item.classList.add("blocked");
@@ -1159,7 +1161,7 @@
       const google = tarefa.tipo_evento === "google";
       const status = tarefa.status || "pendente";
       const bolinha = document.createElement(google ? "span" : "button");
-      definirEstadoVisualAgendaHoje(item, bolinha, google ? "pendente" : status);
+      definirEstadoVisualAgendaHoje(item, bolinha, google ? statusVisualEventoGoogle(tarefa) : status, tarefa);
       if (google) {
         bolinha.title = "Evento do Google Agenda";
         bolinha.setAttribute("aria-label", "Evento do Google Agenda");
@@ -1175,7 +1177,7 @@
               return;
             }
             tarefa.status = novo;
-            definirEstadoVisualAgendaHoje(item, bolinha, novo);
+            definirEstadoVisualAgendaHoje(item, bolinha, novo, tarefa);
             await carregarAgendaHoje();
             await carregarEventosGoogleAgendaMes(true);
             montarCalendarioMes();
