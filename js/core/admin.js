@@ -1951,6 +1951,7 @@
 
     function fecharMenuAcoes(menu) {
       menu.hidden = true;
+      delete menu.dataset.menuDesktop;
       if (menu.dataset.checklistMobile) {
         delete menu.dataset.checklistMobile;
         menu.style.removeProperty("max-height");
@@ -1978,7 +1979,7 @@
       }
       if (evento?.type === "scroll" && evento.target === menu) return;
 
-      posicionarMenuAcoesMobile(menu);
+      posicionarMenuAcoesNaViewport(menu);
     }
 
     function atualizarMenuChecklistMobile(evento) {
@@ -1991,10 +1992,23 @@
         return;
       }
       if (evento?.type === "scroll" && evento.target === menu) return;
-      posicionarMenuAcoesMobile(menu, { checklist: true });
+      posicionarMenuAcoesNaViewport(menu, { checklist: true });
     }
 
-    function posicionarMenuAcoesMobile(menu, { checklist = false } = {}) {
+    function atualizarMenuAcoesDesktop(evento) {
+      const menu = document.querySelector("[data-menu-desktop]:not([hidden])");
+      if (!menu) return;
+      if (evento?.type === "keydown" && evento.key !== "Escape") return;
+      if (!emLayoutDesktop() || evento?.type === "keydown") {
+        fecharMenuAcoes(menu);
+        if (evento?.type === "keydown") menu.__trigger?.focus({ preventScroll: true });
+        return;
+      }
+      if (evento?.type === "scroll" && evento.target === menu) return;
+      posicionarMenuAcoesNaViewport(menu, { checklist: true });
+    }
+
+    function posicionarMenuAcoesNaViewport(menu, { checklist = false } = {}) {
       const margem = 8;
       const viewport = window.visualViewport;
       const estilos = checklist ? getComputedStyle(menu) : null;
@@ -2089,6 +2103,11 @@
             zIndex: "10000",
             width: "176px",
           });
+          if (emLayoutDesktop()) {
+            menu.dataset.menuDesktop = "true";
+            atualizarMenuAcoesDesktop();
+            return;
+          }
           if (checklist && window.matchMedia("(max-width: 767px)").matches) {
             menu.dataset.checklistMobile = "true";
             atualizarMenuChecklistMobile();
@@ -2269,6 +2288,12 @@
           meta.textContent = partesResumo.join(" · ");
         } else {
           meta.textContent = obterMetaTimelineChecklist(item) || "Rotina do dia";
+          if (estaAtrasadoChecklistHoje(item)) {
+            const atraso = document.createElement("span");
+            atraso.className = "hoje-atrasado";
+            atraso.textContent = "Atrasado";
+            meta.prepend(atraso, " · ");
+          }
         }
 
         if (item._tipo === "agenda") header.appendChild(kind);
@@ -2283,6 +2308,7 @@
           const toggle = document.createElement("button");
           toggle.type = "button";
           toggle.className = `timeline-status-toggle ${status}`;
+          toggle.classList.toggle("origem-google", indicarOrigemGoogleAgenda(item));
           toggle.innerHTML = iconStatusInline(status);
           toggle.title = "Alterar status";
           toggle.setAttribute("aria-label", `Alterar status de ${item.titulo}`);

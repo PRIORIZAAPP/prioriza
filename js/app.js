@@ -204,6 +204,9 @@
       });
       document.getElementById("btn-cancelar-edicao-nota")?.addEventListener("click", () => limparFormularioNota());
       document.addEventListener("click", () => fecharMenusAcoesDesktop());
+      document.addEventListener("keydown", atualizarMenuAcoesDesktop);
+      document.addEventListener("scroll", atualizarMenuAcoesDesktop, { capture: true, passive: true });
+      window.addEventListener("resize", atualizarMenuAcoesDesktop);
       document.addEventListener("keydown", atualizarMenuHoje);
       document.addEventListener("scroll", atualizarMenuHoje, { capture: true, passive: true });
       window.addEventListener("resize", atualizarMenuHoje);
