@@ -308,7 +308,7 @@
       document.getElementById("form-agenda")?.addEventListener("submit", async(ev)=>{
         ev.preventDefault();
         const edicao = edicaoAgendaMobile;
-        const mobile = mediaAgendaMobile.matches || Boolean(edicao);
+        const mobile = usarFormularioAgendaCompacto() || Boolean(edicao);
         if (mobile && ev.currentTarget.dataset.salvando === "true") return;
         const intervalo = mobile ? lerIntervaloAgendaMobile() : null;
         const titulo    = document.getElementById("agenda-titulo")?.value.trim();
@@ -349,6 +349,9 @@
             const enviarSeMudou = (campo, atual, original) => {
               if (String(atual ?? "") !== String(original ?? "")) params.set(campo, String(atual));
             };
+            if (emLayoutDesktop() && telaAtiva("screen-agenda")) {
+              enviarSeMudou("descricao", document.getElementById("agenda-descricao").value, anterior.descricao);
+            }
             enviarSeMudou("titulo", titulo, anterior.titulo);
             enviarSeMudou("data", data, anterior.data);
             enviarSeMudou("prioridade", prioridade, anterior.prioridade || 2);

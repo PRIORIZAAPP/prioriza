@@ -296,7 +296,7 @@
 
     // ── AGENDA DO DIA + RESUMO BAR ────────────────────────────────
 
-    function abrirDetalhesAgendaHoje(tarefa) {
+    function abrirDetalhesAgendaHoje(tarefa, categoriaGoogle = false) {
       const status = {
         pendente: "Pendente", em_andamento: "Em andamento", feito: "Concluído",
         cancelada: "Cancelado", confirmed: "Confirmado",
@@ -317,6 +317,7 @@
         ["Agenda", tarefa.blocked ? "Bloqueada" : ""],
         ["Prioridade", tarefa.prioridade],
         [tarefa.tipo_evento === "google" ? "Origem" : "Categoria", tarefa.tipo_evento === "google" ? "Google Agenda" : obterRotuloContextoTarefa(tarefa)],
+        ["Categoria", categoriaGoogle && tarefa.tipo_evento === "google" ? obterRotuloContextoTarefa(tarefa) : ""],
         ["Recorrência", tarefa.recorrente ? tarefa.recurrencia : ""],
         ["Local", localEventoGoogle(tarefa)],
         ["Observações", tarefa.descricao],

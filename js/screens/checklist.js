@@ -544,8 +544,12 @@
         || (!intervalo.diaInteiro && (intervalo.inicio !== original.inicio || intervalo.termino !== original.termino));
     }
 
+    function usarFormularioAgendaCompacto() {
+      return mediaAgendaMobile.matches || (emLayoutDesktop() && telaAtiva("screen-agenda"));
+    }
+
     function atualizarFormularioAgendaMobile() {
-      if (!mediaAgendaMobile.matches) return;
+      if (!usarFormularioAgendaCompacto()) return;
       const form = document.getElementById("form-agenda");
       for (const campo of form.querySelectorAll(".agenda-data-nativa")) {
         const [ano, mes, dia] = campo.querySelector("input").value.split("-");
@@ -595,6 +599,9 @@
       const fimLegado = tarefa?.hora_fim === "23:59" && a !== null && a + duracao > 1439;
       const termino = tarefa?.all_day ? "09:00"
         : (!fimLegado && tarefa?.hora_fim) || (a === null ? "" : horaAgendaDepois(a, duracao));
+      const observacoes = document.getElementById("agenda-edicao-observacoes");
+      observacoes.hidden = !emLayoutDesktop() || !tarefa;
+      val("agenda-descricao", tarefa?.descricao || "");
       val("agenda-titulo", tarefa?.titulo || "");
       val("agenda-data", tarefa?.data || data || dataHojeISO());
       val("agenda-hora", originalInicio);
@@ -619,7 +626,7 @@
     }
 
     async function abrirEdicaoAgendaMobile(tarefa) {
-      if (!mediaAgendaMobile.matches) return false;
+      if (!usarFormularioAgendaCompacto()) return false;
       const scope = tarefa.recorrente ? await modal.escolherRecorrencia("este compromisso") : "single";
       toggleFormAgenda(true, tarefa, scope);
       return true;
@@ -686,7 +693,7 @@
       const registrar = () => { intervaloAnterior = lerIntervaloAgendaMobile(); };
       inicio.addEventListener("focus", registrar);
       inicio.addEventListener("input", () => {
-        if (!mediaAgendaMobile.matches || !intervaloAnterior) return;
+        if (!usarFormularioAgendaCompacto() || !intervaloAnterior) return;
         const atual = lerIntervaloAgendaMobile();
         const a = horasAgendaEmMinutos(atual.inicio);
         if (a !== null && intervaloAnterior.duracao && (
@@ -755,7 +762,7 @@
         document.getElementById("agenda-repetir-ate").required = false;
         document.getElementById("agenda-hora-fim").setCustomValidity("");
       }
-      if (abrir && mediaAgendaMobile.matches) {
+      if (abrir && usarFormularioAgendaCompacto()) {
         prepararFormularioAgendaMobile(calendarioDiaSelecionadoISO, tarefa, scope);
         wrap.querySelector(".agenda-mobile-conteudo").scrollTop = 0;
         ajustarViewportFormularioMobile();

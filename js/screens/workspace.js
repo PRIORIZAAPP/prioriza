@@ -848,6 +848,10 @@
 
     function tipoIndicadorCalendario(item) {
       if (ehStatusFeito(item.status)) return "feito";
+      if (emLayoutDesktop() && !item.blocked) {
+        if (ehStatusAndamento(item.status)) return "em-andamento";
+        if (compromissoSinalizadoComoAtrasado(item)) return "atrasado";
+      }
       if (indicarOrigemGoogleAgenda(item)) return "origem-google";
       if (item.blocked) return "blocked";
       if (item.all_day) return "all-day";
@@ -952,7 +956,7 @@
           trilhas.appendChild(barra);
         });
 
-        if (mobile) {
+        if (mobile || emLayoutDesktop()) {
           cel.dataset.iso = iso;
           cel.setAttribute("aria-pressed", String(iso === calendarioDiaSelecionadoISO));
           if (iso === hojeISO) cel.setAttribute("aria-current", "date");
@@ -964,8 +968,10 @@
             cel.title = feriados.join(", ");
             cel.appendChild(marcador);
           }
-          const registros = indicadores.length ? ` · ${indicadores.length} ${indicadores.length === 1 ? "registro" : "registros"}` : "";
-          cel.setAttribute("aria-label", [formatarDiaAgendaMobile(iso) + registros, ...feriados].join(" · "));
+          if (mobile) {
+            const registros = indicadores.length ? ` · ${indicadores.length} ${indicadores.length === 1 ? "registro" : "registros"}` : "";
+            cel.setAttribute("aria-label", [formatarDiaAgendaMobile(iso) + registros, ...feriados].join(" · "));
+          }
         }
         cel.appendChild(topo);
         cel.appendChild(trilhas);
@@ -1057,106 +1063,9 @@
       });
     }
 
-    function criarCardTimelineAgenda(t) {
+    function criarCompromissoAgendaCompacto(tarefa, desktop = false) {
       const item = document.createElement("div");
-      item.className = "agenda-timeline-event agenda-item";
-      if (indicarOrigemGoogleAgenda(t)) item.style.borderLeftColor = "var(--agenda-origem-google)";
-      if (t?.id !== undefined && t?.id !== null) item.dataset.taskId = String(t.id);
-      if (t.all_day) item.classList.add("all-day");
-      if (t.blocked) item.classList.add("blocked");
-      if (ehStatusCancelada(t.status)) item.classList.add("cancelada");
-
-      const conteudo = document.createElement("div");
-      conteudo.className = "agenda-conteudo";
-      const titulo = document.createElement("div");
-      titulo.className = "agenda-titulo";
-      titulo.innerHTML = `${textoSeguro(t.titulo)}${t?.recorrente ? iconeRecorrenciaHTML() : ""}`;
-      conteudo.appendChild(titulo);
-      conteudo.insertAdjacentHTML("beforeend", criarTagHTML(t));
-
-      const metaLinhas = [];
-      if (localEventoGoogle(t)) metaLinhas.push(localEventoGoogle(t));
-      if (t.descricao) metaLinhas.push(t.descricao);
-      if (metaLinhas.length) {
-        const meta = document.createElement("div");
-        meta.className = "agenda-meta";
-        meta.textContent = metaLinhas.join(" · ");
-        conteudo.appendChild(meta);
-      }
-
-      item.appendChild(conteudo);
-      const acoes = criarAcoesCompromissoAgenda(t);
-      if (acoes) item.appendChild(acoes);
-      return item;
-    }
-
-    function rolarTimelineParaPrimeiroCompromissoDesktop(lista) {
-      if (!lista || !emLayoutDesktop()) return;
-      window.setTimeout(() => {
-        const primeiro = lista.querySelector("[data-agenda-primeiro-evento='true']");
-        if (!primeiro) {
-          lista.scrollTo({ top: 0, behavior: "smooth" });
-          return;
-        }
-        const listaRect = lista.getBoundingClientRect();
-        const itemRect = primeiro.getBoundingClientRect();
-        const destino = Math.max(0, lista.scrollTop + itemRect.top - listaRect.top - 18);
-        lista.scrollTo({ top: destino, behavior: "smooth" });
-      }, 80);
-    }
-
-    function preencherAgendaTimelineDesktop(lista, itensDoDia) {
-      const horaInicial = 6;
-      const horaFinal = 22;
-      const alturaHora = 44;
-      const inicioDia = horaInicial * 60;
-      const fimDia = horaFinal * 60;
-      const itensNormalizados = itensDoDia.map(normalizarTarefaAgenda);
-      const itensSemHorario = itensNormalizados.filter((t) => t.all_day || t.blocked || t.inicio_min === null);
-      const itensComHorario = itensNormalizados
-        .filter((t) => !t.all_day && !t.blocked && t.inicio_min !== null)
-        .sort((a, b) => (a.inicio_min ?? 0) - (b.inicio_min ?? 0));
-
-      lista.innerHTML = "";
-
-      if (itensSemHorario.length) {
-        const faixa = document.createElement("div");
-        faixa.className = "agenda-all-day-strip";
-        itensSemHorario.forEach((t) => faixa.appendChild(criarCardTimelineAgenda(t)));
-        lista.appendChild(faixa);
-      }
-
-      const timeline = document.createElement("div");
-      timeline.className = "agenda-timeline";
-      for (let hora = horaInicial; hora <= horaFinal; hora++) {
-        const row = document.createElement("div");
-        row.className = "agenda-timeline-row";
-        const label = document.createElement("div");
-        label.className = "agenda-timeline-hour";
-        label.textContent = `${String(hora).padStart(2, "0")}:00`;
-        row.appendChild(label);
-        timeline.appendChild(row);
-      }
-
-      const lane = document.createElement("div");
-      lane.className = "agenda-timeline-lane";
-      itensComHorario.forEach((t, index) => {
-        const inicio = Math.min(Math.max(t.inicio_min ?? inicioDia, inicioDia), fimDia);
-        const fim = Math.min(Math.max(t.fim_min ?? (inicio + 60), inicio + 15), fimDia);
-        const card = criarCardTimelineAgenda(t);
-        if (index === 0) card.dataset.agendaPrimeiroEvento = "true";
-        card.style.top = `${((inicio - inicioDia) / 60) * alturaHora}px`;
-        card.style.minHeight = `${Math.max(34, ((fim - inicio) / 60) * alturaHora - 4)}px`;
-        lane.appendChild(card);
-      });
-      timeline.appendChild(lane);
-      lista.appendChild(timeline);
-      rolarTimelineParaPrimeiroCompromissoDesktop(lista);
-    }
-
-    function criarCompromissoAgendaMobile(tarefa) {
-      const item = document.createElement("div");
-      item.className = "agenda-item agenda-item-mobile";
+      item.className = desktop ? "agenda-item agenda-item-desktop" : "agenda-item agenda-item-mobile";
       if (tarefa.id != null) item.dataset.taskId = String(tarefa.id);
       const google = tarefa.tipo_evento === "google";
       const status = tarefa.status || "pendente";
@@ -1179,7 +1088,7 @@
             tarefa.status = novo;
             definirEstadoVisualAgendaHoje(item, bolinha, novo, tarefa);
             await carregarAgendaHoje();
-            await carregarEventosGoogleAgendaMes(true);
+            await carregarEventosGoogleAgendaMes(!desktop);
             montarCalendarioMes();
           } finally {
             bolinha.disabled = false;
@@ -1196,29 +1105,53 @@
       horario.className = "agenda-mobile-horario";
       horario.textContent = tarefa.all_day || tarefa.hora_inicio === "Dia todo"
         ? "Dia inteiro" : tarefa.hora_inicio || "Sem horário";
-      centro.append(titulo, horario);
-      adicionarAcaoDetalhesHoje(centro, tarefa.titulo, () => abrirDetalhesAgendaHoje(tarefa));
-
-      item.append(bolinha, centro);
+      if (desktop) {
+        item.classList.toggle("blocked", Boolean(tarefa.blocked));
+        item.style.setProperty("--agenda-accent", obterCorIndicadorHoje(tarefa));
+        horario.className = "agenda-desktop-horario";
+        if (tarefa.blocked && tarefa.all_day) horario.textContent = "Bloqueado";
+        const meta = document.createElement("div");
+        meta.className = "agenda-meta";
+        if (compromissoSinalizadoComoAtrasado(tarefa)) {
+          const atraso = document.createElement("span");
+          atraso.className = "hoje-atrasado";
+          atraso.textContent = "Atrasado";
+          meta.append(atraso, " · ");
+        }
+        meta.append(obterRotuloContextoTarefa(tarefa));
+        if (tarefa.blocked && !tarefa.all_day) meta.append(" · Bloqueado");
+        if (tarefa.recorrente) titulo.insertAdjacentHTML("beforeend", iconeRecorrenciaHTML());
+        centro.append(titulo, meta);
+        adicionarAcaoDetalhesHoje(centro, tarefa.titulo, () => abrirDetalhesAgendaHoje(tarefa, true));
+        item.append(horario, centro, bolinha);
+      } else {
+        centro.append(titulo, horario);
+        adicionarAcaoDetalhesHoje(centro, tarefa.titulo, () => abrirDetalhesAgendaHoje(tarefa));
+        item.append(bolinha, centro);
+      }
       const menu = criarAcoesCompromissoAgenda(tarefa, true);
       if (menu) item.appendChild(menu);
       return item;
     }
 
-    function preencherAgendaListaMobile(lista, itensDoDia) {
-      const label = document.getElementById("agenda-mobile-dia-label");
-      label.textContent = formatarDiaAgendaMobile(calendarioDiaSelecionadoISO);
+    function renderizarFeriadosDoDiaAgenda(data) {
       const feriados = document.getElementById("agenda-mobile-feriados");
-      feriados.replaceChildren(...feriadosDaAgendaMobile(calendarioDiaSelecionadoISO).map((nome) => {
+      feriados.replaceChildren(...feriadosDaAgendaMobile(data).map((nome) => {
         const aviso = document.createElement("p");
         aviso.textContent = nome;
         return aviso;
       }));
+    }
+
+    function preencherAgendaListaMobile(lista, itensDoDia) {
+      const label = document.getElementById("agenda-mobile-dia-label");
+      label.textContent = formatarDiaAgendaMobile(calendarioDiaSelecionadoISO);
+      renderizarFeriadosDoDiaAgenda(calendarioDiaSelecionadoISO);
 
       const ordem = (tarefa) => tarefa.all_day || tarefa.hora_inicio === "Dia todo" ? -1 : tarefa.inicio_min ?? 1440;
       const ordenados = itensDoDia.map(normalizarTarefaAgenda).sort((a, b) => ordem(a) - ordem(b));
       if (ordenados.length) {
-        lista.replaceChildren(...ordenados.map(criarCompromissoAgendaMobile));
+        lista.replaceChildren(...ordenados.map(tarefa => criarCompromissoAgendaCompacto(tarefa)));
       } else {
         const vazio = document.createElement("p");
         vazio.className = "agenda-mobile-vazia";
@@ -1241,12 +1174,20 @@
       const eventosGoogle = mediaAgendaMobile.matches ? obterEventosGoogleAgendaBrasilia() : undefined;
       const itensDoDia = agendaDoDiaCombinada(calendarioDiaSelecionadoISO, eventosGoogle);
       if (mediaAgendaMobile.matches) return preencherAgendaListaMobile(lista, itensDoDia);
+      if (emLayoutDesktop()) {
+        renderizarFeriadosDoDiaAgenda(calendarioDiaSelecionadoISO);
+        if (!itensDoDia.length) {
+          lista.innerHTML = '<p class="agenda-desktop-vazia">Nenhum compromisso nesta data.</p>';
+          return;
+        }
+      }
       if (itensDoDia.length === 0) {
         lista.innerHTML = '<div class="agenda-dia-vazio"><strong>Nenhum compromisso encontrado.</strong><span>Quando houver algo programado para este dia, ele aparecerá aqui.</span></div>';
         return;
       }
       if (emLayoutDesktop()) {
-        preencherAgendaTimelineDesktop(lista, itensDoDia);
+        lista.replaceChildren(...itensDoDia.map(normalizarTarefaAgenda).map(tarefa =>
+          criarCompromissoAgendaCompacto(tarefa, true)));
         return;
       }
       lista.innerHTML = "";
