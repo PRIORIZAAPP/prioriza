@@ -1178,13 +1178,13 @@
       proximaValor.className = "desktop-status-day-next-value";
       proximaValor.textContent = status.proxima
         ? `${status.proxima.horario} · ${status.proxima.titulo}`
-        : "Nenhuma atividade pendente hoje.";
+        : "Nenhum próximo compromisso hoje.";
       corpo.append(proximaLabel, proximaValor);
       container.appendChild(corpo);
 
       const resumoEspelho = status.proxima
         ? `${status.total} ${status.total === 1 ? "ação" : "ações"} hoje · Próxima: ${status.proxima.horario} · ${status.proxima.titulo}`
-        : `${status.total} ${status.total === 1 ? "ação" : "ações"} hoje · Nenhuma atividade pendente hoje.`;
+        : `${status.total} ${status.total === 1 ? "ação" : "ações"} hoje · Nenhum próximo compromisso hoje.`;
       document.querySelectorAll("[data-resumo-espelho]").forEach((item) => { item.textContent = resumoEspelho; });
     }
 
@@ -1227,6 +1227,23 @@
       return status;
     }
 
+    function proximoCompromissoHojeDesktop(compromissos, referencia) {
+      const { year, month, day, hour, minute } = componentesDataOperacional(referencia);
+      const hoje = `${year}-${month}-${day}`;
+      const agora = Number(hour) * 60 + Number(minute);
+      const pendentes = compromissos.filter((item) => item?.ativo !== false && !item.blocked
+        && normalizarDataParaISO(item.data || "") === hoje
+        && !ehStatusFeito(item.status) && !ehStatusCancelada(item.status));
+      const comHorario = pendentes.filter((item) => !item.all_day && horaParaMinutos(item.hora_inicio) !== null)
+        .sort((a, b) => horaParaMinutos(a.hora_inicio) - horaParaMinutos(b.hora_inicio));
+      const proximo = comHorario.find((item) => horaParaMinutos(item.hora_inicio) >= agora)
+        || pendentes.find((item) => item.all_day || horaParaMinutos(item.hora_inicio) === null);
+      return proximo ? {
+        titulo: proximo.titulo || "Compromisso sem título",
+        horario: proximo.all_day ? "Dia inteiro" : (horaParaMinutos(proximo.hora_inicio) === null ? "Sem horário" : proximo.hora_inicio),
+      } : null;
+    }
+
     async function atualizarStatusDoDiaDesktop() {
       if (!emLayoutDesktop()) return null;
       if (statusDoDiaPromise) return statusDoDiaPromise;
@@ -1248,7 +1265,10 @@
           buscarLista(API + "/marcos-operacionais"),
         ]);
         const googleHoje = googleAgendaCache.filter((item) => normalizarDataParaISO(item?.data || "") === dataHojeISO());
-        const status = calcularStatusDoDia({ tarefas, compromissos: [...tarefas, ...googleHoje], checklist, notas, marcos });
+        const compromissos = [...tarefas, ...googleHoje];
+        const referencia = new Date();
+        const status = calcularStatusDoDia({ tarefas: compromissos, checklist, notas, marcos }, referencia);
+        status.proxima = proximoCompromissoHojeDesktop(compromissos, referencia);
         renderizarStatusDoDiaDesktop(status);
         return status;
       })();
@@ -1415,8 +1435,13 @@
         botao.type = "button";
         botao.className = "desktop-mini-day";
         if (dia.getMonth() !== mes) botao.classList.add("outside");
-        if (iso === hojeISO) botao.classList.add("today");
-        if (iso === calendarioDiaSelecionadoISO) botao.classList.add("selected");
+        if (iso === hojeISO) {
+          botao.classList.add("today");
+          botao.setAttribute("aria-current", "date");
+        }
+        const selecionado = iso === calendarioDiaSelecionadoISO;
+        botao.classList.toggle("selected", selecionado);
+        botao.setAttribute("aria-pressed", String(selecionado));
         const itensDia = itensMes.filter((t) => normalizarDataParaISO(t.data || "") === iso);
         if (itensDia.length) botao.classList.add("has-events");
 
@@ -1517,11 +1542,11 @@
       });
 
       const grupos = new Map();
-      ordenadas.forEach((item) => {
+      ordenadas.slice(0, 5).forEach((item) => {
         if (!grupos.has(item.data_iso)) grupos.set(item.data_iso, []);
         grupos.get(item.data_iso).push(item);
       });
-      return Array.from(grupos.entries()).slice(0, 5).map(([data, itens]) => ({ data, itens }));
+      return Array.from(grupos, ([data, itens]) => ({ data, itens }));
     }
 
     function renderizarProximasAtividadesHoje() {
@@ -1545,10 +1570,11 @@
                 </div>
                 <div>
                   ${itens.map((item) => {
-                    const horario = item.hora_inicio && !item.all_day ? `${textoSeguro(item.hora_inicio)}  ` : "";
+                    const horario = item.all_day ? "Dia inteiro" : (item.hora_inicio || "");
                     return `
-                      <div class="hoje-next-item">
-                        <div class="hoje-next-item-title">${horario}${textoSeguro(item.titulo || "Atividade sem título")}</div>
+                      <div class="hoje-next-item${indicarOrigemGoogleAgenda(item) ? " origem-google" : ""}">
+                        ${horario ? `<div class="hoje-next-item-hora">${textoSeguro(horario)}</div>` : ""}
+                        <div class="hoje-next-item-title">${textoSeguro(item.titulo || "Atividade sem título")}</div>
                         <div class="hoje-next-item-meta">${textoSeguro(origemProximaAtividade(item))}</div>
                       </div>
                     `;
@@ -2235,10 +2261,10 @@
       const checklistList = criarSecaoTimeline(`${iconeSecao("checklist")}<span>Checklist de hoje</span>`);
 
       if (!agendaItens.length) {
-        agendaList.innerHTML = '<div class="timeline-empty-state"><strong>Nenhum compromisso para hoje</strong><span>Quando houver algo programado para este dia, ele aparecerá aqui.</span></div>';
+        agendaList.innerHTML = '<p class="timeline-empty-state">Nenhum compromisso para hoje.</p>';
       }
       if (!checklistItens.length) {
-        checklistList.innerHTML = '<div class="timeline-empty-state"><strong>Nenhuma rotina pendente</strong><span>Tudo em dia por aqui.</span></div>';
+        checklistList.innerHTML = '<p class="timeline-empty-state">Nenhuma rotina pendente.</p>';
       }
 
       itens.forEach((item) => {
@@ -2261,45 +2287,41 @@
         if (item._tipo === "agenda") stamp.type = "button";
         stamp.className = "timeline-stamp";
         stamp.textContent = item._tipo === "agenda"
-          ? (item.all_day ? (item.blocked ? "Bloqueado" : "Dia todo") : (item.hora_inicio || "--:--"))
+          ? (item.all_day ? (item.blocked ? "Bloqueado" : "Dia inteiro") : (item.hora_inicio || "--:--"))
           : obterRecorrenciaChecklist(item);
 
         const body = document.createElement("div");
         body.className = "timeline-body";
 
-        const header = document.createElement("div");
-        header.className = "timeline-row-head";
-
-        const categoriaAgenda = (String(item.origem || "").toUpperCase() === "PESSOAL") ? "Pessoal" : "Profissional";
-        const kind = document.createElement("div");
-        kind.className = "timeline-kind";
-        kind.textContent = categoriaAgenda;
-
-        const title = document.createElement("div");
+        const title = document.createElement("button");
+        title.type = "button";
         title.className = "timeline-title";
+        title.setAttribute("aria-expanded", "false");
         title.innerHTML = `${textoSeguro(item.titulo || "Item sem título")}${item?.recorrente ? iconeRecorrenciaHTML() : ""}`;
+        title.addEventListener("click", () => {
+          const expandida = title.getAttribute("aria-expanded") === "true";
+          if (!expandida && title.scrollHeight <= title.clientHeight) return;
+          title.setAttribute("aria-expanded", String(!expandida));
+        });
 
         const meta = document.createElement("div");
         meta.className = "timeline-meta";
-        if (item._tipo === "agenda") {
-          const partesResumo = String(obterResumoAgendaHojeDesktop(item) || "")
-            .split(" · ")
-            .filter((parte) => parte.trim().toLowerCase() !== categoriaAgenda.toLowerCase());
-          meta.textContent = partesResumo.join(" · ");
-        } else {
-          meta.textContent = obterMetaTimelineChecklist(item) || "Rotina do dia";
-          if (estaAtrasadoChecklistHoje(item)) {
-            const atraso = document.createElement("span");
-            atraso.className = "hoje-atrasado";
-            atraso.textContent = "Atrasado";
-            meta.prepend(atraso, " · ");
-          }
+        const categoria = obterRotuloContextoTarefa(item);
+        const contexto = item._tipo === "agenda"
+          ? obterResumoAgendaHojeDesktop(item).split(" · ").filter((parte) =>
+            parte !== categoria && parte !== "Dia inteiro" && (!item.all_day || parte !== "Agenda bloqueada"))
+          : [];
+        const atrasado = item._tipo === "checklist"
+          ? estaAtrasadoChecklistHoje(item)
+          : compromissoSinalizadoComoAtrasado(item, status);
+        if (atrasado) {
+          const aviso = document.createElement("span");
+          aviso.className = "hoje-atrasado";
+          aviso.textContent = "Atrasado";
+          meta.append(aviso, " · ");
         }
-
-        if (item._tipo === "agenda") header.appendChild(kind);
-        header.appendChild(title);
-        body.appendChild(header);
-        if (meta.textContent) body.appendChild(meta);
+        meta.append([categoria, ...contexto].join(" · "));
+        body.append(title, meta);
 
         const actions = document.createElement("div");
         actions.className = "timeline-actions";
@@ -2744,10 +2766,13 @@
       return `<span class="agenda-tag">Trabalho</span>`;
     }
 
+    function compromissoSinalizadoComoAtrasado(tarefa, status = tarefa?.status) {
+      return status === "atrasado" || tarefa?.status_exibicao === "atrasado" || tarefa?.atrasado === true;
+    }
+
     function indicarOrigemGoogleAgenda(tarefa, status = tarefa?.status) {
       const origem = String(tarefa?.origem_evento || tarefa?.tipo_evento || "").trim().toLowerCase();
-      return origem === "google" && !tarefa.blocked && !tarefa.atrasado
-        && tarefa.status_exibicao !== "atrasado" && status !== "atrasado"
+      return origem === "google" && !tarefa.blocked && !compromissoSinalizadoComoAtrasado(tarefa, status)
         && !ehStatusFeito(status) && !ehStatusAndamento(status) && !ehStatusCancelada(status);
     }
 
@@ -2766,6 +2791,8 @@
       if (ehStatusCancelada(tarefa?.status)) return "#cbd5e1";
       if (ehStatusFeito(tarefa?.status)) return "#22c55e";
       if (tarefa?.blocked) return "#ef4444";
+      if (ehStatusAndamento(tarefa?.status)) return "#f97316";
+      if (compromissoSinalizadoComoAtrasado(tarefa)) return "#b91c1c";
       if (indicarOrigemGoogleAgenda(tarefa)) return "var(--agenda-origem-google)";
       if (tarefa?.all_day) return "#0ea5e9";
       if (tipo === "google") return "rgba(var(--cor-tema-rgb), 0.72)";
