@@ -12,6 +12,7 @@
         if (getAuthToken()) {
           atualizarRelogio();
           renderizarMiniCalendarioDesktop();
+          if (telaAtiva("screen-evolucao") && metasEvolucao) renderizarMetas();
           recarregarBlocosComRolagem({ checklistHoje: true, checklistGeral: true, agendaHoje: true, resumo: true })
             .catch((erro) => console.error("[PRIORIZA] Virada do dia operacional:", erro));
         }
@@ -54,6 +55,7 @@
       function abrirTela(id, opts = {}) {
         if (!id) return;
         fecharFormularioNotaMobile();
+        fecharFormularioMeta();
         toggleFormChecklist(false);
         toggleFormAgenda(false);
         toggleFormMarcoOperacional(false);
@@ -73,6 +75,7 @@
             requestAnimationFrame(irParaTopoSemAnimacao);
           });
         }
+        if (id === "screen-evolucao" || (id === "screen-hoje" && !emLayoutDesktop())) carregarMetas();
         if (id === "screen-ajustes") {
           fecharSubpaginaAjustes();
           setTimeout(atualizarStatusNotificacoesUI, 50);
@@ -100,6 +103,7 @@
         });
       });
       document.getElementById("btn-topbar-ajustes")?.addEventListener("click", () => abrirTela("screen-ajustes"));
+      vincularEvolucao();
       abrirTela(document.querySelector(".screen.active")?.id || "screen-hoje");
       atualizarToggleUsuariosAdmin();
       atualizarCampoRecorrenciaAgenda();
@@ -108,11 +112,6 @@
       window.addEventListener("resize", atualizarOffsetsCabecalho);
       window.addEventListener("resize", () => atualizarVisibilidadeFabsDesktop(document.querySelector(".screen.active")?.id || "screen-hoje"));
       window.addEventListener("resize", posicionarBuscaMarcosAgenda);
-
-      document.getElementById("btn-toggle-passados-pessoal")?.addEventListener("click", async () => {
-  mostrarPassadosPessoal = !mostrarPassadosPessoal;
-  await carregarPessoalLista();
-});
 
       document.getElementById("screen-ajustes")?.addEventListener("click", (ev) => {
         const placeholder = ev.target.closest("[data-settings-placeholder]");
@@ -373,7 +372,7 @@
           if(!res.ok){await modal.alerta("Não foi possível salvar o compromisso.","Erro");return;}
           if (edicao) {
             toggleFormAgenda(false);
-            await carregarAgendaHoje(); await atualizarAgendaMesEDia(); await carregarPessoalLista();
+            await carregarAgendaHoje(); await atualizarAgendaMesEDia();
             await modal.alerta("Compromisso atualizado no PRIORIZA.", "Sucesso");
             return;
           }
@@ -408,7 +407,7 @@
           atualizarOpcoesDiaInteiroAgenda();
           toggleFormAgenda(false);
           await modal.alerta(mensagemSucesso,"Sucesso");
-          await carregarAgendaHoje(); await atualizarAgendaMesEDia(); await carregarPessoalLista();
+          await carregarAgendaHoje(); await atualizarAgendaMesEDia();
         } catch(e){console.error(e); await modal.alerta("Erro ao conectar com o servidor.","Erro");}
         finally{
           if (mobile) marcarGravacaoAgendaMobile(false);
@@ -482,7 +481,8 @@
           const c = dados.checklist?.length || 0;
           const n = dados.notas?.length || 0;
           const m = dados.marcos_operacionais?.length || 0;
-          statusEl.textContent = `Backup baixado: ${t} tarefas, ${c} rotinas, ${n} notas e ${m} marcos.`;
+          const metas = dados.metas?.length || 0;
+          statusEl.textContent = `Backup baixado: ${t} tarefas, ${c} rotinas, ${n} notas e ${m} marcos. Metas: ${metas}.`;
           statusEl.style.color = "#10b981";
         } catch(e) {
           console.error(e);
@@ -532,7 +532,6 @@
           await atualizarAgendaMesEDia();
           await carregarChecklistHoje();
           await carregarChecklistGeral();
-          await carregarPessoalLista();
           await carregarNotas();
         } catch(err) {
           console.error(err);
@@ -556,7 +555,6 @@
       }
       carregarChecklistHoje();
       carregarChecklistGeral();
-      carregarPessoalLista();
       carregarNotas();
       initUniversalMic();
 

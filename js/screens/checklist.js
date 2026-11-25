@@ -952,7 +952,7 @@
           document.getElementById("chk-frequencia").value = "Diária";
         }
         toggleFormChecklist(false);
-        await carregarChecklistHoje(); await carregarChecklistGeral(); await carregarPessoalLista();
+        await carregarChecklistHoje(); await carregarChecklistGeral();
       } catch(e){console.error(e); await modal.alerta("Erro de conexão.","Erro");}
       finally {
         if (compacto) atualizarEstadoGravacaoFormulario(form, btn, false);
@@ -971,7 +971,7 @@
         const res=await fetch(API+"/checklist_criar?"+new URLSearchParams({titulo,origem:origem||"",frequencia:freq}),{method:"POST",headers:authHeaders()});
         if (respostaDemoCancelada(res)) return;
         if (!res.ok){await modal.alerta("Erro ao salvar rotina.","Erro");return;}
-        await carregarChecklistHoje(); await carregarChecklistGeral(); await carregarPessoalLista();
+        await carregarChecklistHoje(); await carregarChecklistGeral();
       } catch(e){console.error(e); await modal.alerta("Erro de conexão.","Erro");}
       finally{btn.disabled=false;}
     }

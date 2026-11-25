@@ -363,7 +363,6 @@
         atualizarAgendaMesEDia(),
         carregarChecklistHoje(),
         carregarChecklistGeral(),
-        carregarPessoalLista(),
         carregarNotas(),
       ]);
       await atualizarResumoBar();
@@ -1321,7 +1320,6 @@
       return normalizarDataParaISO(d)===iso;
     }
 
-      let mostrarPassadosPessoal = false;
       
     function ehStatusFeito(s) {
       if (!s) return false;
@@ -1683,7 +1681,7 @@
       try {
         const res = await fetch(API + `/checklist/${item.id}?` + params.toString(), { method: "PUT", headers: authHeaders() });
         if (!res.ok) throw new Error("Não foi possível editar a rotina.");
-        await recarregarBlocosComRolagem({ checklistHoje: true, checklistGeral: true, pessoal: true });
+        await recarregarBlocosComRolagem({ checklistHoje: true, checklistGeral: true });
         return true;
       } catch (e) {
         console.error(e);
@@ -1712,7 +1710,7 @@
         await modal.alerta(erro.detail || "Não foi possível finalizar a recorrência.", "Erro");
         return false;
       }
-      await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, checklistHoje: true, checklistGeral: true, pessoal: true, resumo: true });
+      await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, checklistHoje: true, checklistGeral: true, resumo: true });
       return true;
     }
 
@@ -1916,7 +1914,6 @@
         await recarregarBlocosComRolagem({
           checklistHoje: true,
           checklistGeral: true,
-          pessoal: true,
           resumo: true,
         });
         return true;
@@ -1956,7 +1953,6 @@
       await recarregarBlocosComRolagem({
         checklistHoje: true,
         checklistGeral: true,
-        pessoal: true,
         resumo: true,
       });
       return true;
@@ -2465,7 +2461,6 @@
         agendaMes = false,
         checklistHoje = false,
         checklistGeral = false,
-        pessoal = false,
         resumo = false,
       } = opts;
 
@@ -2474,7 +2469,6 @@
         if (agendaMes) await atualizarAgendaMesEDia();
         if (checklistHoje) await carregarChecklistHoje();
         if (checklistGeral) await carregarChecklistGeral();
-        if (pessoal) await carregarPessoalLista();
         if (resumo) await atualizarResumoBar();
       });
     }
@@ -2572,9 +2566,6 @@
     function sincronizarTarefaHojeEmSegundoPlano(tarefa) {
       window.setTimeout(() => {
         if (telaAtiva("screen-agenda")) atualizarAgendaMesEDia();
-        if (String(tarefa?.origem || "").toUpperCase() === "PESSOAL" && telaAtiva("screen-pessoal")) {
-          carregarPessoalLista();
-        }
       }, 120);
     }
 
@@ -2853,7 +2844,7 @@
         await modal.alerta("Não foi possível cancelar o compromisso.", "Erro");
         return false;
       }
-      await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, pessoal: true, resumo: true });
+      await recarregarBlocosComRolagem({ agendaHoje: true, agendaMes: true, resumo: true });
       return true;
     }
 

@@ -11,8 +11,10 @@ import re
 import secrets
 import calendar
 from datetime import date, datetime, timedelta, timezone
+from decimal import Decimal
+from uuid import UUID, uuid4
 from pathlib import Path
-from typing import Any, Literal, Optional
+from typing import Annotated, Any, Literal, Optional
 from zoneinfo import ZoneInfo
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
@@ -24,8 +26,10 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from pydantic import BaseModel, Field
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, UniqueConstraint, column, create_engine, inspect, table, text
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, ValidationError, model_validator
+from sqlalchemy import Boolean, CheckConstraint, Column, Date, DateTime, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint, column, create_engine, inspect, table, text
+from sqlalchemy.dialects.postgresql import insert as postgresql_insert
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.concurrency import run_in_threadpool
@@ -360,6 +364,47 @@ class Note(Base):
             "ativo": self.ativo,
             "is_demo": bool(self.is_demo),
             "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class Meta(Base):
+    __tablename__ = "metas"
+    __table_args__ = (
+        CheckConstraint("tipo IN ('quantidade', 'percentual', 'simples')", name="ck_metas_tipo"),
+        CheckConstraint("objetivo > 0 AND progresso BETWEEN 0 AND objetivo", name="ck_metas_progresso"),
+        CheckConstraint(
+            "(tipo = 'quantidade' OR (tipo = 'percentual' AND objetivo = 100) "
+            "OR (tipo = 'simples' AND objetivo = 1 AND progresso IN (0, 1)))",
+            name="ck_metas_objetivo",
+        ),
+        CheckConstraint(
+            "(progresso = objetivo AND concluida_em IS NOT NULL) "
+            "OR (progresso < objetivo AND concluida_em IS NULL)",
+            name="ck_metas_conclusao",
+        ),
+    )
+
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    titulo = Column(String(160), nullable=False)
+    tipo = Column(String(12), nullable=False)
+    objetivo = Column(Numeric(12, 3), nullable=False)
+    progresso = Column(Numeric(12, 3), nullable=False, default=0)
+    unidade = Column(String(32), nullable=True)
+    prazo = Column(Date, nullable=True)
+    criada_em = Column(DateTime(timezone=True), nullable=False)
+    concluida_em = Column(DateTime(timezone=True), nullable=True)
+    versao = Column(Integer, nullable=False, default=1)
+
+    def to_dict(self):
+        def instante_iso(valor):
+            return (valor if valor.tzinfo else valor.replace(tzinfo=UTC)).isoformat() if valor else None
+
+        return {
+            "id": self.id, "titulo": self.titulo, "tipo": self.tipo, "objetivo": self.objetivo,
+            "progresso": self.progresso, "unidade": self.unidade, "prazo": self.prazo,
+            "criada_em": instante_iso(self.criada_em), "concluida_em": instante_iso(self.concluida_em),
+            "versao": self.versao,
         }
 
 
@@ -711,7 +756,11 @@ def email_admin_configurado(email: str) -> bool:
 
 
 def init_db():
-    Base.metadata.create_all(bind=engine)
+    with engine.begin() as conexao:
+        if not IS_SQLITE:
+            conexao.execute(text("SET LOCAL lock_timeout = '5s'"))
+            conexao.execute(text("SELECT pg_advisory_xact_lock(71419220)"))
+        Base.metadata.create_all(bind=conexao)
     print("[DB] Tabelas criadas/verificadas com sucesso.")
 
 
@@ -1293,6 +1342,7 @@ def excluir_conta_usuario(db: Session, user: User) -> dict[str, int]:
             "agenda_recibos": db.query(ReciboAgenda).filter(ReciboAgenda.user_id == user_id).delete(synchronize_session=False),
             "tarefas": db.query(Tarefa).filter(Tarefa.user_id == user_id).delete(synchronize_session=False),
             "checklist": db.query(ChecklistItem).filter(ChecklistItem.user_id == user_id).delete(synchronize_session=False),
+            "metas": db.query(Meta).filter(Meta.user_id == user_id).delete(synchronize_session=False),
             "notes": db.query(Note).filter(Note.user_id == user_id).delete(synchronize_session=False),
             "push_subscriptions": db.query(PushSubscription).filter(PushSubscription.user_id == user_id).delete(synchronize_session=False),
             "google_calendar_tokens": db.query(GoogleCalendarToken).filter(GoogleCalendarToken.user_id == user_id).delete(synchronize_session=False),
@@ -3966,6 +4016,154 @@ def tabela_checklist_backup_legado(db: Session):
     return None
 
 
+# ============================================================
+# EVOLUÇÃO · METAS
+# ============================================================
+
+ValorMeta = Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=3, allow_inf_nan=False)]
+
+
+class MetaDados(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    titulo: str = Field(min_length=1, max_length=160)
+    tipo: Literal["quantidade", "percentual", "simples"]
+    objetivo: ValorMeta | None = None
+    unidade: str | None = Field(default=None, max_length=32)
+    prazo: date | None = None
+
+    @model_validator(mode="after")
+    def validar_objetivo(self):
+        if self.tipo == "quantidade":
+            if self.objetivo is None or self.objetivo <= 0:
+                raise ValueError("Informe uma quantidade desejada maior que zero.")
+        else:
+            valor_fixo = Decimal(100 if self.tipo == "percentual" else 1)
+            if self.objetivo is not None and self.objetivo != valor_fixo:
+                raise ValueError("Objetivo incompatível com o tipo de acompanhamento.")
+            if self.unidade:
+                raise ValueError("A unidade se aplica apenas a metas de quantidade.")
+            self.objetivo = valor_fixo
+        self.unidade = self.unidade or None
+        return self
+
+
+class MetaEdicao(MetaDados):
+    versao: int = Field(ge=1)
+
+
+class MetaProgresso(BaseModel):
+    progresso: ValorMeta
+    versao: int = Field(ge=1)
+
+
+class MetaBackup(MetaDados):
+    id: UUID
+    progresso: ValorMeta
+    criada_em: AwareDatetime
+    concluida_em: AwareDatetime | None = None
+
+    @model_validator(mode="after")
+    def validar_backup(self):
+        validar_progresso_meta(self.tipo, self.objetivo, self.progresso)
+        if (self.progresso == self.objetivo) != (self.concluida_em is not None):
+            raise ValueError("Data de conclusão incompatível com o progresso.")
+        if self.concluida_em and self.concluida_em < self.criada_em:
+            raise ValueError("A conclusão não pode ser anterior à criação.")
+        return self
+
+
+def validar_progresso_meta(tipo, objetivo, progresso):
+    if progresso > objetivo or (tipo == "simples" and progresso not in (0, 1)):
+        raise ValueError("Progresso fora do intervalo permitido.")
+
+
+def buscar_meta(db, user_id, meta_id):
+    meta = db.get(Meta, (user_id, str(meta_id)))
+    if not meta:
+        raise HTTPException(status_code=404, detail="Meta não encontrada.")
+    return meta
+
+
+def atualizar_meta_versionada(db, meta, versao, valores):
+    alteradas = db.query(Meta).filter_by(
+        user_id=meta.user_id, id=meta.id, versao=versao,
+    ).update({**valores, "versao": Meta.versao + 1}, synchronize_session=False)
+    if not alteradas:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="A meta foi atualizada em outra sessão. Tente novamente.")
+    db.commit()
+    db.refresh(meta)
+    return meta.to_dict()
+
+
+@app.get("/metas")
+def listar_metas(response: Response, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    response.headers["Cache-Control"] = "no-store"
+    metas = db.query(Meta).filter_by(user_id=current_user.id).order_by(Meta.criada_em.desc(), Meta.id).all()
+    return [meta.to_dict() for meta in metas]
+
+
+@app.post("/metas", status_code=201)
+def criar_meta(dados: MetaDados, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    meta = Meta(user_id=current_user.id, criada_em=datetime.now(UTC), **dados.model_dump())
+    db.add(meta)
+    db.commit()
+    db.refresh(meta)
+    return meta.to_dict()
+
+
+@app.put("/metas/{meta_id}")
+def editar_meta(meta_id: UUID, dados: MetaEdicao, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    meta = buscar_meta(db, current_user.id, meta_id)
+    if dados.tipo != meta.tipo and meta.progresso != 0:
+        raise HTTPException(status_code=422, detail="Zere o progresso antes de alterar o tipo de acompanhamento.")
+    if dados.objetivo < meta.progresso:
+        raise HTTPException(status_code=422, detail="A quantidade desejada não pode ser menor que o progresso atual.")
+    valores = dados.model_dump(exclude={"versao"})
+    valores["concluida_em"] = (meta.concluida_em or datetime.now(UTC)) if meta.progresso == dados.objetivo else None
+    return atualizar_meta_versionada(db, meta, dados.versao, valores)
+
+
+@app.patch("/metas/{meta_id}/progresso")
+def atualizar_progresso_meta(meta_id: UUID, dados: MetaProgresso, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    meta = buscar_meta(db, current_user.id, meta_id)
+    try:
+        validar_progresso_meta(meta.tipo, meta.objetivo, dados.progresso)
+    except ValueError as erro:
+        raise HTTPException(status_code=422, detail=str(erro)) from erro
+    concluida_em = (meta.concluida_em or datetime.now(UTC)) if dados.progresso == meta.objetivo else None
+    return atualizar_meta_versionada(db, meta, dados.versao, {"progresso": dados.progresso, "concluida_em": concluida_em})
+
+
+@app.delete("/metas/{meta_id}", status_code=204)
+def excluir_meta(meta_id: UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    excluidas = db.query(Meta).filter_by(user_id=current_user.id, id=str(meta_id)).delete()
+    if not excluidas:
+        raise HTTPException(status_code=404, detail="Meta não encontrada.")
+    db.commit()
+
+
+def restaurar_metas(db, user_id, registros, importadas):
+    if not isinstance(registros, list):
+        importadas["erros"].append("Metas: esperava uma lista.")
+        return
+    insert = sqlite_insert if IS_SQLITE else postgresql_insert
+    for indice, registro in enumerate(registros, 1):
+        try:
+            dados = MetaBackup.model_validate(registro)
+        except ValidationError:
+            importadas["erros"].append(f"Meta {indice}: dados inválidos.")
+            continue
+        valores = dados.model_dump(exclude={"id"})
+        for campo in ("criada_em", "concluida_em"):
+            if valores[campo]:
+                valores[campo] = valores[campo].astimezone(UTC)
+        comando = insert(Meta).values(user_id=user_id, id=str(dados.id), **valores)
+        gravadas = db.execute(comando.on_conflict_do_nothing(index_elements=["user_id", "id"])).rowcount
+        importadas["metas"] += gravadas
+
+
 @app.get("/backup")
 def exportar_backup(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     tarefas = db.query(Tarefa).filter(Tarefa.user_id == current_user.id, Tarefa.ativo == True).all()
@@ -3982,7 +4180,8 @@ def exportar_backup(db: Session = Depends(get_db), current_user: User = Depends(
             if item["id"] in areas:
                 item["area"] = areas[item["id"]]
     return {
-        "versao": "2.1",
+        "versao": "2.2",
+        "metas": [meta.to_dict() for meta in db.query(Meta).filter_by(user_id=current_user.id).all()],
         "exportado_em": datetime.now(UTC).isoformat(),
         "tarefas": [t.to_dict() for t in tarefas],
         "checklist": checklist_exportado,
@@ -4009,11 +4208,14 @@ async def importar_backup(request: Request, db: Session = Depends(get_db), curre
     except Exception:
         raise HTTPException(status_code=400, detail="JSON inválido.")
 
+    if not isinstance(dados, dict):
+        raise HTTPException(status_code=400, detail="Backup inválido.")
+
     tarefas_raw = dados.get("tarefas", [])
     checklist_raw = dados.get("checklist", [])
     notas_raw = dados.get("notas", [])
     marcos_raw = dados.get("marcos_operacionais", [])
-    importadas = {"tarefas": 0, "checklist": 0, "notas": 0, "marcos_operacionais": 0, "erros": []}
+    importadas = {"tarefas": 0, "checklist": 0, "notas": 0, "marcos_operacionais": 0, "metas": 0, "erros": []}
 
     for t in tarefas_raw:
         try:
@@ -4132,11 +4334,12 @@ async def importar_backup(request: Request, db: Session = Depends(get_db), curre
         except Exception as e:
             importadas["erros"].append(f"Marco '{m.get('titulo', '?')}': {e}")
 
+    restaurar_metas(db, user_id, dados.get("metas", []), importadas)
     db.commit()
     return {
         "ok": True,
         "importadas": importadas,
-        "mensagem": f"Restauração concluída: {importadas['tarefas']} tarefas, {importadas['checklist']} rotinas, {importadas['notas']} notas e {importadas['marcos_operacionais']} marcos importados.",
+        "mensagem": f"Restauração concluída: {importadas['tarefas']} tarefas, {importadas['checklist']} rotinas, {importadas['notas']} notas e {importadas['marcos_operacionais']} marcos importados. Metas restauradas: {importadas['metas']}.",
     }
 
 

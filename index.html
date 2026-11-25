@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="./css/layout.css">
     <link rel="stylesheet" href="./css/components.css">
     <link rel="stylesheet" href="./css/screens.css?v=sem-areas">
-    <link rel="stylesheet" href="./css/responsive.css?v=sprint-070">
+    <link rel="stylesheet" href="./css/responsive.css?v=sprint-071">
   </head>
   <body>
 
@@ -281,14 +281,9 @@
               <span>Checklist</span>
             </div>
 
-            <div class="nav-item" data-target="screen-pessoal">
-              <svg viewBox="0 0 256 256" fill="none" color="currentColor">
-                <circle cx="128" cy="128" r="96" fill="currentColor" opacity="0.2"/>
-                <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
-                <circle cx="128" cy="104" r="36" fill="currentColor" opacity="0.4"/>
-                <path d="M63,212 Q64,168 128,168 Q192,168 193,212" stroke="currentColor" stroke-width="16" stroke-linecap="round" fill="none"/>
-              </svg>
-              <span>Pessoal</span>
+            <div class="nav-item" data-target="screen-evolucao">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8m-6 0h6v6"/></svg>
+              <span>Evolução</span>
             </div>
 
             <div class="nav-item" data-target="screen-notas">
@@ -400,6 +395,11 @@
             <div class="swipe-hint"><span>← Em andamento</span><span>Feito →</span></div>
             <div id="checklist-dia"><small>Carregando checklist...</small></div>
           </div>
+          <button id="hoje-evolucao" class="card" type="button" data-target-jump="screen-evolucao">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8m-6 0h6v6"/></svg>
+            <span><strong>Evolução</strong><small id="hoje-evolucao-metas" hidden></small></span>
+            <span aria-hidden="true">›</span>
+          </button>
         </div>
 
         <!-- ══ ABA AGENDA ══ -->
@@ -768,53 +768,63 @@
           </div>
         </div>
 
-        <!-- ══ ABA PESSOAL ══ -->
-        <div class="screen" id="screen-pessoal">
+        <div class="screen" id="screen-evolucao">
+          <button class="evolucao-voltar btn-secondary" type="button" data-target-jump="screen-hoje">‹ Hoje</button>
           <div class="card">
             <div class="card-header">
-              <svg width="22" height="22" viewBox="0 0 256 256" fill="none" class="icon-tema" color="currentColor">
-                <circle cx="128" cy="128" r="96" fill="currentColor" opacity="0.2"/>
-                <circle cx="128" cy="128" r="96" stroke="currentColor" stroke-width="16"/>
-                <circle cx="128" cy="104" r="36" fill="currentColor" opacity="0.4"/>
-                <circle cx="128" cy="104" r="36" stroke="currentColor" stroke-width="14"/>
-                <path d="M63,212 Q64,168 128,168 Q192,168 193,212" stroke="currentColor" stroke-width="16" stroke-linecap="round" fill="none"/>
-              </svg>
-              <h2>Pessoal</h2>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8m-6 0h6v6"/></svg>
+              <h2>Evolução</h2>
             </div>
-            <div class="secao-subtitulo">Compromissos e rotinas pessoais organizados por momento.</div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px; flex-wrap:wrap;">
-              <h3 id="pessoal-agenda-title" style="margin:0; font-size:14px; color:#111827;">Agenda pessoal</h3>
-              <button id="btn-toggle-passados-pessoal" class="btn-secondary" type="button">Mostrar passados</button>
+            <p id="evolucao-estado" role="status" hidden></p>
+            <button id="evolucao-recarregar" class="btn-secondary" type="button" hidden>Tentar novamente</button>
+            <div id="evolucao-vazio" hidden>
+              <h3>Qual é o seu próximo objetivo?</h3>
+              <p>Crie uma meta e acompanhe seu progresso.</p>
             </div>
-
-            <div id="pessoal-hoje-box" class="pessoal-panel pessoal-panel--hoje" style="margin-bottom:12px;">
-              <h4 id="pessoal-hoje-title" style="margin:0 0 8px 0; font-size:13px; color:#111827;">Hoje</h4>
-              <div id="pessoal-agenda-hoje"><small>Carregando...</small></div>
-            </div>
-
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"/>
-
-            <div id="pessoal-proximos-box" class="pessoal-panel pessoal-panel--proximos" style="margin-bottom:12px;">
-              <h4 id="pessoal-proximos-title" style="margin:0 0 8px 0; font-size:13px; color:#111827;">Próximos</h4>
-              <div id="pessoal-agenda-proximos"><small>Carregando...</small></div>
-            </div>
-
-            <hr id="hr-passados-pessoal" style="border:none;border-top:1px solid #e5e7eb;margin:8px 0; display:none;"/>
-
-            <div id="pessoal-passados-box" class="pessoal-panel pessoal-panel--passados" style="display:none; margin-bottom:12px;">
-              <h4 id="pessoal-passados-title" style="margin:0 0 8px 0; font-size:13px; color:#111827;">Passados</h4>
-              <div id="pessoal-agenda-passados"><small>Nenhum compromisso passado.</small></div>
-            </div>
-
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"/>
-
-            <div id="pessoal-rotinas-box" class="pessoal-panel pessoal-panel--rotinas">
-              <h3 id="pessoal-rotinas-title" style="margin:4px 0 8px 0;font-size:14px;color:#111827">Checklist pessoal</h3>
-              <div id="pessoal-checklist"><small>Carregando...</small></div>
-            </div>
+            <section id="evolucao-ativas" aria-labelledby="evolucao-titulo-metas" hidden>
+              <h3 id="evolucao-titulo-metas">Metas</h3>
+              <div id="evolucao-lista-ativas" class="evolucao-lista"></div>
+            </section>
+            <section id="evolucao-concluidas" aria-labelledby="evolucao-titulo-concluidas" hidden>
+              <h3 id="evolucao-titulo-concluidas">Concluídas</h3>
+              <div id="evolucao-lista-concluidas" class="evolucao-lista"></div>
+            </section>
           </div>
         </div>
+
+        <dialog id="evolucao-dialogo" class="checklist-form-panel" aria-labelledby="evolucao-form-titulo">
+          <form id="evolucao-form">
+            <div class="checklist-form-header">
+              <h3 id="evolucao-form-titulo" class="checklist-form-title">Nova meta</h3>
+              <button class="btn-secondary evolucao-fechar" type="button" aria-label="Fechar">×</button>
+            </div>
+            <label for="meta-titulo">Título da meta</label>
+            <input id="meta-titulo" name="titulo" type="text" maxlength="160" required autofocus>
+            <label for="meta-tipo">Acompanhamento</label>
+            <select id="meta-tipo" name="tipo" required>
+              <option value="quantidade">Quantidade</option>
+              <option value="percentual">Percentual</option>
+              <option value="simples">Conclusão simples</option>
+            </select>
+            <div id="meta-campos-quantidade">
+              <div>
+                <label for="meta-objetivo">Quantidade desejada</label>
+                <input id="meta-objetivo" name="objetivo" type="number" min="0.001" max="999999999.999" step="0.001" required>
+              </div>
+              <div>
+                <label for="meta-unidade">Unidade (opcional)</label>
+                <input id="meta-unidade" name="unidade" type="text" maxlength="32" placeholder="Ex.: livros">
+              </div>
+            </div>
+            <label for="meta-prazo">Prazo (opcional)</label>
+            <input id="meta-prazo" name="prazo" type="date">
+            <p id="evolucao-form-erro" role="alert" hidden></p>
+            <div class="checklist-form-actions">
+              <button class="btn-secondary evolucao-fechar" type="button">Cancelar</button>
+              <button class="btn-primary" type="submit">Salvar</button>
+            </div>
+          </form>
+        </dialog>
 
         <!-- ══ ABA AJUSTES ══ -->
         <div class="screen" id="screen-ajustes">
@@ -1374,6 +1384,10 @@
         </svg>
       </button>
 
+      <button id="btn-nova-meta" class="fab-add" type="button" aria-haspopup="dialog" aria-controls="evolucao-dialogo" aria-label="Nova meta" title="Nova meta">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>
+      </button>
+
       <button id="btn-toggle-form-agenda" class="fab-add fab-add-agenda" type="button" aria-expanded="false" aria-controls="agenda-form-wrap" aria-label="Novo compromisso" title="Novo compromisso">
         <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
           <line x1="128" y1="64" x2="128" y2="192" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
@@ -1461,13 +1475,14 @@
     <!-- ══════════════════════════════════════════════════════════ -->
     <script src="./js/core/utils.js"></script>
     <script src="./js/core/runtime.js"></script>
-    <script data-prioriza-module="core" src="./js/core/admin.js?v=sprint-066"></script>
+    <script data-prioriza-module="core" src="./js/core/admin.js?v=sprint-071"></script>
     <script data-prioriza-module="agenda" src="./js/screens/agenda.js?v=sprint-067"></script>
-    <script data-prioriza-module="checklist" src="./js/screens/checklist.js?v=sprint-068"></script>
-    <script data-prioriza-module="core" src="./js/screens/workspace.js?v=sprint-069"></script>
+    <script data-prioriza-module="checklist" src="./js/screens/checklist.js?v=sprint-071"></script>
+    <script data-prioriza-module="core" src="./js/screens/workspace.js?v=sprint-071"></script>
     <script data-prioriza-module="autenticacao" src="./js/core/auth.js"></script>
     <script data-prioriza-module="experiencia" src="./js/core/experience.js"></script>
-    <script data-prioriza-module="bootstrap" src="./js/app.js?v=sprint-067"></script>
+    <script src="./js/screens/evolucao.js?v=sprint-071"></script>
+    <script data-prioriza-module="bootstrap" src="./js/app.js?v=sprint-071"></script>
     <script data-prioriza-module="notificacoes" src="./js/integrations/notifications.js"></script>
   </body>
 </html>
