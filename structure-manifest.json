@@ -19,6 +19,7 @@
                        "js/core/experience.js",
                        "js/screens/evolucao.js",
                        "js/screens/habitos.js",
+                       "js/screens/datas-especiais.js",
                        "js/app.js",
                        "js/integrations/notifications.js"
                    ],

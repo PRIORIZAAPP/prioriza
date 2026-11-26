@@ -74,21 +74,45 @@ function renderizarMetas(foco) {
   const resumo = document.getElementById("hoje-evolucao-metas");
   resumo.hidden = !ativas.length;
   resumo.textContent = ativas.length === 1 ? "1 meta em andamento" : `${ativas.length} metas em andamento`;
-  document.getElementById("evolucao-vazio").hidden = metasEvolucao === null || metas.length !== 0;
   document.querySelectorAll(".timeline-menu-popover").forEach(menu => {
     if (!menu.__owner?.closest("#evolucao-lista-ativas, #evolucao-lista-concluidas")) return;
     fecharMenuAcoes(menu);
     menu.remove();
   });
-  for (const [grupo, itens] of [["ativas", ativas], ["concluidas", concluidas]]) {
-    document.getElementById(`evolucao-${grupo}`).hidden = !itens.length;
-    const lista = document.getElementById(`evolucao-lista-${grupo}`);
-    lista.replaceChildren(...itens.map(criarCartaoMeta));
-  }
+  document.getElementById("evolucao-ativas").hidden = !ativas.length;
+  document.getElementById("evolucao-vazio").hidden = metasEvolucao === null || ativas.length !== 0;
+  document.getElementById("evolucao-lista-ativas").replaceChildren(...ativas.map(criarCartaoMeta));
+  renderizarConquistas(concluidas);
   if (foco && telaAtiva("screen-evolucao")) {
     const titulo = document.getElementById(`evolucao-meta-${foco}`) || document.getElementById("btn-nova-meta");
     titulo.focus({ preventScroll: true });
   }
+}
+
+const mesCivilConclusao = new Intl.DateTimeFormat("pt-BR", {
+  month: "long", year: "numeric", timeZone: "America/Sao_Paulo",
+});
+
+function renderizarConquistas(concluidas) {
+  const total = document.getElementById("conquistas-total");
+  total.hidden = metasEvolucao === null;
+  total.textContent = concluidas.length === 1 ? "1 conquista" : `${concluidas.length} conquistas`;
+  document.getElementById("conquistas-vazio").hidden = metasEvolucao === null || concluidas.length !== 0;
+  const grupos = new Map();
+  for (const meta of concluidas) {
+    const mes = mesCivilConclusao.format(new Date(meta.concluida_em));
+    if (!grupos.has(mes)) grupos.set(mes, []);
+    grupos.get(mes).push(meta);
+  }
+  const secoes = Array.from(grupos, ([mes, metas]) => {
+    const grupo = elementoMeta("section", "", "conquistas-grupo");
+    const titulo = elementoMeta("h4", mes[0].toUpperCase() + mes.slice(1));
+    const lista = elementoMeta("div", "", "evolucao-lista");
+    lista.append(...metas.map(criarCartaoMeta));
+    grupo.append(titulo, lista);
+    return grupo;
+  });
+  document.getElementById("evolucao-lista-concluidas").replaceChildren(...secoes);
 }
 
 async function gravarProgressoMeta(meta, progresso, origem) {
@@ -182,6 +206,7 @@ function criarCartaoMeta(meta) {
   }
   if (concluida) {
     detalhe.append(elementoMeta("span", dataConclusaoMeta.format(new Date(meta.concluida_em))));
+    detalhe.insertAdjacentHTML("beforeend", '<svg class="conquista-trofeu" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3h8v6a4 4 0 0 1-8 0V3Zm0 2H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 2v6m-4 2h8"/></svg>');
   } else if (meta.prazo) {
     const vencida = meta.prazo < dataHojeISO();
     detalhe.append(elementoMeta("span", `${vencida ? "Vencida" : "Prazo"} · ${formatarDataCurtaBR(meta.prazo)}`,

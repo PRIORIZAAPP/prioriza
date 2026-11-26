@@ -15,6 +15,7 @@
           if (telaAtiva("screen-evolucao")) {
             if (metasEvolucao) renderizarMetas();
             atualizarSemanaHabitosNaVirada();
+            datasEspeciaisUI.renderizar();
           }
           recarregarBlocosComRolagem({ checklistHoje: true, checklistGeral: true, agendaHoje: true, resumo: true })
             .catch((erro) => console.error("[PRIORIZA] Virada do dia operacional:", erro));
@@ -60,6 +61,7 @@
         fecharFormularioNotaMobile();
         fecharFormularioMeta();
         fecharFormularioHabito();
+        datasEspeciaisUI.fechar();
         toggleFormChecklist(false);
         toggleFormAgenda(false);
         toggleFormMarcoOperacional(false);
@@ -79,7 +81,10 @@
             requestAnimationFrame(irParaTopoSemAnimacao);
           });
         }
-        if (id === "screen-evolucao") carregarHabitos();
+        if (id === "screen-evolucao") {
+          carregarHabitos();
+          datasEspeciaisUI.carregar();
+        }
         if (id === "screen-evolucao" || (id === "screen-hoje" && !emLayoutDesktop())) carregarMetas();
         if (id === "screen-ajustes") {
           fecharSubpaginaAjustes();
@@ -110,6 +115,7 @@
       document.getElementById("btn-topbar-ajustes")?.addEventListener("click", () => abrirTela("screen-ajustes"));
       vincularEvolucao();
       vincularHabitos();
+      datasEspeciaisUI.vincular();
       abrirTela(document.querySelector(".screen.active")?.id || "screen-hoje");
       atualizarToggleUsuariosAdmin();
       atualizarCampoRecorrenciaAgenda();
@@ -489,7 +495,8 @@
           const m = dados.marcos_operacionais?.length || 0;
           const metas = dados.metas?.length || 0;
           const habitos = dados.habitos?.length || 0;
-          statusEl.textContent = `Backup baixado: ${t} tarefas, ${c} rotinas, ${n} notas e ${m} marcos. Metas: ${metas}. Hábitos: ${habitos}.`;
+          const datas = dados.datas_especiais?.length || 0;
+          statusEl.textContent = `Backup baixado: ${t} tarefas, ${c} rotinas, ${n} notas e ${m} marcos. Metas: ${metas}. Hábitos: ${habitos}. Datas especiais: ${datas}.`;
           statusEl.style.color = "#10b981";
         } catch(e) {
           console.error(e);
