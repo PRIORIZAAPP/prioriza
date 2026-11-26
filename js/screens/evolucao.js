@@ -95,7 +95,7 @@ async function gravarProgressoMeta(meta, progresso, origem) {
   if (metasEmGravacao.has(meta.id)) return;
   const token = getAuthToken();
   const objetivo = Number(meta.objetivo);
-  if (!Number.isFinite(progresso) || progresso < 0 || progresso > objetivo) return;
+  if (!Number.isFinite(Number(progresso)) || progresso < 0 || progresso > objetivo) return;
   metasEmGravacao.add(meta.id);
   if (origem) origem.disabled = true;
   try {
@@ -120,6 +120,15 @@ function atualizarListaMeta(meta, id) {
   renderizarMetas(id);
 }
 
+function percentualMeta(progresso, objetivo) {
+  const arredondado = Math.round(progresso * 100 / objetivo);
+  return progresso < objetivo ? Math.min(99, arredondado) : 100;
+}
+
+function rotuloQuantidadeMeta(progresso, objetivo) {
+  return `${numeroMeta.format(progresso)} de ${numeroMeta.format(objetivo)}`;
+}
+
 function criarCartaoMeta(meta) {
   const concluida = Boolean(meta.concluida_em);
   const simples = meta.tipo === "simples";
@@ -127,22 +136,34 @@ function criarCartaoMeta(meta) {
   const objetivo = Number(meta.objetivo);
   const cartao = elementoMeta("article", "", `evolucao-meta${concluida ? " concluida" : ""}`);
   const topo = elementoMeta("div", "", "evolucao-meta-topo");
-  const titulo = elementoMeta("h4", meta.titulo);
-  titulo.id = `evolucao-meta-${meta.id}`;
-  titulo.tabIndex = -1;
 
-  const marcar = botaoMeta("", `evolucao-status${concluida ? " feito" : ""}`);
-  marcar.setAttribute("aria-label", `Alterar conclusão de ${meta.titulo}`);
-  marcar.setAttribute("aria-pressed", String(concluida));
-  marcar.addEventListener("click", () => gravarProgressoMeta(meta, concluida ? 0 : 1, marcar));
-  if (simples) topo.append(marcar);
+  if (simples || concluida) {
+    const marcar = botaoMeta("", `evolucao-status${concluida ? " feito" : ""}`);
+    marcar.setAttribute("aria-label", `${concluida ? "Reabrir" : "Concluir"} ${meta.titulo}`);
+    marcar.setAttribute("aria-pressed", String(concluida));
+    marcar.addEventListener("click", () => concluida
+      ? reabrirMeta(meta, marcar) : gravarProgressoMeta(meta, 1, marcar));
+    topo.append(marcar);
+  }
+
+  const titulo = elementoMeta("h4");
+  const texto = botaoMeta("", "evolucao-meta-titulo");
+  const rotulo = elementoMeta("span", meta.titulo);
+  texto.append(rotulo);
+  texto.id = `evolucao-meta-${meta.id}`;
+  texto.setAttribute("aria-expanded", "false");
+  texto.addEventListener("click", () => {
+    const expandido = texto.getAttribute("aria-expanded") === "true";
+    if (expandido || rotulo.scrollHeight > rotulo.clientHeight + 1) {
+      texto.setAttribute("aria-expanded", String(!expandido));
+    }
+  });
+  titulo.append(texto);
   topo.append(titulo);
 
   const acoes = [{ texto: "Editar", acao: () => abrirFormularioMeta(meta) }];
-  if (concluida) acoes.push({
-    texto: "Reabrir",
-    acao: () => gravarProgressoMeta(meta, Math.max(0, Math.round((objetivo - 1) * 1000) / 1000)),
-  });
+  if (concluida && !simples) acoes.push({ texto: "Corrigir progresso", acao: () => abrirProgressoMeta(meta, false) });
+  if (concluida) acoes.push({ texto: "Reabrir", acao: () => reabrirMeta(meta) });
   acoes.push({ texto: "Excluir", danger: true, acao: () => excluirMeta(meta) });
   topo.append(criarMenuAcoesContextuais({
     titulo: "Ações da meta", ariaLabel: `Ações de ${meta.titulo}`, checklist: true, itens: acoes,
@@ -150,54 +171,42 @@ function criarCartaoMeta(meta) {
   cartao.append(topo);
 
   const detalhe = elementoMeta("div", "", "evolucao-meta-detalhe");
-  const rotulo = simples ? (concluida ? "Concluída" : "Pendente")
-    : meta.tipo === "percentual" ? `${numeroMeta.format(progresso)}%`
-      : `${numeroMeta.format(progresso)} de ${numeroMeta.format(objetivo)}${meta.unidade ? " " + meta.unidade : ""}`;
-  detalhe.append(elementoMeta("strong", rotulo));
-  if (meta.prazo) {
-    const vencida = !concluida && meta.prazo < dataHojeISO();
-    detalhe.append(elementoMeta("span",
-      `${vencida ? "Prazo vencido" : "Prazo"} · ${formatarDataCurtaBR(meta.prazo)}`,
+  if (!simples && !concluida) {
+    const corrigir = botaoMeta(rotuloQuantidadeMeta(progresso, objetivo), "evolucao-meta-quantidade");
+    corrigir.setAttribute("aria-label", `Corrigir progresso de ${meta.titulo}: ${corrigir.textContent}`);
+    corrigir.insertAdjacentHTML("beforeend", '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5 4 4M4 20l4-.8L20 7a2.8 2.8 0 0 0-4-4L4.8 15.9z"/></svg>');
+    corrigir.addEventListener("click", () => abrirProgressoMeta(meta, false));
+    const medicao = elementoMeta("div", "", "evolucao-meta-medicao");
+    medicao.append(corrigir, elementoMeta("span", `${percentualMeta(progresso, objetivo)}%`));
+    detalhe.append(medicao);
+  }
+  if (concluida) {
+    detalhe.append(elementoMeta("span", dataConclusaoMeta.format(new Date(meta.concluida_em))));
+  } else if (meta.prazo) {
+    const vencida = meta.prazo < dataHojeISO();
+    detalhe.append(elementoMeta("span", `${vencida ? "Vencida" : "Prazo"} · ${formatarDataCurtaBR(meta.prazo)}`,
       vencida ? "evolucao-vencida" : ""));
   }
-  if (concluida) detalhe.append(elementoMeta("span", `Conclusão · ${dataConclusaoMeta.format(new Date(meta.concluida_em))}`));
-  cartao.append(detalhe);
+  if (!simples && !concluida) {
+    const mais = botaoMeta("+", "evolucao-meta-mais");
+    mais.setAttribute("aria-label", `Adicionar progresso a ${meta.titulo}`);
+    mais.addEventListener("click", () => abrirProgressoMeta(meta, true));
+    detalhe.append(mais);
+  }
+  if (detalhe.childElementCount) cartao.append(detalhe);
 
-  if (!simples) {
+  if (!simples && !concluida) {
     const barra = elementoMeta("progress");
     barra.max = objetivo;
     barra.value = progresso;
     barra.setAttribute("aria-label", `Progresso de ${meta.titulo}`);
     cartao.append(barra);
-
-    const formulario = elementoMeta("form", "", "evolucao-progresso");
-    const campo = elementoMeta("input");
-    campo.type = "number";
-    campo.required = true;
-    campo.min = 0;
-    campo.max = objetivo;
-    campo.step = "0.001";
-    campo.value = progresso;
-    campo.setAttribute("aria-label", `Novo progresso de ${meta.titulo}`);
-    const salvar = botaoMeta("Atualizar");
-    salvar.type = "submit";
-    formulario.append(campo, salvar);
-    formulario.addEventListener("submit", evento => {
-      evento.preventDefault();
-      gravarProgressoMeta(meta, campo.valueAsNumber, salvar);
-    });
-    if (meta.tipo === "quantidade" && !concluida) {
-      const mais = botaoMeta("+1");
-      mais.setAttribute("aria-label", `Somar um ao progresso de ${meta.titulo}`);
-      mais.addEventListener("click", () => {
-        const novo = Math.min(objetivo, Math.round((progresso + 1) * 1000) / 1000);
-        gravarProgressoMeta(meta, novo, mais);
-      });
-      formulario.append(mais);
-    }
-    cartao.append(formulario);
   }
   return cartao;
+}
+
+function reabrirMeta(meta, origem) {
+  return gravarProgressoMeta(meta, Math.max(0, Number(meta.objetivo) - 1).toFixed(3), origem);
 }
 
 async function excluirMeta(meta) {
@@ -211,29 +220,80 @@ async function excluirMeta(meta) {
   }
 }
 
-function atualizarCamposMeta(form) {
+let adicionarProgressoMeta = false;
+
+function atualizarFormularioMeta(form) {
   const quantidade = form.elements.tipo.value === "quantidade";
   document.getElementById("meta-campos-quantidade").hidden = !quantidade;
-  form.elements.objetivo.disabled = !quantidade;
-  form.elements.unidade.disabled = !quantidade;
+  form.elements.objetivo.disabled = !quantidade || metaEmEdicao?.tipo === "percentual";
+  form.querySelector("[type=submit]").disabled =
+    Boolean(form.dataset.salvando) || !form.elements.titulo.value.trim() || !form.checkValidity();
+}
+
+function abrirPainelMeta(meta, progresso) {
+  const dialogo = document.getElementById("evolucao-dialogo");
+  const form = document.getElementById("evolucao-form");
+  const painel = document.getElementById("evolucao-progresso-form");
+  if (dialogo.open || form.dataset.salvando || painel.dataset.salvando) return false;
+  acionadorMeta = document.activeElement;
+  metaEmEdicao = meta;
+  form.hidden = progresso;
+  painel.hidden = !progresso;
+  dialogo.setAttribute("aria-labelledby", progresso ? "evolucao-progresso-titulo" : "evolucao-form-titulo");
+  return true;
 }
 
 function abrirFormularioMeta(meta = null) {
-  const dialogo = document.getElementById("evolucao-dialogo");
+  if (!abrirPainelMeta(meta, false)) return;
   const form = document.getElementById("evolucao-form");
-  if (dialogo.open || form.dataset.salvando) return;
-  acionadorMeta = document.activeElement;
-  metaEmEdicao = meta;
   form.reset();
   document.getElementById("evolucao-form-titulo").textContent = meta ? "Editar meta" : "Nova meta";
   document.getElementById("evolucao-form-erro").hidden = true;
   form.elements.titulo.value = meta?.titulo || "";
-  form.elements.tipo.value = meta?.tipo || "quantidade";
-  form.elements.objetivo.value = meta?.tipo === "quantidade" ? meta.objetivo : "";
-  form.elements.unidade.value = meta?.unidade || "";
+  form.elements.tipo.value = meta?.tipo === "simples" ? "simples" : "quantidade";
+  form.elements.tipo.disabled = meta?.tipo === "percentual" || Boolean(meta?.unidade);
+  form.elements.objetivo.value = meta && meta.tipo !== "simples" ? meta.objetivo : "";
   form.elements.prazo.value = meta?.prazo || "";
-  atualizarCamposMeta(form);
-  dialogo.showModal();
+  atualizarFormularioMeta(form);
+  document.getElementById("evolucao-dialogo").showModal();
+}
+
+function mostrarPreviaProgresso(form) {
+  const campo = form.elements.valor;
+  const objetivo = Number(metaEmEdicao.objetivo);
+  const atual = Number(metaEmEdicao.progresso);
+  const valor = campo.valueAsNumber;
+  const resultado = adicionarProgressoMeta
+    ? (Math.round(atual * 1000) + Math.round(valor * 1000)) / 1000
+    : valor;
+  const valido = campo.validity.valid && Number.isFinite(resultado) && resultado <= objetivo;
+  const previa = document.getElementById("evolucao-progresso-previa");
+  if (valido) {
+    previa.textContent = `Novo progresso: ${rotuloQuantidadeMeta(resultado, objetivo)} (${percentualMeta(resultado, objetivo)}%)`;
+  } else if (campo.value || campo.validity.badInput) {
+    previa.textContent = `Informe um valor entre ${numeroMeta.format(Number(campo.min))} e ${numeroMeta.format(Number(campo.max))}, com até três casas decimais.`;
+  } else {
+    previa.textContent = `Progresso atual: ${rotuloQuantidadeMeta(atual, objetivo)}`;
+  }
+  form.querySelector("[type=submit]").disabled = !valido || Boolean(form.dataset.salvando);
+  return valido ? resultado : null;
+}
+
+function abrirProgressoMeta(meta, adicionar) {
+  if (!abrirPainelMeta(meta, true)) return;
+  adicionarProgressoMeta = adicionar;
+  const form = document.getElementById("evolucao-progresso-form");
+  const campo = form.elements.valor;
+  campo.min = adicionar ? "0.001" : "0";
+  campo.max = adicionar ? (Number(meta.objetivo) - Number(meta.progresso)).toFixed(3) : meta.objetivo;
+  campo.value = adicionar ? "" : meta.progresso;
+  document.getElementById("evolucao-progresso-titulo").textContent = adicionar ? "Adicionar progresso" : "Corrigir progresso";
+  document.getElementById("evolucao-progresso-meta").textContent = meta.titulo;
+  document.getElementById("meta-valor-label").textContent = adicionar ? "Quantidade a adicionar" : "Total realizado";
+  document.getElementById("evolucao-progresso-erro").hidden = true;
+  mostrarPreviaProgresso(form);
+  document.getElementById("evolucao-dialogo").showModal();
+  campo.focus();
 }
 
 function fecharFormularioMeta() {
@@ -248,11 +308,48 @@ function vincularEvolucao() {
   const erroEl = document.getElementById("evolucao-form-erro");
   document.getElementById("btn-nova-meta").addEventListener("click", () => abrirFormularioMeta());
   document.getElementById("evolucao-recarregar").addEventListener("click", carregarMetas);
-  form.elements.tipo.addEventListener("change", () => atualizarCamposMeta(form));
-  dialogo.querySelectorAll(".evolucao-fechar").forEach(botao => {
-    botao.addEventListener("click", () => { if (!form.dataset.salvando) fecharFormularioMeta(); });
+  form.addEventListener("input", () => atualizarFormularioMeta(form));
+  form.addEventListener("change", () => atualizarFormularioMeta(form));
+  const painel = document.getElementById("evolucao-progresso-form");
+  const erroProgresso = document.getElementById("evolucao-progresso-erro");
+  painel.addEventListener("input", () => {
+    erroProgresso.hidden = true;
+    mostrarPreviaProgresso(painel);
   });
-  dialogo.addEventListener("cancel", evento => { if (form.dataset.salvando) evento.preventDefault(); });
+  painel.addEventListener("submit", async evento => {
+    evento.preventDefault();
+    if (painel.dataset.salvando) return;
+    const progresso = mostrarPreviaProgresso(painel);
+    if (progresso === null) return;
+    const meta = metaEmEdicao;
+    const token = getAuthToken();
+    painel.dataset.salvando = "true";
+    mostrarPreviaProgresso(painel);
+    try {
+      const atualizada = await requisitarMeta(`/${meta.id}/progresso`, "PATCH", { progresso, versao: meta.versao });
+      if (token !== getAuthToken()) return;
+      fecharFormularioMeta();
+      atualizarListaMeta(atualizada, meta.id);
+    } catch (erro) {
+      if (token !== getAuthToken()) return;
+      if (erro.status === 409) {
+        fecharFormularioMeta();
+        await carregarMetas();
+        mensagemEvolucao(erro.message, true);
+      } else {
+        erroProgresso.textContent = erro.message;
+        erroProgresso.hidden = false;
+      }
+    } finally {
+      delete painel.dataset.salvando;
+      if (dialogo.open && !painel.hidden) mostrarPreviaProgresso(painel);
+    }
+  });
+  const gravando = () => Boolean(form.dataset.salvando || painel.dataset.salvando);
+  dialogo.querySelectorAll(".evolucao-fechar").forEach(botao => {
+    botao.addEventListener("click", () => { if (!gravando()) fecharFormularioMeta(); });
+  });
+  dialogo.addEventListener("cancel", evento => { if (gravando()) evento.preventDefault(); });
   dialogo.addEventListener("close", () => {
     if (telaAtiva("screen-evolucao")) acionadorMeta?.focus({ preventScroll: true });
     acionadorMeta = null;
@@ -287,7 +384,11 @@ function vincularEvolucao() {
       erroEl.hidden = false;
       return;
     }
-    if (edicao) dados.versao = edicao.versao;
+    if (edicao) {
+      dados.versao = edicao.versao;
+      if (form.elements.tipo.disabled) dados.tipo = edicao.tipo;
+      if (edicao.unidade) dados.unidade = edicao.unidade;
+    }
     form.dataset.salvando = "true";
     salvar.disabled = true;
     salvar.textContent = "Salvando…";
@@ -310,8 +411,8 @@ function vincularEvolucao() {
       }
     } finally {
       delete form.dataset.salvando;
-      salvar.disabled = false;
       salvar.textContent = "Salvar";
+      atualizarFormularioMeta(form);
     }
   });
 }
