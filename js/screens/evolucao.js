@@ -132,10 +132,11 @@ function rotuloQuantidadeMeta(progresso, objetivo) {
 function criarCartaoMeta(meta) {
   const concluida = Boolean(meta.concluida_em);
   const simples = meta.tipo === "simples";
+  const quantitativa = !simples && !concluida;
   const progresso = Number(meta.progresso);
   const objetivo = Number(meta.objetivo);
   const cartao = elementoMeta("article", "", `evolucao-meta${concluida ? " concluida" : ""}`);
-  const topo = elementoMeta("div", "", "evolucao-meta-topo");
+  if (quantitativa) cartao.classList.add("evolucao-meta-quantitativa");
 
   if (simples || concluida) {
     const marcar = botaoMeta("", `evolucao-status${concluida ? " feito" : ""}`);
@@ -143,7 +144,7 @@ function criarCartaoMeta(meta) {
     marcar.setAttribute("aria-pressed", String(concluida));
     marcar.addEventListener("click", () => concluida
       ? reabrirMeta(meta, marcar) : gravarProgressoMeta(meta, 1, marcar));
-    topo.append(marcar);
+    cartao.append(marcar);
   }
 
   const titulo = elementoMeta("h4");
@@ -159,19 +160,18 @@ function criarCartaoMeta(meta) {
     }
   });
   titulo.append(texto);
-  topo.append(titulo);
+  cartao.append(titulo);
 
   const acoes = [{ texto: "Editar", acao: () => abrirFormularioMeta(meta) }];
   if (concluida && !simples) acoes.push({ texto: "Corrigir progresso", acao: () => abrirProgressoMeta(meta, false) });
   if (concluida) acoes.push({ texto: "Reabrir", acao: () => reabrirMeta(meta) });
   acoes.push({ texto: "Excluir", danger: true, acao: () => excluirMeta(meta) });
-  topo.append(criarMenuAcoesContextuais({
+  cartao.append(criarMenuAcoesContextuais({
     titulo: "Ações da meta", ariaLabel: `Ações de ${meta.titulo}`, checklist: true, itens: acoes,
   }));
-  cartao.append(topo);
 
   const detalhe = elementoMeta("div", "", "evolucao-meta-detalhe");
-  if (!simples && !concluida) {
+  if (quantitativa) {
     const corrigir = botaoMeta(rotuloQuantidadeMeta(progresso, objetivo), "evolucao-meta-quantidade");
     corrigir.setAttribute("aria-label", `Corrigir progresso de ${meta.titulo}: ${corrigir.textContent}`);
     corrigir.insertAdjacentHTML("beforeend", '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5 4 4M4 20l4-.8L20 7a2.8 2.8 0 0 0-4-4L4.8 15.9z"/></svg>');
@@ -187,15 +187,13 @@ function criarCartaoMeta(meta) {
     detalhe.append(elementoMeta("span", `${vencida ? "Vencida" : "Prazo"} · ${formatarDataCurtaBR(meta.prazo)}`,
       vencida ? "evolucao-vencida" : ""));
   }
-  if (!simples && !concluida) {
+  if (detalhe.childElementCount) cartao.append(detalhe);
+
+  if (quantitativa) {
     const mais = botaoMeta("+", "evolucao-meta-mais");
     mais.setAttribute("aria-label", `Adicionar progresso a ${meta.titulo}`);
     mais.addEventListener("click", () => abrirProgressoMeta(meta, true));
-    detalhe.append(mais);
-  }
-  if (detalhe.childElementCount) cartao.append(detalhe);
-
-  if (!simples && !concluida) {
+    cartao.append(mais);
     const barra = elementoMeta("progress");
     barra.max = objetivo;
     barra.value = progresso;
