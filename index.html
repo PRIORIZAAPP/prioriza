@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="./css/layout.css">
     <link rel="stylesheet" href="./css/components.css">
     <link rel="stylesheet" href="./css/screens.css?v=sem-areas">
-    <link rel="stylesheet" href="./css/responsive.css?v=sprint-071">
+    <link rel="stylesheet" href="./css/responsive.css?v=sprint-071-1">
   </head>
   <body>
 
@@ -800,28 +800,38 @@
             </div>
             <label for="meta-titulo">Título da meta</label>
             <input id="meta-titulo" name="titulo" type="text" maxlength="160" required autofocus>
-            <label for="meta-tipo">Acompanhamento</label>
+            <label for="meta-tipo">Tipo de meta</label>
             <select id="meta-tipo" name="tipo" required>
               <option value="quantidade">Quantidade</option>
-              <option value="percentual">Percentual</option>
-              <option value="simples">Conclusão simples</option>
+              <option value="simples">Meta pontual</option>
             </select>
             <div id="meta-campos-quantidade">
               <div>
                 <label for="meta-objetivo">Quantidade desejada</label>
                 <input id="meta-objetivo" name="objetivo" type="number" min="0.001" max="999999999.999" step="0.001" required>
               </div>
-              <div>
-                <label for="meta-unidade">Unidade (opcional)</label>
-                <input id="meta-unidade" name="unidade" type="text" maxlength="32" placeholder="Ex.: livros">
-              </div>
             </div>
             <label for="meta-prazo">Prazo (opcional)</label>
-            <input id="meta-prazo" name="prazo" type="date">
+            <div class="evolucao-data-nativa"><input id="meta-prazo" name="prazo" type="date"></div>
             <p id="evolucao-form-erro" role="alert" hidden></p>
             <div class="checklist-form-actions">
               <button class="btn-secondary evolucao-fechar" type="button">Cancelar</button>
               <button class="btn-primary" type="submit">Salvar</button>
+            </div>
+          </form>
+          <form id="evolucao-progresso-form" hidden>
+            <div class="checklist-form-header">
+              <h3 id="evolucao-progresso-titulo" class="checklist-form-title"></h3>
+              <button class="btn-secondary evolucao-fechar" type="button" aria-label="Fechar">×</button>
+            </div>
+            <p id="evolucao-progresso-meta"></p>
+            <label for="meta-valor-progresso" id="meta-valor-label"></label>
+            <input id="meta-valor-progresso" name="valor" type="number" step="0.001" inputmode="decimal" required>
+            <output id="evolucao-progresso-previa" for="meta-valor-progresso" aria-live="polite"></output>
+            <p id="evolucao-progresso-erro" role="alert" hidden></p>
+            <div class="checklist-form-actions">
+              <button class="btn-secondary evolucao-fechar" type="button">Cancelar</button>
+              <button class="btn-primary" type="submit" disabled>Confirmar</button>
             </div>
           </form>
         </dialog>
@@ -1481,7 +1491,7 @@
     <script data-prioriza-module="core" src="./js/screens/workspace.js?v=sprint-071"></script>
     <script data-prioriza-module="autenticacao" src="./js/core/auth.js"></script>
     <script data-prioriza-module="experiencia" src="./js/core/experience.js"></script>
-    <script src="./js/screens/evolucao.js?v=sprint-071"></script>
+    <script src="./js/screens/evolucao.js?v=sprint-071-1"></script>
     <script data-prioriza-module="bootstrap" src="./js/app.js?v=sprint-071"></script>
     <script data-prioriza-module="notificacoes" src="./js/integrations/notifications.js"></script>
   </body>
