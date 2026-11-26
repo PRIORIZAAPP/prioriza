@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="./css/layout.css">
     <link rel="stylesheet" href="./css/components.css">
     <link rel="stylesheet" href="./css/screens.css?v=sem-areas">
-    <link rel="stylesheet" href="./css/responsive.css?v=sprint-072">
+    <link rel="stylesheet" href="./css/responsive.css?v=sprint-072-1">
   </head>
   <body>
 
@@ -770,28 +770,35 @@
 
         <div class="screen" id="screen-evolucao">
           <button class="evolucao-voltar btn-secondary" type="button" data-target-jump="screen-hoje">‹ Hoje</button>
-          <div class="card">
-            <div class="card-header">
+          <div class="evolucao-shell">
+            <div class="card-header evolucao-titulo">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8m-6 0h6v6"/></svg>
               <h2>Evolução</h2>
             </div>
-            <p id="evolucao-estado" role="status" hidden></p>
-            <button id="evolucao-recarregar" class="btn-secondary" type="button" hidden>Tentar novamente</button>
-            <div id="evolucao-vazio" hidden>
-              <h3>Qual é o seu próximo objetivo?</h3>
-              <p>Crie uma meta e acompanhe seu progresso.</p>
-            </div>
-            <section id="evolucao-ativas" aria-labelledby="evolucao-titulo-metas" hidden>
-              <h3 id="evolucao-titulo-metas">Metas</h3>
-              <div id="evolucao-lista-ativas" class="evolucao-lista"></div>
+            <section class="evolucao-painel" aria-labelledby="evolucao-titulo-metas">
+              <div class="evolucao-painel-cabecalho">
+                <h3 id="evolucao-titulo-metas"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg> Metas</h3>
+                <button id="btn-nova-meta" class="btn-secondary" type="button" aria-haspopup="dialog" aria-controls="evolucao-dialogo">
+                  <span aria-hidden="true">+</span> Nova meta
+                </button>
+              </div>
+              <p id="evolucao-estado" role="status" hidden></p>
+              <button id="evolucao-recarregar" class="btn-secondary" type="button" hidden>Tentar novamente</button>
+              <div id="evolucao-vazio" hidden>
+                <h3>Qual é o seu próximo objetivo?</h3>
+                <p>Crie uma meta e acompanhe seu progresso.</p>
+              </div>
+              <div id="evolucao-ativas" hidden>
+                <div id="evolucao-lista-ativas" class="evolucao-lista"></div>
+              </div>
+              <section id="evolucao-concluidas" aria-labelledby="evolucao-titulo-concluidas" hidden>
+                <h3 id="evolucao-titulo-concluidas">Concluídas</h3>
+                <div id="evolucao-lista-concluidas" class="evolucao-lista"></div>
+              </section>
             </section>
-            <section id="evolucao-concluidas" aria-labelledby="evolucao-titulo-concluidas" hidden>
-              <h3 id="evolucao-titulo-concluidas">Concluídas</h3>
-              <div id="evolucao-lista-concluidas" class="evolucao-lista"></div>
-            </section>
-            <section id="evolucao-habitos" aria-labelledby="habitos-titulo">
-              <div class="habitos-cabecalho">
-                <h3 id="habitos-titulo">Hábitos</h3>
+            <section id="evolucao-habitos" class="evolucao-painel" aria-labelledby="habitos-titulo">
+              <div class="evolucao-painel-cabecalho">
+                <h3 id="habitos-titulo"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4M3 11V9a3 3 0 0 1 3-3h15m-14 8-4 4 4 4m14-9v2a3 3 0 0 1-3 3H3"/></svg> Hábitos</h3>
                 <button id="habitos-novo" class="btn-secondary" type="button" aria-haspopup="dialog" aria-controls="habitos-dialogo">
                   <span aria-hidden="true">+</span> Novo hábito
                 </button>
@@ -1440,10 +1447,6 @@
         </svg>
       </button>
 
-      <button id="btn-nova-meta" class="fab-add" type="button" aria-haspopup="dialog" aria-controls="evolucao-dialogo" aria-label="Nova meta" title="Nova meta">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>
-      </button>
-
       <button id="btn-toggle-form-agenda" class="fab-add fab-add-agenda" type="button" aria-expanded="false" aria-controls="agenda-form-wrap" aria-label="Novo compromisso" title="Novo compromisso">
         <svg width="22" height="22" viewBox="0 0 256 256" fill="none" color="currentColor" aria-hidden="true">
           <line x1="128" y1="64" x2="128" y2="192" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
@@ -1538,7 +1541,7 @@
     <script data-prioriza-module="autenticacao" src="./js/core/auth.js"></script>
     <script data-prioriza-module="experiencia" src="./js/core/experience.js"></script>
     <script src="./js/screens/evolucao.js?v=sprint-072"></script>
-    <script src="./js/screens/habitos.js?v=sprint-072"></script>
+    <script src="./js/screens/habitos.js?v=sprint-072-1"></script>
     <script data-prioriza-module="bootstrap" src="./js/app.js?v=sprint-072"></script>
     <script data-prioriza-module="notificacoes" src="./js/integrations/notifications.js"></script>
   </body>
