@@ -76,7 +76,7 @@ function renderizarMetas(foco) {
   resumo.textContent = ativas.length === 1 ? "1 meta em andamento" : `${ativas.length} metas em andamento`;
   document.getElementById("evolucao-vazio").hidden = metasEvolucao === null || metas.length !== 0;
   document.querySelectorAll(".timeline-menu-popover").forEach(menu => {
-    if (!menu.__owner?.closest("#screen-evolucao")) return;
+    if (!menu.__owner?.closest("#evolucao-lista-ativas, #evolucao-lista-concluidas")) return;
     fecharMenuAcoes(menu);
     menu.remove();
   });
