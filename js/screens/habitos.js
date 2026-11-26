@@ -124,6 +124,8 @@ const habitosUI = (() => {
       botao.classList.toggle("feito", realizado);
       // aria-disabled mantém o foco durante a confirmação ou a reversão.
       const disponivel = habito.disponiveis.includes(botao.dataset.dia);
+      const estado = !disponivel ? "Indisponível" : realizado ? "Realizado" : "Disponível, não realizado";
+      botao.setAttribute("aria-label", `${formatoDia.format(dataCivil(botao.dataset.dia))} — ${estado}`);
       botao.disabled = !disponivel;
       botao.setAttribute("aria-disabled", String(!disponivel || pendentes.has(habito.id)));
     });
@@ -165,9 +167,11 @@ const habitosUI = (() => {
         const celula = elementoMeta("div", "", "habitos-dia");
         const rotulo = elementoMeta("span", letra);
         rotulo.setAttribute("aria-hidden", "true");
-        const botao = botaoMeta("", "evolucao-status");
+        const botao = botaoMeta("", "habitos-dia-controle");
         botao.dataset.dia = dia;
-        botao.setAttribute("aria-label", formatoDia.format(dataCivil(dia)));
+        const circulo = elementoMeta("span", "", "habitos-dia-circulo");
+        circulo.setAttribute("aria-hidden", "true");
+        botao.append(circulo);
         botao.addEventListener("click", () => alternarDia(habito, dia, card));
         celula.append(rotulo, botao);
         dias.append(celula);
