@@ -335,10 +335,13 @@ function vincularEvolucao() {
   form.addEventListener("change", () => atualizarFormularioMeta(form));
   const painel = document.getElementById("evolucao-progresso-form");
   const erroProgresso = document.getElementById("evolucao-progresso-erro");
-  painel.addEventListener("input", () => {
+  const salvarProgresso = painel.querySelector("[type=submit]");
+  const atualizarProgresso = () => {
     erroProgresso.hidden = true;
     mostrarPreviaProgresso(painel);
-  });
+  };
+  painel.addEventListener("input", atualizarProgresso);
+  painel.addEventListener("change", atualizarProgresso);
   painel.addEventListener("submit", async evento => {
     evento.preventDefault();
     if (painel.dataset.salvando) return;
@@ -347,6 +350,7 @@ function vincularEvolucao() {
     const meta = metaEmEdicao;
     const token = getAuthToken();
     painel.dataset.salvando = "true";
+    salvarProgresso.textContent = "Salvando…";
     mostrarPreviaProgresso(painel);
     try {
       const atualizada = await requisitarMeta(`/${meta.id}/progresso`, "PATCH", { progresso, versao: meta.versao });
@@ -365,6 +369,7 @@ function vincularEvolucao() {
       }
     } finally {
       delete painel.dataset.salvando;
+      salvarProgresso.textContent = "Salvar";
       if (dialogo.open && !painel.hidden) mostrarPreviaProgresso(painel);
     }
   });
@@ -396,17 +401,13 @@ function vincularEvolucao() {
   });
   form.addEventListener("submit", async evento => {
     evento.preventDefault();
-    if (form.dataset.salvando) return;
+    atualizarFormularioMeta(form);
+    if (salvar.disabled) return;
     const token = getAuthToken();
     const edicao = metaEmEdicao;
     const dados = Object.fromEntries(new FormData(form));
     dados.titulo = dados.titulo.trim();
     dados.prazo = dados.prazo || null;
-    if (!dados.titulo) {
-      erroEl.textContent = "Informe o título da meta.";
-      erroEl.hidden = false;
-      return;
-    }
     if (edicao) {
       dados.versao = edicao.versao;
       if (form.elements.tipo.disabled) dados.tipo = edicao.tipo;

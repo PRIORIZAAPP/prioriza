@@ -2198,7 +2198,8 @@
         .sort((a, b) => (a._ordem ?? 9999) - (b._ordem ?? 9999));
 
       const checklistHoje = checklistHojeCache
-        .filter((item) => item.ativo !== false && normalizarStatusChecklist(item.status || "pendente") !== "feito" && !rotinaFoiPuladaHoje(item.id))
+        .filter((item) => item.ativo !== false && !rotinaFoiPuladaHoje(item.id))
+        .sort((a, b) => ordemStatusChecklistHoje(a.status) - ordemStatusChecklistHoje(b.status))
         .map((item, idx) => ({ ...item, _tipo: "checklist", _ordem: agoraMin + 0.25 + (idx * 0.01) }));
 
       const agendaPassada = agendaHoje.filter((item) => !ehStatusFeito(item.status) && (item.inicio_min ?? 9999) < agoraMin);
@@ -2207,7 +2208,7 @@
       return [...agendaPassada, ...checklistHoje, ...agendaFutura, ...agendaFeita];
     }
 
-    function renderizarTimelineOperacionalDesktop() {
+    function renderizarTimelineOperacionalDesktop(apenasChecklist = false) {
       const card = document.getElementById("hoje-operational-timeline-card");
       const container = document.getElementById("operational-timeline");
       const linkAgenda = document.getElementById("btn-ver-agenda-completa-home");
@@ -2222,7 +2223,10 @@
       }
 
       const itens = obterDadosTimelineOperacional();
-      container.innerHTML = "";
+      const listaExistente = container.querySelector(".timeline-section:last-child .timeline-section-list");
+      apenasChecklist = apenasChecklist && Boolean(listaExistente);
+      if (apenasChecklist) listaExistente.replaceChildren();
+      else container.replaceChildren();
 
       const agendaItens = itens.filter((item) => item._tipo === "agenda");
       const checklistItens = itens.filter((item) => item._tipo === "checklist");
@@ -2253,17 +2257,17 @@
       const iconeSecao = (tipo) => tipo === "agenda"
         ? '<svg class="timeline-section-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>'
         : '<svg class="timeline-section-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="m8 12 2.5 2.5L16 9"></path></svg>';
-      const agendaList = criarSecaoTimeline(`${iconeSecao("agenda")}<span>Agenda do dia</span>`);
-      const checklistList = criarSecaoTimeline(`${iconeSecao("checklist")}<span>Checklist de hoje</span>`);
+      const agendaList = apenasChecklist ? null : criarSecaoTimeline(`${iconeSecao("agenda")}<span>Agenda do dia</span>`);
+      const checklistList = apenasChecklist ? listaExistente : criarSecaoTimeline(`${iconeSecao("checklist")}<span>Checklist de hoje</span>`);
 
-      if (!agendaItens.length) {
+      if (agendaList && !agendaItens.length) {
         agendaList.innerHTML = '<p class="timeline-empty-state">Nenhum compromisso para hoje.</p>';
       }
       if (!checklistItens.length) {
         checklistList.innerHTML = '<p class="timeline-empty-state">Nenhuma rotina pendente.</p>';
       }
 
-      itens.forEach((item) => {
+      (apenasChecklist ? checklistItens : itens).forEach((item) => {
         const status = item._tipo === "checklist"
           ? normalizarStatusChecklist(item.status || "pendente")
           : String(item.status || "pendente").toLowerCase();
@@ -2400,12 +2404,14 @@
         } else {
           const toggle = document.createElement("button");
           toggle.type = "button";
+          toggle.dataset.rotinaId = item.id;
           toggle.className = `timeline-status-toggle ${status}`;
           toggle.innerHTML = iconStatusInline(status);
           toggle.title = "Alterar status";
           toggle.setAttribute("aria-label", `Alterar status de ${item.titulo}`);
           toggle.addEventListener("click", async (ev) => {
             ev.stopPropagation();
+            const tinhaFoco = document.activeElement === toggle;
             toggle.disabled = true;
             const novoStatus = proximoStatus(status);
             const ok = await atualizarStatusChecklist(item.id, novoStatus);
@@ -2417,8 +2423,13 @@
             item.status = novoStatus;
             const idx = checklistHojeCache.findIndex((entry) => entry.id === item.id);
             if (idx !== -1) checklistHojeCache[idx].status = novoStatus;
+            const rolagem = window.scrollY;
+            renderizarTimelineOperacionalDesktop(true);
+            if (tinhaFoco && document.activeElement === document.body) {
+              checklistList.querySelector(`[data-rotina-id="${item.id}"]`)?.focus({ preventScroll: true });
+            }
+            if (window.scrollY !== rolagem) restaurarScrollJanela(rolagem);
             await atualizarResumoBar();
-            renderizarTimelineOperacionalDesktop();
           });
           actions.appendChild(toggle);
 
@@ -2430,7 +2441,7 @@
         row.appendChild(actions);
         (item._tipo === "agenda" ? agendaList : checklistList).appendChild(row);
       });
-      renderizarLayoutAdaptativoHoje(itens);
+      renderizarLayoutAdaptativoHoje(itens.filter(item => item._tipo !== "checklist" || item.status !== "feito"));
     }
 
     function restaurarScrollJanela(scrollTop) {
