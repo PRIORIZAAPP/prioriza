@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="./css/layout.css">
     <link rel="stylesheet" href="./css/components.css">
     <link rel="stylesheet" href="./css/screens.css?v=sem-areas">
-    <link rel="stylesheet" href="./css/responsive.css?v=sprint-072-1">
+    <link rel="stylesheet" href="./css/responsive.css?v=sprint-073">
   </head>
   <body>
 
@@ -791,10 +791,6 @@
               <div id="evolucao-ativas" hidden>
                 <div id="evolucao-lista-ativas" class="evolucao-lista"></div>
               </div>
-              <section id="evolucao-concluidas" aria-labelledby="evolucao-titulo-concluidas" hidden>
-                <h3 id="evolucao-titulo-concluidas">Concluídas</h3>
-                <div id="evolucao-lista-concluidas" class="evolucao-lista"></div>
-              </section>
             </section>
             <section id="evolucao-habitos" class="evolucao-painel" aria-labelledby="habitos-titulo">
               <div class="evolucao-painel-cabecalho">
@@ -814,6 +810,23 @@
               <button id="habitos-arquivados" class="btn-secondary" type="button" aria-expanded="false" aria-controls="habitos-lista-arquivados" hidden>Ver hábitos arquivados</button>
               <div id="habitos-lista-arquivados" class="evolucao-lista" hidden></div>
               <p id="habitos-resumo" role="status" hidden></p>
+            </section>
+            <section id="evolucao-datas" class="evolucao-painel" aria-labelledby="datas-titulo">
+              <div class="evolucao-painel-cabecalho">
+                <h3 id="datas-titulo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18m-9 8-3-2.8a1.7 1.7 0 0 1 3-1.5 1.7 1.7 0 0 1 3 1.5Z"/></svg> Datas especiais</h3>
+                <button id="datas-nova" class="btn-secondary" type="button" aria-haspopup="dialog" aria-controls="datas-dialogo"><span aria-hidden="true">+</span> Nova data</button>
+              </div>
+              <p id="datas-estado" role="status" hidden></p>
+              <button id="datas-recarregar" class="btn-secondary" type="button" hidden>Tentar novamente</button>
+              <div id="datas-lista" class="evolucao-lista"></div>
+            </section>
+            <section id="evolucao-concluidas" class="evolucao-painel" aria-labelledby="evolucao-titulo-concluidas">
+              <div class="evolucao-painel-cabecalho">
+                <h3 id="evolucao-titulo-concluidas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3h8v6a4 4 0 0 1-8 0V3Zm0 2H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 2v6m-4 2h8"/></svg> Conquistas</h3>
+                <span id="conquistas-total" aria-live="polite" hidden></span>
+              </div>
+              <p id="conquistas-vazio" hidden>Nenhuma conquista registrada.</p>
+              <div id="evolucao-lista-concluidas"></div>
             </section>
           </div>
         </div>
@@ -884,6 +897,30 @@
             <p id="habitos-form-erro" role="alert" hidden></p>
             <div class="checklist-form-actions">
               <button class="btn-secondary habitos-fechar" type="button">Cancelar</button>
+              <button class="btn-primary" type="submit" disabled>Salvar</button>
+            </div>
+          </form>
+        </dialog>
+
+        <dialog id="datas-dialogo" class="checklist-form-panel" aria-labelledby="datas-form-titulo">
+          <form id="datas-form">
+            <div class="checklist-form-header">
+              <h3 id="datas-form-titulo" class="checklist-form-title">Nova data especial</h3>
+              <button class="btn-secondary datas-fechar" type="button" aria-label="Fechar">×</button>
+            </div>
+            <label for="data-especial-titulo">Título</label>
+            <input id="data-especial-titulo" name="titulo" type="text" maxlength="160" required autofocus>
+            <label for="data-especial-dia">Data</label>
+            <div class="evolucao-data-nativa"><input id="data-especial-dia" name="data_original" type="date" min="0001-01-01" max="9999-12-31" required></div>
+            <label for="data-especial-repeticao">Repetição</label>
+            <select id="data-especial-repeticao" name="repeticao">
+              <option value="nenhuma">Não repetir</option>
+              <option value="mensal">Mensalmente</option>
+              <option value="anual">Anualmente</option>
+            </select>
+            <p id="datas-form-erro" role="alert" hidden></p>
+            <div class="checklist-form-actions">
+              <button class="btn-secondary datas-fechar" type="button">Cancelar</button>
               <button class="btn-primary" type="submit" disabled>Salvar</button>
             </div>
           </form>
@@ -1540,9 +1577,10 @@
     <script data-prioriza-module="core" src="./js/screens/workspace.js?v=sprint-071"></script>
     <script data-prioriza-module="autenticacao" src="./js/core/auth.js"></script>
     <script data-prioriza-module="experiencia" src="./js/core/experience.js"></script>
-    <script src="./js/screens/evolucao.js?v=sprint-072"></script>
+    <script src="./js/screens/evolucao.js?v=sprint-073"></script>
     <script src="./js/screens/habitos.js?v=sprint-072-1"></script>
-    <script data-prioriza-module="bootstrap" src="./js/app.js?v=sprint-072"></script>
+    <script src="./js/screens/datas-especiais.js?v=sprint-073"></script>
+    <script data-prioriza-module="bootstrap" src="./js/app.js?v=sprint-073"></script>
     <script data-prioriza-module="notificacoes" src="./js/integrations/notifications.js"></script>
   </body>
 </html>

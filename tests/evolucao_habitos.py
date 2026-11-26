@@ -92,7 +92,7 @@ def executar(main):
         req("PUT", f"/{id_habito}/arquivo", json={"arquivado": True})
 
         backup = cliente.get("/backup", headers=dono).json()
-        assert backup["versao"] == "2.3"
+        assert backup["versao"] == "2.4"
         assert len(backup["habitos"][0]["frequencias"]) == 2
         assert backup["habitos"][0]["arquivado_em"] == "2026-01-08"
         antigo = cliente.post("/restaurar", headers=outro, json={"versao": "2.2", "metas": []})

@@ -408,6 +408,29 @@ class Meta(Base):
         }
 
 
+class DataEspecial(Base):
+    __tablename__ = "datas_especiais"
+    __table_args__ = (
+        CheckConstraint("repeticao IN ('nenhuma', 'mensal', 'anual')", name="ck_datas_especiais_repeticao"),
+    )
+
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    titulo = Column(String(160), nullable=False)
+    data_original = Column(Date, nullable=False)
+    repeticao = Column(String(8), nullable=False)
+    criada_em = Column(Date, nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "titulo": self.titulo,
+            "data_original": self.data_original,
+            "repeticao": self.repeticao,
+            "criada_em": self.criada_em,
+        }
+
+
 class Habito(Base):
     __tablename__ = "habitos"
 
@@ -1386,6 +1409,7 @@ def excluir_conta_usuario(db: Session, user: User) -> dict[str, int]:
     try:
         excluir_historico_habitos(db, user_id)
         removidos = {
+            "datas_especiais": db.query(DataEspecial).filter_by(user_id=user_id).delete(synchronize_session=False),
             "habitos": db.query(Habito).filter_by(user_id=user_id).delete(synchronize_session=False),
             "marcos_operacionais": db.query(MarcoOperacional).filter(MarcoOperacional.user_id == user_id).delete(synchronize_session=False),
             "agenda_recibos": db.query(ReciboAgenda).filter(ReciboAgenda.user_id == user_id).delete(synchronize_session=False),
@@ -4462,6 +4486,71 @@ def restaurar_habitos(db, user_id, registros, importadas):
         importadas["habitos"] += 1
 
 
+# ============================================================
+# EVOLUÇÃO · DATAS ESPECIAIS
+# ============================================================
+
+class DataEspecialDados(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+    titulo: str = Field(min_length=1, max_length=160)
+    data_original: date
+    repeticao: Literal["nenhuma", "mensal", "anual"] = "nenhuma"
+
+
+class DataEspecialBackup(DataEspecialDados):
+    id: UUID
+    criada_em: date
+
+
+@app.get("/datas-especiais")
+def listar_datas_especiais(response: Response, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    response.headers["Cache-Control"] = "no-store"
+    registros = db.query(DataEspecial).filter_by(user_id=current_user.id).order_by(DataEspecial.id)
+    return [registro.to_dict() for registro in registros]
+
+
+@app.post("/datas-especiais", status_code=201)
+def criar_data_especial(dados: DataEspecialDados, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    registro = DataEspecial(user_id=current_user.id, criada_em=_data_operacional_atual(), **dados.model_dump())
+    db.add(registro)
+    db.commit()
+    db.refresh(registro)
+    return registro.to_dict()
+
+
+@app.put("/datas-especiais/{data_id}", status_code=204)
+def editar_data_especial(data_id: UUID, dados: DataEspecialDados, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    quantidade = db.query(DataEspecial).filter_by(user_id=current_user.id, id=str(data_id)).update(dados.model_dump())
+    if not quantidade:
+        raise HTTPException(status_code=404, detail="Data especial não encontrada.")
+    db.commit()
+
+
+@app.delete("/datas-especiais/{data_id}", status_code=204)
+def excluir_data_especial(data_id: UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    quantidade = db.query(DataEspecial).filter_by(user_id=current_user.id, id=str(data_id)).delete()
+    if not quantidade:
+        raise HTTPException(status_code=404, detail="Data especial não encontrada.")
+    db.commit()
+
+
+def restaurar_datas_especiais(db, user_id, registros, importadas):
+    if not isinstance(registros, list):
+        importadas["erros"].append("Datas especiais: esperava uma lista.")
+        return
+    inserir = sqlite_insert if IS_SQLITE else postgresql_insert
+    for indice, registro in enumerate(registros, 1):
+        try:
+            data = DataEspecialBackup.model_validate(registro)
+        except ValidationError:
+            importadas["erros"].append(f"Data especial {indice}: dados inválidos.")
+            continue
+        comando = inserir(DataEspecial).values(
+            user_id=user_id, id=str(data.id), **data.model_dump(exclude={"id"}),
+        ).on_conflict_do_nothing(index_elements=["user_id", "id"])
+        importadas["datas_especiais"] += db.execute(comando).rowcount
+
+
 @app.get("/backup")
 def exportar_backup(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     tarefas = db.query(Tarefa).filter(Tarefa.user_id == current_user.id, Tarefa.ativo == True).all()
@@ -4478,7 +4567,8 @@ def exportar_backup(db: Session = Depends(get_db), current_user: User = Depends(
             if item["id"] in areas:
                 item["area"] = areas[item["id"]]
     return {
-        "versao": "2.3",
+        "versao": "2.4",
+        "datas_especiais": [item.to_dict() for item in db.query(DataEspecial).filter_by(user_id=current_user.id).order_by(DataEspecial.id)],
         "habitos": exportar_habitos(db, current_user.id),
         "metas": [meta.to_dict() for meta in db.query(Meta).filter_by(user_id=current_user.id).all()],
         "exportado_em": datetime.now(UTC).isoformat(),
@@ -4514,7 +4604,7 @@ async def importar_backup(request: Request, db: Session = Depends(get_db), curre
     checklist_raw = dados.get("checklist", [])
     notas_raw = dados.get("notas", [])
     marcos_raw = dados.get("marcos_operacionais", [])
-    importadas = {"tarefas": 0, "checklist": 0, "notas": 0, "marcos_operacionais": 0, "metas": 0, "habitos": 0, "erros": []}
+    importadas = {"tarefas": 0, "checklist": 0, "notas": 0, "marcos_operacionais": 0, "metas": 0, "habitos": 0, "datas_especiais": 0, "erros": []}
 
     for t in tarefas_raw:
         try:
@@ -4635,11 +4725,12 @@ async def importar_backup(request: Request, db: Session = Depends(get_db), curre
 
     restaurar_metas(db, user_id, dados.get("metas", []), importadas)
     restaurar_habitos(db, user_id, dados.get("habitos", []), importadas)
+    restaurar_datas_especiais(db, user_id, dados.get("datas_especiais", []), importadas)
     db.commit()
     return {
         "ok": True,
         "importadas": importadas,
-        "mensagem": f"Restauração concluída: {importadas['tarefas']} tarefas, {importadas['checklist']} rotinas, {importadas['notas']} notas e {importadas['marcos_operacionais']} marcos importados. Metas restauradas: {importadas['metas']}. Hábitos restaurados: {importadas['habitos']}.",
+        "mensagem": f"Restauração concluída: {importadas['tarefas']} tarefas, {importadas['checklist']} rotinas, {importadas['notas']} notas e {importadas['marcos_operacionais']} marcos importados. Metas restauradas: {importadas['metas']}. Hábitos restaurados: {importadas['habitos']}. Datas especiais restauradas: {importadas['datas_especiais']}.",
     }
 
 
