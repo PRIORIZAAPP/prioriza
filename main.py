@@ -27,7 +27,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, ValidationError, model_validator
-from sqlalchemy import Boolean, CheckConstraint, Column, Date, DateTime, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint, column, create_engine, inspect, table, text
+from sqlalchemy import Boolean, CheckConstraint, Column, Date, DateTime, ForeignKey, ForeignKeyConstraint, Integer, Numeric, String, Text, UniqueConstraint, column, create_engine, inspect, table, text
 from sqlalchemy.dialects.postgresql import insert as postgresql_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
@@ -406,6 +406,53 @@ class Meta(Base):
             "criada_em": instante_iso(self.criada_em), "concluida_em": instante_iso(self.concluida_em),
             "versao": self.versao,
         }
+
+
+class Habito(Base):
+    __tablename__ = "habitos"
+
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    titulo = Column(String(160), nullable=False)
+    criado_em = Column(Date, nullable=False)
+    arquivado_em = Column(Date, nullable=True)
+
+
+class HabitoFrequencia(Base):
+    __tablename__ = "habitos_frequencias"
+    __table_args__ = (
+        ForeignKeyConstraint(("user_id", "habito_id"), ("habitos.user_id", "habitos.id"), ondelete="CASCADE"),
+        CheckConstraint("frequencia BETWEEN 1 AND 7", name="ck_habitos_frequencia"),
+    )
+
+    user_id = Column(Integer, primary_key=True)
+    habito_id = Column(String(36), primary_key=True)
+    semana = Column(Date, primary_key=True)
+    frequencia = Column(Integer, nullable=False)
+
+
+class HabitoPeriodo(Base):
+    __tablename__ = "habitos_periodos"
+    __table_args__ = (
+        ForeignKeyConstraint(("user_id", "habito_id"), ("habitos.user_id", "habitos.id"), ondelete="CASCADE"),
+        CheckConstraint("fim IS NULL OR fim >= inicio", name="ck_habitos_periodo"),
+    )
+
+    user_id = Column(Integer, primary_key=True)
+    habito_id = Column(String(36), primary_key=True)
+    inicio = Column(Date, primary_key=True)
+    fim = Column(Date, nullable=True)
+
+
+class HabitoRealizacao(Base):
+    __tablename__ = "habitos_realizacoes"
+    __table_args__ = (
+        ForeignKeyConstraint(("user_id", "habito_id"), ("habitos.user_id", "habitos.id"), ondelete="CASCADE"),
+    )
+
+    user_id = Column(Integer, primary_key=True)
+    habito_id = Column(String(36), primary_key=True)
+    dia = Column(Date, primary_key=True)
 
 
 class PushSubscription(Base):
@@ -1337,7 +1384,9 @@ def excluir_conta_usuario(db: Session, user: User) -> dict[str, int]:
     user_id = garantir_user_id(user.id, "exclusão de conta")
     avatar_anterior = user.avatar_url
     try:
+        excluir_historico_habitos(db, user_id)
         removidos = {
+            "habitos": db.query(Habito).filter_by(user_id=user_id).delete(synchronize_session=False),
             "marcos_operacionais": db.query(MarcoOperacional).filter(MarcoOperacional.user_id == user_id).delete(synchronize_session=False),
             "agenda_recibos": db.query(ReciboAgenda).filter(ReciboAgenda.user_id == user_id).delete(synchronize_session=False),
             "tarefas": db.query(Tarefa).filter(Tarefa.user_id == user_id).delete(synchronize_session=False),
@@ -4164,6 +4213,255 @@ def restaurar_metas(db, user_id, registros, importadas):
         importadas["metas"] += gravadas
 
 
+# ============================================================
+# EVOLUÇÃO · HÁBITOS
+# ============================================================
+
+class HabitoDados(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+    titulo: str = Field(min_length=1, max_length=160)
+    frequencia: int = Field(ge=1, le=7, strict=True)
+
+
+class HabitoArquivo(BaseModel):
+    arquivado: bool = Field(strict=True)
+
+
+class HabitoRegistro(BaseModel):
+    realizado: bool = Field(strict=True)
+
+
+class FrequenciaHistoricaHabito(BaseModel):
+    semana: date
+    frequencia: int = Field(ge=1, le=7, strict=True)
+
+
+class PeriodoHistoricoHabito(BaseModel):
+    inicio: date
+    fim: date | None = None
+
+
+def inicio_semana_habito(dia):
+    return dia - timedelta(days=dia.weekday())
+
+
+def dia_ativo_habito(dia, periodos):
+    return any(periodo.inicio <= dia and (periodo.fim is None or dia <= periodo.fim) for periodo in periodos)
+
+
+class HabitoBackup(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+    id: UUID
+    titulo: str = Field(min_length=1, max_length=160)
+    criado_em: date
+    arquivado_em: date | None = None
+    frequencias: list[FrequenciaHistoricaHabito]
+    periodos: list[PeriodoHistoricoHabito]
+    realizacoes: set[date]
+
+    @model_validator(mode="after")
+    def validar_historico(self):
+        hoje = _data_operacional_atual()
+        periodos = sorted(self.periodos, key=lambda item: item.inicio)
+        if not periodos or periodos[0].inicio != self.criado_em:
+            raise ValueError("Histórico de atividade inválido.")
+        for indice, periodo in enumerate(periodos):
+            if not self.criado_em <= periodo.inicio <= hoje or (
+                periodo.fim is not None and not periodo.inicio <= periodo.fim <= hoje
+            ):
+                raise ValueError("Período de atividade inválido.")
+            if indice:
+                anterior = periodos[indice - 1]
+                if anterior.fim is None or anterior.fim >= periodo.inicio:
+                    raise ValueError("Períodos de atividade sobrepostos.")
+        if self.arquivado_em != periodos[-1].fim:
+            raise ValueError("Arquivo incompatível com o último período.")
+        semanas = [item.semana for item in self.frequencias]
+        if not semanas or min(semanas) != inicio_semana_habito(self.criado_em) or len(set(semanas)) != len(semanas):
+            raise ValueError("Histórico de frequências inválido.")
+        if any(semana.weekday() != 0 or semana > hoje for semana in semanas):
+            raise ValueError("Semana de frequência inválida.")
+        if any(dia > hoje or not dia_ativo_habito(dia, periodos) for dia in self.realizacoes):
+            raise ValueError("Realização fora dos períodos de atividade.")
+        return self
+
+
+def agrupar_historico_habitos(db, modelo, user_id, *filtros):
+    historico = {}
+    for item in db.query(modelo).filter(modelo.user_id == user_id, *filtros):
+        historico.setdefault(item.habito_id, []).append(item)
+    return historico
+
+
+def gravar_historico_habito(db, modelo, valores, conflito_atualizar=None):
+    insert = sqlite_insert if IS_SQLITE else postgresql_insert
+    comando = insert(modelo).values(**valores)
+    chaves = [campo.name for campo in modelo.__table__.primary_key]
+    if conflito_atualizar is not None:
+        comando = comando.on_conflict_do_update(index_elements=chaves, set_=conflito_atualizar)
+    else:
+        comando = comando.on_conflict_do_nothing(index_elements=chaves)
+    return db.execute(comando).rowcount
+
+
+def bloquear_habito(db, user_id, habito_id):
+    # A atualização adquire o bloqueio antes de ler os períodos. SQLite serializa escritores.
+    chave = (user_id, str(habito_id))
+    alteradas = db.query(Habito).filter_by(user_id=chave[0], id=chave[1]).update(
+        {"titulo": Habito.titulo}, synchronize_session=False,
+    )
+    if not alteradas:
+        raise HTTPException(status_code=404, detail="Hábito não encontrado.")
+    return db.get(Habito, chave)
+
+
+@app.get("/habitos")
+def listar_habitos(response: Response, semana: date | None = None, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    response.headers["Cache-Control"] = "no-store"
+    hoje = _data_operacional_atual()
+    atual = inicio_semana_habito(hoje)
+    semana = semana or atual
+    if semana.weekday() != 0 or semana > atual:
+        raise HTTPException(status_code=422, detail="Selecione uma segunda-feira da semana atual ou de uma anterior.")
+    fim = semana + timedelta(days=6)
+    usuario = current_user.id
+    dias = [semana + timedelta(days=i) for i in range(7)]
+    frequencias = agrupar_historico_habitos(db, HabitoFrequencia, usuario, HabitoFrequencia.semana <= atual)
+    periodos = agrupar_historico_habitos(db, HabitoPeriodo, usuario)
+    registros = agrupar_historico_habitos(db, HabitoRealizacao, usuario, HabitoRealizacao.dia.between(semana, fim))
+    resultado = []
+    for habito in db.query(Habito).filter_by(user_id=usuario).order_by(Habito.criado_em, Habito.id):
+        atividade = periodos.get(habito.id, [])
+        aplicaveis = [dia for dia in dias if dia_ativo_habito(dia, atividade)]
+        historico = frequencias.get(habito.id, [])
+        if not historico:
+            continue
+        vigente = max(historico, key=lambda item: item.semana)
+        historica = max((item for item in historico if item.semana <= semana), key=lambda item: item.semana, default=None)
+        resultado.append({
+            "id": habito.id, "titulo": habito.titulo, "criado_em": habito.criado_em,
+            "arquivado_em": habito.arquivado_em, "frequencia_atual": vigente.frequencia,
+            "frequencia": historica.frequencia if historica else None,
+            "aplicavel": bool(aplicaveis), "disponiveis": [dia for dia in aplicaveis if dia <= hoje],
+            "realizacoes": sorted(item.dia for item in registros.get(habito.id, [])),
+        })
+    return {"hoje": hoje, "semana": semana, "semana_atual": atual, "habitos": resultado}
+
+
+@app.post("/habitos", status_code=201)
+def criar_habito(dados: HabitoDados, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    hoje = _data_operacional_atual()
+    habito = Habito(user_id=current_user.id, titulo=dados.titulo, criado_em=hoje)
+    db.add(habito)
+    db.flush()
+    db.add(HabitoPeriodo(user_id=habito.user_id, habito_id=habito.id, inicio=hoje))
+    db.add(HabitoFrequencia(user_id=habito.user_id, habito_id=habito.id, semana=inicio_semana_habito(hoje), frequencia=dados.frequencia))
+    db.commit()
+    return {"id": habito.id}
+
+
+@app.put("/habitos/{habito_id}")
+def editar_habito(habito_id: UUID, dados: HabitoDados, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    habito = bloquear_habito(db, current_user.id, habito_id)
+    habito.titulo = dados.titulo
+    semana = inicio_semana_habito(_data_operacional_atual())
+    gravar_historico_habito(db, HabitoFrequencia, {
+        "user_id": habito.user_id, "habito_id": habito.id, "semana": semana, "frequencia": dados.frequencia,
+    }, {"frequencia": dados.frequencia})
+    db.commit()
+    return {"id": str(habito_id)}
+
+
+@app.put("/habitos/{habito_id}/arquivo")
+def arquivar_habito(habito_id: UUID, dados: HabitoArquivo, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    habito = bloquear_habito(db, current_user.id, habito_id)
+    hoje = _data_operacional_atual()
+    if dados.arquivado and not habito.arquivado_em:
+        atual = db.query(HabitoPeriodo).filter_by(user_id=habito.user_id, habito_id=habito.id, fim=None).one()
+        atual.fim = hoje
+        habito.arquivado_em = hoje
+    elif not dados.arquivado and habito.arquivado_em:
+        if habito.arquivado_em == hoje:
+            atual = db.query(HabitoPeriodo).filter_by(user_id=habito.user_id, habito_id=habito.id, fim=hoje).one()
+            atual.fim = None
+        else:
+            db.add(HabitoPeriodo(user_id=habito.user_id, habito_id=habito.id, inicio=hoje))
+        habito.arquivado_em = None
+    db.commit()
+    return {"arquivado": dados.arquivado}
+
+
+@app.put("/habitos/{habito_id}/realizacoes/{dia}")
+def registrar_habito(habito_id: UUID, dia: date, dados: HabitoRegistro, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    habito = bloquear_habito(db, current_user.id, habito_id)
+    periodos = db.query(HabitoPeriodo).filter_by(user_id=habito.user_id, habito_id=habito.id).all()
+    if dia > _data_operacional_atual() or not dia_ativo_habito(dia, periodos):
+        raise HTTPException(status_code=422, detail="Este dia não pertence ao período de atividade do hábito.")
+    chave = {"user_id": habito.user_id, "habito_id": habito.id, "dia": dia}
+    if dados.realizado:
+        gravar_historico_habito(db, HabitoRealizacao, chave)
+    else:
+        db.query(HabitoRealizacao).filter_by(**chave).delete()
+    db.commit()
+    return {"realizado": dados.realizado}
+
+
+def excluir_historico_habitos(db, user_id, habito_id=None):
+    # SQLite pode iniciar sem chaves estrangeiras habilitadas.
+    for modelo in (HabitoRealizacao, HabitoFrequencia, HabitoPeriodo):
+        consulta = db.query(modelo).filter_by(user_id=user_id)
+        if habito_id is not None:
+            consulta = consulta.filter_by(habito_id=habito_id)
+        consulta.delete(synchronize_session=False)
+
+
+@app.delete("/habitos/{habito_id}", status_code=204)
+def excluir_habito(habito_id: UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    habito = bloquear_habito(db, current_user.id, habito_id)
+    excluir_historico_habitos(db, habito.user_id, habito.id)
+    db.delete(habito)
+    db.commit()
+
+
+def exportar_habitos(db, user_id):
+    consulta = db.query(Habito).filter_by(user_id=user_id).order_by(Habito.id)
+    # No PostgreSQL, mantém os registros de cada hábito estáveis durante a leitura.
+    habitos = consulta.with_for_update(read=True).all()
+    frequencias = agrupar_historico_habitos(db, HabitoFrequencia, user_id)
+    periodos = agrupar_historico_habitos(db, HabitoPeriodo, user_id)
+    registros = agrupar_historico_habitos(db, HabitoRealizacao, user_id)
+    return [{
+        "id": h.id, "titulo": h.titulo, "criado_em": h.criado_em, "arquivado_em": h.arquivado_em,
+        "frequencias": [{"semana": f.semana, "frequencia": f.frequencia} for f in sorted(frequencias.get(h.id, []), key=lambda item: item.semana)],
+        "periodos": [{"inicio": p.inicio, "fim": p.fim} for p in sorted(periodos.get(h.id, []), key=lambda item: item.inicio)],
+        "realizacoes": sorted(r.dia for r in registros.get(h.id, [])),
+    } for h in habitos]
+
+
+def restaurar_habitos(db, user_id, registros, importadas):
+    if not isinstance(registros, list):
+        importadas["erros"].append("Hábitos: esperava uma lista.")
+        return
+    for indice, registro in enumerate(registros, 1):
+        try:
+            habito = HabitoBackup.model_validate(registro)
+        except ValidationError:
+            importadas["erros"].append(f"Hábito {indice}: histórico inválido.")
+            continue
+        uid = str(habito.id)
+        gravado = gravar_historico_habito(db, Habito, {
+            "user_id": user_id, "id": uid, "titulo": habito.titulo,
+            "criado_em": habito.criado_em, "arquivado_em": habito.arquivado_em,
+        })
+        if not gravado:
+            continue
+        chave = {"user_id": user_id, "habito_id": uid}
+        db.add_all([HabitoFrequencia(**chave, **f.model_dump()) for f in habito.frequencias])
+        db.add_all([HabitoPeriodo(**chave, **p.model_dump()) for p in habito.periodos])
+        db.add_all([HabitoRealizacao(**chave, dia=dia) for dia in habito.realizacoes])
+        importadas["habitos"] += 1
+
+
 @app.get("/backup")
 def exportar_backup(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     tarefas = db.query(Tarefa).filter(Tarefa.user_id == current_user.id, Tarefa.ativo == True).all()
@@ -4180,7 +4478,8 @@ def exportar_backup(db: Session = Depends(get_db), current_user: User = Depends(
             if item["id"] in areas:
                 item["area"] = areas[item["id"]]
     return {
-        "versao": "2.2",
+        "versao": "2.3",
+        "habitos": exportar_habitos(db, current_user.id),
         "metas": [meta.to_dict() for meta in db.query(Meta).filter_by(user_id=current_user.id).all()],
         "exportado_em": datetime.now(UTC).isoformat(),
         "tarefas": [t.to_dict() for t in tarefas],
@@ -4215,7 +4514,7 @@ async def importar_backup(request: Request, db: Session = Depends(get_db), curre
     checklist_raw = dados.get("checklist", [])
     notas_raw = dados.get("notas", [])
     marcos_raw = dados.get("marcos_operacionais", [])
-    importadas = {"tarefas": 0, "checklist": 0, "notas": 0, "marcos_operacionais": 0, "metas": 0, "erros": []}
+    importadas = {"tarefas": 0, "checklist": 0, "notas": 0, "marcos_operacionais": 0, "metas": 0, "habitos": 0, "erros": []}
 
     for t in tarefas_raw:
         try:
@@ -4335,11 +4634,12 @@ async def importar_backup(request: Request, db: Session = Depends(get_db), curre
             importadas["erros"].append(f"Marco '{m.get('titulo', '?')}': {e}")
 
     restaurar_metas(db, user_id, dados.get("metas", []), importadas)
+    restaurar_habitos(db, user_id, dados.get("habitos", []), importadas)
     db.commit()
     return {
         "ok": True,
         "importadas": importadas,
-        "mensagem": f"Restauração concluída: {importadas['tarefas']} tarefas, {importadas['checklist']} rotinas, {importadas['notas']} notas e {importadas['marcos_operacionais']} marcos importados. Metas restauradas: {importadas['metas']}.",
+        "mensagem": f"Restauração concluída: {importadas['tarefas']} tarefas, {importadas['checklist']} rotinas, {importadas['notas']} notas e {importadas['marcos_operacionais']} marcos importados. Metas restauradas: {importadas['metas']}. Hábitos restaurados: {importadas['habitos']}.",
     }
 
 

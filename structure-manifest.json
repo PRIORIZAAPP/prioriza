@@ -18,6 +18,7 @@
                        "js/core/auth.js",
                        "js/core/experience.js",
                        "js/screens/evolucao.js",
+                       "js/screens/habitos.js",
                        "js/app.js",
                        "js/integrations/notifications.js"
                    ],
