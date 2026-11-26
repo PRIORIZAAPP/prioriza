@@ -17,6 +17,7 @@
                        "js/screens/workspace.js",
                        "js/core/auth.js",
                        "js/core/experience.js",
+                       "js/screens/evolucao.js",
                        "js/app.js",
                        "js/integrations/notifications.js"
                    ],
