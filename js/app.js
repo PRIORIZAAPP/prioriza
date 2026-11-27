@@ -303,7 +303,14 @@
           await modal.alerta("O backend ainda não está com as credenciais do Google configuradas.", "Google Agenda");
           return;
         }
-        window.location.href = API + "/auth/google?token=" + encodeURIComponent(getAuthToken());
+        try {
+          const resposta = await fetch(API + "/auth/google", { method: "POST", headers: authHeaders() });
+          const dados = await resposta.json();
+          if (!resposta.ok) throw new Error(dados.detail);
+          window.location.assign(dados.url);
+        } catch {
+          await modal.alerta("Não foi possível iniciar a conexão com o Google Agenda. Tente novamente.", "Google Agenda");
+        }
       });
       document.getElementById("btn-google-atualizar")?.addEventListener("click", async () => {
         await sincronizarAgendaGoogleCompleta();

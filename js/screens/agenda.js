@@ -264,9 +264,12 @@
       const btn = document.getElementById("btn-google-desconectar");
       if (btn) btn.disabled = true;
       try {
-        await fetch(API + "/google/disconnect", { method: "POST", headers: authHeaders() });
+        const resposta = await fetch(API + "/google/disconnect", { method: "POST", headers: authHeaders() });
+        if (!resposta.ok) throw new Error("Não foi possível desconectar.");
+        const dados = await resposta.json();
         googleAgendaCache = [];
         await sincronizarAgendaGoogleCompleta();
+        if (dados.revogacao_confirmada === false) await modal.alerta(dados.mensagem, "Google Agenda");
       } catch (e) {
         console.error(e);
         await modal.alerta("Não foi possível desconectar o Google Agenda.", "Erro");

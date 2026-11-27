@@ -35,6 +35,7 @@ cryptography==50.0.2
     # via
     #   google-auth
     #   http-ece
+    #   prioriza
     #   py-vapid
     #   pywebpush
 fastapi==0.165.0

@@ -454,6 +454,7 @@
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data?.detail || "Não foi possível atualizar a senha.");
+        if (data.token) setAuthToken(data.token);
         document.getElementById("form-alterar-senha-ajustes")?.reset();
         if (statusEl) statusEl.textContent = data?.message || "Senha atualizada com sucesso.";
       } catch (e) {

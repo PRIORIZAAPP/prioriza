@@ -156,13 +156,15 @@
     }
 
     async function fazerLogout() {
+      try {
+        const resposta = await nativeFetch(API + "/auth/logout", { method: "POST", headers: authHeaders() });
+        if (!resposta.ok && resposta.status !== 401) throw new Error("Não foi possível encerrar a sessão.");
+      } catch {
+        await modal.alerta("A sessão continua ativa. Verifique a conexão e tente sair novamente.", "Sair");
+        return;
+      }
       PriorizaUtils.cancelAllReads();
       document.dispatchEvent(new CustomEvent("prioriza:logout"));
-      try {
-        await nativeFetch(API + "/auth/logout", { method: "POST", headers: authHeaders() });
-      } catch (e) {
-        PriorizaUtils.debugWarn("[PRIORIZA] Logout remoto indisponivel", { name: e?.name });
-      }
       toggleFormChecklist(false);
       toggleFormAgenda(false);
       toggleFormMarcoOperacional(false);
