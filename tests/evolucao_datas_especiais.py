@@ -54,7 +54,7 @@ def executar(main):
     assert r.status_code == 200 and r.json()["concluida_em"]
     assert cliente.post("/habitos", headers=dono, json={"titulo": "Hábito de teste", "frequencia": 2}).status_code == 201
     backup = cliente.get("/backup", headers=dono).json()
-    assert backup["versao"] == "2.4"
+    assert backup["versao"] == "2.5"
     assert "conquistas" not in backup
 
     for versao in ("2.2", "2.3"):
@@ -87,4 +87,4 @@ if __name__ == "__main__":
         import main
 
         executar(main)
-        print("Datas especiais: CRUD, isolamento, histórico, backup 2.4, restauração e exclusão de conta OK.")
+        print("Datas especiais: CRUD, isolamento, histórico, backup 2.5, restauração e exclusão de conta OK.")

@@ -13,7 +13,7 @@ import secrets
 import calendar
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
-from uuid import UUID, uuid4
+from uuid import UUID, uuid4, uuid5
 from pathlib import Path
 from urllib.parse import urlsplit
 from typing import Annotated, Any, Literal, Optional
@@ -306,6 +306,20 @@ class ReciboAgenda(Base):
     requisicao = Column(String(64), nullable=False)
     resposta = Column(Text, nullable=False)
     expira_em = Column(Integer, nullable=False)
+
+
+class IdentidadeBackup(Base):
+    __tablename__ = "backup_identidades"
+    __table_args__ = (UniqueConstraint("user_id", "modulo", "registro_id"),)
+
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    modulo = Column(String(32), primary_key=True)
+    identidade = Column(String(36), primary_key=True)
+    registro_id = Column(Integer, nullable=False)
+    area_legada = Column(Text, nullable=True)
+    serie = Column(String(36), nullable=True)
+    inicio_original_serie = Column(DateTime, nullable=True)
+    inicio_local_serie = Column(DateTime, nullable=True)
 
 
 class MarcoOperacional(Base):
@@ -1463,6 +1477,7 @@ def excluir_conta_usuario(db: Session, user: User) -> dict[str, int]:
     avatar_anterior = user.avatar_url
     try:
         excluir_historico_habitos(db, user_id)
+        db.query(IdentidadeBackup).filter_by(user_id=user_id).delete(synchronize_session=False)
         removidos = {
             "datas_especiais": db.query(DataEspecial).filter_by(user_id=user_id).delete(synchronize_session=False),
             "habitos": db.query(Habito).filter_by(user_id=user_id).delete(synchronize_session=False),
@@ -4287,16 +4302,8 @@ def excluir_meta(meta_id: UUID, db: Session = Depends(get_db), current_user: Use
 
 
 def restaurar_metas(db, user_id, registros, importadas):
-    if not isinstance(registros, list):
-        importadas["erros"].append("Metas: esperava uma lista.")
-        return
     insert = sqlite_insert if IS_SQLITE else postgresql_insert
-    for indice, registro in enumerate(registros, 1):
-        try:
-            dados = MetaBackup.model_validate(registro)
-        except ValidationError:
-            importadas["erros"].append(f"Meta {indice}: dados inválidos.")
-            continue
+    for dados in registros:
         valores = dados.model_dump(exclude={"id"})
         for campo in ("criada_em", "concluida_em"):
             if valores[campo]:
@@ -4535,12 +4542,7 @@ def restaurar_habitos(db, user_id, registros, importadas):
     if not isinstance(registros, list):
         importadas["erros"].append("Hábitos: esperava uma lista.")
         return
-    for indice, registro in enumerate(registros, 1):
-        try:
-            habito = HabitoBackup.model_validate(registro)
-        except ValidationError:
-            importadas["erros"].append(f"Hábito {indice}: histórico inválido.")
-            continue
+    for habito in registros:
         uid = str(habito.id)
         gravado = gravar_historico_habito(db, Habito, {
             "user_id": user_id, "id": uid, "titulo": habito.titulo,
@@ -4604,202 +4606,407 @@ def excluir_data_especial(data_id: UUID, db: Session = Depends(get_db), current_
 
 
 def restaurar_datas_especiais(db, user_id, registros, importadas):
-    if not isinstance(registros, list):
-        importadas["erros"].append("Datas especiais: esperava uma lista.")
-        return
     inserir = sqlite_insert if IS_SQLITE else postgresql_insert
-    for indice, registro in enumerate(registros, 1):
-        try:
-            data = DataEspecialBackup.model_validate(registro)
-        except ValidationError:
-            importadas["erros"].append(f"Data especial {indice}: dados inválidos.")
-            continue
+    for data in registros:
         comando = inserir(DataEspecial).values(
             user_id=user_id, id=str(data.id), **data.model_dump(exclude={"id"}),
         ).on_conflict_do_nothing(index_elements=["user_id", "id"])
         importadas["datas_especiais"] += db.execute(comando).rowcount
 
 
-@app.get("/backup")
-def exportar_backup(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    tarefas = db.query(Tarefa).filter(Tarefa.user_id == current_user.id, Tarefa.ativo == True).all()
-    checklist = db.query(ChecklistItem).filter(ChecklistItem.user_id == current_user.id, ChecklistItem.ativo == True).all()
-    notas = db.query(Note).filter(Note.user_id == current_user.id, Note.ativo == True).all()
-    marcos = db.query(MarcoOperacional).filter(MarcoOperacional.user_id == current_user.id, MarcoOperacional.ativo == True).all()
-    checklist_exportado = [c.to_dict(incluir_pode_hoje=True) for c in checklist]
-    legado = tabela_checklist_backup_legado(db)
-    if legado is not None and checklist_exportado:
-        areas = dict(db.query(legado.c.id, legado.c.area).filter(
-            legado.c.user_id == current_user.id, legado.c.area.is_not(None)
-        ).all())
-        for item in checklist_exportado:
-            if item["id"] in areas:
-                item["area"] = areas[item["id"]]
-    return {
-        "versao": "2.4",
-        "datas_especiais": [item.to_dict() for item in db.query(DataEspecial).filter_by(user_id=current_user.id).order_by(DataEspecial.id)],
-        "habitos": exportar_habitos(db, current_user.id),
-        "metas": [meta.to_dict() for meta in db.query(Meta).filter_by(user_id=current_user.id).all()],
-        "exportado_em": datetime.now(UTC).isoformat(),
-        "tarefas": [t.to_dict() for t in tarefas],
-        "checklist": checklist_exportado,
-        "notas": [n.to_dict() for n in notas],
-        "marcos_operacionais": [m.to_dict() for m in marcos],
-    }
+VERSAO_BACKUP = "2.5"
+VERSOES_BACKUP_LEGADAS = {None, "1.0", "2.0", "2.1", "2.2", "2.3", "2.4"}
+NAMESPACE_BACKUP = UUID("99abd80e-befb-4f24-ab6a-25ac20153620")
 
 
 def data_hora_backup(valor):
     if isinstance(valor, str) and valor:
-        try:
-            data = datetime.fromisoformat(valor)
-            return data.astimezone(UTC).replace(tzinfo=None) if data.tzinfo else data
-        except ValueError:
-            pass
-    return None
+        data = datetime.fromisoformat(valor)
+        return data.astimezone(UTC).replace(tzinfo=None) if data.tzinfo else data
+    if valor is None or valor == "":
+        return None
+    raise ValueError("Data e hora inválidas.")
+
+
+class RegistroBackup(BaseModel):
+    id: int | None = Field(default=None, gt=0, le=2147483647, strict=True)
+    backup_id: UUID | None = None
+    is_demo: bool = False
+
+
+class AgendaBackup(RegistroBackup):
+    titulo: str = Field(min_length=1)
+    descricao: str = ""
+    origem: str = ""
+    local: str = ""
+    data: date
+    hora_inicio: str = ""
+    hora_fim: str = ""
+    duracao_min: int = Field(default=60, ge=0, le=2147483647)
+    prioridade: int | None = Field(default=2, ge=0, le=2147483647)
+    status: str = "pendente"
+    all_day: bool = False
+    blocked: bool = False
+    recurrence_type: str = "NENHUMA"
+    recurrence_until: str = ""
+    recurrence_started_at: str | None = None
+    backup_serie_id: UUID | None = None
+    recurrence_ended_at: str | None = None
+    criado_em: str | None = None
+
+    @model_validator(mode="after")
+    def validar_calendario(self):
+        if self.all_day and self.hora_inicio in {"Dia todo", "Dia inteiro"}:
+            self.hora_inicio = ""
+        for campo in (self.hora_inicio, self.hora_fim):
+            if campo and not validar_hora(campo):
+                raise ValueError("Horário inválido.")
+        if self.backup_serie_id and not self.recurrence_started_at:
+            raise ValueError("Série sem início.")
+        if self.recurrence_until and not validar_data_iso(self.recurrence_until):
+            raise ValueError("Fim de recorrência inválido.")
+        return self
+
+
+class RotinaBackup(RegistroBackup):
+    titulo: str = Field(min_length=1)
+    origem: str = ""
+    frequencia: str = "Semanal"
+    frequencia_interna: str | None = None
+    status: str = "pendente"
+    ultimo_exec: str | None = None
+    recurrence_ended_at: str | None = None
+    criado_em: str | None = None
+    area: str | None = None
+
+
+class NotaBackup(RegistroBackup):
+    texto: str = Field(min_length=1)
+    data: date | Literal[""] = ""
+    tipo: str = "GERAL"
+    status: str = "pendente"
+    created_at: str | None = None
+
+
+class MarcoBackup(RegistroBackup):
+    titulo: str = Field(min_length=1)
+    data: date
+    categoria: str = "Outro"
+    severidade: str = "Baixa"
+    descricao: str = ""
+    criado_em: str | None = None
+    atualizado_em: str | None = None
+
+
+# These are the original integer-key modules. Evolution keeps its per-user UUID keys.
+MODULOS_BACKUP = {
+    "tarefas": (Tarefa, AgendaBackup, "criado_em"),
+    "checklist": (ChecklistItem, RotinaBackup, "criado_em"),
+    "notas": (Note, NotaBackup, "created_at"),
+    "marcos_operacionais": (MarcoOperacional, MarcoBackup, "criado_em"),
+}
+EVOLUCAO_BACKUP = {
+    "metas": (Meta, MetaBackup, restaurar_metas),
+    "habitos": (Habito, HabitoBackup, restaurar_habitos),
+    "datas_especiais": (DataEspecial, DataEspecialBackup, restaurar_datas_especiais),
+}
+CHAVES_BACKUP = (*MODULOS_BACKUP, *EVOLUCAO_BACKUP)
+
+
+def identidade_nativa_backup(modulo, identificador, criado):
+    # Legacy exports already included both immutable fields. They can identify
+    # records created before backup_id existed, without comparing their content.
+    chave = f"{modulo}:{identificador}:{criado.isoformat() if criado else ''}"
+    return str(uuid5(NAMESPACE_BACKUP, chave))
+
+
+def valores_registro_backup(modulo, registro):
+    valor = registro.model_dump(exclude={"id", "backup_id", "backup_serie_id", "area"})
+    for campo in ("titulo", "texto"):
+        if campo in valor and not valor[campo].strip():
+            raise ValueError("Texto obrigatório.")
+    for texto in valor.values():
+        if isinstance(texto, str):
+            texto.encode("utf-8")
+            if "\x00" in texto:
+                raise ValueError("Caractere inválido.")
+    for campo in ("criado_em", "created_at", "atualizado_em", "recurrence_started_at", "recurrence_ended_at", "ultimo_exec"):
+        if campo in valor:
+            valor[campo] = data_hora_backup(valor[campo])
+            if campo in {"criado_em", "created_at", "atualizado_em"} and valor[campo] is None:
+                del valor[campo]
+    if isinstance(valor.get("data"), date):
+        valor["data"] = valor["data"].isoformat()
+    if modulo == "tarefas":
+        if valor["all_day"]:
+            valor["duracao_min"] = 1440
+        if not valor["hora_fim"] and valor["hora_inicio"]:
+            valor["hora_fim"] = calcular_hora_fim(valor["hora_inicio"], valor["duracao_min"]) or ""
+    elif modulo == "checklist":
+        valor["frequencia_interna"] = frequencia_interna_efetiva(valor["frequencia"], valor["frequencia_interna"])
+    elif modulo == "marcos_operacionais":
+        valor.pop("is_demo")
+        valor["categoria"] = normalizar_categoria_marco(valor["categoria"])
+        valor["severidade"] = normalizar_severidade_marco(valor["severidade"])
+    return valor
+
+
+def areas_arquivo_backup(db, user_id, identidades):
+    areas = {item.registro_id: item.area_legada for item in identidades
+             if item.modulo == "checklist" and item.area_legada is not None}
+    legado = tabela_checklist_backup_legado(db)
+    if legado is not None:
+        areas.update(db.query(legado.c.id, legado.c.area).filter(
+            legado.c.user_id == user_id, legado.c.area.is_not(None)
+        ).all())
+    return legado, areas
+
+
+@app.get("/backup")
+def exportar_backup(response: Response, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    response.headers["Cache-Control"] = "no-store"
+    user_id = current_user.id
+    identidades = db.query(IdentidadeBackup).filter_by(user_id=user_id).all()
+    chaves = {(item.modulo, item.registro_id): item for item in identidades}
+    _, areas = areas_arquivo_backup(db, user_id, identidades)
+    dados = {
+        "versao": VERSAO_BACKUP,
+        "exportado_em": datetime.now(UTC).isoformat(),
+        "datas_especiais": [r.to_dict() for r in db.query(DataEspecial).filter_by(user_id=user_id).order_by(DataEspecial.id)],
+        "habitos": exportar_habitos(db, user_id),
+        "metas": [r.to_dict() for r in db.query(Meta).filter_by(user_id=user_id).order_by(Meta.id)],
+    }
+    for modulo, (modelo, _, campo_criacao) in MODULOS_BACKUP.items():
+        dados[modulo] = []
+        for registro in db.query(modelo).filter_by(user_id=user_id, ativo=True).order_by(modelo.id):
+            item = registro.to_dict()
+            item.pop("user_id", None)
+            chave = chaves.get((modulo, registro.id))
+            item["backup_id"] = chave.identidade if chave else identidade_nativa_backup(
+                modulo, registro.id, getattr(registro, campo_criacao)
+            )
+            if modulo == "checklist" and registro.id in areas:
+                item["area"] = areas[registro.id]
+            if modulo == "tarefas":
+                inicio = registro.recurrence_started_at
+                if inicio and chave and chave.serie and inicio == chave.inicio_local_serie:
+                    item["backup_serie_id"] = chave.serie
+                    item["recurrence_started_at"] = chave.inicio_original_serie.isoformat()
+                elif inicio:
+                    item["backup_serie_id"] = str(uuid5(NAMESPACE_BACKUP, f"serie:{user_id}:{current_user.criado_em}:{inicio}"))
+                for campo in ("google_event_id", "google_html_link", "link", "ultima_sync_google"):
+                    item.pop(campo, None)
+                item["sincronizado_google"] = False
+            dados[modulo].append(item)
+    return dados
+
+
+def validar_arquivo_backup(dados):
+    if not isinstance(dados, dict):
+        raise HTTPException(status_code=400, detail="Backup inválido.")
+    versao = dados.get("versao")
+    if (versao is not None and not isinstance(versao, str)) or versao not in VERSOES_BACKUP_LEGADAS | {VERSAO_BACKUP}:
+        raise HTTPException(status_code=400, detail="Versão de backup incompatível.")
+    if versao == VERSAO_BACKUP and any(modulo not in dados for modulo in CHAVES_BACKUP):
+        raise HTTPException(status_code=400, detail="Backup 2.5 incompleto.")
+    if versao is None and not any(modulo in dados for modulo in CHAVES_BACKUP):
+        raise HTTPException(status_code=400, detail="Backup sem módulos reconhecidos.")
+    preparado = {}
+    google = 0
+    # A legacy file without reliable IDs can only establish identity within
+    # that same file. Per-record ordinals keep equal legitimate records apart.
+    assinatura_legada = None
+    for modulo in CHAVES_BACKUP:
+        registros = dados.get(modulo, [])
+        if not isinstance(registros, list):
+            raise HTTPException(status_code=400, detail=f"{modulo}: esperava uma lista.")
+        preparado[modulo] = []
+        vistas = set()
+        inicios_series = {}
+        for indice, entrada in enumerate(registros, 1):
+            try:
+                if modulo in EVOLUCAO_BACKUP:
+                    item = EVOLUCAO_BACKUP[modulo][1].model_validate(entrada)
+                    identidade = str(item.id)
+                    valor = item
+                else:
+                    item = MODULOS_BACKUP[modulo][1].model_validate(entrada)
+                    valor = valores_registro_backup(modulo, item)
+                    campo_criacao = MODULOS_BACKUP[modulo][2]
+                    if item.backup_id:
+                        identidade = str(item.backup_id)
+                    elif versao == VERSAO_BACKUP:
+                        raise ValueError("Identidade obrigatória.")
+                    elif item.id is not None and campo_criacao in valor:
+                        identidade = identidade_nativa_backup(modulo, item.id, valor[campo_criacao])
+                    else:
+                        if assinatura_legada is None:
+                            assinatura_legada = hashlib.sha256(json.dumps(
+                                dados, sort_keys=True, separators=(",", ":"), allow_nan=False
+                            ).encode()).hexdigest()
+                        identidade = str(uuid5(NAMESPACE_BACKUP, f"legado:{modulo}:{assinatura_legada}:{indice}"))
+                    if modulo == "tarefas" and any(entrada.get(campo) for campo in (
+                        "google_event_id", "google_html_link", "link", "sincronizado_google"
+                    )):
+                        google += 1
+                    area = item.area if modulo == "checklist" else None
+                    if area is not None:
+                        area.encode("utf-8")
+                        if "\x00" in area:
+                            raise ValueError("Área inválida.")
+                    serie = None
+                    if modulo == "tarefas" and valor["recurrence_started_at"]:
+                        serie = str(item.backup_serie_id or uuid5(NAMESPACE_BACKUP, f"serie-legada:{valor['recurrence_started_at']}"))
+                    if serie and inicios_series.setdefault(serie, valor["recurrence_started_at"]) != valor["recurrence_started_at"]:
+                        raise ValueError("Inícios incompatíveis para a mesma série.")
+                    valor = (valor, area, serie)
+                if identidade in vistas:
+                    raise ValueError("Identidade repetida.")
+            except (ValueError, TypeError, OverflowError, HTTPException):
+                raise HTTPException(status_code=400, detail=f"{modulo}: registro {indice} inválido ou com identidade repetida.") from None
+            vistas.add(identidade)
+            preparado[modulo].append((identidade, valor))
+    return preparado, google
+
+
+def bloquear_restauracao_backup(db, user_id):
+    if IS_SQLITE:
+        db.execute(text("BEGIN IMMEDIATE"))
+    conta = db.query(User.id).filter(User.id == user_id, User.ativo.is_(True)).with_for_update().first()
+    if conta is None:
+        raise HTTPException(status_code=401, detail="Conta indisponível.")
+
+
+def mapear_series_backup(registros, existentes, identidades, mapa):
+    series = {item.serie: item.inicio_local_serie for item in identidades if item.serie}
+    ocupados = {r.recurrence_started_at for r in existentes.values()}
+    # An overlapping occurrence also connects a legacy series to its local group.
+    for identidade, (_, _, serie) in registros:
+        existente = existentes.get(mapa.get(("tarefas", identidade)))
+        if serie and existente and existente.recurrence_started_at:
+            series.setdefault(serie, existente.recurrence_started_at)
+    for _, (valor, _, serie) in registros:
+        if not serie or serie in series:
+            continue
+        inicio = valor["recurrence_started_at"]
+        while inicio in ocupados:
+            inicio += timedelta(microseconds=1)
+        ocupados.add(inicio)
+        series[serie] = inicio
+    return series
+
+
+def restaurar_modulos_backup(db, user_id, preparado, importadas, ignoradas, conflitos):
+    identidades = db.query(IdentidadeBackup).filter_by(user_id=user_id).all()
+    chaves_locais = {(item.modulo, item.registro_id) for item in identidades}
+    mapa = {(item.modulo, item.identidade): item.registro_id for item in identidades}
+    legado, areas = areas_arquivo_backup(db, user_id, identidades)
+
+    for modulo, (modelo, esquema, campo_criacao) in MODULOS_BACKUP.items():
+        if not preparado[modulo]:
+            continue
+        existentes = {r.id: r for r in db.query(modelo).filter_by(user_id=user_id)}
+        for registro in existentes.values():
+            if (modulo, registro.id) not in chaves_locais:
+                mapa[(modulo, identidade_nativa_backup(modulo, registro.id, getattr(registro, campo_criacao)))] = registro.id
+        series = mapear_series_backup(preparado[modulo], existentes, identidades, mapa) if modulo == "tarefas" else {}
+        for identidade, (valor, area, serie) in preparado[modulo]:
+            inicio_original = valor.get("recurrence_started_at") if serie else None
+            inicio_local = series.get(serie)
+            if serie:
+                valor = {**valor, "recurrence_started_at": inicio_local}
+            local_id = mapa.get((modulo, identidade))
+            if local_id is not None:
+                existente = existentes.get(local_id)
+                if existente is None or not existente.ativo:
+                    conflitos[modulo] += 1
+                    continue
+                atual = valores_registro_backup(modulo, esquema.model_validate(existente.to_dict()))
+                if any(atual.get(k) != v for k, v in valor.items()) or (area is not None and areas.get(local_id) != area):
+                    conflitos[modulo] += 1
+                else:
+                    ignoradas[modulo] += 1
+                continue
+            novo = modelo(user_id=user_id, ativo=True, **valor)
+            db.add(novo)
+            db.flush([novo])
+            db.add(IdentidadeBackup(user_id=user_id, modulo=modulo, identidade=identidade,
+                                    registro_id=novo.id, area_legada=area, serie=serie,
+                                    inicio_original_serie=inicio_original, inicio_local_serie=inicio_local))
+            if modulo == "checklist" and legado is not None and area is not None:
+                db.execute(legado.update().where(legado.c.user_id == user_id, legado.c.id == novo.id).values(area=area))
+            importadas[modulo] += 1
+
+
+def restaurar_evolucao_backup(db, user_id, preparado, importadas, ignoradas, conflitos):
+    for modulo, (modelo, esquema, gravar) in EVOLUCAO_BACKUP.items():
+        if not preparado[modulo]:
+            continue
+        if modulo == "habitos":
+            atuais = {r["id"]: r for r in exportar_habitos(db, user_id)}
+        else:
+            atuais = {r.id: r.to_dict() for r in db.query(modelo).filter_by(user_id=user_id)}
+        novos = []
+        for identidade, backup in preparado[modulo]:
+            if identidade not in atuais:
+                novos.append(backup)
+            elif esquema.model_validate(atuais[identidade]) == backup:
+                ignoradas[modulo] += 1
+            else:
+                conflitos[modulo] += 1
+        gravar(db, user_id, novos, importadas)
+        # A criação normal no módulo também pode ganhar a corrida pelo UUID.
+        conflitos[modulo] += len(novos) - importadas[modulo]
+
+
+def objeto_json_backup(pares):
+    objeto = {}
+    for chave, valor in pares:
+        if chave in objeto:
+            raise ValueError("Campo JSON repetido.")
+        objeto[chave] = valor
+    return objeto
+
+
+def rejeitar_constante_json_backup(_valor):
+    raise ValueError("Constante JSON inválida.")
 
 
 @app.post("/restaurar")
 async def importar_backup(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     user_id = garantir_user_id(current_user.id, "restauração")
     try:
-        dados = await request.json()
-    except Exception:
-        raise HTTPException(status_code=400, detail="JSON inválido.")
+        dados = json.loads(await request.body(), object_pairs_hook=objeto_json_backup,
+                           parse_constant=rejeitar_constante_json_backup)
+    except (ValueError, RecursionError):
+        raise HTTPException(status_code=400, detail="JSON inválido.") from None
+    preparado, google = validar_arquivo_backup(dados)
+    return await run_in_threadpool(gravar_backup_validado, db, user_id, preparado, google)
 
-    if not isinstance(dados, dict):
-        raise HTTPException(status_code=400, detail="Backup inválido.")
 
-    tarefas_raw = dados.get("tarefas", [])
-    checklist_raw = dados.get("checklist", [])
-    notas_raw = dados.get("notas", [])
-    marcos_raw = dados.get("marcos_operacionais", [])
-    importadas = {"tarefas": 0, "checklist": 0, "notas": 0, "marcos_operacionais": 0, "metas": 0, "habitos": 0, "datas_especiais": 0, "erros": []}
-
-    for t in tarefas_raw:
-        try:
-            titulo = (t.get("titulo") or "").strip()
-            data_str = (t.get("data") or "").strip()
-            if not titulo or not data_str or not validar_data_iso(data_str):
-                continue
-            hora_inicio = (t.get("hora_inicio") or "").strip()
-            hora_fim = (t.get("hora_fim") or "").strip()
-            all_day_val = bool(t.get("all_day"))
-            blocked_val = bool(t.get("blocked"))
-            duracao_val = int(t.get("duracao_min") or (1440 if all_day_val else 60))
-            if all_day_val:
-                duracao_val = 1440
-            if hora_inicio and not hora_fim:
-                hora_fim = calcular_hora_fim(hora_inicio, duracao_val)
-            nova = Tarefa(
-                user_id=user_id,
-                titulo=titulo,
-                descricao=(t.get("descricao") or "").strip(),
-                origem=(t.get("origem") or "").strip(),
-                local=(t.get("local") or "").strip(),
-                data=data_str,
-                hora_inicio=hora_inicio,
-                hora_fim=hora_fim,
-                duracao_min=duracao_val,
-                prioridade=int(t.get("prioridade") or 2),
-                status=normalizar_status(t.get("status") or "pendente"),
-                tipo_evento=t.get("tipo_evento") or "prioriza",
-                origem_evento=t.get("origem_evento") or "prioriza",
-                google_event_id=t.get("google_event_id"),
-                google_html_link=t.get("google_html_link") or t.get("link"),
-                sincronizado_google=bool(t.get("sincronizado_google")),
-                all_day=all_day_val,
-                blocked=blocked_val,
-                ativo=True,
-            )
-            db.add(nova)
-            importadas["tarefas"] += 1
-        except Exception as e:
-            importadas["erros"].append(f"Tarefa '{t.get('titulo', '?')}': {e}")
-
-    legado = tabela_checklist_backup_legado(db)
-    vinculos_legados = []
-    for c in checklist_raw:
-        try:
-            titulo = (c.get("titulo") or "").strip()
-            if not titulo:
-                continue
-            novo = ChecklistItem(
-                user_id=user_id,
-                titulo=titulo,
-                origem=(c.get("origem") or "").strip(),
-                frequencia=c.get("frequencia") or "Semanal",
-                frequencia_interna=c.get("frequencia_interna") or normalizar_frequencia_interna(c.get("frequencia") or "Semanal"),
-                status=normalizar_status(c.get("status") or "pendente"),
-                ultimo_exec=data_hora_backup(c.get("ultimo_exec")),
-                recurrence_ended_at=data_hora_backup(c.get("recurrence_ended_at")),
-                criado_em=data_hora_backup(c.get("criado_em")),
-                ativo=True,
-            )
-            db.add(novo)
-            if isinstance(c.get("area"), str) and c["area"]:
-                if legado is not None:
-                    vinculos_legados.append((novo, c["area"]))
-                else:
-                    importadas["erros"].append(
-                        f"Checklist '{titulo}': rotina restaurada sem vínculo legado de Área."
-                    )
-            importadas["checklist"] += 1
-        except Exception as e:
-            importadas["erros"].append(f"Checklist '{c.get('titulo', '?')}': {e}")
-
-    if vinculos_legados:
-        db.flush()
-        for rotina, area in vinculos_legados:
-            db.execute(legado.update().where(
-                legado.c.id == rotina.id, legado.c.user_id == user_id
-            ).values(area=area))
-
-    for n in notas_raw:
-        try:
-            texto = (n.get("texto") or "").strip()
-            if not texto:
-                continue
-            nova_nota = Note(
-                user_id=user_id,
-                texto=texto,
-                data=n.get("data") or "",
-                tipo=n.get("tipo") or "GERAL",
-                status=n.get("status") or "pendente",
-                ativo=True,
-            )
-            db.add(nova_nota)
-            importadas["notas"] += 1
-        except Exception as e:
-            importadas["erros"].append(f"Nota '{(n.get('texto') or '?')[:30]}': {e}")
-
-    for m in marcos_raw:
-        try:
-            titulo = (m.get("titulo") or "").strip()
-            data_marco = (m.get("data") or "").strip()
-            if not titulo or not validar_data_iso(data_marco):
-                continue
-            novo_marco = MarcoOperacional(
-                user_id=user_id,
-                titulo=titulo,
-                data=data_marco,
-                categoria=normalizar_categoria_marco(m.get("categoria") or "Outro"),
-                severidade=normalizar_severidade_marco(m.get("severidade") or "Baixa"),
-                descricao=(m.get("descricao") or "").strip(),
-                ativo=True,
-            )
-            db.add(novo_marco)
-            importadas["marcos_operacionais"] += 1
-        except Exception as e:
-            importadas["erros"].append(f"Marco '{m.get('titulo', '?')}': {e}")
-
-    restaurar_metas(db, user_id, dados.get("metas", []), importadas)
-    restaurar_habitos(db, user_id, dados.get("habitos", []), importadas)
-    restaurar_datas_especiais(db, user_id, dados.get("datas_especiais", []), importadas)
-    db.commit()
+def gravar_backup_validado(db, user_id, preparado, google):
+    importadas = dict.fromkeys(CHAVES_BACKUP, 0)
+    ignoradas = importadas.copy()
+    conflitos = importadas.copy()
+    try:
+        bloquear_restauracao_backup(db, user_id)
+        restaurar_modulos_backup(db, user_id, preparado, importadas, ignoradas, conflitos)
+        restaurar_evolucao_backup(db, user_id, preparado, importadas, ignoradas, conflitos)
+        db.commit()
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as erro:
+        db.rollback()
+        logging.getLogger(__name__).warning("Falha ao restaurar backup: %s", type(erro).__name__)
+        raise HTTPException(status_code=500, detail="Falha ao restaurar. Nenhum registro foi importado.") from None
+    total = sum(importadas.values())
+    iguais = sum(ignoradas.values())
+    divergentes = sum(conflitos.values())
+    aviso_google = " Vínculos externos do Google são desativados em novos registros." if google else ""
     return {
-        "ok": True,
-        "importadas": importadas,
-        "mensagem": f"Restauração concluída: {importadas['tarefas']} tarefas, {importadas['checklist']} rotinas, {importadas['notas']} notas e {importadas['marcos_operacionais']} marcos importados. Metas restauradas: {importadas['metas']}. Hábitos restaurados: {importadas['habitos']}. Datas especiais restauradas: {importadas['datas_especiais']}.",
+        "ok": True, "importadas": {**importadas, "erros": []}, "ignoradas": ignoradas, "conflitos": conflitos,
+        "mensagem": f"Restauração concluída. Importados: {total}. Já existentes: {iguais}. Conflitos preservados: {divergentes}.{aviso_google}",
     }
 
 

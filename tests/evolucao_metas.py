@@ -91,7 +91,7 @@ def executar(cliente):
     assert cliente.get("/metas", headers=outro).json() == []
     backup = cliente.get("/backup", headers=dono).json()
     assert len(backup["metas"]) == 3
-    secao_metas = {"versao": backup["versao"], "metas": backup["metas"]}
+    secao_metas = {"versao": "2.4", "metas": backup["metas"]}
     restauracao = cliente.post("/restaurar", headers=outro, json=secao_metas)
     assert restauracao.status_code == 200, restauracao.text
     assert restauracao.json()["importadas"]["metas"] == 3
@@ -103,7 +103,7 @@ def executar(cliente):
             assert meta[campo] == original[meta["id"]][campo], (campo, meta)
     assert any(nota["texto"] == "Histórico preservado" for nota in cliente.get("/notes", headers=outro).json())
 
-    assert cliente.post("/restaurar", headers=outro, json={"metas": [{}]}).json()["importadas"]["erros"]
+    assert cliente.post("/restaurar", headers=outro, json={"metas": [{}]}).status_code == 400
     for meta in backup["metas"]:
         assert cliente.delete(f"/metas/{meta['id']}", headers=dono).status_code == 204
     assert cliente.get("/metas", headers=dono).json() == []
