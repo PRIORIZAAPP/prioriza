@@ -25,6 +25,10 @@
       catch(e){console.error(e);}
     }
 
+    function ordemStatusChecklistHoje(status) {
+      return status === "feito" ? 2 : status === "em_andamento" ? 1 : 0;
+    }
+
     // ── CHECKLIST HOJE ────────────────────────────────────────────
     async function carregarChecklistHoje() {
       const container = document.getElementById("checklist-dia");
@@ -67,12 +71,18 @@
         container.innerHTML="";
 
         const fragmentoHoje = document.createDocumentFragment();
-        visiveis.forEach(item => {
+        const linhas = visiveis.map((item, indice) => ({ item, indice }));
+        const compararLinhas = (a, b) => ordemStatusChecklistHoje(a.item.status)
+          - ordemStatusChecklistHoje(b.item.status) || a.indice - b.indice;
+        linhas.sort(compararLinhas);
+        linhas.forEach(linha => {
+          const { item } = linha;
           const status = item.status||"pendente";
           const origem = (item.origem||"").toUpperCase();
           const div = document.createElement("div");
           div.className = "checklist-item"+(origem==="PESSOAL"?" pessoal":"");
           div.dataset.id = item.id;
+          linha.elemento = div;
 
           const bolinha = document.createElement("div");
           bolinha.className      = `check-status ${status}`;
@@ -105,11 +115,15 @@
           const badgeInicial = criarBadgeChecklistElemento(obterBadgeChecklist(item, status));
           if (badgeInicial) actions.appendChild(badgeInicial);
 
+          let atualizando = false;
           const executarAcaoChecklistHoje = async (novoStatus) => {
+            if (atualizando) return;
+            atualizando = true;
             const statusAnterior = item.status || "pendente";
             definirEstadoVisualChecklistHoje(div, bolinha, novoStatus);
             const mobile = window.matchMedia("(max-width: 767px)").matches;
             const atualizado = await atualizarStatusChecklist(item.id, novoStatus, mobile);
+            atualizando = false;
             if (!atualizado) {
               definirEstadoVisualChecklistHoje(div, bolinha, statusAnterior);
               return;
@@ -118,6 +132,17 @@
             if (mobile) {
               Object.assign(item, atualizado);
               atualizarResumoMobile();
+            }
+            const entrada = checklistHojeCache.find(entrada => entrada.id === item.id);
+            if (entrada) Object.assign(entrada, item);
+            if (div.parentNode === container) {
+              linhas.sort(compararLinhas);
+              const seguinte = linhas[linhas.indexOf(linha) + 1]?.elemento ?? null;
+              if (div.nextElementSibling !== seguinte) {
+                const rolagem = window.scrollY;
+                container.insertBefore(div, seguinte);
+                if (window.scrollY !== rolagem) restaurarScrollJanela(rolagem);
+              }
             }
             await atualizarResumoBar();
             sincronizarChecklistHojeEmSegundoPlano();

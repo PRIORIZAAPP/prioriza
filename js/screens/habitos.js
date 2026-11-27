@@ -291,6 +291,7 @@ const habitosUI = (() => {
     form.addEventListener("submit", async evento => {
       evento.preventDefault();
       const botao = form.querySelector("[type=submit]");
+      atualizarFormulario();
       if (botao.disabled) return;
       const token = getAuthToken();
       const id = edicao?.id;

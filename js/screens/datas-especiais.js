@@ -10,37 +10,46 @@ function mesDaOcorrencia(original, meses) {
   return data.toISOString().slice(0, 10);
 }
 
-function tempoComemorado(meses) {
+function diferencaEmDias(inicio, fim) {
+  return (Date.parse(fim + "T00:00:00Z") - Date.parse(inicio + "T00:00:00Z")) / diaEmMilissegundos;
+}
+
+function mesesEntreDatas(inicio, fim) {
+  const [anoInicial, mesInicial] = inicio.split("-").map(Number);
+  const [anoFinal, mesFinal] = fim.split("-").map(Number);
+  return (anoFinal - anoInicial) * 12 + mesFinal - mesInicial;
+}
+
+function tempoTranscorrido(original, hoje) {
+  let meses = mesesEntreDatas(original, hoje);
+  if (mesDaOcorrencia(original, meses) > hoje) meses--;
+  const dias = diferencaEmDias(mesDaOcorrencia(original, meses), hoje);
   const anos = Math.floor(meses / 12);
-  const resto = meses % 12;
-  return [
-    anos && `${anos} ${anos === 1 ? "ano" : "anos"}`,
-    resto && `${resto} ${resto === 1 ? "mês" : "meses"}`,
-  ].filter(Boolean).join(" e ");
+  const mesesRestantes = meses % 12;
+  return [anos && `${anos}a`, mesesRestantes && `${mesesRestantes}m`, dias && `${dias}d`]
+    .filter(Boolean).join(" ") || "0d";
 }
 
 function calcularDataEspecial(registro, hoje) {
   const original = registro.data_original;
   let ocorrencia = original;
-  let meses = 0;
-  if (registro.repeticao !== "nenhuma" && hoje > original) {
-    const [ano, mes] = original.split("-").map(Number);
-    const [anoAtual, mesAtual] = hoje.split("-").map(Number);
+  const recorrente = registro.repeticao !== "nenhuma";
+  if (recorrente && hoje > original) {
     const intervalo = registro.repeticao === "anual" ? 12 : 1;
-    meses = Math.floor(((anoAtual - ano) * 12 + mesAtual - mes) / intervalo) * intervalo;
+    const meses = Math.floor(mesesEntreDatas(original, hoje) / intervalo) * intervalo;
     ocorrencia = mesDaOcorrencia(original, meses);
     if (ocorrencia < hoje) {
-      meses += intervalo;
-      ocorrencia = mesDaOcorrencia(original, meses);
+      ocorrencia = mesDaOcorrencia(original, meses + intervalo);
     }
   }
-  const dias = (Date.parse(ocorrencia + "T00:00:00Z") - Date.parse(hoje + "T00:00:00Z")) / diaEmMilissegundos;
+  const dias = diferencaEmDias(hoje, ocorrencia);
   let texto;
-  if (dias === 0) texto = meses ? tempoComemorado(meses) : "É hoje";
+  if (dias === 0) texto = "É hoje";
   else if (dias === 1) texto = "Falta 1 dia";
   else if (dias > 1) texto = `Faltam ${dias} dias`;
   else texto = dias === -1 ? "Há 1 dia" : `Há ${-dias} dias`;
-  return { ocorrencia, dias, texto };
+  const transcorrido = recorrente && hoje >= original ? tempoTranscorrido(original, hoje) : null;
+  return { ocorrencia, dias, texto, transcorrido };
 }
 
 function compararDatasEspeciais(a, b) {
@@ -109,7 +118,7 @@ const datasEspeciaisUI = (() => {
   }
 
   function criarCartao(item) {
-    const { registro, ocorrencia, texto } = item;
+    const { registro, ocorrencia, texto, transcorrido } = item;
     const cartao = elementoMeta("article", "", "evolucao-meta data-especial-cartao");
     const titulo = elementoMeta("h4");
     const expandir = botaoMeta("", "evolucao-meta-titulo");
@@ -121,8 +130,10 @@ const datasEspeciaisUI = (() => {
       if (aberto || conteudo.scrollHeight > conteudo.clientHeight + 1) expandir.setAttribute("aria-expanded", String(!aberto));
     });
     titulo.append(expandir);
-    const data = elementoMeta("time", ocorrencia.split("-").reverse().join("/"), "data-especial-dia");
-    data.dateTime = ocorrencia;
+    const data = transcorrido === null
+      ? elementoMeta("time", ocorrencia.split("-").reverse().join("/"), "data-especial-dia")
+      : elementoMeta("span", transcorrido, "data-especial-dia data-especial-decorrido");
+    if (transcorrido === null) data.dateTime = ocorrencia;
     cartao.append(titulo, criarMenuAcoesContextuais({
       titulo: "Ações da data",
       ariaLabel: `Ações de ${registro.titulo}`,
@@ -202,6 +213,7 @@ const datasEspeciaisUI = (() => {
     });
     form.addEventListener("submit", async evento => {
       evento.preventDefault();
+      atualizarSalvar();
       if (salvar.disabled) return;
       const id = edicao?.id;
       const token = getAuthToken();
