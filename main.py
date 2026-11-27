@@ -149,8 +149,8 @@ GOOGLE_SCOPES = ["https://www.googleapis.com/auth/calendar"]
 GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token"
 GOOGLE_REVOGAR_URI = "https://oauth2.googleapis.com/revoke"
 PREFIXO_CIFRA_GOOGLE = "fernet:v1:"
-# Esta versão prepara o PostgreSQL. A segunda versão habilita a conversão.
-CONVERTER_CREDENCIAIS_GOOGLE_POSTGRES = False
+# A versão de conversão deve ser implantada após o encerramento da Sprint 077.
+CONVERTER_CREDENCIAIS_GOOGLE_POSTGRES = True
 BLOQUEIO_MIGRACAO_GOOGLE = 71419221
 
 
