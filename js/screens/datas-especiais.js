@@ -112,6 +112,7 @@ const datasEspeciaisUI = (() => {
     const hoje = dataHojeISO();
     const lista = registros.map(registro => ({ registro, ...calcularDataEspecial(registro, hoje) }));
     lista.sort(compararDatasEspeciais);
+    atualizarResumoPainelEvolucao("datas-total", lista.length === 1 ? "1 data" : `${lista.length} datas`);
     limparMenus();
     el("datas-lista").replaceChildren(...lista.map(criarCartao));
     mensagem(lista.length ? "" : "Nenhuma data especial cadastrada.");
@@ -206,6 +207,7 @@ const datasEspeciaisUI = (() => {
     document.addEventListener("prioriza:logout", () => {
       leitura++;
       registros = null;
+      atualizarResumoPainelEvolucao("datas-total", "");
       fechar();
       limparMenus();
       el("datas-lista").replaceChildren();

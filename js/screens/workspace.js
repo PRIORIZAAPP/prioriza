@@ -908,17 +908,22 @@
       return res.json();
     }
 
+    function atualizarSalvarNota() {
+      const form = document.getElementById("form-nota");
+      document.getElementById("btn-salvar-nota").disabled = form.dataset.salvando === "true"
+        || !document.getElementById("nota-texto").value.trim();
+    }
+
     function limparFormularioNota({ fecharDesktop = true } = {}) {
       notaEmEdicao = null;
       const textoEl = document.getElementById("nota-texto");
       const dataEl = document.getElementById("nota-data");
       const tipoEl = document.getElementById("nota-tipo");
-      const salvarEl = document.getElementById("btn-salvar-nota");
       const cancelarEl = document.getElementById("btn-cancelar-edicao-nota");
       if (textoEl) textoEl.value = "";
       if (dataEl) dataEl.value = "";
       if (tipoEl) tipoEl.value = emLayoutDesktop() ? "TRABALHO" : "GERAL";
-      if (salvarEl) salvarEl.textContent = "Salvar anotação";
+      atualizarSalvarNota();
       if (cancelarEl) cancelarEl.hidden = true;
       ajustarCategoriasNotasUI();
       if (fecharDesktop) toggleFormNotaDesktop(false);
@@ -935,12 +940,11 @@
       const textoEl = document.getElementById("nota-texto");
       const dataEl = document.getElementById("nota-data");
       const tipoEl = document.getElementById("nota-tipo");
-      const salvarEl = document.getElementById("btn-salvar-nota");
       const cancelarEl = document.getElementById("btn-cancelar-edicao-nota");
       if (textoEl) textoEl.value = nota.texto || "";
       if (dataEl) dataEl.value = normalizarDataParaISO(nota.data || "");
       if (tipoEl) tipoEl.value = nota.tipo || (emLayoutDesktop() ? "TRABALHO" : "GERAL");
-      if (salvarEl) salvarEl.textContent = "Salvar alterações";
+      atualizarSalvarNota();
       if (cancelarEl) cancelarEl.hidden = false;
       if (emLayoutDesktop()) toggleFormNotaDesktop(true);
       document.getElementById("form-nota")?.scrollIntoView({ behavior: "smooth", block: "start" });
