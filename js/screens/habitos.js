@@ -94,6 +94,9 @@ const habitosUI = (() => {
   function atualizarResumo() {
     const aplicaveis = dados.habitos.filter(habito => habito.aplicavel);
     const atingidos = aplicaveis.filter(habito => habito.realizacoes.length >= habito.frequencia);
+    const totalAtivos = aplicaveis.filter(habito => !habito.arquivado_em);
+    const atingidosAtivos = totalAtivos.filter(habito => habito.realizacoes.length >= habito.frequencia);
+    atualizarResumoPainelEvolucao("habitos-total", `${atingidosAtivos.length} de ${totalAtivos.length} atingidos`);
     el("habitos-resumo").hidden = !aplicaveis.length;
     el("habitos-resumo").textContent = `Hábitos atingidos na semana: ${atingidos.length} de ${aplicaveis.length}.`;
   }
@@ -284,6 +287,7 @@ const habitosUI = (() => {
       fecharFormulario();
       limparMenus();
       dados = null;
+      atualizarResumoPainelEvolucao("habitos-total", "");
       mostrarArquivados = false;
       el("habitos-lista").replaceChildren();
       el("habitos-lista-arquivados").replaceChildren();

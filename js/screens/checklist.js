@@ -613,7 +613,7 @@
         edicaoChecklistDesktop = null;
       }
       if (abrir) {
-        atualizarSalvarChecklistMobile();
+        atualizarSalvarChecklist();
         if (mediaAgendaMobile.matches) {
           wrap.querySelector(".checklist-mobile-conteudo").scrollTop = 0;
           ajustarViewportFormularioMobile();
@@ -666,8 +666,15 @@
     }
 
     function atualizarFormularioAgendaMobile() {
-      if (!usarFormularioAgendaCompacto()) return;
       const form = document.getElementById("form-agenda");
+      if (!usarFormularioAgendaCompacto()) {
+        document.getElementById("btn-salvar-compromisso").disabled = form.dataset.salvando === "true"
+          || !document.getElementById("agenda-titulo").value.trim()
+          || !document.getElementById("agenda-data").value
+          || (!edicaoAgendaMobile && document.getElementById("agenda-repetir").value !== "NENHUMA"
+            && !document.getElementById("agenda-repetir-ate").value);
+        return;
+      }
       for (const campo of form.querySelectorAll(".agenda-data-nativa")) {
         const [ano, mes, dia] = campo.querySelector("input").value.split("-");
         campo.querySelector(".agenda-data-formatada").textContent = dia ? `${dia}/${mes}/${ano}` : "dd/mm/aaaa";
@@ -694,7 +701,7 @@
       form.setAttribute("aria-busy", String(salvando));
     }
 
-    function marcarGravacaoAgendaMobile(salvando) {
+    function marcarGravacaoAgenda(salvando) {
       const form = document.getElementById("form-agenda");
       atualizarEstadoGravacaoFormulario(form, document.getElementById("btn-salvar-compromisso"), salvando);
       atualizarFormularioAgendaMobile();
@@ -827,17 +834,14 @@
     }
 
     function vincularPaineisFormularioMobile() {
-      document.getElementById("chk-titulo").addEventListener("input", atualizarSalvarChecklistMobile);
+      document.getElementById("chk-titulo").addEventListener("input", atualizarSalvarChecklist);
       window.matchMedia("(min-width: 1100px)").addEventListener("change", () => {
         if (!telaAtiva("screen-checklist")) return;
         fecharMenusAcoesDesktop();
         const wrap = document.getElementById("checklist-form-wrap");
         if (wrap.classList.contains("open")) {
           if (edicaoChecklistDesktop) toggleFormChecklist(false);
-          else if (emLayoutDesktop()) atualizarSalvarChecklistMobile();
-          else if (document.getElementById("form-checklist").dataset.salvando !== "true") {
-            document.getElementById("btn-salvar-rotina").disabled = false;
-          }
+          else atualizarSalvarChecklist();
         }
         carregarChecklistGeral();
       });
@@ -857,10 +861,7 @@
         }, { passive: false });
         mediaAgendaMobile.addEventListener("change", () => {
           if (wrap.classList.contains("open")) fechar(false);
-          if (id === "checklist-form-wrap" && !mediaAgendaMobile.matches
-            && document.getElementById("form-checklist").dataset.salvando !== "true") {
-            document.getElementById("btn-salvar-rotina").disabled = false;
-          }
+          if (id === "checklist-form-wrap") atualizarSalvarChecklist();
         });
       }
       window.visualViewport?.addEventListener("resize", ajustarViewportFormularioMobile);
@@ -903,6 +904,7 @@
         if (inputData && calendarioDiaSelecionadoISO) {
           inputData.value = calendarioDiaSelecionadoISO;
         }
+        atualizarFormularioAgendaMobile();
         setTimeout(() => document.getElementById("agenda-titulo")?.focus(), 50);
       }
     }
@@ -937,8 +939,7 @@
     }
 
     // ── SALVAR ROTINA (form) ──────────────────────────────────────
-    function atualizarSalvarChecklistMobile() {
-      if (!mediaAgendaMobile.matches && !emLayoutDesktop() && !edicaoChecklistDesktop) return;
+    function atualizarSalvarChecklist() {
       const form = document.getElementById("form-checklist");
       document.getElementById("btn-salvar-rotina").disabled =
         form.dataset.salvando === "true" || !document.getElementById("chk-titulo").value.trim();
@@ -948,7 +949,6 @@
       e.preventDefault();
       const form = e.currentTarget;
       const edicao = edicaoChecklistDesktop;
-      const compacto = mediaAgendaMobile.matches || emLayoutDesktop() || Boolean(edicao);
       if (form.dataset.salvando === "true") return;
       const titulo  = document.getElementById("chk-titulo").value.trim();
       const categoria = document.getElementById("chk-categoria")?.value || "PROFISSIONAL";
@@ -956,7 +956,7 @@
       const freq    = document.getElementById("chk-frequencia").value;
       if (!titulo) return;
       const btn=document.getElementById("btn-salvar-rotina"); btn.disabled=true;
-      if (compacto) atualizarEstadoGravacaoFormulario(form, btn, true);
+      atualizarEstadoGravacaoFormulario(form, btn, true);
       try {
         const params = new URLSearchParams({ titulo, origem, frequencia: freq });
         const rota = edicao ? `/checklist/${edicao.item.id}` : "/checklist_criar";
@@ -980,9 +980,8 @@
         await carregarChecklistHoje(); await carregarChecklistGeral();
       } catch(e){console.error(e); await modal.alerta("Erro de conexão.","Erro");}
       finally {
-        if (compacto) atualizarEstadoGravacaoFormulario(form, btn, false);
-        if (compacto) atualizarSalvarChecklistMobile();
-        else btn.disabled = false;
+        atualizarEstadoGravacaoFormulario(form, btn, false);
+        atualizarSalvarChecklist();
       }
     }
 

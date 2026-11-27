@@ -82,6 +82,7 @@
           });
         }
         if (id === "screen-evolucao") {
+          recolherPaineisEvolucao();
           carregarHabitos();
           datasEspeciaisUI.carregar();
         }
@@ -320,7 +321,7 @@
         ev.preventDefault();
         const edicao = edicaoAgendaMobile;
         const mobile = usarFormularioAgendaCompacto() || Boolean(edicao);
-        if (mobile && ev.currentTarget.dataset.salvando === "true") return;
+        if (ev.currentTarget.dataset.salvando === "true") return;
         const intervalo = mobile ? lerIntervaloAgendaMobile() : null;
         const titulo    = document.getElementById("agenda-titulo")?.value.trim();
         const categoria = document.getElementById("agenda-categoria")?.value || "PROFISSIONAL";
@@ -343,8 +344,7 @@
           await modal.alerta("Informe até quando o compromisso deve se repetir.","Atenção");
           return;
         }
-        const btn=document.getElementById("btn-salvar-compromisso"); btn.disabled=true;
-        if (mobile) marcarGravacaoAgendaMobile(true);
+        marcarGravacaoAgenda(true);
         try {
           let rota = "/tarefas";
           let params = new URLSearchParams({
@@ -422,8 +422,7 @@
           await carregarAgendaHoje(); await atualizarAgendaMesEDia();
         } catch(e){console.error(e); await modal.alerta("Erro ao conectar com o servidor.","Erro");}
         finally{
-          if (mobile) marcarGravacaoAgendaMobile(false);
-          else btn.disabled=false;
+          marcarGravacaoAgenda(false);
         }
       });
 
@@ -436,6 +435,7 @@
         });
       });
 
+      document.getElementById("nota-texto")?.addEventListener("input", atualizarSalvarNota);
       document.getElementById("form-nota")?.addEventListener("submit", async(e)=>{
         e.preventDefault();
         const texto=document.getElementById("nota-texto").value.trim();
@@ -446,7 +446,7 @@
         if (btn.disabled) return;
         const notaEditada = notaEmEdicao ? { ...notaEmEdicao } : null;
         btn.disabled=true;
-        btn.textContent="Salvando...";
+        atualizarEstadoGravacaoFormulario(e.currentTarget, btn, true);
         try {
           if (notaEditada) {
             await atualizarNotaExistente(notaEditada, texto, data, tipo);
@@ -463,8 +463,8 @@
           await modal.alerta(erro?.message || "Não foi possível salvar a nota.", "Erro");
         }
         finally{
-          btn.disabled=false;
-          btn.textContent=notaEmEdicao?"Salvar alterações":"Salvar anotação";
+          atualizarEstadoGravacaoFormulario(document.getElementById("form-nota"), btn, false);
+          atualizarSalvarNota();
         }
       });
 

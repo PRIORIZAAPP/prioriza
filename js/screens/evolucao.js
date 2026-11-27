@@ -71,6 +71,7 @@ function renderizarMetas(foco) {
   const ativas = metas.filter(meta => !meta.concluida_em);
   const concluidas = metas.filter(meta => meta.concluida_em)
     .sort((a, b) => Date.parse(b.concluida_em) - Date.parse(a.concluida_em));
+  atualizarResumoPainelEvolucao("metas-total", metasEvolucao === null ? "" : ativas.length === 1 ? "1 ativa" : `${ativas.length} ativas`);
   const resumo = document.getElementById("hoje-evolucao-metas");
   resumo.hidden = !ativas.length;
   resumo.textContent = ativas.length === 1 ? "1 meta em andamento" : `${ativas.length} metas em andamento`;
@@ -85,7 +86,8 @@ function renderizarMetas(foco) {
   renderizarConquistas(concluidas);
   if (foco && telaAtiva("screen-evolucao")) {
     const titulo = document.getElementById(`evolucao-meta-${foco}`) || document.getElementById("btn-nova-meta");
-    titulo.focus({ preventScroll: true });
+    const destino = titulo.closest("[hidden]") ? document.querySelector(".evolucao-painel-toggle[aria-expanded='true']") : titulo;
+    destino?.focus({ preventScroll: true });
   }
 }
 
@@ -324,7 +326,38 @@ function fecharFormularioMeta() {
   if (dialogo.open) dialogo.close();
 }
 
+function atualizarResumoPainelEvolucao(id, texto) {
+  const resumo = document.getElementById(id);
+  resumo.textContent = texto;
+  resumo.hidden = !texto;
+}
+
+function recolherPaineisEvolucao(exceto) {
+  document.querySelectorAll(".evolucao-painel-toggle[aria-expanded='true']").forEach(botao => {
+    if (botao !== exceto) {
+      botao.setAttribute("aria-expanded", "false");
+      document.getElementById(botao.getAttribute("aria-controls")).hidden = true;
+    }
+  });
+}
+
+function vincularPaineisEvolucao() {
+  document.querySelectorAll(".evolucao-painel-toggle").forEach(botao => {
+    botao.addEventListener("click", () => {
+      const abrir = botao.getAttribute("aria-expanded") === "false";
+      const topo = botao.getBoundingClientRect().top;
+      recolherPaineisEvolucao(abrir ? botao : null);
+      if (!abrir) return;
+      botao.setAttribute("aria-expanded", "true");
+      document.getElementById(botao.getAttribute("aria-controls")).hidden = false;
+      const deslocamento = botao.getBoundingClientRect().top - topo;
+      if (deslocamento) window.scrollBy(0, deslocamento);
+    });
+  });
+}
+
 function vincularEvolucao() {
+  vincularPaineisEvolucao();
   const dialogo = document.getElementById("evolucao-dialogo");
   const form = document.getElementById("evolucao-form");
   const salvar = form.querySelector("[type=submit]");
