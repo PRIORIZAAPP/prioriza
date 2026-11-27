@@ -2903,3 +2903,13 @@
   box-shadow: none;
   opacity: 1;
 }
+
+/* Agenda: use the same in-progress pictogram and menu ink as Hoje. */
+#screen-agenda .agenda-status-btn.em_andamento {
+  border-color: transparent;
+  border-radius: 50%;
+  background: #f97316 center / 11px 11px no-repeat var(--status-relogio);
+}
+
+#screen-agenda .agenda-status-btn.em_andamento > svg { display: none; }
+#screen-agenda .timeline-menu-trigger { color: #64748b; }
