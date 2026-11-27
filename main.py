@@ -1310,6 +1310,93 @@ def rodar_migracoes_automaticas():
             print(f"[MIGRAÇÃO] Aviso ao verificar órfãos em {tabela}: {type(e).__name__}")
 
 
+def verificar_permissoes_postgres():
+    """Valida o papel conectado antes de emitir DDL ou gravar dados."""
+    if IS_SQLITE:
+        return
+
+    operacoes = {
+        "google_calendar_tokens": ("SELECT", "INSERT", "UPDATE", "DELETE"),
+        "auth_sessoes": ("SELECT", "INSERT", "DELETE"),
+        "google_autorizacoes": ("SELECT", "INSERT", "UPDATE", "DELETE"),
+        "google_credenciais_migracao": ("SELECT", "INSERT", "UPDATE"),
+    }
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("SET TRANSACTION READ ONLY"))
+            ambiente = conn.execute(text("""
+                SELECT has_database_privilege(current_database(), 'CONNECT') AS conecta,
+                       has_schema_privilege(current_schema(), 'USAGE') AS usa_esquema,
+                       has_schema_privilege(current_schema(), 'CREATE') AS cria_no_esquema,
+                       NOT pg_is_in_recovery()
+                           AND current_setting('default_transaction_read_only') = 'off' AS gravavel
+            """)).mappings().one()
+            faltas = []
+            for chave, descricao in (
+                ("conecta", "CONNECT no banco"),
+                ("usa_esquema", "USAGE no esquema ativo"),
+                ("gravavel", "conexão PostgreSQL gravável para a aplicação"),
+            ):
+                if not ambiente[chave]:
+                    faltas.append(descricao)
+
+            tabelas_visiveis = set(conn.execute(text("""
+                SELECT nome FROM unnest(CAST(:tabelas AS text[])) AS nome
+                WHERE to_regclass(nome) IS NOT NULL
+            """), {"tabelas": list(Base.metadata.tables)}).scalars())
+            tabelas_ausentes = set(Base.metadata.tables) - tabelas_visiveis
+            if tabelas_ausentes and not ambiente["cria_no_esquema"]:
+                faltas.append("CREATE no esquema ativo")
+            for tabela in Base.metadata.sorted_tables:
+                if tabela.name not in tabelas_ausentes:
+                    continue
+                for referencia in tabela.foreign_keys:
+                    alvo = referencia.column
+                    if alvo.table.name in tabelas_visiveis and not conn.execute(text("""
+                        SELECT has_column_privilege(to_regclass(:tabela), :coluna, 'REFERENCES')
+                    """), {"tabela": alvo.table.name, "coluna": alvo.name}).scalar_one():
+                        faltas.append(f"REFERENCES em {alvo.table.name}.{alvo.name}")
+
+            for tabela, privilegios in operacoes.items():
+                if tabela not in tabelas_visiveis:
+                    continue
+                permissoes = conn.execute(text("""
+                    SELECT p AS privilegio, has_table_privilege(to_regclass(:tabela), p) AS autorizado
+                    FROM unnest(CAST(:privilegios AS text[])) AS p
+                """), {"tabela": tabela, "privilegios": list(privilegios)}).mappings()
+                faltas.extend(f"{r['privilegio']} em {tabela}" for r in permissoes if not r["autorizado"])
+
+            if "google_calendar_tokens" in tabelas_visiveis:
+                google = conn.execute(text("""
+                    SELECT pg_has_role(c.relowner, 'USAGE') AS proprietario,
+                           NOT row_security_active(c.oid) AS acesso_integral,
+                           COALESCE(
+                               has_sequence_privilege(
+                                   pg_get_serial_sequence('google_calendar_tokens', 'id'), 'USAGE'
+                               ) OR has_sequence_privilege(
+                                   pg_get_serial_sequence('google_calendar_tokens', 'id'), 'UPDATE'
+                               ), TRUE
+                           ) AS usa_sequencia
+                    FROM pg_class AS c
+                    WHERE c.oid = to_regclass('google_calendar_tokens')
+                """)).mappings().one()
+                if not google["proprietario"]:
+                    faltas.append("propriedade efetiva de google_calendar_tokens para ALTER TABLE")
+                if not google["acesso_integral"]:
+                    faltas.append("acesso integral a google_calendar_tokens para conversão")
+                if not google["usa_sequencia"]:
+                    faltas.append("USAGE ou UPDATE na sequência de google_calendar_tokens.id")
+    except Exception:
+        raise RuntimeError("[DB] Pré-verificação PostgreSQL: FALHA. Não foi possível verificar a conexão e as permissões.") from None
+
+    if faltas:
+        raise RuntimeError("[DB] Pré-verificação PostgreSQL: FALHA. " + "; ".join(sorted(set(faltas))) + ".")
+    print("[DB] Pré-verificação PostgreSQL: APROVADA para preparação e conversão das credenciais Google.", flush=True)
+
+
+verificar_permissoes_postgres()
+
+
 try:
     rodar_migracoes_automaticas()
 except Exception:
