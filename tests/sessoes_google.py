@@ -102,7 +102,10 @@ def executar():
                 assert fluxo.fetch_token.call_count == 1
             with main.SessionLocal() as db:
                 row = db.query(main.GoogleCalendarToken).filter_by(user_id=uid).one()
-                assert all(valor.startswith(main.PREFIXO_CIFRA_GOOGLE)
+                protegida = main.credenciais_google_protegidas(db)
+                if main.IS_SQLITE or main.CONVERTER_CREDENCIAIS_GOOGLE_POSTGRES:
+                    assert protegida
+                assert all(valor.startswith(main.PREFIXO_CIFRA_GOOGLE) == protegida
                            for valor in (row.access_token, row.refresh_token, row.client_secret))
                 assert not db.query(main.GoogleCalendarToken).filter_by(user_id=outro_id).count()
 
@@ -152,7 +155,7 @@ def executar():
                 "senha": alteracao["nova_senha"], "confirmacao": "EXCLUIR",
             }).status_code == 200
             assert autenticado(atual) == autenticado(token_extra) == 401 and autenticado(outro) == 200
-            print("OAuth, cifra, revogação, reconexão, backup e exclusão aprovados (Google simulado).")
+            print("OAuth, formato esperado, revogação, reconexão, backup e exclusão aprovados (Google simulado).")
 
 
 if __name__ == "__main__":

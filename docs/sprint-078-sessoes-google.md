@@ -46,6 +46,8 @@ A validação usou dados sintéticos. O Google real, o Render, o PWA instalado e
 
 ## Publicação e rollback
 
+O [procedimento da Sprint 078.1](sprint-078-1-implantacao.md) substitui a sequência de publicação original abaixo.
+
 1. Conferir backup recuperável, disponibilidade da chave separada por instância, configurações de autenticação da Sprint 076 e permissões do papel PostgreSQL. Ele precisa conectar, acessar o esquema esperado, criar tabelas e índices, referenciar as tabelas indicadas nas chaves estrangeiras e ler/atualizar as credenciais existentes, além das permissões normais de execução. Conferir antes do deploy, sem divulgar valores.
 2. Planejar a troca de versão sem escritores concorrentes da versão anterior no banco. A versão anterior pode gravar credenciais em texto puro durante a transição. Ativar a versão nova apenas após validar a inicialização e `/health`. Se houver falha de banco ou chave, preservar o banco e recuperar a chave/configuração original. Verificar arquivos versionados, v101, novo login e fluxos de conexão com conta controlada.
 3. Após a migração, rollback exige um artefato já validado que mantenha a mesma criptografia, chave, verificação de sessões e rejeição de JWTs legados. Se esse artefato não existir, aplicar correção à frente com o banco e a chave preservados. O retorno direto à Sprint 077 é inseguro: ela não entende as credenciais criptografadas e volta a aceitar JWTs antigos. Uma restauração integral de snapshot também pode perder gravações posteriores e recuperar credenciais em texto puro.

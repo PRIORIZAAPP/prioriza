@@ -149,6 +149,9 @@ GOOGLE_SCOPES = ["https://www.googleapis.com/auth/calendar"]
 GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token"
 GOOGLE_REVOGAR_URI = "https://oauth2.googleapis.com/revoke"
 PREFIXO_CIFRA_GOOGLE = "fernet:v1:"
+# Esta versão prepara o PostgreSQL. A segunda versão habilita a conversão.
+CONVERTER_CREDENCIAIS_GOOGLE_POSTGRES = False
+BLOQUEIO_MIGRACAO_GOOGLE = 71419221
 
 
 def carregar_cifra_google():
@@ -626,6 +629,13 @@ class GoogleCalendarToken(Base):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
+
+
+class FaseCredenciaisGoogle(Base):
+    __tablename__ = "google_credenciais_migracao"
+
+    id = Column(Integer, primary_key=True)
+    convertida = Column(Boolean, nullable=False)
 
 
 class SessaoAutenticada(Base):
@@ -2136,23 +2146,60 @@ def decifrar_dado_google(valor, user_id, campo):
         raise RuntimeError("[CONFIG] GOOGLE_CREDENTIALS_KEY não corresponde às credenciais existentes.") from None
 
 
+def credenciais_google_protegidas(db):
+    if IS_SQLITE:
+        return True
+    # Mantém o formato estável até o fim de cada transação que usa as credenciais.
+    db.execute(text("SELECT pg_advisory_xact_lock_shared(:chave)"), {"chave": BLOQUEIO_MIGRACAO_GOOGLE})
+    return db.get(FaseCredenciaisGoogle, 1, populate_existing=True).convertida
+
+
+def codificar_credencial_google(valor, user_id, campo, protegida):
+    return cifrar_dado_google(valor, user_id, campo) if protegida else valor
+
+
+def ler_credencial_google(valor, user_id, campo, protegida):
+    return decifrar_dado_google(valor, user_id, campo) if protegida else valor
+
+
 def migrar_credenciais_google():
-    # All fields move together, including inactive rows left by old disconnects.
     with SessionLocal.begin() as db:
         if IS_SQLITE:
             serializar_autenticacao_sqlite(db)
         else:
             db.execute(text("SET LOCAL lock_timeout = '5s'"))
-            db.execute(text("SELECT pg_advisory_xact_lock(71419220)"))
+            db.execute(text("SELECT pg_advisory_xact_lock(:chave)"), {"chave": BLOQUEIO_MIGRACAO_GOOGLE})
+        fase = db.get(FaseCredenciaisGoogle, 1) if not IS_SQLITE else None
+        if not IS_SQLITE and fase is None:
+            if CONVERTER_CREDENCIAIS_GOOGLE_POSTGRES:
+                raise RuntimeError("[DB] Implante primeiro a versão de preparação das credenciais Google.")
+            fase = FaseCredenciaisGoogle(id=1, convertida=False)
+            db.add(fase)
+        protegida = IS_SQLITE or CONVERTER_CREDENCIAIS_GOOGLE_POSTGRES or fase.convertida
         for registro in db.query(GoogleCalendarToken).with_for_update():
             for campo in ("access_token", "refresh_token", "client_secret"):
                 valor = getattr(registro, campo)
                 if valor is None:
                     continue
+                if CIFRA_GOOGLE is None:
+                    raise RuntimeError("[CONFIG] GOOGLE_CREDENTIALS_KEY é necessária para credenciais Google.")
                 if valor.startswith(PREFIXO_CIFRA_GOOGLE):
                     decifrar_dado_google(valor, registro.user_id, campo)
-                else:
+                    if not protegida:
+                        raise RuntimeError("[DB] Formato de credencial incompatível com a fase registrada.")
+                elif protegida:
                     setattr(registro, campo, cifrar_dado_google(valor, registro.user_id, campo))
+        if fase is not None and protegida and not fase.convertida:
+            db.flush()
+            db.execute(text("""
+                ALTER TABLE google_calendar_tokens
+                ADD CONSTRAINT google_credenciais_formato_protegido CHECK (
+                    access_token LIKE 'fernet:v1:%'
+                    AND (refresh_token IS NULL OR refresh_token LIKE 'fernet:v1:%')
+                    AND client_secret LIKE 'fernet:v1:%'
+                )
+            """))
+            fase.convertida = True
 
 
 try:
@@ -2163,13 +2210,13 @@ except Exception:
     raise RuntimeError("[DB] Não foi possível proteger as credenciais do Google Agenda.") from None
 
 
-def valores_credenciais_google(credentials, user_id):
+def valores_credenciais_google(credentials, user_id, protegida):
     expiry = credentials.expiry
     if expiry and expiry.tzinfo is None:
         expiry = expiry.replace(tzinfo=UTC)
     return {
-        "access_token": cifrar_dado_google(credentials.token, user_id, "access_token"),
-        "client_secret": cifrar_dado_google(credentials.client_secret or GOOGLE_CLIENT_SECRET, user_id, "client_secret"),
+        "access_token": codificar_credencial_google(credentials.token, user_id, "access_token", protegida),
+        "client_secret": codificar_credencial_google(credentials.client_secret or GOOGLE_CLIENT_SECRET, user_id, "client_secret", protegida),
         "token_uri": GOOGLE_TOKEN_URI,
         "client_id": credentials.client_id or GOOGLE_CLIENT_ID,
         "scopes": ",".join(credentials.scopes or GOOGLE_SCOPES),
@@ -2180,10 +2227,11 @@ def valores_credenciais_google(credentials, user_id):
 
 def salvar_google_credentials(db: Session, user: User, credentials: Credentials):
     user_id = garantir_user_id(user.id, "token Google")
+    protegida = credenciais_google_protegidas(db)
     token_row = db.query(GoogleCalendarToken).filter_by(provider="google", user_id=user_id).first()
-    valores = valores_credenciais_google(credentials, user_id)
+    valores = valores_credenciais_google(credentials, user_id, protegida)
     if credentials.refresh_token or not token_row:
-        valores["refresh_token"] = cifrar_dado_google(credentials.refresh_token, user_id, "refresh_token")
+        valores["refresh_token"] = codificar_credencial_google(credentials.refresh_token, user_id, "refresh_token", protegida)
     if not token_row:
         token_row = GoogleCalendarToken(user_id=user_id, provider="google", ativo=True, **valores)
         db.add(token_row)
@@ -2197,6 +2245,7 @@ def salvar_google_credentials(db: Session, user: User, credentials: Credentials)
 
 def get_google_credentials(db: Session, user: User) -> Credentials:
     user_id = garantir_user_id(user.id, "token Google")
+    protegida = credenciais_google_protegidas(db)
     expiry = GoogleCalendarToken.expiry
     if not IS_SQLITE:
         # PostgreSQL interprets the legacy naive timestamp in the database session time zone.
@@ -2208,11 +2257,11 @@ def get_google_credentials(db: Session, user: User) -> Credentials:
         raise HTTPException(status_code=404, detail="Google Agenda ainda não foi conectado.")
     token_row, expira_em = registro
     credentials = Credentials(
-        token=decifrar_dado_google(token_row.access_token, user_id, "access_token"),
-        refresh_token=decifrar_dado_google(token_row.refresh_token, user_id, "refresh_token"),
+        token=ler_credencial_google(token_row.access_token, user_id, "access_token", protegida),
+        refresh_token=ler_credencial_google(token_row.refresh_token, user_id, "refresh_token", protegida),
         token_uri=GOOGLE_TOKEN_URI,
         client_id=token_row.client_id,
-        client_secret=decifrar_dado_google(token_row.client_secret, user_id, "client_secret"),
+        client_secret=ler_credencial_google(token_row.client_secret, user_id, "client_secret", protegida),
         scopes=[s for s in (token_row.scopes or "").split(",") if s] or GOOGLE_SCOPES,
     )
     if expira_em:
@@ -2235,9 +2284,9 @@ def get_google_credentials(db: Session, user: User) -> Credentials:
     except TransportError:
         raise HTTPException(status_code=502, detail="Não foi possível acessar o Google Agenda.") from None
 
-    valores = valores_credenciais_google(credentials, user_id)
+    valores = valores_credenciais_google(credentials, user_id, protegida)
     if credentials.refresh_token:
-        valores["refresh_token"] = cifrar_dado_google(credentials.refresh_token, user_id, "refresh_token")
+        valores["refresh_token"] = codificar_credencial_google(credentials.refresh_token, user_id, "refresh_token", protegida)
     if not mesmo_vinculo.update(valores, synchronize_session=False):
         db.rollback()
         raise HTTPException(status_code=409, detail="A conexão Google mudou. Tente novamente.")
@@ -3326,11 +3375,12 @@ def desconectar_google(db: Session = Depends(get_db), current_user: User = Depen
     serializar_autenticacao_sqlite(db)
     bloquear_usuario_autenticacao(db, user_id)
     db.query(AutorizacaoGoogle).filter_by(user_id=user_id).delete(synchronize_session=False)
+    protegida = credenciais_google_protegidas(db)
     registros = db.query(GoogleCalendarToken).filter_by(provider="google", user_id=user_id).all()
     tokens = set()
     for registro in registros:
         campo = "refresh_token" if registro.refresh_token else "access_token"
-        tokens.add(decifrar_dado_google(getattr(registro, campo), user_id, campo))
+        tokens.add(ler_credencial_google(getattr(registro, campo), user_id, campo, protegida))
     for registro in registros:
         db.delete(registro)
     db.commit()

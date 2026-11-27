@@ -1,0 +1,36 @@
+# PRIORIZA · Sprint 078.1
+
+## Parecer e estratégia
+
+A conversão no primeiro startup da Sprint 078 não é compatível com a troca padrão do Render. A Sprint 077 ainda pode ler ou gravar as mesmas colunas enquanto a nova instância inicializa. A entrega agora usa dois deploys manuais por SHA, ambos no plano Free, com o Auto-Deploy desabilitado.
+
+1. **Preparação, PR #49.** Cria as tabelas da Sprint 078 e o registro de fase no PostgreSQL. Aplica sessões revogáveis, OAuth sem JWT na URL, PKCE e revogação no servidor. Mantém o formato legado das credenciais por uma janela curta, para a 077 terminar o atendimento e suas gravações normalmente.
+2. **Conversão, PR subsequente.** Requer a fase de preparação. Aguarda operações Google da versão de preparação terminarem ou falha por timeout. Converte os três campos e valida credenciais já protegidas, inclusive registros inativos. A mesma transação instala uma restrição que rejeita texto puro nas colunas e marca a fase como convertida. Qualquer falha antes do commit desfaz o lote, a restrição e a mudança de fase.
+
+A preparação e a versão final usam o mesmo bloqueio consultivo transacional no PostgreSQL durante leituras e gravações das credenciais. Quando a conversão confirma, a preparação observa a fase nova, lê credenciais criptografadas e grava somente nesse formato. Ela pode atender durante o segundo deploy e ser usada como versão de recuperação. O SQLite usa a cifra diretamente e dispensa o escalonamento.
+
+A restrição protege o formato persistido, enquanto o Fernet autentica o conteúdo criptografado e o vínculo com conta/campo. A restrição não comprova o encerramento da 077. A preparação exige a chave quando há credenciais, valida o formato da chave e mantém os dados compatíveis em repouso enquanto a fase temporária estiver ativa. Nesse período, requisições antigas ainda executadas pela 077 seguem as regras da 077, inclusive a possibilidade legada de uma renovação já em andamento disputar com uma desconexão. Reserve a janela e oriente a adiar alterações na integração até a troca terminar. O segundo deploy encerra a escrita em claro, inclusive após retorno ao código da preparação. Backups físicos antigos podem conter credenciais em claro e requerem a proteção já aplicável a dados sensíveis.
+
+## Publicação no Render
+
+1. Confira backup recuperável, a chave cadastrada e guardada separadamente e o papel PostgreSQL usado pela aplicação. A criação das novas tabelas exige `CREATE` no esquema e `REFERENCES` em `users.id`. As credenciais exigem leitura e escrita. Para o `ALTER TABLE` da conversão, o papel precisa ser proprietário efetivo de `google_calendar_tokens` ou poder agir como o proprietário na conexão usada pelo serviço. Confira pelo catálogo ou ensaie com papel equivalente em um PostgreSQL 18 isolado. Não altere permissões durante a publicação.
+2. Após aprovação, integre somente o PR #49 e faça **Manual Deploy → Deploy a specific commit** com o SHA que contém a preparação. Valide a nova instância e mantenha o artefato da preparação disponível. O Render pode encaminhar tráfego à nova instância antes de encerrar a antiga. A presença de `/health`, a ausência momentânea de conexões ou o simples decurso de um prazo não comprovam a parada.
+3. **Condição para a conversão.** Exija evidência positiva do encerramento da instância que executava a 077, correlacionada ao primeiro deploy, incluindo confirmação de término do processo da instância anterior nos logs ou confirmação do Render. Confira também que nenhum outro serviço, job ou processo usa a 077 nesse banco. Se não for possível obter a evidência, não inicie a conversão. A alternativa é uma janela em que se confirme a suspensão e o encerramento da 077 antes de iniciar um SHA compatível, sem retomá-la entre as etapas. Valide o comportamento do Resume em ambiente descartável ou com o suporte ao Render.
+4. Após essa confirmação e aprovação separada, integre o PR de conversão e faça deploy manual do seu SHA. Confira o SHA no painel, inicialização e prontidão em `/health`, a fase `convertida=true` em `google_credenciais_migracao`, a restrição validada em `pg_constraint` e a ausência de valores sem o prefixo protegido, em consultas agregadas que não retornem credenciais. O valor fixo de `build` em `/health` não identifica o SHA. Valide login, logout, o cache v101 e a Agenda com conta controlada. O primeiro deploy exige que usuários entrem novamente.
+5. A fase de preparação é temporária. Planeje os dois deploys na mesma janela e, caso a conversão falhe, trate a pendência antes de encerrar a implantação. Bancos PostgreSQL novos também devem passar pela preparação antes de iniciar a versão de conversão. A preparação não exige o acesso de administrador do banco.
+
+Consulte a documentação do Render sobre a [sequência de deploy](https://render.com/docs/deploys#zero-downtime-deploys), o [deploy por SHA](https://render.com/docs/deploys#deploying-a-specific-commit) e a [retomada de serviços](https://api-docs.render.com/reference/resume-service-1).
+
+## Recuperação
+
+Se a inicialização falhar por chave, permissão ou bloqueio, mantenha a versão de preparação e confirme a fase antes de tentar novamente. Corrija a condição observada e reimplante o mesmo SHA de conversão. Se a fase já estiver convertida, a preparação volta ao ar com o mesmo formato protegido e a mesma chave. Use o mesmo banco, a mesma chave Fernet e os mesmos segredos de autenticação. Confirme que o artefato selecionado contém a lógica de preparação desta sprint.
+
+A Sprint 077 deixou de ser um destino seguro de rollback a partir da ativação das sessões revogáveis. O retorno à preparação mantém a validação de sessões no servidor e não reativa JWTs revogados. Não restaure um snapshot anterior como mecanismo normal de rollback. Ele pode recuperar credenciais em texto puro, desfazer revogações e perder gravações recentes.
+
+## Evidências e limites
+
+- PostgreSQL 18 isolado, com processos de código da Sprint 077, preparação e conversão compartilhando o mesmo banco. Exercitados renovação da 077 com preparação já instalada, desconexão e reconexão simuladas, gravação concorrente da preparação, timeout de startup, queda do processo após a escrita e antes do commit, rollback transacional, repetição do deploy, chave ausente, inválida e incorreta, leitura após retorno à preparação, rejeição de gravação legada em claro, desconexão e persistência da revogação de sessão no retorno.
+- As suítes de autenticação/OAuth da Sprint 078, expiração de credenciais e backup v2.5 foram executadas na versão de conversão em SQLite e PostgreSQL 18. A suíte de configuração da Sprint 076 passou em ambiente local e produção simulada com PostgreSQL. O papel real do Render ainda precisa ser validado.
+- O teste de coexistência é reproduzível com `tests/migracao_google_coexistencia.py`, usando três árvores de código e PostgreSQL descartável local. O teste simula a API Google. Nenhum teste foi executado contra Google real, Render ou banco de produção. A evidência operacional da parada da 077 deve ser coletada quando a publicação for autorizada.
+
+Arquivos desta revisão: `main.py`, `tests/migracao_google_coexistencia.py`, `tests/sessoes_google.py` e este relatório. O segundo PR habilita a conversão em `main.py`. A interface e o cache v101 da Sprint 078 são mantidos.
