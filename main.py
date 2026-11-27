@@ -27,7 +27,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, ValidationError, model_validator
-from sqlalchemy import Boolean, CheckConstraint, Column, Date, DateTime, ForeignKey, ForeignKeyConstraint, Integer, Numeric, String, Text, UniqueConstraint, column, create_engine, inspect, table, text
+from sqlalchemy import Boolean, CheckConstraint, Column, Date, DateTime, ForeignKey, ForeignKeyConstraint, Integer, Numeric, String, Text, UniqueConstraint, cast, column, create_engine, inspect, table, text
 from sqlalchemy.dialects.postgresql import insert as postgresql_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
@@ -1994,13 +1994,18 @@ def salvar_google_credentials(db: Session, user: User, credentials: Credentials)
 
 def get_google_credentials(db: Session, user: User) -> Credentials:
     user_id = garantir_user_id(user.id, "token Google")
-    token_row = db.query(GoogleCalendarToken).filter(
+    expiry = GoogleCalendarToken.expiry
+    if not IS_SQLITE:
+        # PostgreSQL stored this legacy column in the database session's time zone.
+        expiry = cast(expiry, DateTime(timezone=True))
+    registro = db.query(GoogleCalendarToken, expiry).filter(
         GoogleCalendarToken.provider == "google",
         GoogleCalendarToken.user_id == user_id,
         GoogleCalendarToken.ativo == True,
     ).first()
-    if not token_row:
+    if not registro:
         raise HTTPException(status_code=404, detail="Google Agenda ainda não foi conectado.")
+    token_row, expira_em = registro
 
     scopes = [s for s in (token_row.scopes or "").split(",") if s] or GOOGLE_SCOPES
     credentials = Credentials(
@@ -2011,6 +2016,10 @@ def get_google_credentials(db: Session, user: User) -> Credentials:
         client_secret=token_row.client_secret,
         scopes=scopes,
     )
+
+    if expira_em:
+        # google-auth compares expiration against naive UTC.
+        credentials.expiry = _parse_datetime_sync(expira_em).astimezone(UTC).replace(tzinfo=None)
 
     if credentials.expired and credentials.refresh_token:
         credentials.refresh(GoogleAuthRequest())
@@ -2460,12 +2469,15 @@ async def auth_reset_password(request: Request, db: Session = Depends(get_db)):
 
     agora = datetime.now(UTC)
     token_hash = hash_token_recuperacao(token)
+    # Compare using the same database time zone as the stored legacy timestamp.
+    agora_no_banco = agora.replace(tzinfo=None) if IS_SQLITE else cast(agora, DateTime())
     registro = db.query(PasswordResetToken).filter(
         PasswordResetToken.token_hash == token_hash,
+        PasswordResetToken.expires_at > agora_no_banco,
         PasswordResetToken.used_at.is_(None),
     ).order_by(PasswordResetToken.id.desc()).first()
 
-    if not registro or not registro.expires_at or registro.expires_at < agora:
+    if not registro:
         raise HTTPException(status_code=400, detail="Este link de recuperação é inválido ou expirou.")
 
     usuario = db.query(User).filter(User.id == registro.user_id, User.ativo == True).first()
