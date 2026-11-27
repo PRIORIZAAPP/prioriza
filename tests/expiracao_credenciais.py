@@ -7,6 +7,7 @@ from unittest.mock import patch
 from urllib.parse import urlsplit
 from uuid import uuid4
 
+from cryptography.fernet import Fernet
 from fastapi.testclient import TestClient
 
 
@@ -60,4 +61,5 @@ if __name__ == "__main__":
                       or not urlsplit(banco).path.startswith("/pri075_")):
             raise ValueError("Use um banco descartável pri075_ em loopback.")
         os.environ["DATABASE_URL"] = banco or f"sqlite:///{temporario}/expiracao.sqlite"
+        os.environ["GOOGLE_CREDENTIALS_KEY"] = Fernet.generate_key().decode()
         executar()

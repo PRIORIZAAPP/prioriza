@@ -19,9 +19,12 @@ from urllib.parse import urlsplit
 from typing import Annotated, Any, Literal, Optional
 from zoneinfo import ZoneInfo
 
+from cryptography.fernet import Fernet, InvalidToken
+from google.auth.exceptions import RefreshError, TransportError
+
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, RedirectResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from google.auth.transport.requests import Request as GoogleAuthRequest
 from google.oauth2.credentials import Credentials
@@ -29,7 +32,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, ValidationError, model_validator
-from sqlalchemy import Boolean, CheckConstraint, Column, Date, DateTime, ForeignKey, ForeignKeyConstraint, Integer, Numeric, String, Text, UniqueConstraint, cast, column, create_engine, inspect, table, text
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, Date, DateTime, ForeignKey, ForeignKeyConstraint, Integer, Numeric, String, Text, UniqueConstraint, cast, column, create_engine, inspect, table, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.dialects.postgresql import insert as postgresql_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
@@ -143,6 +146,27 @@ GOOGLE_REDIRECT_URI = os.environ.get(
     "http://localhost:8000/auth/google/callback",
 ).strip()
 GOOGLE_SCOPES = ["https://www.googleapis.com/auth/calendar"]
+GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token"
+GOOGLE_REVOGAR_URI = "https://oauth2.googleapis.com/revoke"
+PREFIXO_CIFRA_GOOGLE = "fernet:v1:"
+
+
+def carregar_cifra_google():
+    valor = os.environ.get("GOOGLE_CREDENTIALS_KEY", "").strip()
+    if not valor:
+        if AMBIENTE_PRODUCAO and GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
+            raise RuntimeError("[CONFIG] GOOGLE_CREDENTIALS_KEY é necessária para configurar o Google Agenda.")
+        return None
+    try:
+        chave = base64.b64decode(valor, altchars=b"-_", validate=True)
+        if len(chave) != 32 or base64.urlsafe_b64encode(chave).decode() != valor:
+            raise ValueError
+        return Fernet(valor.encode())
+    except (ValueError, UnicodeError):
+        raise RuntimeError("[CONFIG] GOOGLE_CREDENTIALS_KEY inválida.") from None
+
+
+CIFRA_GOOGLE = carregar_cifra_google()
 usa_https_only = AMBIENTE_PRODUCAO or not (
     "localhost" in GOOGLE_REDIRECT_URI.lower() or "127.0.0.1" in GOOGLE_REDIRECT_URI.lower()
 )
@@ -163,11 +187,20 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(HttpError)
+async def erro_api_google(_request: Request, _erro: HttpError):
+    return JSONResponse({"detail": "Não foi possível completar a operação no Google Agenda."}, status_code=502)
+
+
 @app.middleware("http")
 async def adicionar_cabecalhos_seguranca(request: Request, call_next):
     response = await call_next(request)
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
-    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    if request.url.path.startswith("/auth/"):
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["Referrer-Policy"] = "no-referrer"
+    else:
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     response.headers.setdefault(
         "Permissions-Policy",
         "camera=(), geolocation=(), microphone=(self)",
@@ -595,6 +628,26 @@ class GoogleCalendarToken(Base):
         }
 
 
+class SessaoAutenticada(Base):
+    __tablename__ = "auth_sessoes"
+
+    id = Column(String(36), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    expira_em = Column(BigInteger, nullable=False, index=True)
+
+
+class AutorizacaoGoogle(Base):
+    __tablename__ = "google_autorizacoes"
+
+    estado = Column(String(64), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    sessao_id = Column(String(36), ForeignKey("auth_sessoes.id", ondelete="CASCADE"), nullable=False, index=True)
+    navegador = Column(String(64), nullable=False)
+    verificador = Column(String(128), nullable=False)
+    expira_em = Column(BigInteger, nullable=False, index=True)
+    consumida = Column(Boolean, nullable=False, default=False)
+
+
 class UserAccessLog(Base):
     __tablename__ = "user_access_logs"
 
@@ -830,20 +883,28 @@ def enviar_email_feedback(usuario: User, categoria: str, mensagem: str) -> bool:
         return False
 
 
-def criar_token_acesso(user: User) -> str:
-    agora = datetime.now(UTC)
-    payload = {
-        "sub": str(user.id),
-        "email": user.email,
-        "nome": user.nome,
-        "iat": int(agora.timestamp()),
-        "exp": int((agora + timedelta(hours=JWT_EXP_HOURS)).timestamp()),
-    }
+def chave_assinatura_sessao():
+    # Domain separation prevents the previous release from accepting new JWTs.
+    return hmac.new(JWT_SECRET.encode(), b"prioriza:auth-sessoes:v1", hashlib.sha256).digest()
+
+
+def criar_token_acesso(user: User, db: Session) -> str:
+    agora = int(datetime.now(UTC).timestamp())
+    db.query(AutorizacaoGoogle).filter(
+        AutorizacaoGoogle.user_id == user.id, AutorizacaoGoogle.expira_em <= agora,
+    ).delete(synchronize_session=False)
+    db.query(SessaoAutenticada).filter(
+        SessaoAutenticada.user_id == user.id, SessaoAutenticada.expira_em <= agora,
+    ).delete(synchronize_session=False)
+    expira_em = agora + JWT_EXP_HOURS * 3600
+    sessao = SessaoAutenticada(id=str(uuid4()), user_id=user.id, expira_em=expira_em)
+    db.add(sessao)
+    payload = {"sub": str(user.id), "jti": sessao.id, "iat": agora, "exp": expira_em}
     header = {"alg": "HS256", "typ": "JWT"}
     header_b64 = _b64url_encode(json.dumps(header, separators=(",", ":"), ensure_ascii=False).encode("utf-8"))
     payload_b64 = _b64url_encode(json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8"))
     assinatura = hmac.new(
-        JWT_SECRET.encode("utf-8"),
+        chave_assinatura_sessao(),
         f"{header_b64}.{payload_b64}".encode("utf-8"),
         hashlib.sha256,
     ).digest()
@@ -857,19 +918,22 @@ def decodificar_token(token: str) -> dict[str, Any]:
         raise HTTPException(status_code=401, detail="Token inválido.") from e
 
     assinatura_esperada = hmac.new(
-        JWT_SECRET.encode("utf-8"),
+        chave_assinatura_sessao(),
         f"{header_b64}.{payload_b64}".encode("utf-8"),
         hashlib.sha256,
     ).digest()
-    if not hmac.compare_digest(_b64url_encode(assinatura_esperada), assinatura_b64):
+    if not hmac.compare_digest(_b64url_encode(assinatura_esperada).encode(), assinatura_b64.encode()):
         raise HTTPException(status_code=401, detail="Token inválido.")
 
     try:
         payload = json.loads(_b64url_decode(payload_b64).decode("utf-8"))
+        UUID(payload["jti"])
+        if not isinstance(payload["exp"], int):
+            raise ValueError
     except Exception as e:
         raise HTTPException(status_code=401, detail="Token inválido.") from e
 
-    if int(payload.get("exp", 0)) < int(datetime.now(UTC).timestamp()):
+    if payload["exp"] <= int(datetime.now(UTC).timestamp()):
         raise HTTPException(status_code=401, detail="Sessão expirada.")
     return payload
 
@@ -912,7 +976,7 @@ def get_token_from_request(request: Request) -> str:
     auth = (request.headers.get("Authorization") or "").strip()
     if auth.lower().startswith("bearer "):
         return auth.split(" ", 1)[1].strip()
-    return (request.query_params.get("token") or request.query_params.get("access_token") or "").strip()
+    return ""
 
 
 def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
@@ -924,10 +988,37 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
         user_id = int(payload.get("sub"))
     except Exception as e:
         raise HTTPException(status_code=401, detail="Token inválido.") from e
+    sessao = db.query(SessaoAutenticada).filter(
+        SessaoAutenticada.id == payload["jti"], SessaoAutenticada.user_id == user_id,
+        SessaoAutenticada.expira_em > int(datetime.now(UTC).timestamp()),
+    ).first()
+    if not sessao:
+        raise HTTPException(status_code=401, detail="Sessão encerrada ou expirada.")
+    request.state.sessao_id = sessao.id
+    request.state.sessao_expira_em = sessao.expira_em
     user = db.query(User).filter(User.id == user_id, User.ativo == True).first()
     if not user:
         raise HTTPException(status_code=401, detail="Usuário não encontrado.")
     return user
+
+
+def serializar_autenticacao_sqlite(db):
+    if IS_SQLITE:
+        db.execute(text("BEGIN IMMEDIATE"))
+
+
+def bloquear_usuario_autenticacao(db, user_id):
+    return db.query(User).filter_by(id=user_id, ativo=True).populate_existing().with_for_update().first()
+
+
+def revogar_sessoes(db, user_id, sessao_id=None):
+    autorizacoes = db.query(AutorizacaoGoogle).filter_by(user_id=user_id)
+    sessoes = db.query(SessaoAutenticada).filter_by(user_id=user_id)
+    if sessao_id is not None:
+        autorizacoes = autorizacoes.filter_by(sessao_id=sessao_id)
+        sessoes = sessoes.filter_by(id=sessao_id)
+    autorizacoes.delete(synchronize_session=False)
+    sessoes.delete(synchronize_session=False)
 
 
 def get_current_admin_user(current_user: User = Depends(get_current_user)) -> User:
@@ -1476,6 +1567,7 @@ def excluir_conta_usuario(db: Session, user: User) -> dict[str, int]:
     user_id = garantir_user_id(user.id, "exclusão de conta")
     avatar_anterior = user.avatar_url
     try:
+        revogar_sessoes(db, user_id)
         excluir_historico_habitos(db, user_id)
         db.query(IdentidadeBackup).filter_by(user_id=user_id).delete(synchronize_session=False)
         removidos = {
@@ -2017,49 +2109,89 @@ def calcular_dias_para_proxima(item: ChecklistItem, hoje: Optional[date] = None)
 
 
 def google_configurado() -> bool:
-    return bool(GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET and GOOGLE_REDIRECT_URI
+    return bool(CIFRA_GOOGLE and GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET and GOOGLE_REDIRECT_URI
                 and (not AMBIENTE_PRODUCAO or url_publica_https(GOOGLE_REDIRECT_URI)))
+
+
+def cifrar_dado_google(valor, user_id, campo):
+    if valor is None:
+        return None
+    if CIFRA_GOOGLE is None:
+        raise RuntimeError("[CONFIG] GOOGLE_CREDENTIALS_KEY é necessária para credenciais Google.")
+    envelope = json.dumps([user_id, campo, valor], separators=(",", ":")).encode()
+    return PREFIXO_CIFRA_GOOGLE + CIFRA_GOOGLE.encrypt(envelope).decode("ascii")
+
+
+def decifrar_dado_google(valor, user_id, campo):
+    if valor is None:
+        return None
+    if CIFRA_GOOGLE is None or not valor.startswith(PREFIXO_CIFRA_GOOGLE):
+        raise RuntimeError("[CONFIG] Credencial Google sem proteção reconhecida.")
+    try:
+        dados = json.loads(CIFRA_GOOGLE.decrypt(valor[len(PREFIXO_CIFRA_GOOGLE):].encode()))
+        if not isinstance(dados, list) or len(dados) != 3 or dados[:2] != [user_id, campo] or not isinstance(dados[2], str):
+            raise ValueError
+        return dados[2]
+    except (InvalidToken, ValueError, UnicodeError):
+        raise RuntimeError("[CONFIG] GOOGLE_CREDENTIALS_KEY não corresponde às credenciais existentes.") from None
+
+
+def migrar_credenciais_google():
+    # All fields move together, including inactive rows left by old disconnects.
+    with SessionLocal.begin() as db:
+        if IS_SQLITE:
+            serializar_autenticacao_sqlite(db)
+        else:
+            db.execute(text("SET LOCAL lock_timeout = '5s'"))
+            db.execute(text("SELECT pg_advisory_xact_lock(71419220)"))
+        for registro in db.query(GoogleCalendarToken).with_for_update():
+            for campo in ("access_token", "refresh_token", "client_secret"):
+                valor = getattr(registro, campo)
+                if valor is None:
+                    continue
+                if valor.startswith(PREFIXO_CIFRA_GOOGLE):
+                    decifrar_dado_google(valor, registro.user_id, campo)
+                else:
+                    setattr(registro, campo, cifrar_dado_google(valor, registro.user_id, campo))
+
+
+try:
+    migrar_credenciais_google()
+except RuntimeError:
+    raise
+except Exception:
+    raise RuntimeError("[DB] Não foi possível proteger as credenciais do Google Agenda.") from None
+
+
+def valores_credenciais_google(credentials, user_id):
+    expiry = credentials.expiry
+    if expiry and expiry.tzinfo is None:
+        expiry = expiry.replace(tzinfo=UTC)
+    return {
+        "access_token": cifrar_dado_google(credentials.token, user_id, "access_token"),
+        "client_secret": cifrar_dado_google(credentials.client_secret or GOOGLE_CLIENT_SECRET, user_id, "client_secret"),
+        "token_uri": GOOGLE_TOKEN_URI,
+        "client_id": credentials.client_id or GOOGLE_CLIENT_ID,
+        "scopes": ",".join(credentials.scopes or GOOGLE_SCOPES),
+        "expiry": expiry,
+        "updated_at": datetime.now(UTC),
+    }
 
 
 def salvar_google_credentials(db: Session, user: User, credentials: Credentials):
     user_id = garantir_user_id(user.id, "token Google")
-    token_row = db.query(GoogleCalendarToken).filter(
-        GoogleCalendarToken.provider == "google",
-        GoogleCalendarToken.user_id == user_id,
-    ).first()
-    scopes_str = ",".join(credentials.scopes or GOOGLE_SCOPES)
-    expiry = credentials.expiry
-    if expiry and expiry.tzinfo is None:
-        expiry = expiry.replace(tzinfo=UTC)
-
+    token_row = db.query(GoogleCalendarToken).filter_by(provider="google", user_id=user_id).first()
+    valores = valores_credenciais_google(credentials, user_id)
+    if credentials.refresh_token or not token_row:
+        valores["refresh_token"] = cifrar_dado_google(credentials.refresh_token, user_id, "refresh_token")
     if not token_row:
-        token_row = GoogleCalendarToken(
-            user_id=user_id,
-            provider="google",
-            access_token=credentials.token,
-            refresh_token=credentials.refresh_token,
-            token_uri=credentials.token_uri or "https://oauth2.googleapis.com/token",
-            client_id=credentials.client_id or GOOGLE_CLIENT_ID,
-            client_secret=credentials.client_secret or GOOGLE_CLIENT_SECRET,
-            scopes=scopes_str,
-            expiry=expiry,
-            ativo=True,
-        )
+        token_row = GoogleCalendarToken(user_id=user_id, provider="google", ativo=True, **valores)
         db.add(token_row)
     else:
-        token_row.access_token = credentials.token
-        if credentials.refresh_token:
-            token_row.refresh_token = credentials.refresh_token
-        token_row.token_uri = credentials.token_uri or "https://oauth2.googleapis.com/token"
-        token_row.client_id = credentials.client_id or GOOGLE_CLIENT_ID
-        token_row.client_secret = credentials.client_secret or GOOGLE_CLIENT_SECRET
-        token_row.scopes = scopes_str
-        token_row.expiry = expiry
+        for campo, valor in valores.items():
+            setattr(token_row, campo, valor)
         token_row.ativo = True
-        token_row.updated_at = datetime.now(UTC)
-
     db.commit()
-    db.refresh(token_row)
     return token_row
 
 
@@ -2067,36 +2199,49 @@ def get_google_credentials(db: Session, user: User) -> Credentials:
     user_id = garantir_user_id(user.id, "token Google")
     expiry = GoogleCalendarToken.expiry
     if not IS_SQLITE:
-        # PostgreSQL stored this legacy column in the database session's time zone.
+        # PostgreSQL interprets the legacy naive timestamp in the database session time zone.
         expiry = cast(expiry, DateTime(timezone=True))
-    registro = db.query(GoogleCalendarToken, expiry).filter(
-        GoogleCalendarToken.provider == "google",
-        GoogleCalendarToken.user_id == user_id,
-        GoogleCalendarToken.ativo == True,
+    registro = db.query(GoogleCalendarToken, expiry).filter_by(
+        provider="google", user_id=user_id, ativo=True,
     ).first()
     if not registro:
         raise HTTPException(status_code=404, detail="Google Agenda ainda não foi conectado.")
     token_row, expira_em = registro
-
-    scopes = [s for s in (token_row.scopes or "").split(",") if s] or GOOGLE_SCOPES
     credentials = Credentials(
-        token=token_row.access_token,
-        refresh_token=token_row.refresh_token,
-        token_uri=token_row.token_uri or "https://oauth2.googleapis.com/token",
+        token=decifrar_dado_google(token_row.access_token, user_id, "access_token"),
+        refresh_token=decifrar_dado_google(token_row.refresh_token, user_id, "refresh_token"),
+        token_uri=GOOGLE_TOKEN_URI,
         client_id=token_row.client_id,
-        client_secret=token_row.client_secret,
-        scopes=scopes,
+        client_secret=decifrar_dado_google(token_row.client_secret, user_id, "client_secret"),
+        scopes=[s for s in (token_row.scopes or "").split(",") if s] or GOOGLE_SCOPES,
     )
-
     if expira_em:
-        # google-auth compares expiration against naive UTC.
         credentials.expiry = _parse_datetime_sync(expira_em).astimezone(UTC).replace(tzinfo=None)
-
-    if credentials.expired and credentials.refresh_token:
-        credentials.refresh(GoogleAuthRequest())
-        salvar_google_credentials(db, user, credentials)
+    if not credentials.expired:
         return credentials
+    mesmo_vinculo = db.query(GoogleCalendarToken).filter_by(
+        id=token_row.id, user_id=user_id, ativo=True, access_token=token_row.access_token,
+    )
+    if not credentials.refresh_token:
+        raise HTTPException(status_code=409, detail="A autorização expirou. Reconecte o Google Agenda.")
+    try:
+        credentials.refresh(GoogleAuthRequest())
+    except RefreshError as erro:
+        if any(isinstance(campo, dict) and campo.get("error") == "invalid_grant" for campo in erro.args):
+            mesmo_vinculo.delete(synchronize_session=False)
+            db.commit()
+            raise HTTPException(status_code=409, detail="A autorização expirou. Reconecte o Google Agenda.") from None
+        raise HTTPException(status_code=502, detail="Não foi possível renovar a autorização Google.") from None
+    except TransportError:
+        raise HTTPException(status_code=502, detail="Não foi possível acessar o Google Agenda.") from None
 
+    valores = valores_credenciais_google(credentials, user_id)
+    if credentials.refresh_token:
+        valores["refresh_token"] = cifrar_dado_google(credentials.refresh_token, user_id, "refresh_token")
+    if not mesmo_vinculo.update(valores, synchronize_session=False):
+        db.rollback()
+        raise HTTPException(status_code=409, detail="A conexão Google mudou. Tente novamente.")
+    db.commit()
     return credentials
 
 
@@ -2453,9 +2598,9 @@ async def auth_register(request: Request, db: Session = Depends(get_db)):
     usuario = User(nome=nome, email=email, senha_hash=hash_senha(senha), ativo=True)
     db.add(usuario)
     db.flush()
+    token = criar_token_acesso(usuario, db)
     db.commit()
-    db.refresh(usuario)
-    return {"ok": True, "token": criar_token_acesso(usuario), "user": usuario.to_dict()}
+    return {"ok": True, "token": token, "user": usuario.to_dict()}
 
 
 @app.post("/auth/login")
@@ -2467,7 +2612,8 @@ async def auth_login(request: Request, db: Session = Depends(get_db)):
 
     email = normalizar_email(payload.get("email") or "")
     senha = str(payload.get("senha") or "")
-    usuario = buscar_usuario_por_email(db, email)
+    serializar_autenticacao_sqlite(db)
+    usuario = db.query(User).filter_by(email=email).with_for_update().first()
 
     if not usuario or not usuario.ativo or not verificar_senha(senha, usuario.senha_hash):
         raise HTTPException(status_code=401, detail="E-mail ou senha inválidos.")
@@ -2476,10 +2622,9 @@ async def auth_login(request: Request, db: Session = Depends(get_db)):
         usuario.is_admin = True
 
     registrar_acesso_usuario(db, usuario)
+    token = criar_token_acesso(usuario, db)
     db.commit()
-    db.refresh(usuario)
-
-    return {"ok": True, "token": criar_token_acesso(usuario), "user": usuario.to_dict()}
+    return {"ok": True, "token": token, "user": usuario.to_dict()}
 
 
 @app.post("/auth/forgot-password")
@@ -2538,6 +2683,7 @@ async def auth_reset_password(request: Request, db: Session = Depends(get_db)):
     if confirmar and senha != confirmar:
         raise HTTPException(status_code=400, detail="As senhas não coincidem.")
 
+    serializar_autenticacao_sqlite(db)
     agora = datetime.now(UTC)
     token_hash = hash_token_recuperacao(token)
     # Compare using the same database time zone as the stored legacy timestamp.
@@ -2551,8 +2697,16 @@ async def auth_reset_password(request: Request, db: Session = Depends(get_db)):
     if not registro:
         raise HTTPException(status_code=400, detail="Este link de recuperação é inválido ou expirou.")
 
-    usuario = db.query(User).filter(User.id == registro.user_id, User.ativo == True).first()
+    usuario = bloquear_usuario_autenticacao(db, registro.user_id)
     if not usuario:
+        raise HTTPException(status_code=400, detail="Este link de recuperação é inválido ou expirou.")
+    agora = datetime.now(UTC)
+    agora_no_banco = agora.replace(tzinfo=None) if IS_SQLITE else cast(agora, DateTime())
+    registro = db.query(PasswordResetToken).filter(
+        PasswordResetToken.id == registro.id, PasswordResetToken.used_at.is_(None),
+        PasswordResetToken.expires_at > agora_no_banco,
+    ).populate_existing().first()
+    if not registro:
         raise HTTPException(status_code=400, detail="Este link de recuperação é inválido ou expirou.")
 
     usuario.senha_hash = hash_senha(senha)
@@ -2562,6 +2716,7 @@ async def auth_reset_password(request: Request, db: Session = Depends(get_db)):
         PasswordResetToken.used_at.is_(None),
         PasswordResetToken.id != registro.id,
     ).update({"used_at": agora}, synchronize_session=False)
+    revogar_sessoes(db, usuario.id)
     db.commit()
 
     return {"ok": True, "message": "Senha atualizada com sucesso. Você já pode entrar com a nova senha."}
@@ -2645,6 +2800,10 @@ async def auth_change_password(
     nova_senha = str(payload.get("nova_senha") or "")
     confirmar_senha = str(payload.get("confirmar_senha") or "")
 
+    serializar_autenticacao_sqlite(db)
+    current_user = bloquear_usuario_autenticacao(db, current_user.id)
+    if not current_user or not db.get(SessaoAutenticada, request.state.sessao_id):
+        raise HTTPException(status_code=401, detail="Sessão encerrada.")
     if not verificar_senha(senha_atual, current_user.senha_hash):
         raise HTTPException(status_code=400, detail="A senha atual informada não confere.")
     if len(nova_senha) < 6:
@@ -2655,9 +2814,10 @@ async def auth_change_password(
         raise HTTPException(status_code=400, detail="A nova senha precisa ser diferente da atual.")
 
     current_user.senha_hash = hash_senha(nova_senha)
+    revogar_sessoes(db, current_user.id)
+    token = criar_token_acesso(current_user, db)
     db.commit()
-    db.refresh(current_user)
-    return {"ok": True, "message": "Senha atualizada com sucesso.", "user": current_user.to_dict()}
+    return {"ok": True, "message": "Senha atualizada com sucesso.", "user": current_user.to_dict(), "token": token}
 
 
 @app.get("/auth/sessions")
@@ -2666,9 +2826,7 @@ def auth_sessions(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    token = get_token_from_request(request)
-    payload = decodificar_token(token) if token else {}
-    exp = payload.get("exp")
+    exp = request.state.sessao_expira_em
     sessoes = db.query(UserAccessLog).filter(
         UserAccessLog.user_id == current_user.id
     ).order_by(UserAccessLog.acessado_em.desc(), UserAccessLog.id.desc()).limit(10).all()
@@ -2794,7 +2952,14 @@ async def enviar_feedback_app(
 
 
 @app.post("/auth/logout")
-def auth_logout():
+def auth_logout(
+    request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user),
+):
+    serializar_autenticacao_sqlite(db)
+    bloquear_usuario_autenticacao(db, current_user.id)
+    revogar_sessoes(db, current_user.id, request.state.sessao_id)
+    db.commit()
+    request.session.clear()
     return {"ok": True}
 
 
@@ -2853,94 +3018,113 @@ def google_status(db: Session = Depends(get_db), current_user: User = Depends(ge
     return {
         "configurado": google_configurado(),
         "conectado": token_row is not None,
-        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "redirect_uri": GOOGLE_REDIRECT_URI if google_configurado() else None,
         "token": token_row.to_dict() if token_row else None,
     }
 
 
-@app.get("/auth/google")
-def auth_google(request: Request, db: Session = Depends(get_db)):
-    current_user = get_current_user(request, db)
-    if not google_configurado():
-        raise HTTPException(
-            status_code=500,
-            detail="Google não configurado. Defina GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET e GOOGLE_REDIRECT_URI.",
-        )
-
+def fluxo_oauth_google(estado=None, verificador=None):
     flow = Flow.from_client_config(
-        {
-            "web": {
-                "client_id": GOOGLE_CLIENT_ID,
-                "client_secret": GOOGLE_CLIENT_SECRET,
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-            }
-        },
-        scopes=GOOGLE_SCOPES,
+        {"web": {
+            "client_id": GOOGLE_CLIENT_ID,
+            "client_secret": GOOGLE_CLIENT_SECRET,
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": GOOGLE_TOKEN_URI,
+        }},
+        scopes=GOOGLE_SCOPES, state=estado, code_verifier=verificador,
     )
     flow.redirect_uri = GOOGLE_REDIRECT_URI
-    auth_url, state = flow.authorization_url(
-        access_type="offline",
-        prompt="consent",
-        include_granted_scopes="true",
-    )
-    request.session["google_oauth_state"] = state
-    request.session["google_code_verifier"] = flow.code_verifier
-    request.session["google_auth_user_id"] = current_user.id
-    return RedirectResponse(auth_url)
+    return flow
+
+
+def hash_estado_google(valor):
+    return hashlib.sha256(valor.encode()).hexdigest()
+
+
+def resposta_oauth_google(destino):
+    return RedirectResponse(destino, headers={"Cache-Control": "no-store", "Referrer-Policy": "no-referrer"})
+
+
+@app.post("/auth/google")
+def auth_google(request: Request, response: Response, db: Session = Depends(get_db),
+                current_user: User = Depends(get_current_user)):
+    if not google_configurado():
+        raise HTTPException(status_code=503, detail="Google Agenda não configurado.")
+
+    serializar_autenticacao_sqlite(db)
+    user_id = current_user.id
+    usuario = bloquear_usuario_autenticacao(db, user_id)
+    sessao = db.get(SessaoAutenticada, request.state.sessao_id, populate_existing=True)
+    agora = int(datetime.now(UTC).timestamp())
+    if not usuario or not sessao or sessao.expira_em <= agora:
+        raise HTTPException(status_code=401, detail="Sessão encerrada.")
+
+    navegador = secrets.token_urlsafe(32)
+    verificador = secrets.token_urlsafe(64)
+    flow = fluxo_oauth_google(verificador=verificador)
+    auth_url, estado = flow.authorization_url(access_type="offline", prompt="consent", include_granted_scopes="true")
+    db.query(AutorizacaoGoogle).filter_by(user_id=user_id).delete(synchronize_session=False)
+    db.add(AutorizacaoGoogle(
+        estado=hash_estado_google(estado), user_id=user_id, sessao_id=sessao.id,
+        navegador=hash_estado_google(navegador), verificador=verificador,
+        expira_em=min(agora + 600, sessao.expira_em),
+    ))
+    db.commit()
+    request.session.clear()
+    request.session["google_navegador"] = navegador
+    response.headers["Cache-Control"] = "no-store"
+    return {"url": auth_url}
 
 
 @app.get("/auth/google/callback")
 def auth_google_callback(request: Request, db: Session = Depends(get_db)):
     if not google_configurado():
-        raise HTTPException(status_code=500, detail="Google não configurado no backend.")
+        raise HTTPException(status_code=503, detail="Google Agenda não configurado.")
 
-    error = request.query_params.get("error")
-    if error:
-        raise HTTPException(status_code=400, detail="A autorização do Google foi cancelada ou recusada.")
+    estado = request.query_params.get("state") or ""
+    navegador = request.session.get("google_navegador")
+    if not estado or not navegador:
+        raise HTTPException(status_code=400, detail="Sessão OAuth inválida. Conecte novamente.")
+    chave = hash_estado_google(estado)
+    agora = int(datetime.now(UTC).timestamp())
+    # Atomically consume state before any request to Google.
+    alteradas = db.query(AutorizacaoGoogle).filter(
+        AutorizacaoGoogle.estado == chave,
+        AutorizacaoGoogle.navegador == hash_estado_google(navegador),
+        AutorizacaoGoogle.expira_em > agora,
+        AutorizacaoGoogle.consumida.is_(False),
+    ).update({"consumida": True}, synchronize_session=False)
+    if not alteradas:
+        raise HTTPException(status_code=400, detail="Sessão OAuth inválida. Conecte novamente.")
+    pendente = db.get(AutorizacaoGoogle, chave)
+    user_id, sessao_id, verificador = pendente.user_id, pendente.sessao_id, pendente.verificador
+    db.commit()
+    request.session.clear()
 
-    code = request.query_params.get("code")
-    if not code:
-        raise HTTPException(status_code=400, detail="Código de autorização não recebido.")
-
-    saved_state = request.session.get("google_oauth_state")
-    saved_code_verifier = request.session.get("google_code_verifier")
-    saved_user_id = request.session.get("google_auth_user_id")
-    returned_state = request.query_params.get("state")
-
-    if not saved_state or not saved_code_verifier or not saved_user_id:
-        raise HTTPException(status_code=400, detail="Sessão OAuth do Google não encontrada. Conecte novamente.")
-    if returned_state != saved_state:
-        raise HTTPException(status_code=400, detail="State OAuth inválido. Conecte novamente.")
+    if request.query_params.get("error") or not request.query_params.get("code"):
+        db.query(AutorizacaoGoogle).filter_by(estado=chave).delete(synchronize_session=False)
+        db.commit()
+        return resposta_oauth_google("/app?google=cancelado")
 
     try:
-        usuario = db.query(User).filter(User.id == int(saved_user_id), User.ativo == True).first()
-        if not usuario:
-            raise HTTPException(status_code=401, detail="Usuário da sessão Google não encontrado.")
-        flow = Flow.from_client_config(
-            {
-                "web": {
-                    "client_id": GOOGLE_CLIENT_ID,
-                    "client_secret": GOOGLE_CLIENT_SECRET,
-                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                    "token_uri": "https://oauth2.googleapis.com/token",
-                }
-            },
-            scopes=GOOGLE_SCOPES,
-            state=saved_state,
-        )
-        flow.redirect_uri = GOOGLE_REDIRECT_URI
-        flow.code_verifier = saved_code_verifier
-        flow.fetch_token(code=code)
-        salvar_google_credentials(db, usuario, flow.credentials)
-        request.session.pop("google_oauth_state", None)
-        request.session.pop("google_code_verifier", None)
-        request.session.pop("google_auth_user_id", None)
-    except Exception as e:
-        print(f"[GOOGLE] Não foi possível concluir a autorização: {type(e).__name__}")
-        raise HTTPException(status_code=500, detail="Erro ao concluir login Google. Tente conectar novamente.") from None
+        flow = fluxo_oauth_google(estado, verificador)
+        flow.fetch_token(code=request.query_params["code"])
+    except Exception as erro:
+        db.query(AutorizacaoGoogle).filter_by(estado=chave).delete(synchronize_session=False)
+        db.commit()
+        logging.getLogger(__name__).warning("Falha na autorização Google: %s", type(erro).__name__)
+        raise HTTPException(status_code=502, detail="Erro ao concluir login Google. Tente conectar novamente.") from None
 
-    return RedirectResponse(url="/app?google=conectado")
+    serializar_autenticacao_sqlite(db)
+    usuario = bloquear_usuario_autenticacao(db, user_id)
+    sessao = db.get(SessaoAutenticada, sessao_id, populate_existing=True)
+    agora = int(datetime.now(UTC).timestamp())
+    if not usuario or not sessao or sessao.expira_em <= agora or not db.query(AutorizacaoGoogle).filter(
+        AutorizacaoGoogle.estado == chave, AutorizacaoGoogle.expira_em > agora,
+    ).delete(synchronize_session=False):
+        raise HTTPException(status_code=401, detail="Sessão encerrada. Conecte novamente.")
+    salvar_google_credentials(db, usuario, flow.credentials)
+    return resposta_oauth_google("/app?google=conectado")
 
 
 @app.get("/google/calendar/events")
@@ -3138,16 +3322,33 @@ def excluir_evento_google(event_id: str, db: Session = Depends(get_db), current_
 
 @app.post("/google/disconnect")
 def desconectar_google(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    token_row = db.query(GoogleCalendarToken).filter(
-        GoogleCalendarToken.provider == "google",
-        GoogleCalendarToken.user_id == current_user.id,
-    ).first()
-    if not token_row:
-        return {"ok": True, "mensagem": "Google já estava desconectado."}
-    token_row.ativo = False
-    token_row.updated_at = datetime.now(UTC)
+    user_id = current_user.id
+    serializar_autenticacao_sqlite(db)
+    bloquear_usuario_autenticacao(db, user_id)
+    db.query(AutorizacaoGoogle).filter_by(user_id=user_id).delete(synchronize_session=False)
+    registros = db.query(GoogleCalendarToken).filter_by(provider="google", user_id=user_id).all()
+    tokens = set()
+    for registro in registros:
+        campo = "refresh_token" if registro.refresh_token else "access_token"
+        tokens.add(decifrar_dado_google(getattr(registro, campo), user_id, campo))
+    for registro in registros:
+        db.delete(registro)
     db.commit()
-    return {"ok": True, "mensagem": "Google Agenda desconectado com sucesso."}
+
+    if not tokens:
+        return {"ok": True, "revogacao_confirmada": None, "mensagem": "Google Agenda já estava desconectado do PRIORIZA."}
+    confirmada = True
+    for token in tokens:
+        try:
+            resposta = requests.post(GOOGLE_REVOGAR_URI, data={"token": token}, timeout=8, allow_redirects=False)
+            confirmada = (resposta.status_code == 200) and confirmada
+        except requests.RequestException:
+            confirmada = False
+    return {
+        "ok": True, "revogacao_confirmada": confirmada,
+        "mensagem": "Google Agenda desconectado com sucesso." if confirmada else
+        "Google Agenda desconectado do PRIORIZA. Não foi possível confirmar a revogação no Google.",
+    }
 
 
 # ============================================================
