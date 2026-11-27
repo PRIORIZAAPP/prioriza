@@ -1,5 +1,1 @@
-fastapi
-uvicorn
-sqlalchemy
-python-jose
-passlib
+-r requirements.txt

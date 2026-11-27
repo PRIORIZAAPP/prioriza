@@ -1,4 +1,5 @@
 ﻿import json
+import logging
 import os
 import requests
 import threading
@@ -14,6 +15,7 @@ from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from uuid import UUID, uuid4
 from pathlib import Path
+from urllib.parse import urlsplit
 from typing import Annotated, Any, Literal, Optional
 from zoneinfo import ZoneInfo
 
@@ -28,6 +30,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, ValidationError, model_validator
 from sqlalchemy import Boolean, CheckConstraint, Column, Date, DateTime, ForeignKey, ForeignKeyConstraint, Integer, Numeric, String, Text, UniqueConstraint, cast, column, create_engine, inspect, table, text
+from sqlalchemy.engine import make_url
 from sqlalchemy.dialects.postgresql import insert as postgresql_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
@@ -48,7 +51,38 @@ TIMEZONE_PADRAO = "America/Sao_Paulo"
 UTC = timezone.utc
 CHECKLIST_HORA_LIBERACAO = 0
 FUSO_OPERACIONAL = ZoneInfo(TIMEZONE_PADRAO)
-JWT_SECRET = os.environ.get("JWT_SECRET", "prioriza_jwt_dev_only_change_me").strip()
+AMBIENTE_PRODUCAO = (
+    os.environ.get("RENDER", "").strip().lower() == "true"
+    or bool(os.environ.get("RENDER_SERVICE_ID", "").strip())
+    or os.environ.get("APP_ENV", "").strip().lower() == "production"
+)
+SEGREDOS_DESENVOLVIMENTO = {
+    "JWT_SECRET": "prioriza_jwt_dev_only_change_me",
+    "SESSION_SECRET": "prioriza_google_session_secret_trocar_em_producao",
+}
+
+
+def ler_segredo(nome: str) -> str:
+    valor = os.environ.get(nome, "").strip()
+    if AMBIENTE_PRODUCAO and (not valor or valor.lower() in SEGREDOS_DESENVOLVIMENTO.values()):
+        raise RuntimeError(f"[CONFIG] {nome} requer um segredo próprio de produção.")
+    return valor or SEGREDOS_DESENVOLVIMENTO[nome]
+
+
+def url_publica_https(valor: str) -> bool:
+    try:
+        url = urlsplit(valor)
+        return (
+            url.scheme == "https" and bool(url.hostname)
+            and url.hostname not in {"localhost", "127.0.0.1", "::1"}
+            and url.username is None and url.password is None
+        )
+    except ValueError:
+        return False
+
+
+JWT_SECRET = ler_segredo("JWT_SECRET")
+SESSION_SECRET = ler_segredo("SESSION_SECRET")
 JWT_EXP_HOURS = int(os.environ.get("JWT_EXP_HOURS", "168"))
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 ADMIN_EMAIL = (os.environ.get("ADMIN_EMAIL", "").strip().lower())
@@ -60,6 +94,15 @@ AVATAR_MAX_BYTES = int(os.environ.get("AVATAR_MAX_BYTES", str(5 * 1024 * 1024)))
 FEEDBACK_TO = os.environ.get("FEEDBACK_TO", "").strip()
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+if AMBIENTE_PRODUCAO:
+    try:
+        endereco_banco = make_url(DATABASE_URL)
+        valido = endereco_banco.get_backend_name() in {"postgres", "postgresql"} and endereco_banco.host and endereco_banco.database
+    except Exception:
+        valido = False
+    if not valido:
+        raise RuntimeError("[CONFIG] DATABASE_URL deve apontar para o PostgreSQL de produção.") from None
+
 if not DATABASE_URL:
     sqlite_path = BASE_DIR / "prioriza.db"
     DATABASE_URL = f"sqlite:///{sqlite_path}"
@@ -73,9 +116,23 @@ if DATABASE_URL.startswith("postgres://"):
 
 IS_SQLITE = DATABASE_URL.startswith("sqlite")
 connect_args = {"check_same_thread": False} if IS_SQLITE else {}
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
+try:
+    engine = create_engine(DATABASE_URL, connect_args=connect_args, hide_parameters=True)
+except Exception:
+    raise RuntimeError("[CONFIG] Não foi possível configurar o banco. Confira DATABASE_URL e o driver.") from None
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
+class OcultarQueryNoLogDeAcesso(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        # Uvicorn provides the request target as the third positional argument.
+        argumentos = record.args
+        if isinstance(argumentos, tuple) and len(argumentos) == 5 and isinstance(argumentos[2], str):
+            record.args = (*argumentos[:2], argumentos[2].partition("?")[0], *argumentos[3:])
+        return True
+
+
+logging.getLogger("uvicorn.access").addFilter(OcultarQueryNoLogDeAcesso())
 
 app = FastAPI(title="PRIORIZA API")
 
@@ -86,12 +143,7 @@ GOOGLE_REDIRECT_URI = os.environ.get(
     "http://localhost:8000/auth/google/callback",
 ).strip()
 GOOGLE_SCOPES = ["https://www.googleapis.com/auth/calendar"]
-SESSION_SECRET = os.environ.get(
-    "SESSION_SECRET",
-    "prioriza_google_session_secret_trocar_em_producao",
-).strip()
-
-usa_https_only = not (
+usa_https_only = AMBIENTE_PRODUCAO or not (
     "localhost" in GOOGLE_REDIRECT_URI.lower() or "127.0.0.1" in GOOGLE_REDIRECT_URI.lower()
 )
 
@@ -630,8 +682,8 @@ def construir_link_reset_password(token: str) -> str:
 
 
 def enviar_email_recuperacao_senha(email_destino: str, nome: str, token: str) -> bool:
-    if not RESEND_API_KEY or not EMAIL_FROM:
-        print("[AUTH] Recuperação de senha sem envio: RESEND_API_KEY ou EMAIL_FROM não configurados.")
+    if not RESEND_API_KEY or not EMAIL_FROM or (AMBIENTE_PRODUCAO and not url_publica_https(APP_URL)):
+        print("[AUTH] Envio de recuperação indisponível. Confira RESEND_API_KEY, EMAIL_FROM e APP_URL.")
         return False
 
     link = construir_link_reset_password(token)
@@ -662,10 +714,10 @@ def enviar_email_recuperacao_senha(email_destino: str, nome: str, token: str) ->
         resposta = requests.post("https://api.resend.com/emails", json=payload, headers=headers, timeout=20)
         if resposta.ok:
             return True
-        print(f"[AUTH] Falha ao enviar e-mail de recuperação via Resend: {resposta.status_code} {resposta.text}")
+        print(f"[AUTH] Falha ao enviar e-mail de recuperação via Resend: HTTP {resposta.status_code}")
         return False
     except Exception as e:
-        print(f"[AUTH] Erro ao enviar e-mail de recuperação: {e}")
+        print(f"[AUTH] Erro ao enviar e-mail de recuperação: {type(e).__name__}")
         return False
 
 
@@ -707,7 +759,7 @@ def _apagar_avatar_local(avatar_url: Optional[str]):
         if arquivo.exists():
             arquivo.unlink()
     except Exception as e:
-        print(f"[AVATAR] Aviso ao remover avatar antigo: {e}")
+        print(f"[AVATAR] Aviso ao remover avatar antigo: {type(e).__name__}")
 
 
 def _extrair_email_simples(valor: str) -> str:
@@ -757,10 +809,10 @@ def enviar_email_feedback(usuario: User, categoria: str, mensagem: str) -> bool:
         resposta = requests.post("https://api.resend.com/emails", json=payload, headers=headers, timeout=20)
         if resposta.ok:
             return True
-        print(f"[FEEDBACK] Falha ao enviar via Resend: {resposta.status_code} {resposta.text}")
+        print(f"[FEEDBACK] Falha ao enviar via Resend: HTTP {resposta.status_code}")
         return False
     except Exception as e:
-        print(f"[FEEDBACK] Erro ao enviar feedback: {e}")
+        print(f"[FEEDBACK] Erro ao enviar feedback: {type(e).__name__}")
         return False
 
 
@@ -962,7 +1014,7 @@ def garantir_coluna_tabela(nome_tabela: str, nome_coluna: str) -> bool:
         insp = inspect(engine)
         colunas_existentes = {c["name"] for c in insp.get_columns(nome_tabela)}
     except Exception as e:
-        print(f"[MIGRAÇÃO] Não foi possível inspecionar {nome_tabela}: {e}")
+        print(f"[MIGRAÇÃO] Não foi possível inspecionar {nome_tabela}: {type(e).__name__}")
         return False
 
     if nome_coluna in colunas_existentes:
@@ -977,7 +1029,7 @@ def garantir_coluna_tabela(nome_tabela: str, nome_coluna: str) -> bool:
         print(f"[MIGRAÇÃO] Coluna criada: {nome_tabela}.{nome_coluna}")
         return True
     else:
-        print(f"[MIGRAÇÃO] Falha ao criar {nome_tabela}.{nome_coluna}: {erro}")
+        print(f"[MIGRAÇÃO] Falha ao criar {nome_tabela}.{nome_coluna}: {type(erro).__name__}")
         return False
 
 
@@ -987,7 +1039,7 @@ def preencher_nulos_coluna(nome_tabela: str, nome_coluna: str, valor_sql: str):
     if ok:
         print(f"[MIGRAÇÃO] Nulos preenchidos: {nome_tabela}.{nome_coluna}")
     else:
-        print(f"[MIGRAÇÃO] Falha ao preencher nulos em {nome_tabela}.{nome_coluna}: {erro}")
+        print(f"[MIGRAÇÃO] Falha ao preencher nulos em {nome_tabela}.{nome_coluna}: {type(erro).__name__}")
 
 
 def migrar_series_agenda_existentes():
@@ -1038,7 +1090,7 @@ def migrar_series_agenda_existentes():
             print(f"[MIGRAÇÃO] {alteradas} compromisso(s) antigo(s) vinculados a séries regulares.")
     except Exception as e:
         db.rollback()
-        print(f"[MIGRAÇÃO] Aviso ao reconhecer séries antigas da Agenda: {e}")
+        print(f"[MIGRAÇÃO] Aviso ao reconhecer séries antigas da Agenda: {type(e).__name__}")
     finally:
         db.close()
 
@@ -1119,19 +1171,19 @@ def rodar_migracoes_automaticas():
     try:
         PushSubscription.__table__.create(bind=engine, checkfirst=True)
     except Exception as e:
-        print(f"[MIGRAÇÃO] Aviso ao criar push_subscriptions: {e}")
+        print(f"[MIGRAÇÃO] Aviso ao criar push_subscriptions: {type(e).__name__}")
 
     try:
         UserAccessLog.__table__.create(bind=engine, checkfirst=True)
     except Exception as e:
-        print(f"[MIGRAÇÃO] Aviso ao criar user_access_logs: {e}")
+        print(f"[MIGRAÇÃO] Aviso ao criar user_access_logs: {type(e).__name__}")
 
-        print(f"[MIGRAÇÃO] Aviso ao criar contas_fixas_status_mensal: {e}")
+        print(f"[MIGRAÇÃO] Aviso ao criar contas_fixas_status_mensal: {type(e).__name__}")
 
     try:
         MarcoOperacional.__table__.create(bind=engine, checkfirst=True)
     except Exception as e:
-        print(f"[MIGRAÇÃO] Aviso ao criar marcos_operacionais: {e}")
+        print(f"[MIGRAÇÃO] Aviso ao criar marcos_operacionais: {type(e).__name__}")
 
     for tabela in ("tarefas", "checklist", "notes", "push_subscriptions", "google_calendar_tokens"):
         try:
@@ -1140,10 +1192,13 @@ def rodar_migracoes_automaticas():
             if total_orfaos:
                 print(f"[MIGRAÇÃO] Aviso: {tabela} possui {int(total_orfaos)} registro(s) antigo(s) sem user_id. Eles não serão vinculados automaticamente.")
         except Exception as e:
-            print(f"[MIGRAÇÃO] Aviso ao verificar órfãos em {tabela}: {e}")
+            print(f"[MIGRAÇÃO] Aviso ao verificar órfãos em {tabela}: {type(e).__name__}")
 
 
-rodar_migracoes_automaticas()
+try:
+    rodar_migracoes_automaticas()
+except Exception:
+    raise RuntimeError("[DB] Falha ao inicializar o banco. Confira conectividade e permissões.") from None
 
 
 # ============================================================
@@ -1947,7 +2002,8 @@ def calcular_dias_para_proxima(item: ChecklistItem, hoje: Optional[date] = None)
 
 
 def google_configurado() -> bool:
-    return bool(GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET and GOOGLE_REDIRECT_URI)
+    return bool(GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET and GOOGLE_REDIRECT_URI
+                and (not AMBIENTE_PRODUCAO or url_publica_https(GOOGLE_REDIRECT_URI)))
 
 
 def salvar_google_credentials(db: Session, user: User, credentials: Credentials):
@@ -2233,7 +2289,7 @@ def excluir_tarefa_no_google(db: Session, tarefa: Tarefa, user: User):
         service = google_service(db, user)
         service.events().delete(calendarId="primary", eventId=tarefa.google_event_id).execute()
     except Exception as e:
-        print(f"[GOOGLE] Aviso ao excluir evento {tarefa.google_event_id}: {e}")
+        print(f"[GOOGLE] Aviso ao excluir evento: {type(e).__name__}")
 
 
 # ============================================================
@@ -2444,7 +2500,7 @@ async def auth_forgot_password(request: Request, db: Session = Depends(get_db)):
 
     enviado = enviar_email_recuperacao_senha(usuario.email, usuario.nome, token)
     if not enviado:
-        print(f"[AUTH] Link de recuperação não enviado para {usuario.email}.")
+        print("[AUTH] Link de recuperação não enviado.")
 
     return {"ok": True, "message": mensagem}
 
@@ -2684,7 +2740,7 @@ async def auth_excluir_conta(
     try:
         removidos = excluir_conta_usuario(db, current_user)
     except Exception as e:
-        print(f"[AUTH] Erro ao excluir conta {email}: {e}")
+        print(f"[AUTH] Erro ao excluir conta: {type(e).__name__}")
         raise HTTPException(status_code=500, detail="Não foi possível excluir sua conta.")
     return {
         "ok": True,
@@ -2714,7 +2770,7 @@ async def enviar_feedback_app(
 
     enviado = enviar_email_feedback(current_user, categoria, mensagem)
     if not enviado:
-        print(f"[FEEDBACK] {categoria.upper()} de {current_user.email}: {mensagem}")
+        print("[FEEDBACK] Não foi possível entregar o feedback por e-mail.")
 
     return {
         "ok": True,
@@ -2826,7 +2882,7 @@ def auth_google_callback(request: Request, db: Session = Depends(get_db)):
 
     error = request.query_params.get("error")
     if error:
-        raise HTTPException(status_code=400, detail=f"Falha na autorização Google: {error}")
+        raise HTTPException(status_code=400, detail="A autorização do Google foi cancelada ou recusada.")
 
     code = request.query_params.get("code")
     if not code:
@@ -2866,7 +2922,8 @@ def auth_google_callback(request: Request, db: Session = Depends(get_db)):
         request.session.pop("google_code_verifier", None)
         request.session.pop("google_auth_user_id", None)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao concluir login Google: {str(e)}")
+        print(f"[GOOGLE] Não foi possível concluir a autorização: {type(e).__name__}")
+        raise HTTPException(status_code=500, detail="Erro ao concluir login Google. Tente conectar novamente.") from None
 
     return RedirectResponse(url="/app?google=conectado")
 
@@ -3674,7 +3731,7 @@ def _criar_tarefa(request: Request, form, db: Session, current_user: User):
                 recibo.resposta = json.dumps(resposta, ensure_ascii=False)
                 db.commit()
         except Exception as e:
-            print(f"[GOOGLE] Falha ao sincronizar tarefa recém-criada: {e}")
+            print(f"[GOOGLE] Falha ao sincronizar tarefa recém-criada: {type(e).__name__}")
     return resposta
 
 
@@ -3770,7 +3827,7 @@ def _editar_tarefa(tarefa_id: int, request: Request, form, db: Session, current_
                 recibo.resposta = json.dumps(resposta, ensure_ascii=False)
                 db.commit()
         except Exception as e:
-            print(f"[GOOGLE] Falha ao sincronizar edição da tarefa {tarefa.id}: {e}")
+            print(f"[GOOGLE] Falha ao sincronizar edição de compromisso: {type(e).__name__}")
 
     return resposta
 
@@ -4778,7 +4835,7 @@ def _enviar_push(sub: PushSubscription, titulo: str, corpo: str, url: str = "/ap
             vapid_claims=VAPID_CLAIMS,
         )
     except Exception as e:
-        print(f"[PUSH] Erro ao enviar para {sub.endpoint[:40]}...: {e}")
+        print(f"[PUSH] Erro ao enviar uma notificação: {type(e).__name__}")
 
 
 def _enviar_push_todos(titulo: str, corpo: str, url: str = "/app", user_id: Optional[int] = None):
@@ -4831,8 +4888,8 @@ async def push_subscribe(request: Request, db: Session = Depends(get_db), curren
         return {"ok": True, "id": sub.id}
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao salvar inscrição: {str(e)}")
+    except Exception:
+        raise HTTPException(status_code=500, detail="Erro ao salvar inscrição.") from None
 
 
 @app.delete("/push/subscribe")
@@ -4845,19 +4902,19 @@ async def push_unsubscribe(request: Request, db: Session = Depends(get_db), curr
             sub.ativo = False
             db.commit()
         return {"ok": True}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Não foi possível remover a inscrição.") from None
 
 
 @app.get("/push/status")
 async def push_status(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     try:
         total = db.query(PushSubscription).filter(PushSubscription.user_id == current_user.id, PushSubscription.ativo == True).count()
-    except Exception as e:
+    except Exception:
         return {
             "vapid_configurado": bool(VAPID_PRIVATE_KEY),
             "assinantes": -1,
-            "erro_tabela": str(e),
+            "erro_tabela": "Não foi possível consultar as inscrições.",
             "solucao": "Redeploy ou migração necessária",
         }
     return {
@@ -5052,7 +5109,7 @@ def _loop_notificacoes_push():
             finally:
                 db.close()
         except Exception as e:
-            print(f"[PUSH LOOP] Erro: {e}")
+            print(f"[PUSH LOOP] Erro: {type(e).__name__}")
 
         time_module.sleep(60)
 

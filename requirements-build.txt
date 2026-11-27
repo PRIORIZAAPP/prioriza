@@ -1,0 +1,2 @@
+# Ferramenta de instalação. Instalar antes do lock de execução.
+pip==26.3

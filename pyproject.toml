@@ -1,18 +1,23 @@
-[tool.poetry]
+[project]
 name = "prioriza"
 version = "0.1.0"
-description = ""
-authors = ["Dyogo"]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi==0.165.0",
+    "starlette==1.10.0",
+    "pydantic==2.14.4",
+    "uvicorn[standard]==0.32.1",
+    "SQLAlchemy==2.0.36",
+    "psycopg2-binary==2.9.10",
+    "python-multipart==0.0.34",
+    "pywebpush==2.0.0",
+    "itsdangerous==2.2.0",
+    "google-auth-oauthlib==1.5.0",
+    "google-api-python-client==2.202.0",
+    "google-auth==2.62.2",
+    "requests==2.34.2",
+    "apscheduler==3.10.4",
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-
-fastapi = "^0.110.0"
-uvicorn = {extras = ["standard"], version = "^0.29.0"}
-sqlalchemy = "^2.0.27"
-passlib = {extras = ["bcrypt"], version = "^1.7.4"}
-python-jose = "^3.3.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = ["httpx==0.28.1"]
